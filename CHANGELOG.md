@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-05
+
+Small fixes and polish on 0.3: Delete removes the layer clicked in the list, blend modes preview as you hover them, and the website is easier to find.
+
 ### Changed
 
 - The blend mode menu previews each mode on the canvas as you hover it (or reach it with the arrow keys), like in Figma; only a click keeps it. Leaving the menu or Escape puts the layer back. (#215)
@@ -149,6 +153,7 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.3.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.3.1...main
+[0.3.1]: https://github.com/baipix/baipix/releases/tag/v0.3.1
 [0.3.0]: https://github.com/baipix/baipix/releases/tag/v0.3.0
 [0.2.0]: https://github.com/baipix/baipix/releases/tag/v0.2.0
