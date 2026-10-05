@@ -451,9 +451,22 @@ function ListsBlock() {
     <Block
       id="lists"
       title="Lists"
-      intro="File and layer rows. The name uses the whole row and is cut with an ellipsis; the icons float over its end on hover."
+      intro="File and layer rows. The name uses the whole row and is cut with an ellipsis; the icons float over its end on hover. A group has a fold arrow and a folder; what's in it is set in by a step per level (two levels at most)."
     >
       <div className="ds-list item-list">
+        <div className="item group-item" style={{ '--depth': 0 } as React.CSSProperties}>
+          <span className="icon-btn group-toggle">
+            <Icon name="caret" size={16} />
+          </span>
+          <span className="group-icon">
+            <Icon name="folder" size={16} />
+          </span>
+          <span className="item-name">Group</span>
+        </div>
+        <div className="item" style={{ '--depth': 1 } as React.CSSProperties}>
+          <span className="thumb" />
+          <span className="item-name">Layer in the group</span>
+        </div>
         {row('Background', '')}
         {row('Character, with a name long enough to be cut', '50 %', ' is-active')}
         {row('Hidden layer', '', ' is-hidden')}

@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Layer groups, two levels deep: Ctrl+G groups the selected layers (or the button in the Layers panel), Ctrl+Shift+G ungroups. Fold and unfold them, rename them, drag layers and groups in and out. A group hides, locks, has its own opacity and blend mode (Pass through by default, each layer blending on its own), and can be duplicated, deleted with Undo, or merged into one layer. Selecting a group selects its layers: the Move tool, the arrow keys and Delete act on the whole group, and a click on the canvas with the Move tool takes the group of the layer clicked. Saved in .baipix files; older files open as they were. (#PR)
+
 ### Website
 
 - New screenshots of the editor, and the feature cards mention what 0.3 brought: templates and the tour, blend modes, rulers and guides, the outline, the minimap, and recovering the pixels of scaled-up images. (#210)

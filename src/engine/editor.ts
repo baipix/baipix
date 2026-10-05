@@ -10,10 +10,29 @@ import {
   newId,
   resizeDocument,
   type Layer,
+  type LayerGroup,
   type PixelDoc,
   type ReferenceImage,
   type RenderSettings,
 } from './document';
+import {
+  findGroup,
+  groupChain,
+  groupDepth,
+  groupLayers,
+  isLocked,
+  isShown,
+  isWithin,
+  itemLayers,
+  layerTree,
+  MAX_GROUP_DEPTH,
+  moveItems,
+  normalizeGroups,
+  pickedItems,
+  type GroupBlendMode,
+  type LayerItem,
+  type LayerNode,
+} from './groups';
 import { History, takeSnapshot, type Snapshot } from './history';
 import { flipOutside, layerContent, reframe, type Outside } from './outside';
 import { clamp, clipRect, type Point, type Rect } from './math';
@@ -91,6 +110,8 @@ export interface EditorState {
   view: ViewSettings;
   /** Ids of the selected layers, bottom to top. Always includes the active layer. */
   selectedLayers: string[];
+  /** The group selected in the Layers panel (its layers are the selected ones), or null. */
+  selectedGroup: string | null;
   /** The reference image is selected (in the Layers panel, or picked by the Move tool). */
   referenceSelected: boolean;
   /** The Move tool frames the active layer (until a click beside every layer). */
@@ -108,6 +129,8 @@ export interface EditorLabels {
   pasted: string;
   /** Name of the n-th custom brush. */
   brush: (n: number) => string;
+  /** Name of the n-th group. */
+  group: (n: number) => string;
 }
 
 export type Notice =
@@ -119,7 +142,8 @@ export type Notice =
   | { type: 'rampAdded'; count: number }
   | { type: 'extracted'; count: number }
   | { type: 'pasted' }
-  | { type: 'merged' };
+  | { type: 'merged' }
+  | { type: 'groupTooDeep' };
 
 export interface Preferences {
   tool: ToolId;
@@ -142,6 +166,8 @@ interface Session {
   anchor?: string;
   /** The reference image is selected in the Layers panel instead of a layer. */
   referencePicked?: boolean;
+  /** A group is selected in the Layers panel: `picked` holds its layers. */
+  pickedGroup?: string;
   /** A click beside every layer with the Move tool: the active layer stays active, without its frame. */
   unframed?: boolean;
 }
@@ -150,7 +176,13 @@ interface Session {
 type Deleted =
   | { kind: 'file'; session: Session; index: number }
   | { kind: 'layer'; session: Session; layer: Layer; index: number }
-  | { kind: 'layers'; session: Session; entries: { layer: Layer; index: number }[] };
+  | {
+      kind: 'layers';
+      session: Session;
+      entries: { layer: Layer; index: number }[];
+      /** The groups as they were, to bring back the ones that went away with their layers. */
+      groups?: LayerGroup[];
+    };
 
 type Listener = () => void;
 
@@ -160,6 +192,7 @@ export const RECENT_COLORS = 8;
 const DEFAULT_LABELS: EditorLabels = {
   layer: (n) => `Layer ${n}`,
   copyOf: (name) => `${name} copy`,
+  group: (n) => `Group ${n}`,
   untitled: (n) => (n > 1 ? `Untitled ${n}` : 'Untitled'),
   pasted: 'Pasted',
   brush: (n) => `Brush ${n}`,
@@ -255,6 +288,11 @@ export class Editor {
   private opacityChange = false;
   private deleted: Deleted | null = null;
   private recent: Color[] = [];
+  /** The Move tool moving a group (or several selected layers) together. */
+  private groupMove: {
+    start: Point;
+    items: { layer: Layer; base: Uint32Array; outside?: Outside }[];
+  } | null = null;
   /** New files left untouched so far: any change to one takes it out. */
   private fresh = new Set<string>();
   private brushes: CustomBrush[] = [];
@@ -317,6 +355,7 @@ export class Editor {
     const ids = s.doc.layers.map((l) => l.id);
     const picked = ids.filter((id) => s.picked?.includes(id));
     s.picked = picked.includes(active) ? picked : [active];
+    if (s.pickedGroup && !findGroup(s.doc, s.pickedGroup)) delete s.pickedGroup;
     this.state = {
       files: this.sessions.map(({ doc }) => ({
         id: doc.id,
@@ -337,6 +376,7 @@ export class Editor {
       brushes: this.brushes.map(({ id, name, width, height }) => ({ id, name, width, height })),
       view: this.view,
       selectedLayers: s.picked,
+      selectedGroup: s.pickedGroup ?? null,
       referenceSelected: !!s.referencePicked && !!s.doc.reference,
       layerFramed: !s.unframed,
       canUndo: s.history.canUndo,
@@ -587,6 +627,15 @@ export class Editor {
     this.edit((doc) => {
       // Lowest first, so each layer lands back at its own index.
       for (const { layer, index } of entries) doc.layers.splice(Math.min(index, doc.layers.length), 0, layer);
+      // The groups that went away with their layers come back too.
+      if (d.kind === 'layers' && d.groups) {
+        const kept = new Set((doc.groups ?? []).map((g) => g.id));
+        doc.groups = [
+          ...(doc.groups ?? []),
+          ...d.groups.filter((g) => !kept.has(g.id)).map((g) => ({ ...g })),
+        ];
+        normalizeGroups(doc);
+      }
       doc.activeLayer = doc.layers.indexOf(entries[entries.length - 1].layer);
       this.active.picked = entries.map((x) => x.layer.id);
     });
@@ -724,17 +773,46 @@ export class Editor {
     const i = p.y * width + p.x;
     for (let k = layers.length - 1; k >= 0; k--) {
       const l = layers[k];
-      if (l.visible && !l.locked && l.opacity > 0 && l.pixels[i] >>> 24) return k;
+      if (isShown(this.doc, l) && !isLocked(this.doc, l) && l.opacity > 0 && l.pixels[i] >>> 24) return k;
     }
     return -1;
+  }
+
+  /**
+   * What the Move tool would take at layer `k`: in a group, the whole group (its outermost one),
+   * unless the group is selected or one of its layers was picked on its own in the Layers panel.
+   */
+  private moveTarget(k: number): { group?: string } {
+    const s = this.active;
+    const layer = this.doc.layers[k];
+    if (s.pickedGroup && isWithin(this.doc, layer.group, s.pickedGroup)) return { group: s.pickedGroup };
+    const outer = groupChain(this.doc, layer.group).at(-1);
+    const entered = !s.pickedGroup && outer && isWithin(this.doc, activeLayer(this.doc).group, outer.id);
+    return outer && !entered ? { group: outer.id } : {};
+  }
+
+  /** The layers the Move tool would move from pixel `p` (a layer, or a group's layers), for its outline. */
+  moveTargetLayers(p: Point): Layer[] {
+    const k = this.layerAt(p);
+    if (k < 0) return [];
+    const { group } = this.moveTarget(k);
+    return group ? groupLayers(this.doc, group).filter((l) => isShown(this.doc, l)) : [this.doc.layers[k]];
   }
 
   setActiveLayer(index: number): void {
     if (index < 0 || index >= this.doc.layers.length) return;
     const id = this.doc.layers[index].id;
     const s = this.active;
-    if (index === this.doc.activeLayer && s.picked?.length === 1 && !s.referencePicked && !s.unframed) return;
+    if (
+      index === this.doc.activeLayer &&
+      s.picked?.length === 1 &&
+      !s.referencePicked &&
+      !s.unframed &&
+      !s.pickedGroup
+    )
+      return;
     s.referencePicked = false;
+    delete s.pickedGroup;
     s.unframed = false;
     this.doc.activeLayer = index;
     this.active.picked = [id];
@@ -752,6 +830,7 @@ export class Editor {
     if (!layers[index]) return;
     if (mode === 'single') return this.setActiveLayer(index);
     this.active.referencePicked = false;
+    delete this.active.pickedGroup;
     this.active.unframed = false;
     const id = layers[index].id;
     const picked = this.state.selectedLayers;
@@ -786,16 +865,18 @@ export class Editor {
   addLayer(): void {
     this.edit((doc) => {
       doc.layerCounter += 1;
-      doc.layers.splice(
-        doc.activeLayer + 1,
-        0,
-        createLayer(this.labels.layer(doc.layerCounter), doc.width, doc.height),
-      );
+      const layer = createLayer(this.labels.layer(doc.layerCounter), doc.width, doc.height);
+      // In the active layer's group, right above it.
+      const group = activeLayer(doc).group;
+      if (group) layer.group = group;
+      doc.layers.splice(doc.activeLayer + 1, 0, layer);
       doc.activeLayer += 1;
+      delete this.active.pickedGroup;
     });
   }
 
   duplicateLayer(): void {
+    if (this.active.pickedGroup) return this.duplicateGroup(this.active.pickedGroup);
     this.edit((doc) => {
       const copy = cloneLayer(activeLayer(doc), false);
       copy.name = this.labels.copyOf(copy.name);
@@ -814,9 +895,11 @@ export class Editor {
     if (picked.length >= this.doc.layers.length) return 0;
     this.edit((doc) => {
       const entries = picked.map((layer) => ({ layer, index: doc.layers.indexOf(layer) }));
+      const groups = doc.groups?.map((g) => ({ ...g }));
       doc.layers = doc.layers.filter((l) => !picked.includes(l));
       doc.activeLayer = Math.min(doc.layers.length - 1, Math.max(0, entries[0].index - 1));
-      this.deleted = { kind: 'layers', session: this.active, entries };
+      normalizeGroups(doc);
+      this.deleted = { kind: 'layers', session: this.active, entries, groups };
     });
     return picked.length;
   }
@@ -826,21 +909,276 @@ export class Editor {
     if (this.doc.layers.length < 2) return false;
     this.edit((doc) => {
       const index = doc.activeLayer;
+      const groups = doc.groups?.map((g) => ({ ...g }));
       const [layer] = doc.layers.splice(index, 1);
       doc.activeLayer = Math.max(0, index - 1);
-      this.deleted = { kind: 'layer', session: this.active, layer, index };
+      normalizeGroups(doc);
+      // Its group, if it was the last layer in it, comes back with it.
+      this.deleted = { kind: 'layers', session: this.active, entries: [{ layer, index }], groups };
     });
     return true;
   }
 
+  /** The selected item (the selected group, or the active layer) and the items beside it in its group. */
+  private siblings(): { item: LayerItem; parent: string | undefined; list: LayerNode[]; at: number } {
+    const doc = this.doc;
+    const g = this.active.pickedGroup;
+    const item: LayerItem = g ? { kind: 'group', id: g } : { kind: 'layer', id: activeLayer(doc).id };
+    const parent = g ? findGroup(doc, g)?.parent : activeLayer(doc).group;
+    const find = (nodes: LayerNode[]): LayerNode[] | null => {
+      for (const n of nodes) {
+        if (n.kind === 'group') {
+          if (n.group.id === parent) return n.children;
+          const inner = find(n.children);
+          if (inner) return inner;
+        }
+      }
+      return null;
+    };
+    const list = (parent ? find(layerTree(doc)) : layerTree(doc)) ?? [];
+    const at = list.findIndex((n) =>
+      n.kind === 'layer' ? item.kind === 'layer' && n.layer.id === item.id : n.group.id === item.id,
+    );
+    return { item, parent, list, at };
+  }
+
+  /** Whether the selected layer or group can move up (1) or down (-1) within its group. */
+  canMoveLayer(direction: 1 | -1): boolean {
+    const { list, at } = this.siblings();
+    return at >= 0 && at + direction >= 0 && at + direction < list.length;
+  }
+
+  /** Moves the selected layer or group past its neighbor, within its group (one undo step). */
   moveLayer(direction: 1 | -1): void {
-    const i = this.doc.activeLayer;
-    const j = i + direction;
-    if (j < 0 || j >= this.doc.layers.length) return;
-    this.edit((doc) => {
-      [doc.layers[i], doc.layers[j]] = [doc.layers[j], doc.layers[i]];
-      doc.activeLayer = j;
+    const { item, parent, list, at } = this.siblings();
+    if (!this.canMoveLayer(direction)) return;
+    const top = (n: LayerNode) =>
+      n.kind === 'layer' ? n.layer.id : groupLayers(this.doc, n.group.id).at(-1)!.id;
+    // Up: right above the next item. Down: right above the item two below, or at the group's bottom.
+    const below = direction > 0 ? list[at + 1] : list[at - 2];
+    this.checkpoint();
+    if (!moveItems(this.doc, [item], { parent, aboveLayer: below ? top(below) : null })) {
+      this.active.history.discardLast();
+      return;
+    }
+    this.commit();
+  }
+
+  /** Drops the dragged layers or groups at a place in the Layers panel (one undo step). */
+  moveItemsTo(items: LayerItem[], parent: string | undefined, aboveLayer: string | null): boolean {
+    this.checkpoint();
+    if (!moveItems(this.doc, items, { parent, aboveLayer })) {
+      this.active.history.discardLast();
+      if (parent && items.some((i) => i.kind === 'group')) this.notice({ type: 'groupTooDeep' });
+      return false;
+    }
+    this.commit();
+    return true;
+  }
+
+  /** The selected layers as items of the list (whole groups when all their layers are selected). */
+  selectedItems(): LayerItem[] {
+    const g = this.active.pickedGroup;
+    return g ? [{ kind: 'group', id: g }] : pickedItems(this.doc, this.state.selectedLayers);
+  }
+
+  /* ------------------------------------------------------------------ groups */
+
+  /** Selects a group in the Layers panel: all its layers, the top one active. */
+  selectGroup(id: string): void {
+    const layers = groupLayers(this.doc, id);
+    if (!layers.length) return;
+    const s = this.active;
+    s.referencePicked = false;
+    s.unframed = false;
+    s.pickedGroup = id;
+    s.picked = layers.map((l) => l.id);
+    s.anchor = layers[layers.length - 1].id;
+    this.doc.activeLayer = this.doc.layers.indexOf(layers[layers.length - 1]);
+    this.commit(false);
+  }
+
+  /**
+   * Puts the selected layers (and groups) in a new group, where the top one was. Returns false when
+   * it would go deeper than two levels.
+   */
+  groupSelection(): boolean {
+    const doc = this.doc;
+    const items = this.selectedItems();
+    if (!items.length) return false;
+    // The new group goes in the innermost group holding every item.
+    const chains = items.map((it) => {
+      const p =
+        it.kind === 'layer' ? doc.layers.find((l) => l.id === it.id)?.group : findGroup(doc, it.id)?.parent;
+      return groupChain(doc, p).map((g) => g.id);
     });
+    const parent = chains[0].find((id) => chains.every((c) => c.includes(id)));
+    const height = Math.max(
+      ...items.map((it) =>
+        it.kind === 'layer' ? 0 : 1 + ((doc.groups ?? []).some((g) => g.parent === it.id) ? 1 : 0),
+      ),
+    );
+    if ((parent ? groupDepth(doc, parent) : 0) + 1 + height > MAX_GROUP_DEPTH) {
+      this.notice({ type: 'groupTooDeep' });
+      return false;
+    }
+    this.edit((d) => {
+      const moving = items.flatMap((it) => itemLayers(d, it));
+      // Where the top item sits in the new group's parent: the group holding it there, or itself.
+      const topLayer = moving[moving.length - 1];
+      const holder = groupChain(d, topLayer.group).find((g) => g.parent === parent);
+      const holderTop = holder ? groupLayers(d, holder.id).at(-1)! : topLayer;
+      const end = d.layers.indexOf(holderTop);
+      const before = d.layers.filter((l, i) => i <= end && !moving.includes(l));
+      const after = d.layers.filter((l, i) => i > end && !moving.includes(l));
+      const active = d.layers[d.activeLayer];
+      d.layers = [...before, ...moving, ...after];
+      const group: LayerGroup = {
+        id: newId('group'),
+        name: this.labels.group((d.groups?.length ?? 0) + 1),
+        visible: true,
+        locked: false,
+        opacity: 1,
+        ...(parent && { parent }),
+      };
+      d.groups = [...(d.groups ?? []), group];
+      for (const it of items) {
+        if (it.kind === 'layer') d.layers.find((l) => l.id === it.id)!.group = group.id;
+        else findGroup(d, it.id)!.parent = group.id;
+      }
+      d.activeLayer = Math.max(0, d.layers.indexOf(active));
+      normalizeGroups(d);
+      this.active.pickedGroup = group.id;
+      this.active.picked = groupLayers(d, group.id).map((l) => l.id);
+    });
+    return true;
+  }
+
+  /** Takes a group apart: its layers and groups go to the group it was in. */
+  ungroup(id: string): void {
+    const g = findGroup(this.doc, id);
+    if (!g) return;
+    this.edit((doc) => {
+      for (const l of doc.layers) if (l.group === id) l.group = g.parent;
+      for (const c of doc.groups ?? []) if (c.parent === id) c.parent = g.parent;
+      doc.groups = (doc.groups ?? []).filter((x) => x.id !== id);
+      for (const l of doc.layers) if (!l.group) delete l.group;
+      normalizeGroups(doc);
+      delete this.active.pickedGroup;
+    });
+  }
+
+  /** Merges a group into one layer, which keeps the group's name, opacity, blend mode and place. */
+  mergeGroup(id: string): void {
+    const doc = this.doc;
+    const g = findGroup(doc, id);
+    const layers = groupLayers(doc, id);
+    if (!g || !layers.length) return;
+    if (layers.some((l) => isLocked(doc, l))) {
+      this.notice({ type: 'layerLocked' });
+      return;
+    }
+    // The group's layers on their own, as if the group were plain and shown.
+    const inner = (doc.groups ?? []).filter((x) => x.id !== id && isWithin(doc, x.id, id));
+    const pixels = flatten(
+      {
+        ...doc,
+        layers: layers.map((l) => ({ ...l, group: l.group === id ? undefined : l.group })),
+        groups: inner.map((x) => ({ ...x, parent: x.parent === id ? undefined : x.parent })),
+        background: 0,
+      },
+      { includeBackground: false },
+    );
+    this.edit((d) => {
+      const merged = createLayer(g.name, d.width, d.height);
+      merged.pixels.set(pixels);
+      merged.opacity = g.opacity;
+      merged.visible = g.visible;
+      if (g.blendMode) merged.blendMode = g.blendMode;
+      if (g.parent) merged.group = g.parent;
+      const at = d.layers.indexOf(layers[0]);
+      d.layers = d.layers.filter((l) => !layers.includes(l));
+      d.layers.splice(at, 0, merged);
+      d.groups = (d.groups ?? []).filter((x) => x.id !== id && !inner.includes(x));
+      d.activeLayer = at;
+      normalizeGroups(d);
+      delete this.active.pickedGroup;
+      this.active.picked = [merged.id];
+    });
+    this.notice({ type: 'merged' });
+  }
+
+  /** Duplicates a group with everything in it, right above it, and selects the copy. */
+  private duplicateGroup(id: string): void {
+    const doc = this.doc;
+    const layers = groupLayers(doc, id);
+    if (!layers.length) return;
+    this.edit((d) => {
+      const groups = (d.groups ?? []).filter((x) => isWithin(d, x.id, id));
+      const ids = new Map(groups.map((x) => [x.id, newId('group')]));
+      const copies = groups.map((x) => ({
+        ...x,
+        id: ids.get(x.id)!,
+        ...(x.id === id && { name: this.labels.copyOf(x.name) }),
+        ...(x.parent && ids.has(x.parent) && { parent: ids.get(x.parent)! }),
+      }));
+      const layerCopies = layers.map((l) => ({ ...cloneLayer(l, false), group: ids.get(l.group!) }));
+      const at = d.layers.indexOf(layers[layers.length - 1]) + 1;
+      d.layers.splice(at, 0, ...layerCopies);
+      d.groups = [...(d.groups ?? []), ...copies];
+      d.activeLayer = at + layerCopies.length - 1;
+      normalizeGroups(d);
+      this.active.pickedGroup = ids.get(id);
+      this.active.picked = layerCopies.map((l) => l.id);
+    });
+  }
+
+  private changeGroup(id: string, change: (g: LayerGroup) => void, history = true): void {
+    const g = findGroup(this.doc, id);
+    if (!g) return;
+    if (history) this.checkpoint();
+    change(g);
+    this.commit();
+  }
+
+  renameGroup(id: string, name: string): void {
+    const clean = name.trim().slice(0, 120);
+    if (clean && clean !== findGroup(this.doc, id)?.name) this.changeGroup(id, (g) => (g.name = clean));
+  }
+
+  setGroupVisible(id: string, visible: boolean): void {
+    this.changeGroup(id, (g) => (g.visible = visible));
+  }
+
+  setGroupLocked(id: string, locked: boolean): void {
+    this.changeGroup(id, (g) => (g.locked = locked));
+  }
+
+  setGroupBlendMode(id: string, mode: GroupBlendMode): void {
+    this.changeGroup(id, (g) => {
+      if (mode === 'pass-through') delete g.blendMode;
+      else g.blendMode = mode;
+    });
+  }
+
+  /** Opacity drags: one undo step per gesture. Call with `done` on release. */
+  setGroupOpacity(id: string, opacity: number, done = false): void {
+    const g = findGroup(this.doc, id);
+    if (!g) return;
+    if (!this.opacityChange) {
+      this.checkpoint();
+      this.opacityChange = true;
+    }
+    g.opacity = clamp(opacity, 0, 1);
+    if (done) {
+      this.opacityChange = false;
+      this.commit();
+    } else this.pixelsChanged();
+  }
+
+  /** Folds or unfolds a group in the Layers panel (not an undo step). */
+  setGroupCollapsed(id: string, collapsed: boolean): void {
+    this.changeGroup(id, (g) => (collapsed ? (g.collapsed = true) : delete g.collapsed), false);
   }
 
   /** Moves a layer to another position (indices bottom to top), as one undo step. It stays active. */
@@ -854,9 +1192,15 @@ export class Editor {
     });
   }
 
+  /** Whether the active layer has a layer below it in the same group, to merge down into. */
+  canMergeDown(): boolean {
+    const i = this.doc.activeLayer;
+    return i > 0 && this.doc.layers[i - 1].group === this.doc.layers[i].group && !this.active.pickedGroup;
+  }
+
   mergeDown(): void {
     const i = this.doc.activeLayer;
-    if (i <= 0) return;
+    if (!this.canMergeDown()) return;
     if (this.doc.layers[i].locked || this.doc.layers[i - 1].locked) {
       this.notice({ type: 'layerLocked' });
       return;
@@ -876,16 +1220,22 @@ export class Editor {
 
   /** Merges every visible layer into one and drops the hidden ones, as one undo step. */
   flattenImage(): void {
-    const visible = this.doc.layers.filter((l) => l.visible);
-    if (!visible.length || (visible.length === 1 && visible.length === this.doc.layers.length)) return;
+    const visible = this.doc.layers.filter((l) => isShown(this.doc, l));
+    const [bottom] = visible;
+    if (!visible.length || (visible.length === 1 && this.doc.layers.length === 1 && !this.doc.groups)) return;
     if (visible.some((l) => l.locked)) {
       this.notice({ type: 'layerLocked' });
       return;
     }
     this.edit((doc) => {
-      const [bottom, ...rest] = visible;
-      for (const layer of rest) mergeLayerInto(layer, bottom);
+      // The image as shown, groups included, in the bottom layer.
+      bottom.pixels.set(flatten(doc, { includeBackground: false }));
+      bottom.opacity = 1;
+      delete bottom.blendMode;
+      delete bottom.group;
+      bottom.visible = true;
       doc.layers = [bottom];
+      delete doc.groups;
       doc.activeLayer = 0;
     });
     this.notice({ type: 'merged' });
@@ -902,6 +1252,8 @@ export class Editor {
       for (const layer of rest) mergeLayerInto(layer, bottom);
       doc.layers = doc.layers.filter((l) => !rest.includes(l));
       doc.activeLayer = doc.layers.indexOf(bottom);
+      normalizeGroups(doc);
+      delete this.active.pickedGroup;
     });
     this.notice({ type: 'merged' });
   }
@@ -921,12 +1273,13 @@ export class Editor {
       const active = doc.layers[doc.activeLayer];
       doc.layers = next;
       doc.activeLayer = next.indexOf(active);
+      normalizeGroups(doc);
     });
   }
 
   /** Merges every visible layer into the lowest visible one, as one undo step. */
   mergeVisible(): void {
-    this.mergeInto(this.doc.layers.filter((l) => l.visible));
+    this.mergeInto(this.doc.layers.filter((l) => isShown(this.doc, l)));
   }
 
   setLayerVisible(index: number, visible: boolean): void {
@@ -951,7 +1304,7 @@ export class Editor {
 
   /** Paint on a locked layer: tells the user why nothing happens. */
   private activeLocked(): boolean {
-    if (!activeLayer(this.doc).locked) return false;
+    if (!isLocked(this.doc, activeLayer(this.doc))) return false;
     this.notice({ type: 'layerLocked' });
     return true;
   }
@@ -1425,7 +1778,9 @@ export class Editor {
     this.cancelScale();
     const doc = this.doc;
     const layer = activeLayer(doc);
-    if (!layer.visible || this.activeLocked()) return null;
+    if (!isShown(doc, layer) || this.activeLocked()) return null;
+    // A group (several layers) isn't resized by its handles yet: it can be moved.
+    if (!this.active.selection && this.state.selectedLayers.length > 1) return null;
     const base = layer.pixels.slice();
     const sel = this.active.selection ? clipRect(this.active.selection, doc.width, doc.height) : null;
     if (sel && sel.w && sel.h) {
@@ -1502,7 +1857,16 @@ export class Editor {
       if (!r.locked) this.updateReference({ x: r.x + dx, y: r.y + dy });
       return;
     }
-    if (this.stroke || !activeLayer(this.doc).visible || this.activeLocked()) return;
+    if (this.stroke || this.groupMove) return;
+    // Several layers selected (a group), no selection: they all move.
+    if (!this.active.selection && this.state.selectedLayers.length > 1) {
+      if (!this.beginGroupMove({ x: 0, y: 0 })) return;
+      this.applyGroupMove(dx, dy);
+      this.groupMove = null;
+      this.commit();
+      return;
+    }
+    if (!isShown(this.doc, activeLayer(this.doc)) || this.activeLocked()) return;
     this.active.unframed = false;
     this.checkpoint();
     const s = this.createStroke({ x: 0, y: 0 }, false);
@@ -1563,7 +1927,7 @@ export class Editor {
   /* ------------------------------------------------------------------ strokes */
 
   get isStroking(): boolean {
-    return this.stroke !== null;
+    return this.stroke !== null || this.groupMove !== null;
   }
 
   private createStroke(p: Point, secondary: boolean): Stroke {
@@ -1629,8 +1993,11 @@ export class Editor {
       }
       this.active.unframed = false;
     }
+    // A group (or several layers) selected: the Move tool moves them all.
+    if (id === 'move' && !this.active.selection && this.state.selectedLayers.length > 1)
+      return this.beginGroupMove(p);
     if (tool.editsPixels && this.activeLocked()) return false;
-    if (tool.editsPixels && !activeLayer(this.doc).visible) {
+    if (tool.editsPixels && !isShown(this.doc, activeLayer(this.doc))) {
       this.notice({ type: 'layerHidden' });
       return false;
     }
@@ -1654,16 +2021,51 @@ export class Editor {
       const box = this.active.unframed ? null : pixelBounds(activeLayer(this.doc).pixels, width, height);
       return !!box && p.x >= box.x && p.y >= box.y && p.x < box.x + box.w && p.y < box.y + box.h;
     }
-    if (k === this.doc.activeLayer) return true;
-    const id = this.doc.layers[k].id;
+    const s = this.active;
+    const layer = this.doc.layers[k];
+    // In a group, the Move tool takes the whole group, like in a design tool.
+    const { group } = this.moveTarget(k);
+    if (group) {
+      if (s.pickedGroup !== group) this.selectGroup(group);
+      return true;
+    }
+    if (k === this.doc.activeLayer && !s.pickedGroup) return true;
+    delete s.pickedGroup;
     this.doc.activeLayer = k;
-    this.active.picked = [id];
-    this.active.anchor = id;
+    s.picked = [layer.id];
+    s.anchor = layer.id;
     this.commit(false);
     return true;
   }
 
+  /** Moving every selected layer together (a group), whole layers with what's off the canvas. */
+  private beginGroupMove(p: Point): boolean {
+    const layers = this.pickedLayers();
+    if (layers.some((l) => isLocked(this.doc, l))) {
+      this.notice({ type: 'layerLocked' });
+      return false;
+    }
+    this.checkpoint();
+    this.groupMove = {
+      start: p,
+      items: layers.map((layer) => ({ layer, base: layer.pixels.slice(), outside: layer.outside })),
+    };
+    return true;
+  }
+
+  private applyGroupMove(dx: number, dy: number): void {
+    const { width, height } = this.doc;
+    for (const { layer, base, outside } of this.groupMove!.items) {
+      const r = reframe(base, width, height, outside, dx, dy, width, height);
+      layer.pixels.set(r.pixels);
+      layer.outside = r.outside;
+    }
+    this.pixelsChanged();
+  }
+
   moveStroke(p: Point, mods: Modifiers): void {
+    if (this.groupMove)
+      return this.applyGroupMove(p.x - this.groupMove.start.x, p.y - this.groupMove.start.y);
     if (!this.stroke || !this.strokeTool) return;
     TOOLS[this.strokeTool].onMove(this.stroke, this.stabilized(p), mods);
     this.pixelsChanged();
@@ -1691,6 +2093,11 @@ export class Editor {
   }
 
   endStroke(): void {
+    if (this.groupMove) {
+      this.groupMove = null;
+      this.commit();
+      return;
+    }
     const s = this.stroke;
     const id = this.strokeTool;
     if (!s || !id) return;
@@ -1712,6 +2119,16 @@ export class Editor {
   }
 
   cancelStroke(): void {
+    if (this.groupMove) {
+      for (const { layer, base, outside } of this.groupMove.items) {
+        layer.pixels.set(base);
+        layer.outside = outside;
+      }
+      this.groupMove = null;
+      this.active.history.discardLast();
+      this.commit(false);
+      return;
+    }
     const s = this.stroke;
     const id = this.strokeTool;
     if (!s || !id) return;

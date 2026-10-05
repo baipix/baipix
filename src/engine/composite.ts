@@ -1,5 +1,6 @@
 import { alpha, blue, green, pack, red, type Color } from './color';
 import { hasBackground, type Layer, type PixelDoc } from './document';
+import { layerTree, type LayerNode } from './groups';
 
 /** Straight-alpha "source over" of one color onto another, with an extra opacity factor. */
 export function blendOver(src: Color, dst: Color, opacity = 1): Color {
@@ -103,24 +104,52 @@ export function flatten(doc: PixelDoc, options: FlattenOptions = {}): Uint32Arra
     out.set(onlyLayer.pixels);
     return out;
   }
-  if (includeBackground && hasBackground(doc)) out.fill(doc.background);
-  let first = !(includeBackground && hasBackground(doc));
-  for (const layer of doc.layers) {
-    if (!layer.visible || layer.opacity <= 0) continue;
-    const src = layer.pixels;
-    const mode = layer.blendMode ?? 'normal';
-    if (first && layer.opacity === 1) {
-      // Nothing under it yet: every mode gives the layer as it is.
-      out.set(src);
-    } else {
-      for (let i = 0; i < src.length; i++) {
-        const c = src[i];
-        if (c >>> 24) out[i] = blendWith(mode, c, out[i], layer.opacity);
-      }
-    }
-    first = false;
-  }
+  const background = includeBackground && hasBackground(doc);
+  if (background) out.fill(doc.background);
+  composeNodes(layerTree(doc), out, 1, !background);
   return out;
+}
+
+/**
+ * Lays nodes over `out`. A group in pass-through at full opacity adds its layers one by one;
+ * otherwise its layers are put together on their own first, then laid down in its mode and
+ * opacity. `empty`: nothing is under yet, so the first full-opacity layer is just copied.
+ */
+function composeNodes(nodes: LayerNode[], out: Uint32Array, opacity: number, empty: boolean): boolean {
+  for (const node of nodes) {
+    if (node.kind === 'layer') {
+      const layer = node.layer;
+      const k = layer.opacity * opacity;
+      if (!layer.visible || k <= 0) continue;
+      const mode = layer.blendMode ?? 'normal';
+      // Nothing under it yet: every mode gives the layer as it is.
+      if (empty && k === 1) out.set(layer.pixels);
+      else
+        for (let i = 0; i < out.length; i++) {
+          const c = layer.pixels[i];
+          if (c >>> 24) out[i] = blendWith(mode, c, out[i], k);
+        }
+      empty = false;
+      continue;
+    }
+    const group = node.group;
+    if (!group.visible || group.opacity <= 0) continue;
+    if (!group.blendMode && group.opacity === 1) {
+      empty = composeNodes(node.children, out, opacity, empty);
+      continue;
+    }
+    const own = new Uint32Array(out.length);
+    if (!composeNodes(node.children, own, 1, true)) {
+      const mode = group.blendMode ?? 'normal';
+      const k = group.opacity * opacity;
+      for (let i = 0; i < out.length; i++) {
+        const c = own[i];
+        if (c >>> 24) out[i] = blendWith(mode, c, out[i], k);
+      }
+      empty = false;
+    }
+  }
+  return empty;
 }
 
 /** Merges `top` into `bottom` in place (used by "merge down"), in `top`'s blend mode. */

@@ -1,6 +1,7 @@
 import { Fragment, useRef } from 'react';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS, type BlendMode } from '../../engine/composite';
+import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, MAX_SIZE } from '../../engine/document';
 import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
 import { useT } from '../../i18n';
@@ -257,14 +258,77 @@ function ReferenceSection() {
   );
 }
 
+/** A group selected in the Layers panel: its blend mode (pass-through by default) and opacity. */
+function GroupSection({ id }: { id: string }) {
+  const t = useT();
+  const editor = useEditor();
+  const group = useEditorState((s) => s.doc.groups?.find((g) => g.id === id));
+  useEditorState((s) => s.revision);
+  if (!group) return null;
+  return (
+    <Section
+      id="layer"
+      title={t('group.title')}
+      aside={
+        <>
+          <span className="muted truncate">{group.name}</span>
+          <IconButton
+            icon={group.visible ? 'eye' : 'eyeOff'}
+            label={group.visible ? t('layer.hide') : t('layer.show')}
+            onClick={() => editor.setGroupVisible(id, !group.visible)}
+          />
+        </>
+      }
+    >
+      <div className="two-columns">
+        <label className="field">
+          <select
+            value={group.blendMode ?? 'pass-through'}
+            aria-label={t('blend.mode')}
+            data-tip={t('blend.mode')}
+            onChange={(e) => editor.setGroupBlendMode(id, e.target.value as GroupBlendMode)}
+          >
+            <option value="pass-through">{t('blend.pass-through')}</option>
+            {BLEND_MODE_GROUPS.map((modes, i) => (
+              <Fragment key={i}>
+                <option disabled aria-hidden="true">
+                  ──────────
+                </option>
+                {modes.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {t(`blend.${mode}`)}
+                  </option>
+                ))}
+              </Fragment>
+            ))}
+          </select>
+        </label>
+        <NumberField
+          value={Math.round(group.opacity * 100)}
+          min={0}
+          max={100}
+          label="◐"
+          suffix="%"
+          ariaLabel={t('common.opacity')}
+          scrubHint={t('common.dragToAdjust')}
+          sensitivity={2}
+          onChange={(v, final) => editor.setGroupOpacity(id, v / 100, final)}
+        />
+      </div>
+    </Section>
+  );
+}
+
 function LayerSection() {
   const t = useT();
   const editor = useEditor();
   const layer = useEditorState((s) => s.doc.layers[s.doc.activeLayer]);
   const index = useEditorState((s) => s.doc.activeLayer);
   const referenceSelected = useEditorState((s) => s.referenceSelected);
+  const selectedGroup = useEditorState((s) => s.selectedGroup);
   useEditorState((s) => s.revision);
   if (referenceSelected) return <ReferenceSection />;
+  if (selectedGroup) return <GroupSection id={selectedGroup} />;
   return (
     <Section
       id="layer"

@@ -722,6 +722,31 @@ body.is-resizing * {
 .item:hover {
   background: var(--hover);
 }
+/* Layers and groups inside groups are set in, a step per level. */
+.item[style*='--depth'] {
+  padding-left: calc(8px + var(--depth) * 16px);
+}
+.group-item {
+  gap: 4px;
+  padding-left: calc(2px + var(--depth, 0) * 16px) !important;
+}
+.group-item .item-name {
+  font-weight: 500;
+  margin-left: 4px;
+}
+.group-toggle {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--muted);
+}
+.group-icon {
+  width: 20px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--muted);
+}
 .item.is-active,
 .item.is-selected {
   background: var(--selected);

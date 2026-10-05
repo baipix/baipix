@@ -18,6 +18,27 @@ export interface Layer {
   pixels: Uint32Array;
   /** What was moved off the canvas, kept to bring it back (see outside.ts). */
   outside?: Outside;
+  /** The group it's in (its innermost one); missing: at the top level. */
+  group?: string;
+}
+
+/**
+ * A group of layers. Its layers sit next to each other in `doc.layers`, each pointing at its
+ * innermost group; groups nest two levels deep (see groups.ts).
+ */
+export interface LayerGroup {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  /** 0..1, applied over its layers' own. */
+  opacity: number;
+  /** Missing: pass-through, each layer blends on its own. */
+  blendMode?: BlendMode;
+  /** Folded in the Layers panel. */
+  collapsed?: boolean;
+  /** The group it's in, for a group inside another one. */
+  parent?: string;
 }
 
 /** How pixels are rendered on export (and optionally previewed on the canvas). */
@@ -61,6 +82,8 @@ export interface PixelDoc {
   height: number;
   /** Bottom to top. */
   layers: Layer[];
+  /** Groups of layers (missing: none). */
+  groups?: LayerGroup[];
   activeLayer: number;
   /** 0 means no background. */
   background: Color;
@@ -127,6 +150,7 @@ export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
     id: keepIds ? doc.id : newId('doc'),
     render: { ...doc.render },
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
+    ...(doc.groups && { groups: doc.groups.map((g) => ({ ...g })) }),
     layers: doc.layers.map((l) => cloneLayer(l, keepIds)),
   };
 }

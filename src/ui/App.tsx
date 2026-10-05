@@ -39,6 +39,7 @@ const editorLabels = () => ({
   untitled: (n: number) => (n > 1 ? t('default.untitledN', { n }) : t('default.untitled')),
   pasted: t('default.pasted'),
   brush: (n: number) => t('default.brush', { n }),
+  group: (n: number) => t('default.group', { n }),
 });
 
 /** The saved preview window, checked field by field (older saves don't have it). */

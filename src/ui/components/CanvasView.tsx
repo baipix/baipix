@@ -1,9 +1,10 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { pack, toHex } from '../../engine/color';
 import { flatten } from '../../engine/composite';
-import type { PixelDoc } from '../../engine/document';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
+import { isShown } from '../../engine/groups';
+import type { Layer, PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
 import type { ToolId } from '../../engine/tools';
 import { t as translate, useT } from '../../i18n';
@@ -45,6 +46,22 @@ interface Pinch {
   zoom: number;
   panX: number;
   panY: number;
+}
+
+/** The smallest rectangle around the pixels of several layers, or null when none has any. */
+function unionBounds(layers: Layer[], width: number, height: number): Rect | null {
+  let box: Rect | null = null;
+  for (const l of layers) {
+    const r = pixelBounds(l.pixels, width, height);
+    if (!r) continue;
+    if (!box) box = { ...r };
+    else {
+      const x = Math.min(box.x, r.x);
+      const y = Math.min(box.y, r.y);
+      box = { x, y, w: Math.max(box.x + box.w, r.x + r.w) - x, h: Math.max(box.y + box.h, r.y + r.h) - y };
+    }
+  }
+  return box;
 }
 
 export function CanvasView() {
@@ -473,9 +490,10 @@ export function CanvasView() {
         return r && insideReference(r, artPoint(lastLocal)) ? r : null;
       }
       const { doc } = state;
-      const key = `${doc.layers[k].id}:${state.revision}`;
-      if (boundsCache?.key !== key)
-        boundsCache = { key, rect: pixelBounds(doc.layers[k].pixels, doc.width, doc.height) };
+      // A layer in a group outlines the whole group: that's what a drag would move.
+      const layers = editor.moveTargetLayers(p);
+      const key = `${layers.map((l) => l.id).join()}:${state.revision}`;
+      if (boundsCache?.key !== key) boundsCache = { key, rect: unionBounds(layers, doc.width, doc.height) };
       return boundsCache.rect;
     };
     let lastMods = { metaKey: false, ctrlKey: false };
@@ -547,12 +565,13 @@ export function CanvasView() {
       if (state.tool !== 'move' || state.selection || state.referenceSelected || !state.layerFramed)
         return null;
       const { doc } = editor.getLive();
-      const layer = doc.layers[doc.activeLayer];
-      if (!layer?.visible) return null;
-      if (editor.isStroking || editor.isScaling) return pixelBounds(layer.pixels, doc.width, doc.height);
-      const key = `${layer.id}:${state.revision}`;
+      // Several layers selected (a group): framed together.
+      const layers = doc.layers.filter((l) => state.selectedLayers.includes(l.id) && isShown(doc, l));
+      if (!layers.length) return null;
+      if (editor.isStroking || editor.isScaling) return unionBounds(layers, doc.width, doc.height);
+      const key = `${layers.map((l) => l.id).join()}:${state.revision}`;
       if (activeBoxCache?.key !== key)
-        activeBoxCache = { key, rect: pixelBounds(layer.pixels, doc.width, doc.height) };
+        activeBoxCache = { key, rect: unionBounds(layers, doc.width, doc.height) };
       return activeBoxCache.rect;
     };
     // Last pointer position over the canvas (CSS px), for the reference hit test.

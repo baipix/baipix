@@ -46,6 +46,8 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
       ['layer.new', 'Shift+N'],
       ['layer.duplicate', 'Shift+D'],
       ['layer.mergeDown', 'Shift+M'],
+      ['group.create', 'Ctrl+G'],
+      ['group.ungroup', 'Ctrl+Shift+G'],
       ['adjust.outline', 'Shift+O'],
       ['menu.layerUp', 'Alt+↑'],
       ['menu.layerDown', 'Alt+↓'],
