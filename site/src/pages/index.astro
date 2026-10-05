@@ -1,60 +1,68 @@
 ---
-import Dither from '../components/Dither.astro';
+import Cta from '../components/Cta.astro';
 import Footer from '../components/Footer.astro';
 import Gallery from '../components/Gallery.astro';
-import Logo from '../components/Logo.astro';
+import Nav from '../components/Nav.astro';
 import PixelIcon from '../components/PixelIcon.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import { APP_URL, REPO_URL } from '../links';
 
 const base = import.meta.env.BASE_URL;
-const STAR = ['...#...', '..###..', '#######', '.#####.', '..###..', '.##.##.', '.#...#.'];
 const clone = 'git clone https://github.com/baipix/baipix.git\ncd baipix\nnpm install\nnpm run dev';
 
 const features = [
   {
     title: 'Familiar from the first click',
+    tone: 'start',
     text: 'A menu bar with every shortcut, a command palette on Ctrl+K, templates to start from, and a short tour the first time.',
     icon: ['#######', '#.#...#', '#.#...#', '#.#...#', '#.#...#', '#.#...#', '#######'],
   },
   {
     title: 'Clean vector export',
+    tone: 'export',
     text: 'Every color becomes a single SVG path. Copy as SVG and paste it straight into Figma or Illustrator, or export a PNG from 1× to 32× with a live preview.',
     icon: ['##.....', '##.....', '..#....', '...#...', '....#..', '.....##', '.....##'],
   },
   {
     title: 'Pixel gap rendering',
+    tone: 'export',
     text: 'Space pixels apart for an LED or dot-matrix look, right on the canvas, and exported as real vector.',
     icon: ['#.#.#.#', '.......', '#.#.#.#', '.......', '#.#.#.#', '.......', '#.#.#.#'],
   },
   {
     title: 'Colors that follow the palette',
+    tone: 'colors',
     text: 'Lighten and shade along the ramp of the color. Adjust hue and saturation in one pass, or remap a whole drawing to another palette, matched by nearest color or by lightness.',
     icon: ['......#', '.....##', '....###', '...####', '..#####', '.######', '#######'],
   },
   {
     title: 'Palettes and images from anywhere',
-    text: 'Nineteen classic palettes from Lospec, .hex and .gpl files, or one built from your drawing. Open a scaled-up screenshot of pixel art and get its real pixels back.',
+    tone: 'colors',
+    text: 'Nineteen classic palettes (PICO-8, Game Boy, Endesga 32…), .hex and .gpl files, or one built from your drawing. Open a scaled-up screenshot of pixel art and get its real pixels back.',
     icon: ['###.###', '###.###', '###.###', '.......', '###.###', '###.#.#', '###.###'],
   },
   {
     title: 'Drawing, pixel by pixel',
+    tone: 'draw',
     text: 'A pixel-perfect pencil with a stabilizer, a lasso fill, a spray, dithering patterns, shapes from lines to stars, brushes made from your own selection, and a 1px outline in one go.',
     icon: ['...#...', '..###..', '#######', '.#####.', '..###..', '.##.##.', '.#...#.'],
   },
   {
     title: 'Rework without new colors',
-    text: 'Liquify pushes, grows or shrinks a part of the drawing, Jumble shuffles pixels for texture, Blur softens edges. All of them stay sharp and inside your palette.',
+    tone: 'rework',
+    text: 'Liquify pushes, grows or shrinks a part of the drawing, and Jumble shuffles pixels for texture. Both keep the edges sharp and the palette as it is. Blur can stay within the palette too.',
     icon: ['#......', '.#.....', '..#.#..', '...#...', '..#.#..', '.....#.', '......#'],
   },
   {
     title: 'Symmetry, guides and seamless tiles',
+    tone: 'symmetry',
     text: 'Mirror around axes you drag anywhere, line up sprites with rulers and guides, and in tile preview strokes wrap around the edges, so textures repeat without a seam.',
     icon: ['#..#..#', '##.#.##', '###.###', '###.###', '###.###', '##.#.##', '#..#..#'],
   },
   {
     title: 'Layers, reference and preview',
+    tone: 'layers',
     text: 'Layers like a design tool, with blend modes and handles to resize them. A reference image to trace over, and a floating preview that doubles as a minimap.',
     icon: ['#######', '.......', '.#####.', '.......', '..###..', '.......', '...#...'],
   },
@@ -79,26 +87,7 @@ const features = [
     sameAs: [REPO_URL],
   }}
 >
-  <header class="nav container">
-    <a class="brand" href={base} aria-label="Baipix home">
-      <Logo size={18} />
-      <span>Baipix</span>
-    </a>
-    <nav class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#gallery">Gallery</a>
-      <a href="#install">Get started</a>
-    </nav>
-    <a class="btn btn-small star" href={REPO_URL} aria-label="Star Baipix on GitHub">
-      <PixelIcon rows={STAR} size={13} />
-      <span>Star</span>
-      <span class="star-count" data-stars hidden></span>
-    </a>
-    <ThemeToggle />
-    <a class="btn btn-dark btn-small" href={APP_URL}>
-      Open the editor
-    </a>
-  </header>
+  <Nav />
 
   <main>
     <section class="hero">
@@ -108,8 +97,8 @@ const features = [
           Pixel art has never been this easy<span class="pixel-dot" aria-hidden="true"></span>
         </h1>
         <p class="lead">
-          Baipix is a pixel art editor with the interface of a modern design tool. Draw pixel by pixel, then
-          drop clean vector straight into your design files.
+          Baipix is a free, open source pixel art editor with the interface of a modern design tool. Draw
+          pixel by pixel in your browser, then drop clean vector straight into your design files.
         </p>
         <div class="actions">
           <a class="btn btn-dark" href={APP_URL}>
@@ -143,6 +132,7 @@ const features = [
     </section>
 
     <section id="install" class="install container">
+      <SectionHead label="Get started" />
       <h2>Up and running in seconds.</h2>
       <div class="install-grid">
         <div class="card">
@@ -166,50 +156,28 @@ const features = [
     </section>
 
     <section id="features" class="features container">
+      <SectionHead label="Features" link={{ href: `${base}draw/`, text: 'Every tool in detail →' }} />
       <h2>Everything you need. Nothing you don't.</h2>
       <div class="feature-grid">
         {features.map((f) => (
-          <article class="feature">
+          <a class="feature" data-tone={f.tone} href={`${base}draw/#${f.tone}`}>
             <PixelIcon rows={f.icon} size={24} />
             <h3>{f.title}</h3>
             <p class="muted">{f.text}</p>
-          </article>
+            <span class="feature-more">In detail →</span>
+          </a>
         ))}
       </div>
     </section>
 
     <Gallery />
 
-    <section class="cta container">
-      <div class="cta-card">
-        <Dither class="cta-dither" cols={28} rows={10} cell={8} />
-        <h2>Draw your first pixel.</h2>
-        <div class="actions">
-          <a class="btn btn-light" href={APP_URL}>
-            Open the editor
-          </a>
-          <a class="btn btn-ghost" href="#install">
-            Run it locally
-          </a>
-        </div>
-      </div>
-    </section>
+    <Cta />
   </main>
 
   <Footer />
 
   <script>
-    // Star count from the GitHub API; the button works without it.
-    fetch('https://api.github.com/repos/baipix/baipix')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((repo) => {
-        const el = document.querySelector<HTMLElement>('[data-stars]');
-        if (!el || typeof repo?.stargazers_count !== 'number') return;
-        el.textContent = new Intl.NumberFormat('en', { notation: 'compact' }).format(repo.stargazers_count);
-        el.hidden = false;
-      })
-      .catch(() => {});
-
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
       button.addEventListener('click', async () => {
         try {
@@ -225,37 +193,6 @@ const features = [
 </Base>
 
 <style>
-  /* ---- Nav ---- */
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    height: 72px;
-  }
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .nav-links {
-    display: flex;
-    gap: 24px;
-    margin-right: auto;
-    font-size: 14px;
-    color: var(--muted);
-  }
-  .nav-links a:hover {
-    color: var(--text);
-  }
-  .star-count {
-    padding-left: 8px;
-    border-left: 1px solid var(--line);
-    font: 500 13px/1 var(--mono);
-    color: var(--muted);
-  }
-
   /* ---- Hero ---- */
   .hero {
     position: relative;
@@ -366,6 +303,10 @@ const features = [
   section.features {
     padding-top: 120px;
   }
+  section.install h2,
+  section.features h2 {
+    margin-top: 40px;
+  }
   h3 {
     font-size: 18px;
     letter-spacing: -0.01em;
@@ -434,61 +375,28 @@ const features = [
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
   }
+  /* Each card leads to its section of the Draw page, in that section's accent. */
+  .feature {
+    color: var(--accent);
+  }
+  .feature:hover {
+    background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
+  }
   .feature h3 {
     margin-top: 12px;
+    color: var(--text);
+  }
+  .feature-more {
+    margin-top: auto;
+    padding-top: 4px;
+    font: 500 12px/1 var(--mono);
+    color: var(--muted);
+  }
+  .feature:hover .feature-more {
+    color: var(--text);
   }
   .feature p {
     font-size: 15px;
-  }
-
-  /* ---- Final call to action ---- */
-  .cta {
-    padding-top: 120px;
-  }
-  .cta-card {
-    position: relative;
-    overflow: hidden;
-    padding: 72px 48px;
-    border-radius: var(--radius-lg);
-    background: var(--cta-bg);
-    color: var(--cta-text);
-  }
-  .cta-card .actions {
-    justify-content: flex-start;
-  }
-  /* Child component: scoped styles need :global to reach it. */
-  .cta-card :global(.cta-dither) {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    color: var(--cta-dither);
-    pointer-events: none;
-  }
-  .btn-light {
-    --side: var(--cta-button-side);
-    border-color: var(--cta-button);
-    background: var(--cta-button);
-    color: var(--cta-bg);
-  }
-  .btn-light:hover {
-    border-color: var(--cta-button-hover);
-    background: var(--cta-button-hover);
-  }
-  .btn-light:focus-visible {
-    outline-color: var(--cta-bg);
-  }
-  .btn-ghost {
-    --side: var(--cta-ghost-line);
-    border-color: var(--cta-ghost-line);
-    background: transparent;
-    color: var(--cta-text);
-  }
-  .btn-ghost:hover {
-    border-color: var(--cta-ghost-line-hover);
-    background: var(--cta-ghost-hover);
-  }
-  .btn-ghost:focus-visible {
-    outline-color: var(--cta-text);
   }
 
   /* ---- Small screens ---- */
@@ -498,17 +406,6 @@ const features = [
     }
   }
   @media (max-width: 640px) {
-    .nav-links,
-    .star {
-      display: none;
-    }
-    .nav {
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .nav :global(.theme-toggle) {
-      margin-left: auto;
-    }
     .hero {
       padding-top: 40px;
     }
@@ -526,9 +423,6 @@ const features = [
     }
     .shot-pixel {
       display: none;
-    }
-    .cta-card {
-      padding: 48px 24px 120px;
     }
   }
 </style>

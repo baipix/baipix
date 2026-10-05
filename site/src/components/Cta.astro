@@ -1,0 +1,90 @@
+---
+/** The closing call to action: a dark card with a dithered corner. */
+import { APP_URL } from '../links';
+import Dither from './Dither.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="cta container">
+  <div class="cta-card">
+    <Dither class="cta-dither" cols={28} rows={10} cell={8} />
+    <h2>Draw your first pixel.</h2>
+    <p class="cta-note">
+      Free and open source, under the MIT license. No account, and your drawings stay on your device.
+    </p>
+    <div class="actions">
+      <a class="btn btn-light" href={APP_URL}>
+        Open the editor
+      </a>
+      <a class="btn btn-ghost" href={`${base}#install`}>
+        Run it locally
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-top: 120px;
+  }
+  .cta-card {
+    position: relative;
+    overflow: hidden;
+    padding: 72px 48px;
+    border-radius: var(--radius-lg);
+    background: var(--cta-bg);
+    color: var(--cta-text);
+  }
+  .cta-note {
+    position: relative;
+    max-width: 460px;
+    margin-top: 16px;
+    color: rgb(255 255 255 / 0.7);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 36px;
+  }
+  /* Child component: scoped styles need :global to reach it. */
+  .cta-card :global(.cta-dither) {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    color: var(--cta-dither);
+    pointer-events: none;
+  }
+  .btn-light {
+    --side: var(--cta-button-side);
+    border-color: var(--cta-button);
+    background: var(--cta-button);
+    color: var(--cta-bg);
+  }
+  .btn-light:hover {
+    border-color: var(--cta-button-hover);
+    background: var(--cta-button-hover);
+  }
+  .btn-light:focus-visible {
+    outline-color: var(--cta-bg);
+  }
+  .btn-ghost {
+    --side: var(--cta-ghost-line);
+    border-color: var(--cta-ghost-line);
+    background: transparent;
+    color: var(--cta-text);
+  }
+  .btn-ghost:hover {
+    border-color: var(--cta-ghost-line-hover);
+    background: var(--cta-ghost-hover);
+  }
+  .btn-ghost:focus-visible {
+    outline-color: var(--cta-text);
+  }
+  @media (max-width: 640px) {
+    .cta-card {
+      padding: 48px 24px 120px;
+    }
+  }
+</style>

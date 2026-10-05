@@ -1,0 +1,40 @@
+---
+/**
+ * The line that opens a section: a rule, a small label in the section's accent (or muted), and an
+ * optional link on the right. Shared by the home page and the Draw page.
+ */
+interface Props {
+  label: string;
+  link?: { href: string; text: string };
+}
+const { label, link } = Astro.props;
+---
+
+<div class="section-head">
+  <p class="section-label">{label}</p>
+  {link && <a href={link.href}>{link.text}</a>}
+</div>
+
+<style>
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .section-label {
+    font: 500 13px/1 var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent, var(--muted));
+  }
+  a {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  a:hover {
+    color: var(--text);
+  }
+</style>

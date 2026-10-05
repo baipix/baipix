@@ -166,3 +166,56 @@ h2 {
   padding: 0 16px;
   font-size: 14px;
 }
+
+/*
+ * Tones: each theme of the editor has a pastel card (--tint-a to --tint-b) and a strong accent,
+ * shared by the Draw page sections and the home page cards that lead to them.
+ */
+:root {
+  --peach: light-dark(#ffe2d1, #3b2428);
+  --pink: light-dark(#ffd5e6, #3b1f31);
+  --lilac: light-dark(#e6dcfd, #2b2344);
+  --sky: light-dark(#d6eaff, #1c2a42);
+  --mint: light-dark(#d3f4e4, #1a3129);
+  --butter: light-dark(#fff0c2, #3a321f);
+}
+[data-tone='start'] {
+  --tint-a: var(--peach);
+  --tint-b: var(--pink);
+  --accent: light-dark(#d4467e, #ff8fb8);
+}
+[data-tone='draw'] {
+  --tint-a: var(--lilac);
+  --tint-b: var(--sky);
+  --accent: light-dark(#5a46c8, #a99bff);
+}
+[data-tone='shapes'] {
+  --tint-a: var(--mint);
+  --tint-b: var(--sky);
+  --accent: light-dark(#21875c, #6fe0aa);
+}
+[data-tone='colors'] {
+  --tint-a: var(--pink);
+  --tint-b: var(--lilac);
+  --accent: light-dark(#b8398c, #f08acb);
+}
+[data-tone='rework'] {
+  --tint-a: var(--butter);
+  --tint-b: var(--peach);
+  --accent: light-dark(#c8621f, #ffad6e);
+}
+[data-tone='symmetry'] {
+  --tint-a: var(--sky);
+  --tint-b: var(--lilac);
+  --accent: light-dark(#2f6fd0, #86b6ff);
+}
+[data-tone='layers'] {
+  --tint-a: var(--lilac);
+  --tint-b: var(--pink);
+  --accent: light-dark(#7a45c0, #c7a2ff);
+}
+[data-tone='export'] {
+  --tint-a: var(--butter);
+  --tint-b: var(--mint);
+  --accent: light-dark(#b07a12, #f3c95e);
+}
