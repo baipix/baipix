@@ -11,6 +11,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Rotate 90° counterclockwise (Alt+Shift+R) next to clockwise, and align what's drawn to the canvas: left, center or right, top, middle or bottom. In the Move and Select tools' bar, Layer › Align, and with Figma's shortcuts (Alt+A, H, D, W, V, S). With a selection, only its drawn pixels move. (#223)
 - A Canvas size dialog (Image › Canvas size…, or the crop button next to W and H): drag the frame's handles to make the canvas bigger or smaller, drag the drawing to place it, or type the size and pick where the drawing goes in a 3×3 grid (centered by default). What gets cut off is kept, as with the W and H fields. One undo step. (#222)
 
+### Website
+
+- A Draw page that goes through every drawing tool, with pictures and animations made by the editor itself. The home page follows it: its feature cards lead to the matching section, it says Baipix is free and open source, and the footer ends with a big BAIPIX in pixel art.
+
 ## [0.3.1] - 2026-10-05
 
 Small fixes and polish on 0.3: Delete removes the layer clicked in the list, blend modes preview as you hover them, and the website is easier to find.

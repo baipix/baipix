@@ -578,8 +578,8 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             <div>
               <h3>Move</h3>
               <p>
-                Click a pixel to grab its layer, drag the handles to resize it. The arrow keys nudge by 1 px,
-                with Shift by 8.
+                Click a pixel to grab its layer. Drag the handles to resize it, or just outside a corner to
+                rotate it. The arrow keys nudge by 1 px, with Shift by 8.
               </p>
             </div>
           </li>
@@ -588,6 +588,15 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             <div>
               <h3>Blend modes and opacity</h3>
               <p>{ill.blendModes} blend modes, from Multiply to Difference, and an opacity for each layer.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Ctrl G</span>
+            <div>
+              <h3>Groups</h3>
+              <p>
+                Group layers, two levels deep. A group hides, locks, and has its own opacity and blend mode.
+              </p>
             </div>
           </li>
           <li>
