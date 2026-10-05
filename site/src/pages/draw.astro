@@ -1133,11 +1133,13 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   .hero {
     padding-top: 72px;
   }
+  /* The same pixel typeface as the section labels. */
   .eyebrow {
-    font: 500 13px/1 var(--mono);
+    font:
+      400 16px/1 'Silkscreen',
+      var(--mono);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
   h1 {
     max-width: 16ch;
