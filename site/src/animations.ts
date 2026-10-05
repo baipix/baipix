@@ -363,14 +363,13 @@ function bucket(): PixelAnimation {
   return t.done(2000, 0.6);
 }
 
-/** Spray along a curve: dots land around the cursor, a few at a time. */
+/** Spray along a curve: dots land around the cursor, a few at a time, in one color like the tool. */
 function spray(): PixelAnimation {
   const w = 16;
   const h = 15;
   const t = new Timeline(w, h);
   t.tool = 'spray';
   const random = seeded(31);
-  const colors = [S.yellow, S.white, S.cyan];
   let time = 400;
   for (let i = 0; i < 46; i++) {
     const a = (i / 46) * Math.PI * 1.6 + 0.6;
@@ -382,7 +381,7 @@ function spray(): PixelAnimation {
       const b = random() * Math.PI * 2;
       const x = Math.round(cx + Math.cos(b) * r);
       const y = Math.round(cy + Math.sin(b) * r);
-      if (x >= 0 && y >= 0 && x < w && y < h) t.at(time, x, y, colors[Math.floor(random() * colors.length)]);
+      if (x >= 0 && y >= 0 && x < w && y < h) t.at(time, x, y, S.yellow);
     }
     time += 55;
   }
