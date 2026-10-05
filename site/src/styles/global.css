@@ -168,6 +168,35 @@ h2 {
 }
 
 /*
+ * The pixel arrow at the end of the heroes' main button nudges right and back while hovered, in jumps
+ * like a game cursor. Longhands: a shorthand animation can get minified to "none".
+ */
+.btn-arrow {
+  display: inline-flex;
+}
+.btn:hover .btn-arrow svg,
+.btn:focus-visible .btn-arrow svg {
+  animation-name: btn-arrow-nudge;
+  animation-duration: 0.8s;
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+}
+@keyframes btn-arrow-nudge {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover .btn-arrow svg,
+  .btn:focus-visible .btn-arrow svg {
+    animation-name: none;
+  }
+}
+
+/*
  * Tones: each theme of the editor has a pastel card (--tint-a to --tint-b) and a strong accent,
  * shared by the Draw page sections and the home page cards that lead to them.
  */

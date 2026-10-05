@@ -1,0 +1,10 @@
+---
+/** The pixel arrow that ends the heroes' main button; it nudges right on hover (see global.css). */
+import PixelIcon from './PixelIcon.astro';
+
+const ARROW = ['...#...', '....#..', '.....#.', '#######', '.....#.', '....#..', '...#...'];
+---
+
+<span class="btn-arrow" aria-hidden="true">
+  <PixelIcon rows={ARROW} size={12} />
+</span>

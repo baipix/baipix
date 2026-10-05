@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from '../components/ArrowIcon.astro';
 import Cta from '../components/Cta.astro';
 import Footer from '../components/Footer.astro';
 import SectionHead from '../components/SectionHead.astro';
@@ -53,7 +54,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <div class="hero-actions">
           <a class="btn btn-dark" href={APP_URL}>
-            Open the editor
+            Open the editor <ArrowIcon />
           </a>
           <a class="btn" href={REPO_URL}>
             View on GitHub
