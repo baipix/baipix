@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- A Canvas size dialog (Image › Canvas size…, or the crop button next to W and H): drag the frame's handles to make the canvas bigger or smaller, drag the drawing to place it, or type the size and pick where the drawing goes in a 3×3 grid (centered by default). What gets cut off is kept, as with the W and H fields. One undo step. (#PR)
+- A Canvas size dialog (Image › Canvas size…, or the crop button next to W and H): drag the frame's handles to make the canvas bigger or smaller, drag the drawing to place it, or type the size and pick where the drawing goes in a 3×3 grid (centered by default). What gets cut off is kept, as with the W and H fields. One undo step. (#222)
 
 ## [0.3.1] - 2026-10-05
 
