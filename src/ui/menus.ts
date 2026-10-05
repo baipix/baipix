@@ -7,6 +7,7 @@ import { getTheme, setTheme, type ThemePreference } from './theme';
 import { openAdjust, openDialog, toast, uiStore } from './uiStore';
 
 import { viewport } from './viewport';
+import { ALIGNS } from './components/ToolOptionsBar';
 
 const GITHUB_URL = 'https://github.com/baipix/baipix';
 const CHANGELOG_URL = `${GITHUB_URL}/blob/main/CHANGELOG.md`;
@@ -187,6 +188,7 @@ export const MENU_BAR: MenuBarMenu[] = [
       { label: t('menu.flipH'), shortcut: 'Shift+H', onSelect: () => editor.flip(true) },
       { label: t('menu.flipV'), shortcut: 'Shift+V', onSelect: () => editor.flip(false) },
       { label: t('menu.rotate'), shortcut: 'Shift+R', onSelect: () => editor.rotate() },
+      { label: t('menu.rotateLeft'), shortcut: 'Alt+Shift+R', onSelect: () => editor.rotate(false) },
       '-',
       { label: t('menu.adjustColors'), shortcut: 'Ctrl+U', onSelect: () => openAdjust('all') },
     ],
@@ -230,6 +232,15 @@ export const MENU_BAR: MenuBarMenu[] = [
           onSelect: () => editor.moveLayer(-1),
         },
         '-',
+        {
+          label: t('menu.align'),
+          disabled,
+          items: ALIGNS.map((a) => ({
+            label: t(a.label),
+            shortcut: a.shortcut,
+            onSelect: () => editor.align(a.to),
+          })),
+        },
         {
           label: t('menu.outline'),
           shortcut: 'Shift+O',

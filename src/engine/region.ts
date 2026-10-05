@@ -76,7 +76,13 @@ export function flipRect(
  * Rotates the pixels of `rect` by 90° clockwise around its center. Returns the rotated area
  * (clipped to the canvas); pixels pushed off canvas are lost, like when moving.
  */
-export function rotateRect(pixels: Uint32Array, width: number, height: number, rect: Rect): Rect {
+export function rotateRect(
+  pixels: Uint32Array,
+  width: number,
+  height: number,
+  rect: Rect,
+  clockwise = true,
+): Rect {
   const r = clipRect(rect, width, height);
   const block = extractBlock(pixels, width, height, r);
   fillRect(pixels, width, height, r, 0);
@@ -85,8 +91,9 @@ export function rotateRect(pixels: Uint32Array, width: number, height: number, r
   for (let j = 0; j < r.h; j++)
     for (let i = 0; i < r.w; i++) {
       // Clockwise: column i becomes row i, row j becomes column (h - 1 - j).
-      const x = x0 + r.h - 1 - j;
-      const y = y0 + i;
+      // Counterclockwise: column i becomes row (w - 1 - i), row j becomes column j.
+      const x = clockwise ? x0 + r.h - 1 - j : x0 + j;
+      const y = clockwise ? y0 + i : y0 + r.w - 1 - i;
       if (x >= 0 && x < width && y >= 0 && y < height) pixels[y * width + x] = block.pixels[j * r.w + i];
     }
   return clipRect({ x: x0, y: y0, w: r.h, h: r.w }, width, height);

@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Rotate 90° counterclockwise (Alt+Shift+R) next to clockwise, and align what's drawn to the canvas: left, center or right, top, middle or bottom. In the Move and Select tools' bar, Layer › Align, and with Figma's shortcuts (Alt+A, H, D, W, V, S). With a selection, only its drawn pixels move. (#223)
 - A Canvas size dialog (Image › Canvas size…, or the crop button next to W and H): drag the frame's handles to make the canvas bigger or smaller, drag the drawing to place it, or type the size and pick where the drawing goes in a 3×3 grid (centered by default). What gets cut off is kept, as with the W and H fields. One undo step. (#222)
 
 ## [0.3.1] - 2026-10-05

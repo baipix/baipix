@@ -13,6 +13,16 @@ import { Row } from './Section';
 
 /** Options of the active tool, in a small bar right above the toolbar. Hidden for tools without any. */
 /** Options of the "…" menu, with labels that say what they do on their own. */
+/** The six ways to align on the canvas, with Figma's shortcuts. */
+export const ALIGNS = [
+  { to: 'left', icon: 'alignLeft', label: 'align.left', shortcut: 'Alt+A' },
+  { to: 'centerX', icon: 'alignCenterX', label: 'align.centerX', shortcut: 'Alt+H' },
+  { to: 'right', icon: 'alignRight', label: 'align.right', shortcut: 'Alt+D' },
+  { to: 'top', icon: 'alignTop', label: 'align.top', shortcut: 'Alt+W' },
+  { to: 'centerY', icon: 'alignCenterY', label: 'align.centerY', shortcut: 'Alt+V' },
+  { to: 'bottom', icon: 'alignBottom', label: 'align.bottom', shortcut: 'Alt+S' },
+] as const;
+
 const MORE_LABELS = {
   lassoFill: 'options.lassoFillMenu',
   blend: 'options.blendMenu',
@@ -158,8 +168,16 @@ export function ToolOptionsBar() {
   const flips = (
     <div className="button-group">
       <IconButton
+        icon="rotateLeft"
+        label={t('menu.rotateLeft')}
+        shortcut="Alt+Shift+R"
+        className="icon-btn large"
+        onClick={() => editor.rotate(false)}
+      />
+      <IconButton
         icon="rotate"
         label={t('menu.rotate')}
+        shortcut="Shift+R"
         className="icon-btn large"
         onClick={() => editor.rotate()}
       />
@@ -175,6 +193,22 @@ export function ToolOptionsBar() {
         className="icon-btn large"
         onClick={() => editor.flip(false)}
       />
+    </div>
+  );
+
+  // Against the canvas's edges, or in its middle: the drawn pixels of the selection, or the layer.
+  const aligns = (
+    <div className="button-group">
+      {ALIGNS.map(({ to, icon, label, shortcut }) => (
+        <IconButton
+          key={to}
+          icon={icon}
+          label={t(label)}
+          shortcut={shortcut}
+          className="icon-btn large"
+          onClick={() => editor.align(to)}
+        />
+      ))}
     </div>
   );
 
@@ -481,12 +515,20 @@ export function ToolOptionsBar() {
             </button>
           </div>
           {flips}
+          <div className="toolbar-divider" />
+          {aligns}
         </>
       );
       break;
     case 'move':
       info = hasSelection ? t('hint.moveSelection') : t('hint.moveLayer');
-      body = <>{flips}</>;
+      body = (
+        <>
+          {flips}
+          <div className="toolbar-divider" />
+          {aligns}
+        </>
+      );
       break;
   }
 

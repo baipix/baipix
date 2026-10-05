@@ -1,5 +1,11 @@
 import type { SVGProps } from 'react';
 import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignStartVertical,
   ArrowBarDown,
   ArrowsHorizontal,
   ChevronDown,
@@ -193,6 +199,15 @@ export const ICONS = {
   help: CircleQuestion,
   search: Search,
   rotate: Reload,
+  // The same arrow, mirrored: a turn the other way.
+  rotateLeft: (props) => <Reload {...props} style={{ ...props.style, transform: 'scaleX(-1)' }} />,
+  // Named by what moves: the drawing against the left edge, centered across, and so on.
+  alignLeft: AlignStartVertical,
+  alignCenterX: AlignCenterVertical,
+  alignRight: AlignEndVertical,
+  alignTop: AlignStartHorizontal,
+  alignCenterY: AlignCenterHorizontal,
+  alignBottom: AlignEndHorizontal,
   flipH: FlipHorizontal2,
   flipV: FlipVertical2,
   image: Image,

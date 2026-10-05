@@ -84,7 +84,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
       }
       if (e.shiftKey && e.code === 'Digit1') return viewport.fit(editor.getState().doc);
       if (e.shiftKey && e.code === 'Digit0') return viewport.zoomTo(1);
-      if (e.shiftKey) {
+      if (e.shiftKey && !e.altKey) {
         const toggles = { g: 'grid', t: 'tile', x: 'mirrorX', y: 'mirrorY' } as const;
         const view = toggles[key as keyof typeof toggles];
         if (view) return editor.toggleView(view);
@@ -100,6 +100,21 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
           o: () => openAdjust('layer', 'outline'),
         }[key];
         if (command) return (e.preventDefault(), command());
+      }
+      // Alt+letter (by key position: on a Mac, Alt changes the character): align, like in Figma.
+      if (e.altKey && !mod) {
+        if (e.shiftKey && e.code === 'KeyR') return (e.preventDefault(), editor.rotate(false));
+        const to = (
+          {
+            KeyA: 'left',
+            KeyH: 'centerX',
+            KeyD: 'right',
+            KeyW: 'top',
+            KeyV: 'centerY',
+            KeyS: 'bottom',
+          } as const
+        )[e.code as 'KeyA'];
+        if (to && !e.shiftKey) return (e.preventDefault(), editor.align(to));
       }
       if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
         e.preventDefault();

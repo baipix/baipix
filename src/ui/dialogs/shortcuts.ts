@@ -38,6 +38,8 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
       ['menu.flipH', 'Shift+H'],
       ['menu.flipV', 'Shift+V'],
       ['menu.rotate', 'Shift+R'],
+      ['menu.rotateLeft', 'Alt+Shift+R'],
+      ['shortcuts.align', 'Alt+A / H / D, Alt+W / V / S'],
     ],
   },
   {

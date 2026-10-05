@@ -1305,13 +1305,13 @@ export class Editor {
     });
   }
 
-  /** Rotates the selection (or the layer) by 90° clockwise; the selection follows the new shape. */
-  rotate(): void {
+  /** Rotates the selection (or the layer) by 90°; the selection follows the new shape. */
+  rotate(clockwise = true): void {
     if (this.activeLocked()) return;
     const hadSelection = this.active.selection !== null;
     this.edit((doc) => {
       const layer = activeLayer(doc);
-      const rotated = rotateRect(layer.pixels, doc.width, doc.height, this.targetRect());
+      const rotated = rotateRect(layer.pixels, doc.width, doc.height, this.targetRect(), clockwise);
       if (hadSelection) this.active.selection = rotated;
       // Rotating the layer turns it within the canvas: what was outside doesn't follow.
       else delete layer.outside;
@@ -1529,6 +1529,37 @@ export class Editor {
   }
 
   /** Moves the selection (or the layer) by a few pixels, as one undo step. */
+  /**
+   * Moves what's drawn in the selection (or the whole layer) against an edge of the canvas, or to
+   * its middle, as one undo step. Only the drawn pixels count, not the empty part of the selection.
+   */
+  align(to: 'left' | 'centerX' | 'right' | 'top' | 'centerY' | 'bottom'): void {
+    const doc = this.doc;
+    const area = clipRect(this.targetRect(), doc.width, doc.height);
+    const layer = activeLayer(doc);
+    const block = extractBlock(layer.pixels, doc.width, doc.height, area);
+    const inner = pixelBounds(block.pixels, block.width, block.height);
+    if (!inner) return;
+    const b = { x: area.x + inner.x, y: area.y + inner.y, w: inner.w, h: inner.h };
+    const dx =
+      to === 'left'
+        ? -b.x
+        : to === 'right'
+          ? doc.width - b.w - b.x
+          : to === 'centerX'
+            ? Math.floor((doc.width - b.w) / 2) - b.x
+            : 0;
+    const dy =
+      to === 'top'
+        ? -b.y
+        : to === 'bottom'
+          ? doc.height - b.h - b.y
+          : to === 'centerY'
+            ? Math.floor((doc.height - b.h) / 2) - b.y
+            : 0;
+    if (dx || dy) this.nudge(dx, dy);
+  }
+
   nudge(dx: number, dy: number): void {
     const r = this.doc.reference;
     if (this.state.referenceSelected && r) {
