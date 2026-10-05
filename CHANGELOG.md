@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Rotate 90° counterclockwise (Alt+Shift+R) next to clockwise, and align what's drawn to the canvas: left, center or right, top, middle or bottom. In the Move and Select tools' bar, Layer › Align, and with Figma's shortcuts (Alt+A, H, D, W, V, S). With a selection, only its drawn pixels move. (#PR)
+
 ### Website
 
 - New screenshots of the editor, and the feature cards mention what 0.3 brought: templates and the tour, blend modes, rulers and guides, the outline, the minimap, and recovering the pixels of scaled-up images. (#210)
