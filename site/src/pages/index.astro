@@ -424,6 +424,31 @@ const features = [
     opacity: 1;
     transform: none;
   }
+  /*
+   * Then it nudges right and back, in jumps like a game cursor rather than a glide.
+   * Longhands: a shorthand animation can get minified to "none".
+   */
+  .feature:hover .feature-arrow :global(svg),
+  .feature:focus-within .feature-arrow :global(svg) {
+    animation-name: arrow-nudge;
+    animation-duration: 0.8s;
+    animation-timing-function: steps(1, end);
+    animation-iteration-count: infinite;
+  }
+  @keyframes arrow-nudge {
+    0% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(3px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .feature:hover .feature-arrow :global(svg),
+    .feature:focus-within .feature-arrow :global(svg) {
+      animation-name: none;
+    }
+  }
   .feature p {
     font-size: 15px;
   }
