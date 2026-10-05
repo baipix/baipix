@@ -5,7 +5,6 @@ import Footer from '../components/Footer.astro';
 import Gallery from '../components/Gallery.astro';
 import Nav from '../components/Nav.astro';
 import PixelIcon from '../components/PixelIcon.astro';
-import PixelWords from '../components/PixelWords.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import { APP_URL, REPO_URL } from '../links';
@@ -97,7 +96,7 @@ const features = [
       <div class="hero-grid" aria-hidden="true"></div>
       <div class="container hero-inner">
         <h1>
-          Pixel art has never been this <PixelWords words={['easy', 'fast', 'fun', 'sharp']} period />
+          Pixel art has never been this easy<span class="pixel-dot" aria-hidden="true"></span>
         </h1>
         <p class="lead">
           Baipix is a free, open source pixel art editor with the interface of a modern design tool. Draw
@@ -228,6 +227,14 @@ const features = [
     font-size: clamp(40px, 7vw, 76px);
     line-height: 1.02;
     letter-spacing: -0.035em;
+  }
+  /* The final period is a single square pixel. */
+  .pixel-dot {
+    display: inline-block;
+    width: 0.16em;
+    height: 0.16em;
+    margin-left: 0.06em;
+    background: currentColor;
   }
   .lead {
     max-width: 580px;
