@@ -24,10 +24,12 @@ const { label, link } = Astro.props;
     padding-top: 20px;
     border-top: 1px solid var(--line);
   }
+  /* A pixel typeface, made to stay sharp at multiples of 8 px. */
   .section-label {
-    font: 500 13px/1 var(--mono);
+    font:
+      400 16px/1 'Silkscreen',
+      var(--mono);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
     color: var(--accent, var(--muted));
   }
   a {

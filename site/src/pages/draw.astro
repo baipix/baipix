@@ -1,4 +1,5 @@
 ---
+import ArrowIcon from '../components/ArrowIcon.astro';
 import Cta from '../components/Cta.astro';
 import Footer from '../components/Footer.astro';
 import SectionHead from '../components/SectionHead.astro';
@@ -53,7 +54,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <div class="hero-actions">
           <a class="btn btn-dark" href={APP_URL}>
-            Open the editor
+            Open the editor <ArrowIcon />
           </a>
           <a class="btn" href={REPO_URL}>
             View on GitHub
@@ -1132,11 +1133,13 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   .hero {
     padding-top: 72px;
   }
+  /* The same pixel typeface as the section labels. */
   .eyebrow {
-    font: 500 13px/1 var(--mono);
+    font:
+      400 16px/1 'Silkscreen',
+      var(--mono);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
   h1 {
     max-width: 16ch;
@@ -1500,7 +1503,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   }
   .cap {
     margin-top: 14px;
-    font: 400 12px/1.5 var(--mono);
+    font: 400 13px/1.5 var(--sans);
     color: var(--muted);
   }
   .pair {
