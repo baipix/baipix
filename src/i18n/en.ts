@@ -448,6 +448,7 @@ export const en = {
 
   'shortcuts.tools': 'Tools',
   'shortcuts.layers': 'Layers',
+  'shortcuts.deleteLayer': 'Delete the layer clicked in the list',
   'shortcuts.drawing': 'Drawing',
   'shortcuts.view': 'View and files',
   'shortcuts.clipboard': 'Copy, cut, paste',

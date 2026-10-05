@@ -390,18 +390,14 @@ function FieldsBlock() {
           <ColorDemo />
         </Specimen>
         <Specimen
-          label="Select field"
-          use="A choice among many with a name each, in a field (the layer's blend mode). Related choices grouped, a line between groups."
+          label="Field menu"
+          use="A choice among many, in a field (the layer's blend mode): it opens a menu, families apart. Hovering a choice previews it; only a click keeps it."
         >
           <div className="ds-field">
-            <label className="field">
-              <select defaultValue="multiply" aria-label="Blend mode">
-                <option value="normal">Normal</option>
-                <option value="darken">Darken</option>
-                <option value="multiply">Multiply</option>
-                <option value="screen">Screen</option>
-              </select>
-            </label>
+            <button type="button" className="field field-menu">
+              <span className="truncate">Multiply</span>
+              <Icon name="caret" size={12} />
+            </button>
           </div>
         </Specimen>
         <Specimen

@@ -453,6 +453,7 @@ export const fr: Record<MessageKey, string> = {
 
   'shortcuts.tools': 'Outils',
   'shortcuts.layers': 'Calques',
+  'shortcuts.deleteLayer': 'Supprimer le calque cliqué dans la liste',
   'shortcuts.drawing': 'Dessin',
   'shortcuts.view': 'Affichage et fichiers',
   'shortcuts.clipboard': 'Copier, couper, coller',

@@ -256,6 +256,8 @@ export class Editor {
   private opacityChange = false;
   private deleted: Deleted | null = null;
   private recent: Color[] = [];
+  /** The active layer's blend mode while another one is previewed. */
+  private blendPreview: { layer: Layer; mode: BlendMode | undefined } | null = null;
   /** New files left untouched so far: any change to one takes it out. */
   private fresh = new Set<string>();
   private brushes: CustomBrush[] = [];
@@ -972,8 +974,32 @@ export class Editor {
   }
 
   /** Opacity drags: one undo step per gesture. Call with `done` on release. */
+  /**
+   * Shows the active layer in another blend mode without keeping it (hovering the blend mode menu);
+   * `null` shows it as it was. Not in the history: `endBlendPreview` puts it back.
+   */
+  previewLayerBlendMode(mode: BlendMode | null): void {
+    const layer = activeLayer(this.doc);
+    if (!this.blendPreview) this.blendPreview = { layer, mode: layer.blendMode };
+    const next = mode ?? this.blendPreview.mode ?? 'normal';
+    if ((layer.blendMode ?? 'normal') === next) return;
+    if (next === 'normal') delete layer.blendMode;
+    else layer.blendMode = next;
+    this.pixelsChanged();
+  }
+
+  endBlendPreview(): void {
+    const p = this.blendPreview;
+    if (!p) return;
+    this.blendPreview = null;
+    if (p.mode) p.layer.blendMode = p.mode;
+    else delete p.layer.blendMode;
+    this.pixelsChanged();
+  }
+
   /** The active layer's blend mode, as one undo step. */
   setLayerBlendMode(mode: BlendMode): void {
+    this.endBlendPreview();
     const layer = activeLayer(this.doc);
     if ((layer.blendMode ?? 'normal') === mode) return;
     this.checkpoint();
