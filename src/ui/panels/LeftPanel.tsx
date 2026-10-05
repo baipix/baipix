@@ -1,7 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import type { LayerGroup, PixelDoc } from '../../engine/document';
+import {
+  groupChain,
+  groupLayers,
+  isLocked,
+  isShown,
+  layerTree,
+  type LayerItem,
+  type LayerNode,
+} from '../../engine/groups';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
+import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { Section } from '../components/Section';
@@ -69,6 +80,48 @@ function EditableName({
   );
 }
 
+/** A row of the Layers panel: a layer or a group, at a depth (0: top level). */
+type LayerRow =
+  | { kind: 'layer'; layer: PixelDoc['layers'][number]; index: number; depth: number; parent?: string }
+  | { kind: 'group'; group: LayerGroup; depth: number; parent?: string };
+
+/** The rows, top first; a folded group hides its rows. */
+function layerRows(doc: PixelDoc): LayerRow[] {
+  const rows: LayerRow[] = [];
+  const walk = (nodes: LayerNode[], depth: number, parent?: string) => {
+    for (const node of [...nodes].reverse()) {
+      if (node.kind === 'layer')
+        rows.push({ kind: 'layer', layer: node.layer, index: node.index, depth, parent });
+      else {
+        rows.push({ kind: 'group', group: node.group, depth, parent });
+        if (!node.group.collapsed) walk(node.children, depth + 1, node.group.id);
+      }
+    }
+  };
+  walk(layerTree(doc), 0);
+  return rows;
+}
+
+/**
+ * Where rows dropped in a gap go: right under an open group's row, at the top of that group;
+ * otherwise right above the row under the gap, in its group; below the last row, at the bottom
+ * of its group.
+ */
+function dropPlace(
+  doc: PixelDoc,
+  rows: LayerRow[],
+  gap: number,
+): { parent?: string; aboveLayer: string | null } {
+  const top = (row: LayerRow) =>
+    row.kind === 'layer' ? row.layer.id : groupLayers(doc, row.group.id).at(-1)!.id;
+  const over = rows[gap - 1];
+  if (over?.kind === 'group' && !over.group.collapsed)
+    return { parent: over.group.id, aboveLayer: top(over) };
+  const under = rows[gap];
+  if (under) return { parent: under.parent, aboveLayer: top(under) };
+  return { parent: over?.parent, aboveLayer: null };
+}
+
 function LayersSection() {
   const t = useT();
   const editor = useEditor();
@@ -78,12 +131,14 @@ function LayersSection() {
   const selected = useEditorState((s) => s.selectedLayers);
   const referenceSelected = useEditorState((s) => s.referenceSelected);
   const reference = doc.reference;
+  const selectedGroup = useEditorState((s) => s.selectedGroup);
   const multi = !referenceSelected && selected.length > 1;
-  const layers = doc.layers.map((layer, index) => ({ layer, index })).reverse();
-  const n = layers.length;
+  const n = doc.layers.length;
+  // The layers and groups as rows, top first, folded groups without their children.
+  const rows = layerRows(doc);
   const listRef = useRef<HTMLDivElement>(null);
-  // Drag to reorder: `slot` is the gap (in display order, top first) where the layer would land.
-  const [drag, setDrag] = useState<{ from: number; slot: number } | null>(null);
+  // Drag to reorder: `gap` is where the dragged rows would land (0: above the first row).
+  const [drag, setDrag] = useState<{ ids: string[]; gap: number } | null>(null);
   const dragged = useRef(false);
   const [renaming, setRenaming] = useState<string | null>(null);
 
@@ -152,25 +207,61 @@ function LayersSection() {
     ]);
   };
 
-  const startDrag = (e: React.PointerEvent, displayPos: number, index: number) => {
+  /** Right-click on a group: the group's own menu. */
+  const openGroupMenu = (e: React.MouseEvent<HTMLElement>, group: LayerGroup) => {
+    e.preventDefault();
+    editor.selectGroup(group.id);
+    openMenu(e.currentTarget, [
+      { label: t('layer.rename'), icon: 'pencil', onSelect: () => setRenaming(group.id) },
+      { label: t('group.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
+      { label: t('group.merge'), icon: 'merge', onSelect: () => editor.mergeGroup(group.id) },
+      {
+        label: t('group.ungroup'),
+        icon: 'layers',
+        shortcut: 'Ctrl+Shift+G',
+        onSelect: () => editor.ungroup(group.id),
+      },
+      '-',
+      {
+        label: group.locked ? t('layer.unlock') : t('layer.lock'),
+        icon: group.locked ? 'unlock' : 'lock',
+        onSelect: () => editor.setGroupLocked(group.id, !group.locked),
+      },
+      '-',
+      {
+        label: t('group.delete'),
+        icon: 'trash',
+        disabled: groupLayers(doc, group.id).length >= n,
+        onSelect: () => actions.deleteLayers(),
+      },
+    ]);
+  };
+
+  const startDrag = (e: React.PointerEvent, row: LayerRow) => {
     if (e.button !== 0 || (e.target as HTMLElement).closest('button, input')) return;
     const y0 = e.clientY;
     let started = false;
-    const slotAt = (y: number) => {
-      const items = [...(listRef.current?.querySelectorAll('.item:not(.reference-item)') ?? [])];
-      const k = items.findIndex((el) => {
+    const gapAt = (y: number) => {
+      const els = [...(listRef.current?.querySelectorAll('.item:not(.reference-item)') ?? [])];
+      const k = els.findIndex((el) => {
         const r = el.getBoundingClientRect();
         return y < r.top + r.height / 2;
       });
-      return k < 0 ? items.length : k;
+      return k < 0 ? els.length : k;
     };
-    // Dragging one of several selected layers moves the whole selection.
-    const group = multi && selected.includes(doc.layers[index].id);
+    // A group moves whole; one of several selected layers moves the whole selection.
+    const items: LayerItem[] =
+      row.kind === 'group'
+        ? [{ kind: 'group', id: row.group.id }]
+        : multi && selected.includes(row.layer.id)
+          ? editor.selectedItems()
+          : [{ kind: 'layer', id: row.layer.id }];
+    const ids = items.map((i) => i.id);
     const move = (ev: PointerEvent) => {
       if (!started && Math.abs(ev.clientY - y0) < 4) return;
       started = true;
       document.body.classList.add('is-dragging-layer');
-      setDrag({ from: index, slot: slotAt(ev.clientY) });
+      setDrag({ ids, gap: gapAt(ev.clientY) });
     };
     const end = (ev: PointerEvent) => {
       window.removeEventListener('pointermove', move);
@@ -180,25 +271,29 @@ function LayersSection() {
       setDrag(null);
       if (!started) return;
       dragged.current = true; // swallow the click that follows the drag
-      const slot = slotAt(ev.clientY);
-      const pos = slot > displayPos ? slot - 1 : slot;
       if (ev.type !== 'pointerup') return;
-      if (group) editor.moveLayersTo(n - slot);
-      else editor.reorderLayer(index, n - 1 - pos);
+      const to = dropPlace(doc, rows, gapAt(ev.clientY));
+      editor.moveItemsTo(items, to.parent, to.aboveLayer);
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
   };
-  // No indicator when dropping would not move the layer.
-  const dropClass = (displayPos: number) => {
+  const rowId = (row: LayerRow) => (row.kind === 'group' ? row.group.id : row.layer.id);
+  const dropClass = (k: number) => {
     if (!drag) return '';
-    const from = n - 1 - drag.from;
-    if (!multi && (drag.slot === from || drag.slot === from + 1)) return '';
-    if (drag.slot === displayPos) return ' drop-before';
-    if (drag.slot === n && displayPos === n - 1) return ' drop-after';
+    if (drag.gap === k) return ' drop-before';
+    if (drag.gap === rows.length && k === rows.length - 1) return ' drop-after';
     return '';
   };
+  // A dragged row, and the rows inside a dragged group.
+  const isDragged = (row: LayerRow) =>
+    !!drag &&
+    (drag.ids.includes(rowId(row)) ||
+      groupChain(doc, row.kind === 'group' ? row.group.parent : row.layer.group).some((g) =>
+        drag.ids.includes(g.id),
+      ));
+
   return (
     <Section
       title={t('section.layers')}
@@ -226,63 +321,127 @@ function LayersSection() {
           else if (selected.length < doc.layers.length) actions.deleteLayers();
         }}
       >
-        {layers.map(({ layer, index }, displayPos) => (
-          <div
-            key={layer.id}
-            className={`item${index === doc.activeLayer && !referenceSelected ? ' is-active' : ''}${
-              multi && selected.includes(layer.id) ? ' is-selected' : ''
-            }${layer.visible ? '' : ' is-hidden'}${layer.locked ? ' is-locked' : ''}${
-              drag &&
-              (drag.from === index ||
-                (multi && selected.includes(doc.layers[drag.from]?.id) && selected.includes(layer.id)))
-                ? ' is-dragging'
-                : ''
-            }${dropClass(displayPos)}`}
-            onPointerDown={(e) => startDrag(e, displayPos, index)}
-            onContextMenu={(e) => openLayerMenu(e, index)}
-            onClick={(e) => {
-              listRef.current?.focus({ preventScroll: true });
-              if (dragged.current) dragged.current = false;
-              else
-                editor.selectLayer(
-                  index,
-                  e.shiftKey ? 'range' : e.metaKey || e.ctrlKey ? 'toggle' : 'single',
-                );
-            }}
-          >
-            <Thumbnail pixels={() => layer.pixels} width={doc.width} height={doc.height} version={revision} />
-            <EditableName
-              value={layer.name}
-              onRename={(v) => editor.renameLayer(index, v)}
-              startEditing={renaming === layer.id}
-              onEditingStarted={() => setRenaming(null)}
-            />
-            {layer.opacity < 1 && <span className="muted">{Math.round(layer.opacity * 100)} %</span>}
-            <span className="item-actions">
+        {rows.map((row, k) =>
+          row.kind === 'group' ? (
+            <div
+              key={row.group.id}
+              className={`item group-item${selectedGroup === row.group.id ? ' is-active' : ''}${
+                row.group.visible ? '' : ' is-hidden'
+              }${row.group.locked ? ' is-locked' : ''}${isDragged(row) ? ' is-dragging' : ''}${dropClass(k)}`}
+              style={{ '--depth': row.depth } as CSSProperties}
+              onPointerDown={(e) => startDrag(e, row)}
+              onContextMenu={(e) => openGroupMenu(e, row.group)}
+              onClick={() => {
+                listRef.current?.focus({ preventScroll: true });
+                if (dragged.current) dragged.current = false;
+                else editor.selectGroup(row.group.id);
+              }}
+            >
               <IconButton
-                icon={layer.locked ? 'lock' : 'unlock'}
-                className="icon-btn item-action item-lock"
-                label={layer.locked ? t('layer.unlock') : t('layer.lock')}
-                pressed={layer.locked}
+                icon={row.group.collapsed ? 'chevronRight' : 'caret'}
+                className="icon-btn group-toggle"
+                label={row.group.collapsed ? t('group.expand') : t('group.collapse')}
                 onClick={(e) => {
                   e.stopPropagation();
-                  editor.setLayerLocked(index, !layer.locked);
+                  editor.setGroupCollapsed(row.group.id, !row.group.collapsed);
                 }}
               />
-              <IconButton
-                icon={layer.visible ? 'eye' : 'eyeOff'}
-                className="icon-btn item-action"
-                label={layer.visible ? t('layer.hide') : t('layer.show')}
-                shortcut={t('layer.solo')}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (e.altKey) editor.soloLayer(index);
-                  else editor.setLayerVisible(index, !layer.visible);
-                }}
+              <span className="group-icon" aria-hidden="true">
+                <Icon name="folder" size={16} />
+              </span>
+              <EditableName
+                value={row.group.name}
+                onRename={(v) => editor.renameGroup(row.group.id, v)}
+                startEditing={renaming === row.group.id}
+                onEditingStarted={() => setRenaming(null)}
               />
-            </span>
-          </div>
-        ))}
+              {row.group.opacity < 1 && (
+                <span className="muted">{Math.round(row.group.opacity * 100)} %</span>
+              )}
+              <span className="item-actions">
+                <IconButton
+                  icon={row.group.locked ? 'lock' : 'unlock'}
+                  className="icon-btn item-action item-lock"
+                  label={row.group.locked ? t('layer.unlock') : t('layer.lock')}
+                  pressed={row.group.locked}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editor.setGroupLocked(row.group.id, !row.group.locked);
+                  }}
+                />
+                <IconButton
+                  icon={row.group.visible ? 'eye' : 'eyeOff'}
+                  className="icon-btn item-action"
+                  label={row.group.visible ? t('layer.hide') : t('layer.show')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editor.setGroupVisible(row.group.id, !row.group.visible);
+                  }}
+                />
+              </span>
+            </div>
+          ) : (
+            <div
+              key={row.layer.id}
+              className={`item${
+                row.index === doc.activeLayer && !referenceSelected && !selectedGroup ? ' is-active' : ''
+              }${(multi || selectedGroup) && selected.includes(row.layer.id) ? ' is-selected' : ''}${
+                isShown(doc, row.layer) ? '' : ' is-hidden'
+              }${isLocked(doc, row.layer) ? ' is-locked' : ''}${isDragged(row) ? ' is-dragging' : ''}${dropClass(k)}`}
+              style={{ '--depth': row.depth } as CSSProperties}
+              onPointerDown={(e) => startDrag(e, row)}
+              onContextMenu={(e) => openLayerMenu(e, row.index)}
+              onClick={(e) => {
+                listRef.current?.focus({ preventScroll: true });
+                if (dragged.current) dragged.current = false;
+                else
+                  editor.selectLayer(
+                    row.index,
+                    e.shiftKey ? 'range' : e.metaKey || e.ctrlKey ? 'toggle' : 'single',
+                  );
+              }}
+            >
+              <Thumbnail
+                pixels={() => row.layer.pixels}
+                width={doc.width}
+                height={doc.height}
+                version={revision}
+              />
+              <EditableName
+                value={row.layer.name}
+                onRename={(v) => editor.renameLayer(row.index, v)}
+                startEditing={renaming === row.layer.id}
+                onEditingStarted={() => setRenaming(null)}
+              />
+              {row.layer.opacity < 1 && (
+                <span className="muted">{Math.round(row.layer.opacity * 100)} %</span>
+              )}
+              <span className="item-actions">
+                <IconButton
+                  icon={row.layer.locked ? 'lock' : 'unlock'}
+                  className="icon-btn item-action item-lock"
+                  label={row.layer.locked ? t('layer.unlock') : t('layer.lock')}
+                  pressed={row.layer.locked}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editor.setLayerLocked(row.index, !row.layer.locked);
+                  }}
+                />
+                <IconButton
+                  icon={row.layer.visible ? 'eye' : 'eyeOff'}
+                  className="icon-btn item-action"
+                  label={row.layer.visible ? t('layer.hide') : t('layer.show')}
+                  shortcut={t('layer.solo')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (e.altKey) editor.soloLayer(row.index);
+                    else editor.setLayerVisible(row.index, !row.layer.visible);
+                  }}
+                />
+              </span>
+            </div>
+          ),
+        )}
         {reference && (
           // Always last: it sits under every layer and can't be reordered.
           <div
@@ -331,20 +490,39 @@ function LayersSection() {
         <IconButton
           icon="up"
           label={t('layer.moveUp')}
-          disabled={referenceSelected || doc.activeLayer >= doc.layers.length - 1}
+          disabled={referenceSelected || !editor.canMoveLayer(1)}
           onClick={() => editor.moveLayer(1)}
         />
         <IconButton
           icon="down"
           label={t('layer.moveDown')}
-          disabled={referenceSelected || doc.activeLayer === 0}
+          disabled={referenceSelected || !editor.canMoveLayer(-1)}
           onClick={() => editor.moveLayer(-1)}
         />
         <IconButton
           icon="merge"
-          label={multi ? t('layer.mergeCount', { count: selected.length }) : t('layer.mergeDown')}
-          disabled={referenceSelected || (multi ? false : doc.activeLayer === 0)}
-          onClick={() => (multi ? editor.mergeLayers() : editor.mergeDown())}
+          label={
+            selectedGroup
+              ? t('group.merge')
+              : multi
+                ? t('layer.mergeCount', { count: selected.length })
+                : t('layer.mergeDown')
+          }
+          disabled={referenceSelected || (!selectedGroup && !multi && !editor.canMergeDown())}
+          onClick={() =>
+            selectedGroup
+              ? editor.mergeGroup(selectedGroup)
+              : multi
+                ? editor.mergeLayers()
+                : editor.mergeDown()
+          }
+        />
+        <IconButton
+          icon="folderPlus"
+          label={t('group.create')}
+          shortcut="Ctrl+G"
+          disabled={referenceSelected}
+          onClick={() => editor.groupSelection()}
         />
         <span className="spacer" />
         {referenceSelected ? (
@@ -352,7 +530,13 @@ function LayersSection() {
         ) : (
           <IconButton
             icon="trash"
-            label={multi ? t('layer.deleteCount', { count: selected.length }) : t('layer.delete')}
+            label={
+              selectedGroup
+                ? t('group.delete')
+                : multi
+                  ? t('layer.deleteCount', { count: selected.length })
+                  : t('layer.delete')
+            }
             disabled={doc.layers.length < 2 || selected.length >= doc.layers.length}
             onClick={() => actions.deleteLayers()}
           />

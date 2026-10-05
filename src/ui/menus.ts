@@ -50,11 +50,6 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
   ];
 }
 
-const isLast = (editor: Editor) => {
-  const { doc } = editor.getState();
-  return doc.activeLayer >= doc.layers.length - 1;
-};
-
 /** Puts the Design tab's Canvas section in view, open, then runs `then` once it's rendered. */
 function revealCanvas(then: () => void) {
   uiStore.set((u) => ({ rightTab: 'design', collapsed: u.collapsed.filter((x) => x !== 'canvas') }));
@@ -196,11 +191,23 @@ export const MENU_BAR: MenuBarMenu[] = [
   {
     id: 'layer',
     items: (editor, actions) => {
-      const { doc, referenceSelected } = editor.getState();
+      const { doc, referenceSelected, selectedGroup } = editor.getState();
       const layer = doc.layers[doc.activeLayer];
       const disabled = referenceSelected;
       return [
         { label: t('layer.new'), shortcut: 'Shift+N', onSelect: () => editor.addLayer() },
+        { label: t('group.create'), shortcut: 'Ctrl+G', disabled, onSelect: () => editor.groupSelection() },
+        {
+          label: t('group.ungroup'),
+          shortcut: 'Ctrl+Shift+G',
+          disabled: !selectedGroup,
+          onSelect: () => selectedGroup && editor.ungroup(selectedGroup),
+        },
+        {
+          label: t('group.merge'),
+          disabled: !selectedGroup,
+          onSelect: () => selectedGroup && editor.mergeGroup(selectedGroup),
+        },
         {
           label: t('layer.duplicate'),
           shortcut: 'Shift+D',
@@ -216,19 +223,19 @@ export const MENU_BAR: MenuBarMenu[] = [
         {
           label: t('layer.mergeDown'),
           shortcut: 'Shift+M',
-          disabled: disabled || doc.activeLayer === 0,
+          disabled: disabled || !editor.canMergeDown(),
           onSelect: () => editor.mergeDown(),
         },
         {
           label: t('menu.layerUp'),
           shortcut: 'Alt+↑',
-          disabled: disabled || isLast(editor),
+          disabled: disabled || !editor.canMoveLayer(1),
           onSelect: () => editor.moveLayer(1),
         },
         {
           label: t('menu.layerDown'),
           shortcut: 'Alt+↓',
-          disabled: disabled || doc.activeLayer === 0,
+          disabled: disabled || !editor.canMoveLayer(-1),
           onSelect: () => editor.moveLayer(-1),
         },
         '-',

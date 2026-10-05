@@ -23,6 +23,8 @@ const message = (n: Notice): string => {
       return t('toast.pasted');
     case 'merged':
       return t('toast.merged');
+    case 'groupTooDeep':
+      return t('toast.groupTooDeep');
   }
 };
 

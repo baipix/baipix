@@ -1,6 +1,7 @@
 import type { Color } from '../engine/color';
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
-import { MAX_SIZE, newId, type Layer, type PixelDoc } from '../engine/document';
+import { MAX_SIZE, newId, type Layer, type LayerGroup, type PixelDoc } from '../engine/document';
+import { normalizeGroups } from '../engine/groups';
 import { clamp } from '../engine/math';
 
 /**
@@ -19,6 +20,8 @@ export interface BaipixLayer {
   opacity: number;
   /** Missing in older files, and for normal: normal. A CSS mix-blend-mode name. */
   blendMode?: string;
+  /** The group it's in, as an index in `groups` (missing: the top level). */
+  group?: number;
   /** Distinct colors as unsigned 32-bit integers (0xAABBGGRR). */
   colors: number[];
   /** Flat list of [colorIndex, runLength] pairs, row-major. */
@@ -45,6 +48,19 @@ export interface BaipixFile {
   /** Last change, in ms since the epoch. */
   updatedAt?: number;
   layers: BaipixLayer[];
+  /** Groups of layers (missing: none). A group in another one points at it by index. */
+  groups?: BaipixGroup[];
+}
+
+export interface BaipixGroup {
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+  /** Missing: pass-through. */
+  blendMode?: string;
+  collapsed?: boolean;
+  parent?: number;
 }
 
 export function encodePixels(pixels: Uint32Array): { colors: number[]; runs: number[] } {
@@ -81,6 +97,8 @@ export function decodePixels(colors: number[], runs: number[], length: number): 
 }
 
 export function serializeDocument(doc: PixelDoc): BaipixFile {
+  const groups = doc.groups ?? [];
+  const groupIndex = new Map(groups.map((g, k) => [g.id, k]));
   return {
     format: FILE_FORMAT,
     version: FILE_VERSION,
@@ -103,9 +121,45 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
       locked: l.locked,
       opacity: l.opacity,
       ...(l.blendMode && l.blendMode !== 'normal' && { blendMode: l.blendMode }),
+      ...(l.group && groupIndex.has(l.group) && { group: groupIndex.get(l.group) }),
       ...encodePixels(l.pixels),
     })),
+    ...(groups.length && {
+      groups: groups.map((g) => ({
+        name: g.name,
+        visible: g.visible,
+        locked: g.locked,
+        opacity: g.opacity,
+        ...(g.blendMode && { blendMode: g.blendMode }),
+        ...(g.collapsed && { collapsed: true }),
+        ...(g.parent && groupIndex.has(g.parent) && { parent: groupIndex.get(g.parent) }),
+      })),
+    }),
   };
+}
+
+/** Groups from a file, with ids, then checked like any change (depth, contiguous layers…). */
+function readGroups(raw: unknown, layers: Layer[], refs: unknown[]): LayerGroup[] | undefined {
+  if (!Array.isArray(raw) || !raw.length) return undefined;
+  const list = raw.slice(0, 256) as Partial<BaipixGroup>[];
+  const ids = list.map(() => newId('group'));
+  const at = (n: unknown) =>
+    typeof n === 'number' && Number.isInteger(n) && n >= 0 && n < ids.length ? ids[n] : undefined;
+  const groups = list.map((g, i) => ({
+    id: ids[i],
+    name: typeof g.name === 'string' && g.name ? g.name.slice(0, 120) : `Group ${i + 1}`,
+    visible: g.visible !== false,
+    locked: g.locked === true,
+    opacity: typeof g.opacity === 'number' ? clamp(g.opacity, 0, 1) : 1,
+    ...(BLEND_MODES.includes(g.blendMode as BlendMode) && { blendMode: g.blendMode as BlendMode }),
+    ...(g.collapsed === true && { collapsed: true }),
+    ...(at(g.parent) && at(g.parent) !== ids[i] && { parent: at(g.parent) }),
+  }));
+  layers.forEach((l, i) => {
+    const id = at(refs[i]);
+    if (id) l.group = id;
+  });
+  return groups;
 }
 
 export class FileFormatError extends Error {}
@@ -150,7 +204,12 @@ export function deserializeDocument(data: unknown): PixelDoc {
     ),
   }));
   if (!layers.length) throw new FileFormatError('No layers');
-  return {
+  const groups = readGroups(
+    f.groups,
+    layers,
+    (Array.isArray(f.layers) ? f.layers : []).map((l) => l.group),
+  );
+  const doc: PixelDoc = {
     id: typeof f.id === 'string' ? f.id : newId('doc'),
     name: typeof f.name === 'string' && f.name.trim() ? f.name.slice(0, 120) : 'Untitled',
     width,
@@ -168,7 +227,10 @@ export function deserializeDocument(data: unknown): PixelDoc {
     ...(typeof f.axisY === 'number' && { axisY: clamp(Math.round(f.axisY * 2) / 2, 0, height) }),
     ...(readGuides(f.guides, width, height) ?? {}),
     ...(typeof f.updatedAt === 'number' && Number.isFinite(f.updatedAt) && { updatedAt: f.updatedAt }),
+    ...(groups && { groups }),
   };
+  normalizeGroups(doc);
+  return doc;
 }
 
 export const documentToJson = (doc: PixelDoc): string => JSON.stringify(serializeDocument(doc));

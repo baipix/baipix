@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
+import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, MAX_SIZE } from '../../engine/document';
 import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
 import { useT } from '../../i18n';
@@ -258,14 +259,85 @@ function ReferenceSection() {
   );
 }
 
+/** A group selected in the Layers panel: its blend mode (pass-through by default) and opacity. */
+function GroupSection({ id }: { id: string }) {
+  const t = useT();
+  const editor = useEditor();
+  const group = useEditorState((s) => s.doc.groups?.find((g) => g.id === id));
+  useEditorState((s) => s.revision);
+  if (!group) return null;
+  return (
+    <Section
+      id="layer"
+      title={t('group.title')}
+      aside={
+        <>
+          <span className="muted truncate">{group.name}</span>
+          <IconButton
+            icon={group.visible ? 'eye' : 'eyeOff'}
+            label={group.visible ? t('layer.hide') : t('layer.show')}
+            onClick={() => editor.setGroupVisible(id, !group.visible)}
+          />
+        </>
+      }
+    >
+      <div className="two-columns">
+        {/* Hovering a mode shows it on the canvas; only a click keeps it. */}
+        <button
+          type="button"
+          className="field field-menu"
+          aria-haspopup="menu"
+          aria-label={t('blend.mode')}
+          data-tip={t('blend.mode')}
+          onClick={(e) => {
+            const item = (m: GroupBlendMode): MenuItem => ({
+              label: t(`blend.${m}`),
+              checked: (group.blendMode ?? 'pass-through') === m,
+              onHover: () => editor.previewGroupBlendMode(id, m),
+              onSelect: () => editor.setGroupBlendMode(id, m),
+            });
+            openMenu(
+              e.currentTarget,
+              [
+                item('pass-through'),
+                ...BLEND_MODE_GROUPS.flatMap((modes): MenuItem[] => ['-', ...modes.map(item)]),
+              ],
+              {
+                onHoverEnd: () => editor.previewGroupBlendMode(id, null),
+                onClose: () => editor.endBlendPreview(),
+              },
+            );
+          }}
+        >
+          <span className="truncate">{t(`blend.${group.blendMode ?? 'pass-through'}`)}</span>
+          <Icon name="caret" size={12} />
+        </button>
+        <NumberField
+          value={Math.round(group.opacity * 100)}
+          min={0}
+          max={100}
+          label="◐"
+          suffix="%"
+          ariaLabel={t('common.opacity')}
+          scrubHint={t('common.dragToAdjust')}
+          sensitivity={2}
+          onChange={(v, final) => editor.setGroupOpacity(id, v / 100, final)}
+        />
+      </div>
+    </Section>
+  );
+}
+
 function LayerSection() {
   const t = useT();
   const editor = useEditor();
   const layer = useEditorState((s) => s.doc.layers[s.doc.activeLayer]);
   const index = useEditorState((s) => s.doc.activeLayer);
   const referenceSelected = useEditorState((s) => s.referenceSelected);
+  const selectedGroup = useEditorState((s) => s.selectedGroup);
   useEditorState((s) => s.revision);
   if (referenceSelected) return <ReferenceSection />;
+  if (selectedGroup) return <GroupSection id={selectedGroup} />;
   return (
     <Section
       id="layer"

@@ -275,9 +275,12 @@ export function createActions(editor: Editor) {
 
     /** Deletes the selected layers (or the active one), with an Undo toast. */
     deleteLayers() {
-      const { name } = doc().layers[doc().activeLayer];
+      const group = editor.getState().selectedGroup;
+      const name = group
+        ? doc().groups?.find((g) => g.id === group)?.name
+        : doc().layers[doc().activeLayer].name;
       const count = editor.deleteLayers();
-      if (count === 1) toast(t('toast.deleted', { name }), undoDelete());
+      if (count === 1 || (group && count)) toast(t('toast.deleted', { name: name ?? '' }), undoDelete());
       else if (count > 1) toast(t('toast.layersDeleted', { count }), undoDelete());
     },
 
