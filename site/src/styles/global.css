@@ -197,6 +197,48 @@ h2 {
 }
 
 /*
+ * The square period of the heroes' titles goes through the accents of the Draw page's sections,
+ * one every second, in jumps rather than fades. Plain color, never off: it doesn't blink.
+ */
+.pixel-dot {
+  animation-name: pixel-dot-tones;
+  animation-duration: 8s;
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+}
+@keyframes pixel-dot-tones {
+  0% {
+    background: light-dark(#d4467e, #ff8fb8);
+  }
+  12.5% {
+    background: light-dark(#5a46c8, #a99bff);
+  }
+  25% {
+    background: light-dark(#21875c, #6fe0aa);
+  }
+  37.5% {
+    background: light-dark(#b8398c, #f08acb);
+  }
+  50% {
+    background: light-dark(#c8621f, #ffad6e);
+  }
+  62.5% {
+    background: light-dark(#2f6fd0, #86b6ff);
+  }
+  75% {
+    background: light-dark(#7a45c0, #c7a2ff);
+  }
+  87.5% {
+    background: light-dark(#b07a12, #f3c95e);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-dot {
+    animation-name: none;
+  }
+}
+
+/*
  * Tones: each theme of the editor has a pastel card (--tint-a to --tint-b) and a strong accent,
  * shared by the Draw page sections and the home page cards that lead to them.
  */
