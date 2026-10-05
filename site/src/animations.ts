@@ -24,6 +24,9 @@ export interface PixelAnimation {
   glow: number;
   /** The moment shown still, when the visitor asked for reduced motion. */
   still: number;
+  /** The tool's cursor, drawn over the picture, and where it is: time (ms), x, y in art pixels. */
+  tool?: 'pencil' | 'bucket' | 'spray';
+  cursor?: number[];
 }
 
 /** Collects pixels and events, and keeps the palette as colors come in. */
@@ -48,6 +51,12 @@ class Timeline {
   at(t: number, x: number, y: number, hex: string | null) {
     this.events.push(Math.round(t), x, y, hex ? this.index(hex) : 0);
   }
+  tool?: PixelAnimation['tool'];
+  cursor: number[] = [];
+  /** Where the tool's cursor is at `t`, in art pixels (it moves in a straight line between points). */
+  point(t: number, x: number, y: number) {
+    this.cursor.push(Math.round(t), +x.toFixed(2), +y.toFixed(2));
+  }
   /** `still` defaults to the end of the timeline. */
   done(hold: number, glow: number, still?: number): PixelAnimation {
     const { w, h, palette, start } = this;
@@ -56,7 +65,9 @@ class Timeline {
     for (let i = 0; i < this.events.length; i += 4) list.push(this.events.slice(i, i + 4));
     list.sort((a, b) => a[0] - b[0]);
     const events = list.flat();
-    return { w, h, palette, start, events, hold, glow, still: still ?? events[events.length - 4] ?? 0 };
+    const shown = still ?? events[events.length - 4] ?? 0;
+    const cursor = this.tool ? { tool: this.tool, cursor: this.cursor } : {};
+    return { w, h, palette, start, events, hold, glow, still: shown, ...cursor };
   }
 }
 
@@ -262,6 +273,7 @@ function pencil() {
   const stroke = handStroke();
   const raw = new Timeline(32, 12);
   const perfect = new Timeline(32, 12);
+  raw.tool = perfect.tool = 'pencil';
   const kept: Point[] = [];
   const step = 45;
   stroke.forEach((p, i) => {
@@ -274,6 +286,8 @@ function pencil() {
     }
     kept.push(p);
     perfect.at(time, p.x, p.y, S.blue);
+    raw.point(time, p.x + 0.5, p.y + 0.5);
+    perfect.point(time, p.x + 0.5, p.y + 0.5);
   });
   const removed = stroke.length - kept.length;
   return { raw: raw.done(2400, 0.5), perfect: perfect.done(2400, 0.5), removed };
@@ -302,6 +316,7 @@ function bucket(): PixelAnimation {
   const w = 16;
   const h = 15;
   const t = new Timeline(w, h);
+  t.tool = 'bucket';
   const wall = new Set<number>();
   POT.forEach((row, y) =>
     [...row].forEach((ch, x) => {
@@ -314,6 +329,9 @@ function bucket(): PixelAnimation {
   // Flood fill from the click, between the two rings.
   const seen = new Set<number>([4 * w + 4]);
   let ring: Point[] = [{ x: 4, y: 4 }];
+  // The bucket comes in from the bottom right and clicks between the two rings.
+  t.point(150, 13, 13);
+  t.point(520, 4.5, 4.5);
   let time = 600;
   while (ring.length) {
     for (const p of ring) t.at(time, p.x, p.y, S.sky);
@@ -341,27 +359,29 @@ function bucket(): PixelAnimation {
     ring = next;
     time += 70;
   }
+  t.point(time + 400, 4.5, 4.5);
   return t.done(2000, 0.6);
 }
 
-/** Spray along a curve: dots land around the cursor, a few at a time. */
+/** Spray along a curve: dots land around the cursor, a few at a time, in one color like the tool. */
 function spray(): PixelAnimation {
   const w = 16;
   const h = 15;
   const t = new Timeline(w, h);
+  t.tool = 'spray';
   const random = seeded(31);
-  const colors = [S.yellow, S.white, S.cyan];
   let time = 400;
   for (let i = 0; i < 46; i++) {
     const a = (i / 46) * Math.PI * 1.6 + 0.6;
     const cx = 7.5 + Math.cos(a) * 4.5;
     const cy = 7 + Math.sin(a) * 4.5;
+    t.point(time, cx, cy);
     for (let k = 0; k < 2; k++) {
       const r = random() * 2.6;
       const b = random() * Math.PI * 2;
       const x = Math.round(cx + Math.cos(b) * r);
       const y = Math.round(cy + Math.sin(b) * r);
-      if (x >= 0 && y >= 0 && x < w && y < h) t.at(time, x, y, colors[Math.floor(random() * colors.length)]);
+      if (x >= 0 && y >= 0 && x < w && y < h) t.at(time, x, y, S.yellow);
     }
     time += 55;
   }

@@ -12,16 +12,61 @@ interface Props {
   class?: string;
 }
 const { animation, label, class: className } = Astro.props;
+
+/**
+ * The editor's tool icons (24×24, pixelarticons for the pencil and spray can, the bucket drawn on
+ * the same grid), and the point of each that touches the canvas.
+ */
+const TOOLS = {
+  pencil: {
+    d: 'M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z',
+    hotspot: [3, 21],
+  },
+  bucket: {
+    d: 'M8 2h2v2h-2zM6 4h2v2h-2zM10 4h2v2h-2zM4 6h2v2h-2zM12 6h2v2h-2zM2 8h2v2h-2zM14 8h2v2h-2zM0 10h18v2h-18zM20 10h2v2h-2zM2 12h14v2h-14zM18 12h6v2h-6zM4 14h10v2h-10zM18 14h6v2h-6zM6 16h6v2h-6zM20 16h2v2h-2zM8 18h2v2h-2z',
+    hotspot: [21, 18],
+  },
+  spray: {
+    d: 'M9 3h4v4H9zM7 7h8v2H7zM5 21h12v2H5zM15 9h2v12h-2zM5 9h2v12H5zm4 8h6v2H9zM9 13h2v6H9zM9 13h8v2H9zm6-10h2v2h-2zm2-2h2v2h-2zm0 4h2v2h-2z',
+    hotspot: [21, 3],
+  },
+};
+const tool = animation.tool && TOOLS[animation.tool];
+const ICON = 22;
 ---
 
-<canvas
-  class:list={['pixel-play', className]}
-  width={animation.w * 8}
-  height={animation.h * 8}
-  role="img"
-  aria-label={label}
-  data-pixel-play={JSON.stringify(animation)}
-></canvas>
+{tool ? (
+  <div class="pixel-play-wrap">
+    <canvas
+      class:list={['pixel-play', className]}
+      width={animation.w * 8}
+      height={animation.h * 8}
+      role="img"
+      aria-label={label}
+      data-pixel-play={JSON.stringify(animation)}
+    />
+    <svg
+      class="tool-cursor"
+      data-tool-cursor
+      viewBox="0 0 24 24"
+      width={ICON}
+      height={ICON}
+      style={`--hx: ${(tool.hotspot[0] * ICON) / 24}px; --hy: ${(tool.hotspot[1] * ICON) / 24}px`}
+      aria-hidden="true"
+    >
+      <path fill="currentColor" d={tool.d} />
+    </svg>
+  </div>
+) : (
+  <canvas
+    class:list={['pixel-play', className]}
+    width={animation.w * 8}
+    height={animation.h * 8}
+    role="img"
+    aria-label={label}
+    data-pixel-play={JSON.stringify(animation)}
+  />
+)}
 
 <script>
   import type { PixelAnimation } from '../animations';
@@ -40,6 +85,27 @@ const { animation, label, class: className } = Astro.props;
     const off = new OffscreenCanvas(a.w, a.h);
     const offCtx = off.getContext('2d')!;
     const image = new ImageData(a.w, a.h);
+    // The tool's cursor, if the animation has one: it follows its points, in a straight line between.
+    const toolCursor = canvas.parentElement?.querySelector<SVGElement>('[data-tool-cursor]') ?? null;
+    const path = a.cursor ?? [];
+    let point = 0;
+    const moveCursor = (t: number) => {
+      if (!toolCursor || !path.length) return;
+      while (point + 3 < path.length && path[point + 3] <= t) point += 3;
+      const shown = t >= path[0] && t <= path[path.length - 3] + 300;
+      toolCursor.style.opacity = shown ? '1' : '0';
+      if (!shown) return;
+      let [, x, y] = path.slice(point, point + 3);
+      if (point + 3 < path.length) {
+        const [t0] = path.slice(point, point + 1);
+        const [t1, x1, y1] = path.slice(point + 3, point + 6);
+        const f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0 || 1)));
+        x += (x1 - x) * f;
+        y += (y1 - y) * f;
+      }
+      toolCursor.style.left = `${(x / a.w) * 100}%`;
+      toolCursor.style.top = `${(y / a.h) * 100}%`;
+    };
 
     let next = 0; // index of the next event
     let lit: { x: number; y: number; t: number; color: string }[] = [];
@@ -60,6 +126,7 @@ const { animation, label, class: className } = Astro.props;
       next = 0;
       lit = [];
       dirty = true;
+      point = 0;
     };
     /** Plays every event up to `t`. */
     const advance = (t: number, glow: boolean) => {
@@ -118,6 +185,7 @@ const { animation, label, class: className } = Astro.props;
       }
       const wasLit = lit.length > 0;
       advance(t, true);
+      moveCursor(t);
       // One more frame after the last glow fades, to clear it.
       if (dirty || wasLit || canvas.width !== a.w * scale()) draw(t);
       dirty = false;
@@ -129,6 +197,7 @@ const { animation, label, class: className } = Astro.props;
       reset();
       advance(a.still, false);
       draw(a.still);
+      if (toolCursor) toolCursor.style.opacity = '0';
     };
     const play = () => {
       cancelAnimationFrame(frame);
@@ -157,6 +226,21 @@ const { animation, label, class: className } = Astro.props;
 </script>
 
 <style>
+  .pixel-play-wrap {
+    position: relative;
+  }
+  /* White with a dark edge, like the cursors elsewhere on the page, so it reads on any color. */
+  .tool-cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: calc(-1 * var(--hy)) 0 0 calc(-1 * var(--hx));
+    color: #ffffff;
+    opacity: 0;
+    filter: drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000)
+      drop-shadow(0 -1px 0 #000);
+    pointer-events: none;
+  }
   .pixel-play {
     display: block;
     width: 100%;
