@@ -2610,6 +2610,72 @@ body.is-dragging-swatch * {
   gap: 6px;
 }
 
+/* ---------- Canvas size ---------- */
+/* W, H and the button opening the Canvas size dialog, in the Canvas section. */
+.canvas-size-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+/* The drawing and the new canvas's frame, dragged by its handles. */
+.resize-preview {
+  display: block;
+  max-width: 100%;
+  touch-action: none;
+  cursor: move;
+  clip-path: var(--notch);
+}
+.resize-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.resize-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 8px;
+}
+.resize-fields p {
+  grid-column: 1 / -1;
+}
+/* Where something is pinned: 9 spots, the chosen one filled. */
+.anchor-grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, 18px);
+  gap: 2px;
+}
+.anchor-cell {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--input);
+}
+.anchor-cell::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: var(--muted);
+}
+.anchor-cell:hover {
+  background: var(--selected);
+}
+.anchor-cell[aria-pressed='true'] {
+  background: var(--accent);
+}
+.anchor-cell[aria-pressed='true']::after {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-ink);
+}
+
 /* ---------- First-launch tour ---------- */
 .tour-ring {
   position: fixed;

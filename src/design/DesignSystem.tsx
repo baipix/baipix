@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { pack } from '../engine/color';
+import { AnchorGrid, type Anchor } from '../ui/components/AnchorGrid';
 import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
@@ -373,6 +374,7 @@ function SegmentedDemo() {
 function FieldsBlock() {
   const [n, setN] = useState(64);
   const [checked, setChecked] = useState(true);
+  const [anchor, setAnchor] = useState<Anchor>({ x: 1, y: 1 });
   return (
     <Block id="fields" title="Fields">
       <div className="ds-grid">
@@ -425,6 +427,12 @@ function FieldsBlock() {
               64 × 64
             </button>
           </div>
+        </Specimen>
+        <Specimen
+          label="Anchor grid"
+          use="Where something is pinned, top left to bottom right (the drawing in the Canvas size dialog). The chosen spot is filled."
+        >
+          <AnchorGrid value={anchor} onChange={setAnchor} label="Position" />
         </Specimen>
       </div>
     </Block>

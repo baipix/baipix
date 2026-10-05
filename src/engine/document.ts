@@ -141,10 +141,23 @@ export const mirrorAxes = (doc: PixelDoc): { x: number; y: number } => ({
   y: doc.axisY ?? doc.height / 2,
 });
 
-/** Changes the canvas size, keeping the drawing centered (and moved symmetry axes with it). */
-export function resizeDocument(doc: PixelDoc, width: number, height: number): void {
-  const offsetX = Math.floor((width - doc.width) / 2);
-  const offsetY = Math.floor((height - doc.height) / 2);
+/** Where the old canvas's top-left lands when resizing without an offset: the drawing stays centered. */
+export const centeredOffset = (doc: PixelDoc, width: number, height: number): { x: number; y: number } => ({
+  x: Math.floor((width - doc.width) / 2),
+  y: Math.floor((height - doc.height) / 2),
+});
+
+/**
+ * Changes the canvas size, the old canvas's top-left landing at `offsetX`, `offsetY` in the new one
+ * (centered by default). Moved symmetry axes, guides and the reference follow the drawing.
+ */
+export function resizeDocument(
+  doc: PixelDoc,
+  width: number,
+  height: number,
+  offsetX = centeredOffset(doc, width, height).x,
+  offsetY = centeredOffset(doc, width, height).y,
+): void {
   if (doc.axisX !== undefined) doc.axisX = Math.min(width, Math.max(0, doc.axisX + offsetX));
   if (doc.axisY !== undefined) doc.axisY = Math.min(height, Math.max(0, doc.axisY + offsetY));
   // Guides stay on the same pixels too.
