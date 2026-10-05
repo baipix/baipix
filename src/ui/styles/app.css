@@ -2636,3 +2636,8 @@ body.is-dragging-swatch * {
 .tour-skip:hover {
   color: var(--text);
 }
+
+/* The layer list takes the focus on a click, for Delete: no outline for that (the active row shows). */
+.item-list:focus {
+  outline: none;
+}
