@@ -57,6 +57,7 @@ import {
   type ToolId,
   type ToolOptions,
 } from './tools';
+import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
 import { strokeColors } from './tools/paint';
 
@@ -278,6 +279,8 @@ export class Editor {
     block: PixelBlock;
     /** With a selection: the layer with the selection emptied, to stamp the resized block on. */
     cleared?: Uint32Array;
+    /** Rotating rather than resizing: prepared once for the block. */
+    rotator?: Rotator;
   } | null = null;
   private adjusting: {
     layers: { id: string; base: Uint32Array }[];
@@ -1854,23 +1857,48 @@ export class Editor {
   previewScale(rect: Rect): void {
     const sc = this.scaling;
     if (!sc) return;
-    const { width, height } = this.doc;
     const w = Math.max(1, Math.round(rect.w));
     const h = Math.max(1, Math.round(rect.h));
     const x = Math.round(rect.x);
     const y = Math.round(rect.y);
-    const scaled = scaleBlock(sc.block, w, h);
+    this.placeTransformed(scaleBlock(sc.block, w, h), x, y);
+  }
+
+  /** Puts the lifted content back, transformed, at (x, y): on the emptied layer, or as the whole layer. */
+  private placeTransformed(block: PixelBlock, x: number, y: number): void {
+    const sc = this.scaling!;
+    const { width, height } = this.doc;
     if (sc.cleared) {
       sc.layer.pixels.set(sc.cleared);
-      stampBlock(sc.layer.pixels, width, height, scaled, x, y);
-      this.active.selection = { x, y, w, h };
+      stampBlock(sc.layer.pixels, width, height, block, x, y);
+      this.active.selection = { x, y, w: block.width, h: block.height };
     } else {
       // A whole layer: what lands outside the canvas is kept, like a move.
-      const r = reframe(scaled.pixels, w, h, undefined, x, y, width, height);
+      const r = reframe(block.pixels, block.width, block.height, undefined, x, y, width, height);
       sc.layer.pixels.set(r.pixels);
       sc.layer.outside = r.outside;
     }
     this.pixelsChanged();
+  }
+
+  /**
+   * Starts rotating the selection's content, or the whole active layer, by dragging (see
+   * `previewRotate`). Returns the rectangle being rotated, or null when there's nothing to rotate.
+   */
+  beginRotate(): Rect | null {
+    const from = this.beginScale();
+    if (from) this.scaling!.rotator = rotator(this.scaling!.block);
+    return from;
+  }
+
+  /** Shows the content turned by `degrees` (clockwise) around its center. Commit with `endScale`. */
+  previewRotate(degrees: number): void {
+    const sc = this.scaling;
+    if (!sc?.rotator) return;
+    const turned = sc.rotator.rotate(degrees);
+    const cx = sc.from.x + sc.from.w / 2;
+    const cy = sc.from.y + sc.from.h / 2;
+    this.placeTransformed(turned, Math.round(cx - turned.width / 2), Math.round(cy - turned.height / 2));
   }
 
   /** Commits the resize as one undo step (recorded when it began). */
