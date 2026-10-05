@@ -6,6 +6,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- Better found in search engines: a sitemap and robots.txt, canonical addresses, a share card made for links (1200×630) with Twitter/X tags, structured data describing Baipix as a free web app, and titles that say what it is ("Free online pixel art editor, export to SVG and Figma"). The 404 page stays out of search results. (#PR)
+
+### Website
+
 - New screenshots of the editor, and the feature cards mention what 0.3 brought: templates and the tour, blend modes, rulers and guides, the outline, the minimap, and recovering the pixels of scaled-up images. (#210)
 - The design system shows the select field and the palette picker. (#210)
 
