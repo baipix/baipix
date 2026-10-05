@@ -34,9 +34,12 @@ export interface GalleryPiece {
   file: string;
 }
 
+/** A gallery file (`knight.baipix`…), as a document. */
+export const galleryDoc = (file: string) => deserializeDocument(JSON.parse(sources[`../../gallery/${file}`]));
+
 export const gallery: GalleryPiece[] = entries.map((entry) => {
   const key = `../../gallery/${entry.file}`;
-  const doc = deserializeDocument(JSON.parse(sources[key]));
+  const doc = galleryDoc(entry.file);
   const pixels = flatten(doc, { includeBackground: false });
   const geometry = renderGeometry(doc.width, doc.height, doc.render.pixelSize, doc.render.gap);
   const background = doc.backgroundVisible ? doc.background : 0;

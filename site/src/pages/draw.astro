@@ -1,0 +1,2000 @@
+---
+import Cta from '../components/Cta.astro';
+import Footer from '../components/Footer.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Nav from '../components/Nav.astro';
+import PixelIcon from '../components/PixelIcon.astro';
+import PixelPlay from '../components/PixelPlay.astro';
+import Base from '../layouts/Base.astro';
+import { gallery } from '../gallery';
+import { animations as anim, OUTLINE_STEPS } from '../animations';
+import { draw as ill } from '../draw';
+import { APP_URL, REPO_URL } from '../links';
+
+const EYE = ['.......', '..###..', '.#...#.', '#..#..#', '.#...#.', '..###..', '.......'];
+const EYE_CLOSED = ['.......', '.......', '.......', '#.....#', '.#####.', '#.#.#.#', '.......'];
+const CURSOR = [
+  '#.......',
+  '##......',
+  '#.#.....',
+  '#..#....',
+  '#...#...',
+  '#....#..',
+  '#..###..',
+  '#.#.....',
+  '##......',
+];
+
+const items = gallery.find((p) => p.file === 'items.baipix')!;
+const ICON_MIRROR = ['#..#..#', '##.#.##', '###.###', '###.###', '###.###', '##.#.##', '#..#..#'];
+const ICON_GUIDES = ['..#..#.', '..#..#.', '#######', '..#..#.', '..#..#.', '#######', '..#..#.'];
+const ICON_TILE = ['###.###', '###.###', '###.###', '.......', '###.###', '###.###', '###.###'];
+
+const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
+---
+
+<Base
+  title="Draw pixel art · Baipix, a free pixel art editor"
+  description="The pixel-perfect pencil, dithering, shapes, palette ramps, symmetry, seamless tiles, layers and clean SVG export: every drawing tool in Baipix, and the key that picks it."
+>
+  <Nav />
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <p class="eyebrow">Draw</p>
+        <h1>
+          Sprites, icons, tiles and whole scenes<span class="pixel-dot" aria-hidden="true"></span>
+        </h1>
+        <p class="lead">
+          Every tool you'd expect from a pixel art editor, laid out like a design tool. Baipix is free and
+          open source, and it runs in your browser with nothing to install. Here's what each tool does, and
+          the key that picks it.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-dark" href={APP_URL}>
+            Open the editor
+          </a>
+          <a class="btn" href={REPO_URL}>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+      <figure class="hero-art">
+        <PixelPlay
+          animation={anim.hero}
+          label="A pixel art city by the water at dusk, its last pixels landing one by one."
+        />
+      </figure>
+    </section>
+
+    <!-- Start -->
+    <section class="block container" id="start" data-tone="start">
+      <SectionHead label="01 · Start" />
+      <div class="text">
+        <h2>Start from a template, or from an image.</h2>
+        <p class="muted intro">
+          Pick a size and a palette that suit what you're making, or bring your own picture.
+        </p>
+        <ul class="tools">
+          <li>
+            <span class="key wide">New</span>
+            <div>
+              <h3>Templates</h3>
+              <p>
+                Icons, sprites, tiles, a Game Boy screen and more, each with its size and palette. The sprite
+                opens with symmetry on, the tile with the tile preview, the sprite sheet with its guides.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Import</span>
+            <div>
+              <h3>Recover the pixels</h3>
+              <p>
+                Open a screenshot of pixel art that was scaled up. Baipix finds its grid and gives you back
+                the real pixels, at their real size.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Trace</span>
+            <div>
+              <h3>Reference image</h3>
+              <p>
+                Place a photo or a sketch under the layers, move it, resize it, fade it, and draw over it.
+                It's never exported.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure class="frame trace-frame" data-trace>
+        <div class="trace-ui">
+          <div class="trace">
+            <div class="reference" set:html={anim.trace.reference} />
+            <PixelPlay
+              animation={anim.trace.animation}
+              label="An apple traced in pixels over a smooth reference image, which is then hidden."
+            />
+          </div>
+          <ol class="layer-list trace-layers" aria-hidden="true">
+            <li>
+              <span class="eye">
+                <PixelIcon rows={EYE} size={14} />
+              </span>
+              <span>Apple</span>
+            </li>
+            <li class="ref-row" data-ref-row>
+              <span class="eye" data-ref-eye>
+                <span class="open">
+                  <PixelIcon rows={EYE} size={14} />
+                </span>
+                <span class="closed">
+                  <PixelIcon rows={EYE_CLOSED} size={14} />
+                </span>
+              </span>
+              <span>Reference</span>
+            </li>
+          </ol>
+        </div>
+        <span class="cursor" data-cursor aria-hidden="true">
+          <PixelIcon rows={CURSOR} size={18} />
+        </span>
+        <figcaption class="cap">
+          A reference image under the layers, traced at 24×24, then hidden. It's never exported.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Draw -->
+    <section class="block container" id="draw" data-tone="draw">
+      <SectionHead label="02 · Draw" />
+      <div class="text">
+        <h2>Draw pixel by pixel.</h2>
+        <p class="muted intro">
+          Left click paints the primary color, right click the secondary. Alt picks a color from the canvas.
+        </p>
+        <ul class="tools">
+          <li>
+            <kbd class="key">{key('Pencil')}</kbd>
+            <div>
+              <h3>Pencil</h3>
+              <p>
+                Pixel perfect removes the doubled corners that make curves look jagged, and the stabilizer
+                smooths out a shaky hand. Square or round tip, any size.
+              </p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Lasso fill')}</kbd>
+            <div>
+              <h3>Lasso fill</h3>
+              <p>Draw around a shape and it's filled, in one gesture.</p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Paint bucket')}</kbd>
+            <div>
+              <h3>Paint bucket</h3>
+              <p>Fills an area of the same color, inside the selection if there is one.</p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Spray')}</kbd>
+            <div>
+              <h3>Spray</h3>
+              <p>Scatters pixels around the cursor: stars, dust, leaves.</p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Eraser')}</kbd>
+            <div>
+              <h3>Eraser</h3>
+              <p>Back to transparent, with the same tips as the pencil.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Tip</span>
+            <div>
+              <h3>Brushes and dithering</h3>
+              <p>
+                Turn a selection into a brush, in one color or with its own colors. Six dithering patterns mix
+                your two colors with the pencil, the lasso fill and the paint bucket.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="figures">
+        <figure class="frame">
+          <div class="pair">
+            <div>
+              <PixelPlay
+                animation={anim.pencil.raw}
+                label="A wavy stroke drawn freehand, its doubled corners in pink."
+              />
+              <p class="cap">As drawn: {anim.pencil.removed} doubled corners</p>
+            </div>
+            <div>
+              <PixelPlay
+                animation={anim.pencil.perfect}
+                label="The same stroke with pixel perfect: the doubled corners disappear as it's drawn."
+              />
+              <p class="cap">Pixel perfect</p>
+            </div>
+          </div>
+        </figure>
+        <figure class="frame">
+          <div class="pair narrow">
+            <div>
+              <PixelPlay
+                animation={anim.bucket}
+                label="The paint bucket filling a ring, spreading out from the click."
+              />
+              <p class="cap">Paint bucket</p>
+            </div>
+            <div>
+              <PixelPlay animation={anim.spray} label="The spray scattering stars along a curve." />
+              <p class="cap">Spray</p>
+            </div>
+          </div>
+        </figure>
+        <figure class="frame">
+          <div class="pix" set:html={ill.dither} />
+          <figcaption class="cap dither-cap">
+            <span>Solid</span>
+            <span>Dots</span>
+            <span>Checker</span>
+            <span>Dense</span>
+            <span>Solid</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Shapes: full width, to break the text-and-picture rhythm (cards come in 06). -->
+    <section class="full container" id="shapes" data-tone="shapes">
+      <SectionHead label="03 · Shapes" />
+      <div class="cards-title">
+        <h2>Shapes that land on whole pixels.</h2>
+        <p class="muted intro">
+          Outlined or filled, in any tip size.
+          <br />
+          Shift keeps them square or round.
+        </p>
+      </div>
+      <ul class="tools tools-row">
+        <li>
+          <kbd class="key">{key('Line')}</kbd>
+          <h3>Line</h3>
+          <p>Shift locks it to 0°, 45° or 90°.</p>
+        </li>
+        <li>
+          <kbd class="key">{key('Rectangle')}</kbd>
+          <h3>Rectangle</h3>
+          <p>Shift makes it a square. The rounded rectangle is in the same menu.</p>
+        </li>
+        <li>
+          <kbd class="key">{key('Ellipse')}</kbd>
+          <h3>Ellipse</h3>
+          <p>Shift makes it a circle. The triangle and the star are in the same menu.</p>
+        </li>
+        <li>
+          <span class="key wide">Image</span>
+          <h3>Outline</h3>
+          <p>A 1 px outline around the drawing or along its edge, with square or round corners, in one go.</p>
+        </li>
+      </ul>
+      <div class="wide-figures">
+        <figure class="frame">
+          <div class="pix" set:html={ill.shapes} />
+          <figcaption class="cap">Line, rectangle, rounded rectangle, ellipse, triangle, star.</figcaption>
+        </figure>
+        <figure class="frame outline-frame" data-outline data-steps={JSON.stringify(OUTLINE_STEPS)}>
+          <div class="trace-ui">
+            <div class="outline-demo">
+              <PixelPlay
+                animation={anim.outline}
+                label="A mushroom on a pink sky. In the Adjustments panel, the Outline tab adds a dark outline around it at once."
+              />
+            </div>
+            <div class="mini-panel" aria-hidden="true">
+              <div class="mp-head">Adjustments</div>
+              <div class="mp-tabs">
+                <span class="is-on" data-tab="colors">
+                  Colors
+                </span>
+                <span data-tab="remap">Remap</span>
+                <span data-tab="outline">Outline</span>
+              </div>
+              <div class="mp-body mp-colors">
+                <span>Hue</span>
+                <i></i>
+                <span>Saturation</span>
+                <i></i>
+                <span>Brightness</span>
+                <i></i>
+              </div>
+              <div class="mp-body mp-outline">
+                <div class="mp-chips">
+                  <span class="is-on">Outside</span>
+                  <span>Inside</span>
+                </div>
+                <div class="mp-chips">
+                  <span data-chip="square">Square</span>
+                  <span class="is-on" data-chip="round">
+                    Round
+                  </span>
+                </div>
+              </div>
+              <div class="mp-foot">
+                <span>Cancel</span>
+                <span class="mp-primary" data-apply>
+                  Apply
+                </span>
+              </div>
+            </div>
+          </div>
+          <span class="cursor" data-cursor aria-hidden="true">
+            <PixelIcon rows={CURSOR} size={18} />
+          </span>
+          <figcaption class="cap">
+            Image › Adjustments › Outline. You see it live, then you apply it.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Colors -->
+    <section class="block container" id="colors" data-tone="colors">
+      <SectionHead label="04 · Colors" />
+      <div class="text">
+        <h2>Colors that follow the palette.</h2>
+        <p class="muted intro">
+          Shading works on the colors you chose, so a drawing never fills up with near-duplicates.
+        </p>
+        <ul class="tools">
+          <li>
+            <kbd class="key">{key('Shade')}</kbd>
+            <div>
+              <h3>
+                Shade and Lighten <kbd class="key small">{key('Lighten')}</kbd>
+              </h3>
+              <p>
+                Paint over pixels to step them down or up their ramp: the same hue in the palette, any color
+                in the palette, or free.
+              </p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Eyedropper')}</kbd>
+            <div>
+              <h3>Eyedropper</h3>
+              <p>Picks a color from the canvas. Alt does the same from any drawing tool.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Palette</span>
+            <div>
+              <h3>Palettes</h3>
+              <p>
+                {ill.paletteCount} classic palettes (PICO-8, Game Boy, Endesga 32…), .hex and .gpl files in
+                and out, a palette built from your drawing, and a five-step ramp from any color, with hue
+                shifting.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Image</span>
+            <div>
+              <h3>Adjustments</h3>
+              <p>
+                Hue, saturation and brightness for a layer or all of them. Or remap the whole drawing to
+                another palette, by nearest color or by lightness.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure
+        class="frame"
+        data-recolor
+        data-versions={JSON.stringify(ill.recolor.versions.map((v) => v.vars))}
+      >
+        <!-- The drawing, once; the two layers below show it with their own colors. -->
+        <svg width="0" height="0" class="recolor-defs" aria-hidden="true">
+          <defs>
+            <g id="recolor-art" set:html={ill.recolor.paths} />
+          </defs>
+        </svg>
+        <div
+          class="recolor"
+          role="img"
+          aria-label="A character drawing, recolored with other palettes in turn."
+        >
+          {[0, 1].map((layer) => (
+            <svg
+              class="recolor-art"
+              data-layer={layer}
+              viewBox={`0 0 ${ill.recolor.w} ${ill.recolor.h}`}
+              shape-rendering="crispEdges"
+              style={ill.recolor.versions[0].vars}
+              aria-hidden="true"
+            >
+              <use href="#recolor-art" />
+            </svg>
+          ))}
+        </div>
+        <div class="recolor-bar">
+          {ill.recolor.versions.map((v, i) => (
+            <div class:list={['recolor-info', { 'is-on': i === 0 }]}>
+              <span class="recolor-name">{v.label}</span>
+              <span class="muted mono">{v.detail}</span>
+              <span class="swatches">
+                {v.swatches.slice(0, 16).map((c) => (
+                  <span style={`background:${c}`} />
+                ))}
+              </span>
+            </div>
+          ))}
+        </div>
+        <figcaption class="cap">
+          One drawing, other palettes: Image › Adjustments, then Remap or Hue.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Rework -->
+    <section class="block container" id="rework" data-tone="rework">
+      <SectionHead label="05 · Rework" />
+      <div class="text">
+        <h2>Rework without adding colors.</h2>
+        <p class="muted intro">
+          Liquify and Jumble move the pixels that are already there: the edges stay sharp and the palette
+          stays the same.
+        </p>
+        <ul class="tools">
+          <li>
+            <kbd class="key">{key('Liquify')}</kbd>
+            <div>
+              <h3>Liquify</h3>
+              <p>Push a part of the drawing, grow it or shrink it, like fluid.</p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Jumble')}</kbd>
+            <div>
+              <h3>Jumble</h3>
+              <p>Shuffles the pixels under the brush: foliage, rock, noise, a ragged edge.</p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Blur')}</kbd>
+            <div>
+              <h3>Blur</h3>
+              <p>
+                Softens an edge. With “Stay within the palette” on, it only uses your colors, with no
+                in-between shades.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure class="frame">
+        <PixelPlay
+          animation={anim.jumble}
+          label="The Jumble brush running along the edge between foliage and sky, making it ragged."
+        />
+        <figcaption class="cap">Jumble along the edge, twice. Still the same five colors.</figcaption>
+      </figure>
+    </section>
+
+    <!-- Symmetry, guides and tiles: three cards instead of text and pictures side by side. -->
+    <section class="cards container" id="symmetry" data-tone="symmetry">
+      <SectionHead label="06 · The View menu" link={{ href: '#keys', text: 'Every shortcut →' }} />
+      <div class="cards-title">
+        <h2>Symmetry, guides and seamless tiles.</h2>
+        <p class="muted intro">
+          Three views that make sprites and textures faster to draw. Turn them on and off as you go.
+        </p>
+      </div>
+      <div class="card-row">
+        <article class="card">
+          <figure class="frame card-art">
+            <div class="mirror">
+              <PixelPlay
+                animation={anim.symmetry}
+                label="A starfighter drawn on the left side only, the right side mirrored as it goes."
+              />
+              <span class="axis" aria-hidden="true"></span>
+            </div>
+          </figure>
+          <PixelIcon rows={ICON_MIRROR} size={20} />
+          <h3>Symmetry</h3>
+          <p class="muted">
+            Draw one side, the other follows. Left-right, top-bottom or both, around an axis you drag
+            anywhere.
+          </p>
+          <p class="card-where mono">
+            View › Left-right symmetry <kbd>Shift X</kbd>
+          </p>
+        </article>
+        <article class="card">
+          <figure class="frame card-art">
+            <div class="guides" data-guides>
+              <span class="ruler ruler-top" aria-hidden="true"></span>
+              <span class="ruler ruler-left" aria-hidden="true"></span>
+              <div
+                class="pix guides-art"
+                set:html={items.svg}
+                role="img"
+                aria-label="A sheet of six game icons, split into cells by guides pulled out of the rulers."
+              />
+              <span class="guide guide-h" aria-hidden="true"></span>
+              <span class="guide guide-v1" aria-hidden="true"></span>
+              <span class="guide guide-v2" aria-hidden="true"></span>
+            </div>
+          </figure>
+          <PixelIcon rows={ICON_GUIDES} size={20} />
+          <h3>Rulers and guides</h3>
+          <p class="muted">Drag a guide out of a ruler to line up sprites, or to split a sheet into cells.</p>
+          <p class="card-where mono">View › Rulers and guides</p>
+        </article>
+        <article class="card">
+          <figure class="frame card-art">
+            <div class="tiles">
+              <PixelPlay
+                animation={anim.tiles}
+                label="One brick tile being drawn, repeated live in the eight copies around it."
+              />
+              <span class="tile-frame" aria-hidden="true"></span>
+            </div>
+          </figure>
+          <PixelIcon rows={ICON_TILE} size={20} />
+          <h3>Tile preview</h3>
+          <p class="muted">
+            Copies all around the drawing. A stroke that leaves one edge comes back on the other, so the
+            texture repeats without a seam.
+          </p>
+          <p class="card-where mono">
+            View › Tile preview <kbd>Shift T</kbd>
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Layers -->
+    <section class="block container" id="layers" data-tone="layers">
+      <SectionHead label="07 · Layers" />
+      <div class="text">
+        <h2>Layers, like in a design tool.</h2>
+        <p class="muted intro">
+          Keep the sky, the background and each character apart, and change one without touching the others.
+        </p>
+        <ul class="tools">
+          <li>
+            <kbd class="key">{key('Move')}</kbd>
+            <div>
+              <h3>Move</h3>
+              <p>
+                Click a pixel to grab its layer. Drag the handles to resize it, or just outside a corner to
+                rotate it. The arrow keys nudge by 1 px, with Shift by 8.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Layer</span>
+            <div>
+              <h3>Blend modes and opacity</h3>
+              <p>{ill.blendModes} blend modes, from Multiply to Difference, and an opacity for each layer.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Ctrl G</span>
+            <div>
+              <h3>Groups</h3>
+              <p>
+                Group layers, two levels deep. A group hides, locks, and has its own opacity and blend mode.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Layer</span>
+            <div>
+              <h3>Hide, lock, solo</h3>
+              <p>Alt-click an eye to see one layer alone. Merge down, merge visible, flatten.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">View</span>
+            <div>
+              <h3>Floating preview</h3>
+              <p>
+                A live view with its own zoom, to check the whole drawing or a detail while you work. Click it
+                to move the canvas there.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure class="frame scene-frame" data-scene>
+        <div class="trace-ui">
+          <div
+            class="scene"
+            style={`aspect-ratio: ${anim.layers.w} / ${anim.layers.h}`}
+            role="img"
+            aria-label="A city at dusk in four layers: the balloon is moved across the sky, a Night layer in Multiply darkens the scene, then the city is hidden and shown again."
+          >
+            <div class="pix scene-layer" set:html={anim.layers.sky} />
+            <div class="pix scene-layer" data-city set:html={anim.layers.city} />
+            <div
+              class="balloon"
+              data-balloon
+              style={`width: ${(anim.layers.balloon.w / anim.layers.w) * 100}%; aspect-ratio: ${anim.layers.balloon.w} / ${anim.layers.balloon.h}`}
+            >
+              <div class="pix" set:html={anim.layers.balloon.svg} />
+              <span class="sel-frame" aria-hidden="true">
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+              </span>
+            </div>
+            <span class="night" data-night aria-hidden="true"></span>
+          </div>
+          <div class="scene-side">
+            <ol class="layer-list scene-layers" aria-hidden="true">
+              <li data-row="night">
+                <span class="eye">
+                  <PixelIcon rows={EYE} size={14} />
+                </span>
+                <span>Night</span>
+                <span class="blend-tag">Multiply</span>
+              </li>
+              <li data-row="balloon">
+                <span class="eye">
+                  <PixelIcon rows={EYE} size={14} />
+                </span>
+                <span>Balloon</span>
+              </li>
+              <li data-row="city">
+                <span class="eye" data-city-eye>
+                  <span class="open">
+                    <PixelIcon rows={EYE} size={14} />
+                  </span>
+                  <span class="closed">
+                    <PixelIcon rows={EYE_CLOSED} size={14} />
+                  </span>
+                </span>
+                <span>City</span>
+              </li>
+              <li data-row="sky">
+                <span class="eye">
+                  <PixelIcon rows={EYE} size={14} />
+                </span>
+                <span>Sky</span>
+              </li>
+            </ol>
+            <div class="opacity" data-opacity aria-hidden="true">
+              <span>Opacity</span>
+              <span class="opacity-track" data-track>
+                <i data-thumb></i>
+              </span>
+              <span class="mono" data-value>
+                0%
+              </span>
+            </div>
+          </div>
+        </div>
+        <span class="cursor" data-cursor aria-hidden="true">
+          <PixelIcon rows={CURSOR} size={18} />
+        </span>
+        <figcaption class="cap">
+          Move a layer, darken the scene with a Multiply layer, hide another. The rest stays put.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Export -->
+    <section class="block container" id="export" data-tone="export">
+      <SectionHead label="08 · Export" />
+      <div class="text">
+        <h2>Out as clean vector.</h2>
+        <p class="muted intro">What you draw goes straight into your design files.</p>
+        <ul class="tools">
+          <li>
+            <span class="key wide">Copy</span>
+            <div>
+              <h3>Copy as SVG</h3>
+              <p>
+                Ctrl+Shift+C copies it with one path per color, so the file stays small and easy to edit.
+                Paste it into Figma or Illustrator and it stays sharp at any size.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">PNG</span>
+            <div>
+              <h3>PNG from 1× to 32×</h3>
+              <p>With a live preview, a transparent background or not, the whole drawing or one layer.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Gap</span>
+            <div>
+              <h3>Pixel gap</h3>
+              <p>Space the pixels apart for an LED or dot-matrix look, on the canvas and in both exports.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="figures">
+        <figure class="frame">
+          <div class="pair knights">
+            <div>
+              <div class="pix" set:html={ill.knight.solid} />
+              <p class="cap">No gap</p>
+            </div>
+            <div>
+              <div class="pix" set:html={ill.knight.gap} />
+              <p class="cap">1 px gap</p>
+            </div>
+          </div>
+        </figure>
+        <figure class="frame code">
+          <div class="pix heart" set:html={ill.heartCode} />
+          <div class="snippet">
+            <div class="snippet-bar">
+              <span>heart.svg</span>
+              <span class="muted">{ill.heartCode.split('<path').length - 1} paths</span>
+              <button class="snippet-copy" type="button" data-copy={ill.heartCode}>
+                Copy
+              </button>
+            </div>
+            <pre><code set:html={ill.heartHtml} /></pre>
+          </div>
+          <figcaption class="cap">What Copy as SVG puts on the clipboard: one path per color.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Keys -->
+    <section class="keys container" id="keys">
+      <SectionHead label="Shortcuts" />
+      <h2>Every tool is one key away.</h2>
+      <p class="muted intro">And every command is in the palette, on Ctrl+K.</p>
+      <ul class="key-grid">
+        {ill.tools.map((t) => (
+          <li>
+            {t.key ? <kbd class="key">{t.key}</kbd> : <span class="key wide muted">Menu</span>}
+            <span>{t.name}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <Cta />
+  </main>
+
+  <Footer />
+
+  <script>
+    // Outline: the cursor plays the panel along with the picture: Outline tab, Square, Round, Apply.
+    const outlineFigure = document.querySelector<HTMLElement>('[data-outline]');
+    const outlineCanvas = outlineFigure?.querySelector<HTMLCanvasElement>('[data-pixel-play]');
+    if (outlineFigure && outlineCanvas) {
+      const STEPS = JSON.parse(outlineFigure.dataset.steps!);
+      const cursor = outlineFigure.querySelector<HTMLElement>('[data-cursor]')!;
+      const tabs = Object.fromEntries(
+        [...outlineFigure.querySelectorAll<HTMLElement>('[data-tab]')].map((t) => [t.dataset.tab!, t]),
+      );
+      const chips = Object.fromEntries(
+        [...outlineFigure.querySelectorAll<HTMLElement>('[data-chip]')].map((c) => [c.dataset.chip!, c]),
+      );
+      const apply = outlineFigure.querySelector<HTMLElement>('[data-apply]')!;
+      let timers: number[] = [];
+      const setTab = (id: string) => {
+        Object.entries(tabs).forEach(([key, el]) => el.classList.toggle('is-on', key === id));
+        outlineFigure.classList.toggle('on-outline', id === 'outline');
+      };
+      const setChip = (id: string) =>
+        Object.entries(chips).forEach(([key, el]) => el.classList.toggle('is-on', key === id));
+      outlineCanvas.addEventListener('pixelplay:start', () => {
+        timers.forEach(clearTimeout);
+        timers = [];
+        outlineFigure.classList.remove('is-applied');
+        setTab('colors');
+        setChip('round');
+        cursor.getAnimations().forEach((a) => a.cancel());
+        const box = outlineFigure.getBoundingClientRect();
+        const center = (el: HTMLElement) => {
+          const r = el.getBoundingClientRect();
+          return { x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height / 2 };
+        };
+        // The Outline tab first: the chips only show once it's open, so measure them after.
+        const tab = center(tabs.outline);
+        const at = (p: { x: number; y: number }, press = false) =>
+          `translate(${p.x - 2}px, ${p.y - 2}px)${press ? ' scale(0.8)' : ''}`;
+        const total = STEPS.end;
+        const k = (ms: number) => ms / total;
+        const press = (ms: number, p: { x: number; y: number }) => [
+          { offset: k(ms - 100), opacity: 1, transform: at(p) },
+          { offset: k(ms), opacity: 1, transform: at(p, true) },
+          { offset: k(ms + 100), opacity: 1, transform: at(p) },
+        ];
+        setTab('outline');
+        const square = center(chips.square);
+        const round = center(chips.round);
+        const ok = center(apply);
+        setTab('colors');
+        cursor.animate(
+          [
+            { offset: 0, opacity: 0, transform: at({ x: tab.x + 30, y: tab.y + 70 }) },
+            { offset: k(200), opacity: 1, transform: at({ x: tab.x + 30, y: tab.y + 70 }) },
+            ...press(STEPS.tab, tab),
+            ...press(STEPS.square, square),
+            ...press(STEPS.round, round),
+            ...press(STEPS.apply, ok),
+            { offset: k(STEPS.apply + 700), opacity: 0, transform: at(ok) },
+            { offset: 1, opacity: 0, transform: at(ok) },
+          ],
+          { duration: total, fill: 'forwards' },
+        );
+        const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+        later(STEPS.tab, () => setTab('outline'));
+        later(STEPS.square, () => setChip('square'));
+        later(STEPS.round, () => setChip('round'));
+        // Applied: the panel closes, as in the editor; here it just fades.
+        later(STEPS.apply + 200, () => outlineFigure.classList.add('is-applied'));
+      });
+    }
+
+    // Colors: every 2.4 s, the next version of the drawing wipes in, in steps like a scan.
+    const recolor = document.querySelector<HTMLElement>('[data-recolor]');
+    // Once per page, even if the script runs again.
+    if (recolor && !recolor.dataset.playing && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      recolor.dataset.playing = 'true';
+      const versions: string[] = JSON.parse(recolor.dataset.versions!);
+      // Two layers of the same drawing: the top one takes the next colors and wipes in over the
+      // bottom one, which then takes them too.
+      const [bottom, top] = [...recolor.querySelectorAll<SVGElement>('.recolor-art')];
+      const infos = [...recolor.querySelectorAll<HTMLElement>('.recolor-info')];
+      let current = 0;
+      let timer = 0;
+      const show = (next: number) => {
+        top.style.cssText = versions[next];
+        const wipe = top.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], {
+          duration: 640,
+          easing: 'steps(16, end)',
+        });
+        wipe.onfinish = () => (bottom.style.cssText = versions[next]);
+        infos[current].classList.remove('is-on');
+        infos[next].classList.add('is-on');
+        current = next;
+      };
+      new IntersectionObserver(([entry]) => {
+        clearInterval(timer);
+        if (entry.isIntersecting)
+          timer = window.setInterval(() => show((current + 1) % versions.length), 2400);
+      }).observe(recolor);
+    }
+
+    // Guides: the CSS animation only runs while the card is on screen.
+    const guides = document.querySelector<HTMLElement>('[data-guides]');
+    if (guides)
+      new IntersectionObserver(([entry]) =>
+        guides.classList.toggle('is-playing', entry.isIntersecting),
+      ).observe(guides);
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>('.snippet-copy')) {
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(button.dataset.copy ?? '');
+          button.textContent = 'Copied';
+        } catch {
+          button.textContent = 'Press Ctrl+C';
+        }
+        setTimeout(() => (button.textContent = 'Copy'), 1600);
+      });
+    }
+
+    // Reference image: once the apple is traced, the cursor hides the reference with its eye.
+    const figure = document.querySelector<HTMLElement>('[data-trace]');
+    const canvas = figure?.querySelector<HTMLCanvasElement>('[data-pixel-play]');
+    if (figure && canvas) {
+      const { events, hold } = JSON.parse(canvas.dataset.pixelPlay!);
+      const drawn: number = events.at(-4);
+      const total = drawn + hold;
+      const at = (ms: number) => Math.min(1, (drawn + ms) / total);
+      const cursor = figure.querySelector<HTMLElement>('[data-cursor]')!;
+      const eye = figure.querySelector<HTMLElement>('[data-ref-eye]')!;
+      const row = figure.querySelector<HTMLElement>('[data-ref-row]')!;
+      const reference = figure.querySelector<HTMLElement>('.reference')!;
+      // The light canvas under the reference goes with it: the apple ends up on the card.
+      const paper = figure.querySelector<HTMLElement>('.trace')!;
+      let click = 0;
+      canvas.addEventListener('pixelplay:start', () => {
+        clearTimeout(click);
+        row.classList.remove('is-hidden');
+        const box = figure.getBoundingClientRect();
+        const target = eye.getBoundingClientRect();
+        const x = target.left - box.left + target.width / 2 - 2;
+        const y = target.top - box.top + target.height / 2 - 2;
+        const to = `translate(${x}px, ${y}px)`;
+        const from = `translate(${x + 70}px, ${y + 90}px)`;
+        cursor.getAnimations().forEach((a) => a.cancel());
+        reference.getAnimations().forEach((a) => a.cancel());
+        paper.getAnimations().forEach((a) => a.cancel());
+        cursor.animate(
+          [
+            { offset: 0, opacity: 0, transform: from },
+            { offset: at(300), opacity: 0, transform: from },
+            { offset: at(450), opacity: 1, transform: from },
+            { offset: at(1150), opacity: 1, transform: to },
+            { offset: at(1250), opacity: 1, transform: `${to} scale(0.8)` },
+            { offset: at(1350), opacity: 1, transform: to },
+            { offset: at(2300), opacity: 1, transform: to },
+            { offset: at(2600), opacity: 0, transform: to },
+            { offset: 1, opacity: 0, transform: to },
+          ],
+          { duration: total, fill: 'forwards', easing: 'linear' },
+        );
+        reference.animate(
+          [
+            { offset: 0, opacity: 0.45 },
+            { offset: at(1250), opacity: 0.45 },
+            { offset: at(1400), opacity: 0 },
+            { offset: 1, opacity: 0 },
+          ],
+          { duration: total, fill: 'forwards' },
+        );
+        paper.animate(
+          [
+            { offset: 0, backgroundColor: '#f4f4f4' },
+            { offset: at(1250), backgroundColor: '#f4f4f4' },
+            { offset: at(1400), backgroundColor: 'rgb(244 244 244 / 0)' },
+            { offset: 1, backgroundColor: 'rgb(244 244 244 / 0)' },
+          ],
+          { duration: total, fill: 'forwards' },
+        );
+        click = window.setTimeout(() => row.classList.add('is-hidden'), drawn + 1250);
+      });
+    }
+
+    // Layers: the cursor moves the balloon, then turns up a Night layer in Multiply, then hides the
+    // city and shows it again. The selected layer gets the editor's frame with its corner handles.
+    const scene = document.querySelector<HTMLElement>('[data-scene]');
+    if (scene && !scene.dataset.playing && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      scene.dataset.playing = 'true';
+      const stage = scene.querySelector<HTMLElement>('.scene')!;
+      const balloon = scene.querySelector<HTMLElement>('[data-balloon]')!;
+      const city = scene.querySelector<HTMLElement>('[data-city]')!;
+      const night = scene.querySelector<HTMLElement>('[data-night]')!;
+      const cursor = scene.querySelector<HTMLElement>('[data-cursor]')!;
+      const track = scene.querySelector<HTMLElement>('[data-track]')!;
+      const thumb = scene.querySelector<HTMLElement>('[data-thumb]')!;
+      const value = scene.querySelector<HTMLElement>('[data-value]')!;
+      const rows = Object.fromEntries(
+        [...scene.querySelectorAll<HTMLElement>('[data-row]')].map((r) => [r.dataset.row!, r]),
+      );
+      const eye = scene.querySelector<HTMLElement>('[data-city-eye]')!;
+      // Balloon positions, in % of the picture: where it starts, where it's dropped.
+      const from = { x: 14, y: 30 };
+      const to = { x: 60, y: 10 };
+      const NIGHT = 0.6;
+      const TOTAL = 12000;
+      let timers: number[] = [];
+
+      const run = () => {
+        timers.forEach(clearTimeout);
+        timers = [];
+        [cursor, balloon, city, night, thumb].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+        Object.values(rows).forEach((r) => r.classList.remove('is-active', 'is-hidden'));
+        stage.classList.remove('is-selected');
+        scene.classList.remove('on-night');
+        value.textContent = '0%';
+        const box = scene.getBoundingClientRect();
+        const pic = stage.getBoundingClientRect();
+        const center = (el: HTMLElement) => {
+          const r = el.getBoundingClientRect();
+          return { x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height / 2 };
+        };
+        const onPicture = (p: { x: number; y: number }) => ({
+          x: pic.left - box.left + (p.x / 100) * pic.width + balloon.offsetWidth / 2,
+          y: pic.top - box.top + (p.y / 100) * pic.height + balloon.offsetHeight / 3,
+        });
+        // The opacity slider is shown with the Night layer: measure it as it will be.
+        scene.classList.add('on-night');
+        const bar = track.getBoundingClientRect();
+        const along = (f: number) => ({
+          x: bar.left - box.left + f * bar.width,
+          y: bar.top - box.top + bar.height / 2,
+        });
+        scene.classList.remove('on-night');
+        const balloonRow = center(rows.balloon);
+        const nightRow = center(rows.night);
+        const grab = onPicture(from);
+        const drop = onPicture(to);
+        const eyeAt = center(eye);
+        const at = (p: { x: number; y: number }, press = false) =>
+          `translate(${p.x - 2}px, ${p.y - 2}px)${press ? ' scale(0.8)' : ''}`;
+        const k = (ms: number) => ms / TOTAL;
+        const opts = { duration: TOTAL, fill: 'forwards' } as const;
+        const click = (ms: number, p: { x: number; y: number }) => [
+          { offset: k(ms - 100), opacity: 1, transform: at(p) },
+          { offset: k(ms), opacity: 1, transform: at(p, true) },
+          { offset: k(ms + 100), opacity: 1, transform: at(p) },
+        ];
+        cursor.animate(
+          [
+            { offset: 0, opacity: 0, transform: at({ x: balloonRow.x + 40, y: balloonRow.y + 60 }) },
+            { offset: k(300), opacity: 1, transform: at({ x: balloonRow.x + 40, y: balloonRow.y + 60 }) },
+            ...click(1000, balloonRow),
+            { offset: k(1900), opacity: 1, transform: at(grab) },
+            { offset: k(2000), opacity: 1, transform: at(grab, true) },
+            { offset: k(3800), opacity: 1, transform: at(drop, true), easing: 'ease-in-out' },
+            { offset: k(3900), opacity: 1, transform: at(drop) },
+            ...click(4700, nightRow),
+            { offset: k(5300), opacity: 1, transform: at(along(0)) },
+            { offset: k(5400), opacity: 1, transform: at(along(0), true) },
+            { offset: k(6800), opacity: 1, transform: at(along(NIGHT), true), easing: 'ease-in-out' },
+            { offset: k(6900), opacity: 1, transform: at(along(NIGHT)) },
+            ...click(7800, eyeAt),
+            ...click(9300, eyeAt),
+            { offset: k(10100), opacity: 0, transform: at(eyeAt) },
+            { offset: 1, opacity: 0, transform: at(eyeAt) },
+          ],
+          opts,
+        );
+        const pos = (p: { x: number; y: number }) => ({ left: `${p.x}%`, top: `${p.y}%` });
+        balloon.animate(
+          [
+            { offset: 0, ...pos(from) },
+            { offset: k(2000), ...pos(from) },
+            { offset: k(3800), ...pos(to), easing: 'ease-in-out' },
+            { offset: k(11500), ...pos(to) },
+            { offset: 1, ...pos(from) },
+          ],
+          opts,
+        );
+        night.animate(
+          [
+            { offset: 0, opacity: 0 },
+            { offset: k(5400), opacity: 0 },
+            { offset: k(6800), opacity: NIGHT, easing: 'ease-in-out' },
+            { offset: k(11500), opacity: NIGHT },
+            { offset: 1, opacity: 0 },
+          ],
+          opts,
+        );
+        thumb.animate(
+          [
+            { offset: 0, left: '0%' },
+            { offset: k(5400), left: '0%' },
+            { offset: k(6800), left: `${NIGHT * 100}%`, easing: 'ease-in-out' },
+            { offset: 1, left: `${NIGHT * 100}%` },
+          ],
+          opts,
+        );
+        city.animate(
+          [
+            { offset: 0, opacity: 1 },
+            { offset: k(7800), opacity: 1 },
+            { offset: k(7850), opacity: 0 },
+            { offset: k(9300), opacity: 0 },
+            { offset: k(9350), opacity: 1 },
+            { offset: 1, opacity: 1 },
+          ],
+          opts,
+        );
+        const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+        later(1000, () => {
+          rows.balloon.classList.add('is-active');
+          stage.classList.add('is-selected');
+        });
+        later(4700, () => {
+          rows.balloon.classList.remove('is-active');
+          stage.classList.remove('is-selected');
+          rows.night.classList.add('is-active');
+          scene.classList.add('on-night');
+        });
+        // The value follows the thumb while it's dragged.
+        for (let step = 0; step <= 12; step++)
+          later(
+            5400 + (1400 * step) / 12,
+            () => (value.textContent = `${Math.round((NIGHT * 100 * step) / 12)}%`),
+          );
+        later(7800, () => {
+          rows.night.classList.remove('is-active');
+          scene.classList.remove('on-night');
+          rows.city.classList.add('is-active', 'is-hidden');
+        });
+        later(9300, () => rows.city.classList.remove('is-hidden'));
+        later(10200, () => rows.city.classList.remove('is-active'));
+        later(TOTAL, run);
+      };
+      const stop = () => {
+        timers.forEach(clearTimeout);
+        timers = [];
+      };
+      new IntersectionObserver(([entry]) => (entry.isIntersecting ? run() : stop())).observe(scene);
+    }
+  </script>
+</Base>
+
+<style>
+  .mono {
+    font-family: var(--mono);
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding-top: 72px;
+  }
+  .eyebrow {
+    font: 500 13px/1 var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  h1 {
+    max-width: 16ch;
+    margin-top: 20px;
+    font-size: clamp(40px, 6.4vw, 68px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+  }
+  .pixel-dot {
+    display: inline-block;
+    width: 0.16em;
+    height: 0.16em;
+    margin-left: 0.06em;
+    background: currentColor;
+  }
+  .lead {
+    max-width: 560px;
+    margin-top: 24px;
+    font-size: 18px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  /*
+   * Edge to edge. The picture is 2.5 times wider than tall, so on very wide screens it would get
+   * very tall: past 560 px it's cropped top and bottom instead, more from the water than the sky.
+   */
+  .hero-art {
+    margin: 56px 0 0;
+    background: #1f1b5c;
+  }
+  .hero-art :global(.pixel-play) {
+    height: min(40vw, 560px);
+    object-fit: cover;
+    object-position: 50% 35%;
+  }
+
+  /* ---- A section: text on the left, pictures on the right ---- */
+  .block {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 40px 64px;
+    padding-top: 120px;
+  }
+  /* The section's head line runs across both columns. */
+  .block > :global(.section-head) {
+    grid-column: 1 / -1;
+  }
+  .text {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+  }
+  .intro {
+    margin-top: 16px;
+    font-size: 17px;
+    text-wrap: pretty;
+  }
+  .tools {
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .tools li {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .tools h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .tools p {
+    margin-top: 4px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  /* A key, like the pixel buttons: square, with a side underneath. */
+  .key {
+    display: inline-grid;
+    place-items: center;
+    justify-self: start;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 2px 0 var(--line-strong);
+    background: var(--bg);
+    font: 500 13px/1 var(--mono);
+    color: var(--text);
+  }
+  .key.wide {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .key.small {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    font-size: 11px;
+  }
+
+  /* ---- Pictures ---- */
+  /* The pictures take the height of the text next to them, shared between the frames. */
+  .figures {
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: 16px;
+  }
+  .figures.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .frame {
+    display: grid;
+    align-content: center;
+    margin: 0;
+    padding: 32px;
+    background: linear-gradient(160deg, var(--tint-a, var(--surface)), var(--tint-b, var(--surface)));
+  }
+  .frame .cap {
+    color: var(--tint-ink, var(--muted));
+  }
+
+  /* ---- Full width: title on top, the tools in a row, the pictures side by side underneath ---- */
+  .full {
+    padding-top: 120px;
+  }
+  .tools-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 32px;
+    margin-top: 48px;
+    border-top: 0;
+  }
+  .tools-row li {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 0;
+  }
+  .tools-row .key {
+    align-self: flex-start;
+    margin-bottom: 8px;
+  }
+  .tools-row p {
+    margin: 0;
+  }
+  .wide-figures {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: 16px;
+    margin-top: 48px;
+  }
+  .full .tools .key:not(.wide) {
+    border-color: var(--accent);
+    box-shadow: 0 2px 0 var(--accent);
+    color: var(--accent);
+  }
+
+  /* ---- Cards: a row of three, to break the text-and-picture rhythm ---- */
+  .cards {
+    padding-top: 120px;
+  }
+  .cards-title {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: 64px;
+    align-items: end;
+    margin-top: 40px;
+  }
+  .cards-title .intro {
+    margin: 0;
+  }
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--accent);
+  }
+  .card-art {
+    aspect-ratio: 1;
+    margin-bottom: 14px;
+  }
+  .card h3 {
+    margin-top: 4px;
+    font-size: 20px;
+    color: var(--text);
+  }
+  .card p.muted {
+    font-size: 15px;
+  }
+  .card-where {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 6px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .card-where kbd {
+    padding: 3px 6px;
+    border: 1px solid var(--line-strong);
+    font: inherit;
+    font-size: 11px;
+  }
+
+  /* Rulers and guides: two rulers, a sheet of icons, and guides pulled out of the rulers. */
+  .guides {
+    position: relative;
+    padding: 14px 0 0 14px;
+    overflow: hidden;
+  }
+  .ruler {
+    position: absolute;
+    background-color: var(--bg);
+    background-image: repeating-linear-gradient(var(--dir), var(--line-strong) 0 1px, transparent 1px 8px);
+  }
+  .ruler-top {
+    --dir: 90deg;
+    inset: 0 0 auto 14px;
+    height: 10px;
+  }
+  .ruler-left {
+    --dir: 180deg;
+    inset: 14px auto 0 0;
+    width: 10px;
+  }
+  .guides-art {
+    background: var(--bg);
+  }
+  /*
+   * Each guide covers the whole box with its line on one edge, and moves with transform (the GPU
+   * does it, no layout): a percentage of its own size is then a percentage of the box.
+   * The sheet is 46×32 art pixels after the 14 px rulers: cells split at 15 and 31 across, 16 down.
+   */
+  .guide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    will-change: transform;
+    /* Longhands: the shorthand without a name gets minified to "none". */
+    animation-duration: 6s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-play-state: paused;
+  }
+  .guides.is-playing .guide {
+    animation-play-state: running;
+  }
+  .guide-h {
+    border-top: 1px solid light-dark(#e5402a, #ff6a4d);
+    animation-name: guide-down;
+  }
+  .guide-v1,
+  .guide-v2 {
+    border-left: 1px solid light-dark(#e5402a, #ff6a4d);
+  }
+  .guide-v1 {
+    animation-name: guide-right-1;
+  }
+  .guide-v2 {
+    animation-name: guide-right-2;
+  }
+  @keyframes guide-down {
+    0%,
+    10% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    30%,
+    92% {
+      /* 14 px + (100% − 14 px) × 16 / 32 */
+      transform: translateY(calc(50% + 7px));
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(calc(50% + 7px));
+      opacity: 0;
+    }
+  }
+  @keyframes guide-right-1 {
+    0%,
+    34% {
+      transform: translateX(0);
+      opacity: 0;
+    }
+    36% {
+      opacity: 1;
+    }
+    52%,
+    92% {
+      /* 14 px + (100% − 14 px) × 15 / 46 */
+      transform: translateX(calc(32.61% + 9.43px));
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(calc(32.61% + 9.43px));
+      opacity: 0;
+    }
+  }
+  @keyframes guide-right-2 {
+    0%,
+    56% {
+      transform: translateX(0);
+      opacity: 0;
+    }
+    58% {
+      opacity: 1;
+    }
+    74%,
+    92% {
+      /* 14 px + (100% − 14 px) × 31 / 46 */
+      transform: translateX(calc(67.39% + 4.57px));
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(calc(67.39% + 4.57px));
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .guide,
+    .guides.is-playing .guide {
+      animation-delay: -4.8s;
+      animation-play-state: paused;
+    }
+  }
+  .block .tools .key:not(.wide) {
+    border-color: var(--accent);
+    box-shadow: 0 2px 0 var(--accent);
+    color: var(--accent);
+  }
+  .pix :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .cap {
+    margin-top: 14px;
+    font: 400 12px/1.5 var(--mono);
+    color: var(--muted);
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+  }
+  /* The knights fill their card: the gap only reads when the pixels are big. */
+  .pair.knights {
+    gap: 48px;
+    padding: 8px 4%;
+  }
+  .outline-demo {
+    width: 100%;
+  }
+  .outline-frame {
+    position: relative;
+    overflow: hidden;
+  }
+  /* A small copy of the editor's Adjustments panel, on its Outline tab. */
+  .mini-panel {
+    transition: opacity 0.3s;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-size: 12px;
+  }
+  .outline-frame.is-applied .mini-panel {
+    opacity: 0.35;
+  }
+  .mp-head {
+    padding: 8px 10px;
+    font-weight: 500;
+  }
+  .mp-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 0 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mp-tabs span {
+    padding: 6px 4px;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+  }
+  .mp-tabs span.is-on {
+    color: var(--text);
+    border-bottom-color: var(--text);
+  }
+  .mp-body {
+    padding: 10px;
+  }
+  .mp-colors {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 8px 10px;
+    color: var(--muted);
+  }
+  .mp-colors i {
+    height: 2px;
+    background: var(--line);
+  }
+  .mp-outline,
+  .outline-frame.on-outline .mp-colors {
+    display: none;
+  }
+  .outline-frame.on-outline .mp-outline {
+    display: grid;
+    gap: 8px;
+  }
+  .mp-chips {
+    display: flex;
+    gap: 4px;
+  }
+  .mp-chips span {
+    flex: 1;
+    padding: 5px 0;
+    border: 1px solid var(--line);
+    text-align: center;
+    color: var(--muted);
+  }
+  .mp-chips span.is-on {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  .mp-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 0 10px 10px;
+  }
+  .mp-foot span {
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+  }
+  .mp-foot .mp-primary {
+    border-color: var(--text);
+    background: var(--text);
+    color: var(--bg);
+  }
+  .pair.narrow {
+    max-width: 420px;
+    margin-inline: auto;
+  }
+  .dither-cap {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    text-align: center;
+  }
+
+  /* The reference, faded under the tracing, on a light canvas like the editor's. */
+  .trace {
+    position: relative;
+    max-width: 360px;
+    margin-inline: auto;
+    background: #f4f4f4;
+  }
+  .reference {
+    position: absolute;
+    inset: 0;
+    opacity: 0.45;
+  }
+  .reference :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .trace :global(.pixel-play) {
+    position: relative;
+  }
+  .trace-frame {
+    position: relative;
+    overflow: hidden;
+  }
+  .trace-ui {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 24px;
+    align-items: center;
+  }
+  .trace-ui .trace {
+    max-width: none;
+  }
+  .eye {
+    display: inline-grid;
+    color: var(--muted);
+  }
+  .eye .closed,
+  .is-hidden .eye .open {
+    display: none;
+  }
+  .is-hidden .eye .closed {
+    display: inline-grid;
+  }
+  .is-hidden {
+    color: var(--muted);
+  }
+  /* The pointer, white with a dark edge so it reads on any background. */
+  .cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #ffffff;
+    opacity: 0;
+    filter: drop-shadow(1px 0 0 #000) drop-shadow(-1px 0 0 #000) drop-shadow(0 1px 0 #000)
+      drop-shadow(0 -1px 0 #000);
+    pointer-events: none;
+  }
+  .cursor :global(svg) {
+    display: block;
+  }
+
+  /* One drawing, recolored: the versions are stacked, the next one wipes in from the left. */
+  .recolor {
+    display: grid;
+    width: min(100%, 400px);
+    margin-inline: auto;
+  }
+  .recolor-art {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .recolor-defs {
+    position: absolute;
+  }
+  .recolor-bar {
+    display: grid;
+    width: min(100%, 400px);
+    margin: 16px auto 0;
+  }
+  .recolor-info {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 10px 12px;
+    background: var(--bg);
+    font-size: 13px;
+    visibility: hidden;
+  }
+  .recolor-info.is-on {
+    visibility: visible;
+  }
+  .recolor-name {
+    font-weight: 500;
+  }
+  .recolor-info .mono {
+    font-size: 11px;
+  }
+  .swatches {
+    display: flex;
+    flex-basis: 100%;
+  }
+  .swatches span {
+    flex: 1;
+    height: 12px;
+  }
+
+  .mirror,
+  .tiles {
+    position: relative;
+  }
+  .axis {
+    position: absolute;
+    top: -8px;
+    bottom: -8px;
+    left: calc(50% - 1px);
+    width: 2px;
+    background: #ff4d8d;
+  }
+  .tiles {
+    overflow: hidden;
+  }
+  /* The tile itself, framed; its copies around it a little faded, as in the editor. */
+  .tile-frame {
+    position: absolute;
+    inset: calc(100% / 3);
+    outline: 2px solid #ff4d8d;
+    box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--tint-a, var(--surface)) 45%, transparent);
+  }
+
+  /* Layers: the list as in the editor, next to the picture. */
+  .layer-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--bg);
+  }
+  .layer-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .layer-list li + li {
+    border-top: 1px solid var(--line);
+  }
+  .layer-list li.is-active {
+    background: var(--line);
+  }
+  .scene-frame {
+    position: relative;
+    overflow: hidden;
+  }
+  .scene-frame .trace-ui {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 2fr);
+  }
+  .scene {
+    position: relative;
+    background: #1f1b5c;
+  }
+  .scene-layer {
+    position: absolute;
+    inset: 0;
+  }
+  .balloon {
+    position: absolute;
+    left: 14%;
+    top: 30%;
+  }
+  /* The editor's selection: a blue frame with white square handles on its corners. */
+  .sel-frame {
+    position: absolute;
+    inset: -2px;
+    outline: 1px solid #1b93dd;
+    visibility: hidden;
+  }
+  .is-selected .sel-frame {
+    visibility: visible;
+  }
+  .sel-frame i {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border: 1px solid #1b93dd;
+    background: #ffffff;
+  }
+  .sel-frame i:nth-child(1) {
+    top: -4px;
+    left: -4px;
+  }
+  .sel-frame i:nth-child(2) {
+    top: -4px;
+    right: -4px;
+  }
+  .sel-frame i:nth-child(3) {
+    bottom: -4px;
+    left: -4px;
+  }
+  .sel-frame i:nth-child(4) {
+    right: -4px;
+    bottom: -4px;
+  }
+  /* The Night layer: a flat blue-violet in Multiply, over everything, its opacity turned up. */
+  .night {
+    position: absolute;
+    inset: 0;
+    background: #2a2466;
+    mix-blend-mode: multiply;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scene-side {
+    display: grid;
+    gap: 8px;
+  }
+  .blend-tag {
+    margin-left: auto;
+    font: 500 10px/1 var(--mono);
+    color: var(--muted);
+  }
+  /* The selected layer's opacity, shown under the list once Night is picked. */
+  .opacity {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg);
+    font-size: 12px;
+    visibility: hidden;
+  }
+  .on-night .opacity {
+    visibility: visible;
+  }
+  .opacity .mono {
+    min-width: 3ch;
+    text-align: right;
+    font-size: 11px;
+  }
+  .opacity-track {
+    position: relative;
+    height: 2px;
+    background: var(--line-strong);
+  }
+  .opacity-track i {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--text);
+    background: var(--bg);
+    transform: translate(-50%, -50%);
+  }
+
+  /* The SVG as Copy as SVG writes it, in a code block. */
+  .frame.code {
+    --tok-tag: var(--text);
+    --tok-attr: var(--muted);
+    --tok-value: light-dark(#b13e53, #f27d84);
+  }
+  .heart {
+    width: 72px;
+    margin: 0 auto 24px;
+  }
+  .snippet {
+    border: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .snippet-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 8px 8px 14px;
+    border-bottom: 1px solid var(--line);
+    font: 500 12px/1 var(--mono);
+  }
+  .snippet-copy {
+    height: 26px;
+    margin-left: auto;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    font: 500 12px/1 var(--mono);
+    cursor: pointer;
+  }
+  .snippet-copy:hover {
+    background: var(--surface);
+  }
+  .snippet pre {
+    margin: 0;
+    padding: 14px;
+    font: 400 12px/1.7 var(--mono);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .snippet :global(.tok-tag) {
+    color: var(--tok-tag);
+  }
+  .snippet :global(.tok-attr) {
+    color: var(--tok-attr);
+  }
+  .snippet :global(.tok-value) {
+    color: var(--tok-value);
+  }
+
+  /* ---- Keys ---- */
+  .keys {
+    padding-top: 120px;
+  }
+  .keys h2 {
+    margin-top: 40px;
+  }
+  .key-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 40px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .key-grid li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+
+  /* ---- Small screens ---- */
+  @media (max-width: 900px) {
+    .block {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+    }
+    .text {
+      position: static;
+    }
+    .card-row,
+    .wide-figures {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 48px;
+    }
+    .tools-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px 24px;
+    }
+    .cards-title {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+    .figures {
+      grid-auto-rows: auto;
+    }
+    .key-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 640px) {
+    .hero {
+      padding-top: 40px;
+    }
+    .block,
+    .keys {
+      padding-top: 88px;
+    }
+    .frame {
+      padding: 20px;
+    }
+    .figures.two {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .trace-ui,
+    .scene-frame .trace-ui {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

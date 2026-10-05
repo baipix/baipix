@@ -1,0 +1,146 @@
+---
+/**
+ * Plays a pixel animation from animations.ts on a canvas: it starts over each time it scrolls into
+ * view, and pixels light up for a moment when they land. With reduced motion, a still picture.
+ * Each run fires `pixelplay:start` on the canvas, for anything that plays along with it.
+ */
+import type { PixelAnimation } from '../animations';
+
+interface Props {
+  animation: PixelAnimation;
+  label: string;
+  class?: string;
+}
+const { animation, label, class: className } = Astro.props;
+---
+
+<canvas
+  class:list={['pixel-play', className]}
+  width={animation.w * 8}
+  height={animation.h * 8}
+  role="img"
+  aria-label={label}
+  data-pixel-play={JSON.stringify(animation)}
+></canvas>
+
+<script>
+  import type { PixelAnimation } from '../animations';
+
+  /** How long a pixel stays lit after landing, in ms. */
+  const GLOW_MS = 700;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  function player(canvas: HTMLCanvasElement) {
+    const a: PixelAnimation = JSON.parse(canvas.dataset.pixelPlay!);
+    const rgb = a.palette.map((hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)));
+    const end = (a.events.at(-4) ?? 0) + a.hold;
+    const ctx = canvas.getContext('2d')!;
+    const off = new OffscreenCanvas(a.w, a.h);
+    const offCtx = off.getContext('2d')!;
+    const image = new ImageData(a.w, a.h);
+
+    let next = 0; // index of the next event
+    let lit: { x: number; y: number; t: number; color: string }[] = [];
+    let origin = 0;
+    let frame = 0;
+    // Redraw only when a pixel changed or one is still lit: most frames have nothing new.
+    let dirty = true;
+
+    const put = (x: number, y: number, index: number) => {
+      const o = (y * a.w + x) * 4;
+      if (index) {
+        const [r, g, b] = rgb[index - 1];
+        image.data.set([r, g, b, 255], o);
+      } else image.data.set([0, 0, 0, 0], o);
+    };
+    const reset = () => {
+      a.start.forEach((index, i) => put(i % a.w, Math.floor(i / a.w), index));
+      next = 0;
+      lit = [];
+      dirty = true;
+    };
+    /** Plays every event up to `t`. */
+    const advance = (t: number, glow: boolean) => {
+      while (next < a.events.length && a.events[next] <= t) {
+        const [time, x, y, index] = a.events.slice(next, next + 4);
+        put(x, y, index);
+        dirty = true;
+        if (glow && index && a.glow) lit.push({ x, y, t: time, color: a.palette[index - 1] });
+        next += 4;
+      }
+    };
+    // Sharp pixels at any size: one canvas pixel per art pixel, scaled up without smoothing.
+    const scale = () => Math.max(1, Math.round((canvas.clientWidth * devicePixelRatio) / a.w));
+    const draw = (t: number) => {
+      const k = scale();
+      if (canvas.width !== a.w * k) {
+        canvas.width = a.w * k;
+        canvas.height = a.h * k;
+      }
+      offCtx.putImageData(image, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+      lit = lit.filter((p) => t - p.t < GLOW_MS);
+      if (!lit.length) return;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.shadowBlur = k * 3;
+      for (const p of lit) {
+        const f = 1 - (t - p.t) / GLOW_MS;
+        ctx.globalAlpha = f * f * a.glow;
+        ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x * k, p.y * k, k, k);
+      }
+      ctx.restore();
+    };
+    const tick = (now: number) => {
+      let t = now - origin;
+      if (t > end) {
+        origin = now;
+        t = 0;
+        reset();
+        canvas.dispatchEvent(new Event('pixelplay:start'));
+      }
+      const wasLit = lit.length > 0;
+      advance(t, true);
+      // One more frame after the last glow fades, to clear it.
+      if (dirty || wasLit || canvas.width !== a.w * scale()) draw(t);
+      dirty = false;
+      frame = requestAnimationFrame(tick);
+    };
+
+    const still = () => {
+      cancelAnimationFrame(frame);
+      reset();
+      advance(a.still, false);
+      draw(a.still);
+    };
+    const play = () => {
+      cancelAnimationFrame(frame);
+      reset();
+      origin = performance.now();
+      frame = requestAnimationFrame(tick);
+      canvas.dispatchEvent(new Event('pixelplay:start'));
+    };
+
+    still();
+    new IntersectionObserver(([entry]) => {
+      if (reduced.matches) return still();
+      if (entry.isIntersecting) play();
+      else cancelAnimationFrame(frame);
+    }).observe(canvas);
+  }
+
+  document.querySelectorAll<HTMLCanvasElement>('[data-pixel-play]').forEach(player);
+</script>
+
+<style>
+  .pixel-play {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+</style>

@@ -2,8 +2,20 @@
 /** Site footer, shared by every page. */
 import { DESIGN_URL, LICENSE_URL, REPO_URL } from '../links';
 import Logo from './Logo.astro';
+import PixelIcon from './PixelIcon.astro';
 
 const base = import.meta.env.BASE_URL;
+/** BAIPIX in 5×7 letters, with the logo's pixel escaping past the X. */
+const WORDMARK = [
+  '....................................#',
+  '####...###..#####.####..#####.#...#..',
+  '#...#.#...#...#...#...#...#...#...#..',
+  '#...#.#...#...#...#...#...#....#.#...',
+  '####..#####...#...####....#.....#....',
+  '#...#.#...#...#...#.......#....#.#...',
+  '#...#.#...#...#...#.......#...#...#..',
+  '####..#...#.#####.#.....#####.#...#..',
+];
 ---
 
 <footer class="footer container">
@@ -12,13 +24,16 @@ const base = import.meta.env.BASE_URL;
     <span>Baipix</span>
   </a>
   <nav class="footer-links">
+    <a href={`${base}draw/`}>Draw</a>
     <a href={REPO_URL}>GitHub</a>
     <a href={DESIGN_URL}>Design system</a>
     <a href={`${DESIGN_URL}#logo`}>Logo</a>
     <a href={LICENSE_URL}>MIT License</a>
   </nav>
   <p class="muted">© 2026 Baipix</p>
-  <p class="muted trademark">Figma is a trademark of Figma, Inc. Baipix isn't affiliated with Figma.</p>
+  <div class="wordmark" aria-hidden="true">
+    <PixelIcon rows={WORDMARK} size={370} />
+  </div>
 </footer>
 
 <style>
@@ -39,9 +54,16 @@ const base = import.meta.env.BASE_URL;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
-  .trademark {
+  /* A big, faint BAIPIX across the bottom of the page. */
+  .wordmark {
     flex-basis: 100%;
-    font-size: 12px;
+    margin-top: 40px;
+    color: var(--line);
+  }
+  .wordmark :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
   }
   .footer-links {
     display: flex;

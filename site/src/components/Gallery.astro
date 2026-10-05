@@ -1,12 +1,16 @@
 ---
 import { gallery } from '../gallery';
 import PixelIcon from './PixelIcon.astro';
+import SectionHead from './SectionHead.astro';
 
 const ARROW = ['...#...', '..#....', '.#.....', '#######', '.#.....', '..#....', '...#...'];
 const ARROW_RIGHT = ARROW.map((r) => [...r].reverse().join(''));
 ---
 
 <section id="gallery" class="gallery">
+  <div class="container">
+    <SectionHead label="Gallery" />
+  </div>
   <div class="container gallery-head">
     <div>
       <h2>Made with Baipix.</h2>
@@ -67,6 +71,12 @@ const ARROW_RIGHT = ARROW.map((r) => [...r].reverse().join(''));
 <style>
   .gallery {
     padding-top: 120px;
+    /* The pieces are big inline SVGs: skip drawing them until the gallery is near the screen. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 800px;
+  }
+  .gallery-head {
+    margin-top: 40px;
   }
   .gallery-head {
     display: flex;
