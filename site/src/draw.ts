@@ -160,12 +160,24 @@ function recolor() {
 
 // ---- Export ---------------------------------------------------------------------------------
 
+/**
+ * The knight, one square per pixel grouped by color, for the gap demo: the page shrinks each square
+ * around its center (a CSS variable), which looks like the editor's gap growing between pixels.
+ */
 function knight() {
   const doc = galleryDoc('knight.baipix');
   const pixels = flatten(doc, { includeBackground: false });
-  const at = (gap: number) =>
-    toSvg(pixels, doc.width, doc.height, renderGeometry(doc.width, doc.height, 4, gap));
-  return { solid: at(0), gap: at(1) };
+  const { width: w, height: h } = doc;
+  const byColor = new Map<string, string[]>();
+  pixels.forEach((c, i) => {
+    if (!(c >>> 24)) return;
+    const hex = toHex(c);
+    const rects = byColor.get(hex) ?? [];
+    rects.push(`<rect x="${i % w}" y="${Math.floor(i / w)}" width="1" height="1"/>`);
+    byColor.set(hex, rects);
+  });
+  const groups = [...byColor].map(([hex, rects]) => `<g fill="${hex}">${rects.join('')}</g>`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges">${groups}</svg>`;
 }
 
 /** The heart as Copy as SVG writes it, to show in full. */
