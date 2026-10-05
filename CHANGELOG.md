@@ -13,7 +13,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
-- A Draw page that goes through every drawing tool, with pictures and animations made by the editor itself. The home page follows it: its feature cards lead to the matching section, it says Baipix is free and open source, and the footer ends with a big BAIPIX in pixel art.
+- A Draw page that goes through every drawing tool, with pictures and animations made by the editor itself. The home page follows it: its feature cards lead to the matching section, it says Baipix is free and open source, and the footer ends with a big BAIPIX in pixel art. (#227)
 
 ## [0.3.1] - 2026-10-05
 
