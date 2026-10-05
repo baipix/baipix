@@ -170,10 +170,7 @@ export const MENU_BAR: MenuBarMenu[] = [
     items: (editor) => [
       {
         label: t('menu.canvasSize'),
-        onSelect: () =>
-          revealCanvas(() =>
-            document.querySelector<HTMLInputElement>(`input[aria-label="${t('canvas.width')}"]`)?.select(),
-          ),
+        onSelect: () => openDialog({ type: 'canvasSize' }),
       },
       {
         label: t('menu.background'),

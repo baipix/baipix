@@ -2,6 +2,7 @@ import { adjustColor, alpha, opaque, withAlpha, type Color, type ColorAdjustment
 import { flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   activeLayer,
+  centeredOffset,
   cloneDocument,
   cloneLayer,
   createDocument,
@@ -255,6 +256,8 @@ export class Editor {
   private opacityChange = false;
   private deleted: Deleted | null = null;
   private recent: Color[] = [];
+  /** The active layer's blend mode while another one is previewed. */
+  private blendPreview: { layer: Layer; mode: BlendMode | undefined } | null = null;
   /** New files left untouched so far: any change to one takes it out. */
   private fresh = new Set<string>();
   private brushes: CustomBrush[] = [];
@@ -595,12 +598,18 @@ export class Editor {
 
   /* ------------------------------------------------------------------ document */
 
-  resize(width: number, height: number): void {
+  /**
+   * Changes the canvas size. `offset` is where the old canvas's top-left lands in the new one, in
+   * whole pixels; without it the drawing stays centered.
+   */
+  resize(width: number, height: number, offset?: { x: number; y: number }): void {
     const w = clamp(Math.round(width) || this.doc.width, 1, MAX_SIZE);
     const h = clamp(Math.round(height) || this.doc.height, 1, MAX_SIZE);
-    if (w === this.doc.width && h === this.doc.height) return;
+    const o = offset ? { x: Math.round(offset.x), y: Math.round(offset.y) } : centeredOffset(this.doc, w, h);
+    // The same size can still shift the drawing.
+    if (w === this.doc.width && h === this.doc.height && !o.x && !o.y) return;
     this.edit((doc) => {
-      resizeDocument(doc, w, h);
+      resizeDocument(doc, w, h, o.x, o.y);
       this.active.selection = null;
     });
   }
@@ -965,8 +974,32 @@ export class Editor {
   }
 
   /** Opacity drags: one undo step per gesture. Call with `done` on release. */
+  /**
+   * Shows the active layer in another blend mode without keeping it (hovering the blend mode menu);
+   * `null` shows it as it was. Not in the history: `endBlendPreview` puts it back.
+   */
+  previewLayerBlendMode(mode: BlendMode | null): void {
+    const layer = activeLayer(this.doc);
+    if (!this.blendPreview) this.blendPreview = { layer, mode: layer.blendMode };
+    const next = mode ?? this.blendPreview.mode ?? 'normal';
+    if ((layer.blendMode ?? 'normal') === next) return;
+    if (next === 'normal') delete layer.blendMode;
+    else layer.blendMode = next;
+    this.pixelsChanged();
+  }
+
+  endBlendPreview(): void {
+    const p = this.blendPreview;
+    if (!p) return;
+    this.blendPreview = null;
+    if (p.mode) p.layer.blendMode = p.mode;
+    else delete p.layer.blendMode;
+    this.pixelsChanged();
+  }
+
   /** The active layer's blend mode, as one undo step. */
   setLayerBlendMode(mode: BlendMode): void {
+    this.endBlendPreview();
     const layer = activeLayer(this.doc);
     if ((layer.blendMode ?? 'normal') === mode) return;
     this.checkpoint();

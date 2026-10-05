@@ -7,9 +7,20 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Added
 
 - Rotate 90° counterclockwise (Alt+Shift+R) next to clockwise, and align what's drawn to the canvas: left, center or right, top, middle or bottom. In the Move and Select tools' bar, Layer › Align, and with Figma's shortcuts (Alt+A, H, D, W, V, S). With a selection, only its drawn pixels move. (#PR)
+- A Canvas size dialog (Image › Canvas size…, or the crop button next to W and H): drag the frame's handles to make the canvas bigger or smaller, drag the drawing to place it, or type the size and pick where the drawing goes in a 3×3 grid (centered by default). What gets cut off is kept, as with the W and H fields. One undo step. (#222)
+
+## [0.3.1] - 2026-10-05
+
+Small fixes and polish on 0.3: Delete removes the layer clicked in the list, blend modes preview as you hover them, and the website is easier to find.
+
+### Changed
+
+- The blend mode menu previews each mode on the canvas as you hover it (or reach it with the arrow keys), like in Figma; only a click keeps it. Leaving the menu or Escape puts the layer back. (#215)
+- Click a layer in the list, then Delete or Backspace removes it (or the selected layers, or the reference image), with Undo in the toast. On the canvas, Delete still clears the selection's pixels. (#214)
 
 ### Website
 
+- Better found in search engines: a sitemap and robots.txt, canonical addresses, a share card made for links (1200×630) with Twitter/X tags, structured data describing Baipix as a free web app, and titles that say what it is ("Free online pixel art editor, export to SVG and Figma"). The 404 page stays out of search results. (#216)
 - New screenshots of the editor, and the feature cards mention what 0.3 brought: templates and the tour, blend modes, rulers and guides, the outline, the minimap, and recovering the pixels of scaled-up images. (#210)
 - The design system shows the select field and the palette picker. (#210)
 
@@ -147,6 +158,7 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.3.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.3.1...main
+[0.3.1]: https://github.com/baipix/baipix/releases/tag/v0.3.1
 [0.3.0]: https://github.com/baipix/baipix/releases/tag/v0.3.0
 [0.2.0]: https://github.com/baipix/baipix/releases/tag/v0.2.0

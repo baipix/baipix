@@ -62,8 +62,22 @@ const features = [
 ---
 
 <Base
-  title="Baipix, pixel art for designers"
-  description="A free, open source pixel art editor with the interface of a modern design tool. Draw pixel by pixel, export clean vector."
+  title="Baipix · Free online pixel art editor, export to SVG and Figma"
+  description="Draw pixel art in your browser, for free: layers, palettes, symmetry, dithering, blend modes. Export clean SVG or PNG and paste it straight into Figma. Open source."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Baipix',
+    description:
+      'A free, open source pixel art editor in the browser, with the interface of a modern design tool and clean SVG export.',
+    url: new URL(base, Astro.site).href,
+    image: new URL(`${base}og.png`, Astro.site).href,
+    applicationCategory: 'DesignApplication',
+    operatingSystem: 'Any (web browser)',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    license: 'https://opensource.org/licenses/MIT',
+    sameAs: [REPO_URL],
+  }}
 >
   <header class="nav container">
     <a class="brand" href={base} aria-label="Baipix home">
