@@ -503,6 +503,8 @@ export function CanvasView() {
      */
     // Resizing by a corner handle (Move tool): the rectangle it started from and the corner held.
     let scaleDrag: { from: Rect; corner: number } | null = null;
+    // Rotating by dragging outside a corner: the center it turns around and the pointer's start angle.
+    let rotateDrag: { center: Point; start: number } | null = null;
     let scaleNote: string | null = null;
     /** Corners of a rectangle, in the order top-left, top-right, bottom-left, bottom-right. */
     const cornersOf = (r: Rect): Point[] => [
@@ -524,6 +526,23 @@ export function CanvasView() {
       );
       return corner < 0 ? null : { rect, corner };
     };
+    /** Just outside a corner of the frame (beyond its handle): where dragging rotates. */
+    const rotateZoneAt = (l: { x: number; y: number }): Rect | null => {
+      const state = editor.getState();
+      if (state.tool !== 'move' || state.referenceSelected || editor.isStroking) return null;
+      const rect = state.selection ?? activeLayerBox();
+      if (!rect || handleAt(l)) return null;
+      const p = artPoint(l);
+      const inside = p.x >= rect.x && p.y >= rect.y && p.x <= rect.x + rect.w && p.y <= rect.y + rect.h;
+      const reach = (22 * viewport.dpr) / viewport.scale;
+      const near = cornersOf(rect).some((c) => Math.hypot(c.x - p.x, c.y - p.y) <= reach);
+      return near && !inside ? rect : null;
+    };
+    const pointerAngle = (center: Point, l: { x: number; y: number }) => {
+      const p = artPoint(l);
+      return Math.atan2(p.y - center.y, p.x - center.x);
+    };
+
     /**
      * The rectangle while dragging a corner: the opposite corner stays (the center with Alt), Shift
      * keeps the proportions, and sizes snap to whole multiples (×2, ×3, ×½…) unless Cmd/Ctrl is held.
@@ -635,6 +654,15 @@ export function CanvasView() {
           scaleDrag = { from, corner: handle.corner };
           return;
         }
+        const zone = rotateZoneAt(l);
+        const rotating = zone && editor.beginRotate();
+        if (rotating) {
+          const center = { x: rotating.x + rotating.w / 2, y: rotating.y + rotating.h / 2 };
+          rotateDrag = { center, start: pointerAngle(center, l) };
+          scaleNote = '0°';
+          request();
+          return;
+        }
       }
       const tool = editor.getState().tool;
       const override = e.altKey && DRAWING_TOOLS.includes(tool) ? 'picker' : undefined;
@@ -688,6 +716,17 @@ export function CanvasView() {
         dragRef(local(e), false);
         return;
       }
+      if (rotateDrag) {
+        // Degrees, clockwise on screen, in -180..180; Shift snaps to 15°.
+        let deg = ((pointerAngle(rotateDrag.center, local(e)) - rotateDrag.start) * 180) / Math.PI;
+        deg = ((((deg + 180) % 360) + 360) % 360) - 180;
+        deg = e.shiftKey ? Math.round(deg / 15) * 15 : Math.round(deg);
+        if (deg === -180) deg = 180;
+        scaleNote = `${deg}°`;
+        editor.previewRotate(deg);
+        request();
+        return;
+      }
       if (scaleDrag) {
         editor.previewScale(scaleRect(scaleDrag.from, scaleDrag.corner, local(e), e));
         request();
@@ -713,6 +752,7 @@ export function CanvasView() {
       const handle = editor.isStroking ? null : handleAt(lastLocal);
       canvas.classList.toggle('on-handle-nwse', !!handle && (handle.corner === 0 || handle.corner === 3));
       canvas.classList.toggle('on-handle-nesw', !!handle && (handle.corner === 1 || handle.corner === 2));
+      canvas.classList.toggle('on-rotate', !editor.isStroking && !handle && rotateZoneAt(lastLocal) !== null);
       // Alt picks a color with drawing tools: show the eyedropper while it is held.
       canvas.classList.toggle('alt-pick', e.altKey && DRAWING_TOOLS.includes(editor.getState().tool));
       request();
@@ -753,9 +793,10 @@ export function CanvasView() {
         refDrag = null;
         return;
       }
-      if (scaleDrag) {
+      if (scaleDrag || rotateDrag) {
         editor.endScale();
         scaleDrag = null;
+        rotateDrag = null;
         scaleNote = null;
         request();
         return;
@@ -773,8 +814,9 @@ export function CanvasView() {
       guideDrag = null;
       if (refDrag) editor.updateReference(refDrag.rect);
       refDrag = null;
-      if (scaleDrag) editor.cancelScale();
+      if (scaleDrag || rotateDrag) editor.cancelScale();
       scaleDrag = null;
+      rotateDrag = null;
       scaleNote = null;
     };
 
