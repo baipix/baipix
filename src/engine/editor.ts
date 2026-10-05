@@ -2,6 +2,7 @@ import { adjustColor, alpha, opaque, withAlpha, type Color, type ColorAdjustment
 import { flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   activeLayer,
+  centeredOffset,
   cloneDocument,
   cloneLayer,
   createDocument,
@@ -595,12 +596,18 @@ export class Editor {
 
   /* ------------------------------------------------------------------ document */
 
-  resize(width: number, height: number): void {
+  /**
+   * Changes the canvas size. `offset` is where the old canvas's top-left lands in the new one, in
+   * whole pixels; without it the drawing stays centered.
+   */
+  resize(width: number, height: number, offset?: { x: number; y: number }): void {
     const w = clamp(Math.round(width) || this.doc.width, 1, MAX_SIZE);
     const h = clamp(Math.round(height) || this.doc.height, 1, MAX_SIZE);
-    if (w === this.doc.width && h === this.doc.height) return;
+    const o = offset ? { x: Math.round(offset.x), y: Math.round(offset.y) } : centeredOffset(this.doc, w, h);
+    // The same size can still shift the drawing.
+    if (w === this.doc.width && h === this.doc.height && !o.x && !o.y) return;
     this.edit((doc) => {
-      resizeDocument(doc, w, h);
+      resizeDocument(doc, w, h, o.x, o.y);
       this.active.selection = null;
     });
   }

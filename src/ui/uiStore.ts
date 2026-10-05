@@ -10,6 +10,7 @@ export type DialogState =
   | { type: 'paletteImport' }
   | { type: 'paletteManager' }
   | { type: 'shortcuts' }
+  | { type: 'canvasSize' }
   | { type: 'confirm'; title: string; message: string; confirmLabel: string; onConfirm: () => void }
   | { type: 'output'; title: string; message: string; image?: string; text?: string }
   | {

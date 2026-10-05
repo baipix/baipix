@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- A Canvas size dialog (Image › Canvas size…, or the crop button next to W and H): drag the frame's handles to make the canvas bigger or smaller, drag the drawing to place it, or type the size and pick where the drawing goes in a 3×3 grid (centered by default). What gets cut off is kept, as with the W and H fields. One undo step. (#PR)
+
 ### Website
 
 - New screenshots of the editor, and the feature cards mention what 0.3 brought: templates and the tour, blend modes, rulers and guides, the outline, the minimap, and recovering the pixels of scaled-up images. (#210)

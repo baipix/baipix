@@ -9,6 +9,7 @@ import {
   CircleQuestion,
   Close,
   Copy,
+  Crop,
   CursorMinimal,
   Eraser,
   Eye,
@@ -195,6 +196,7 @@ export const ICONS = {
   flipH: FlipHorizontal2,
   flipV: FlipVertical2,
   image: Image,
+  crop: Crop,
 } satisfies Record<string, PixelGlyph>;
 
 export type IconName = keyof typeof ICONS | 'logo';

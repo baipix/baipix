@@ -335,7 +335,7 @@ function CanvasSection() {
       info={t('canvas.resizeHint')}
       aside={<IconButton icon="plus" label={t('file.new')} onClick={() => openDialog({ type: 'newFile' })} />}
     >
-      <div className="two-columns">
+      <div className="canvas-size-row">
         <NumberField
           value={doc.width}
           min={1}
@@ -354,6 +354,7 @@ function CanvasSection() {
           sensitivity={3}
           onChange={(v, final) => final && editor.resize(doc.width, v)}
         />
+        <IconButton icon="crop" label={t('resize.open')} onClick={() => openDialog({ type: 'canvasSize' })} />
       </div>
       {/* The gap is part of the drawing's look: shown on the canvas, used by exports. In px at the export size. */}
       <Row label={t('render.gap')}>
