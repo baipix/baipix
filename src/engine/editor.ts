@@ -2,6 +2,7 @@ import { adjustColor, alpha, opaque, withAlpha, type Color, type ColorAdjustment
 import { flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   activeLayer,
+  centeredOffset,
   cloneDocument,
   cloneLayer,
   createDocument,
@@ -293,6 +294,8 @@ export class Editor {
     start: Point;
     items: { layer: Layer; base: Uint32Array; outside?: Outside }[];
   } | null = null;
+  /** The active layer's blend mode while another one is previewed. */
+  private blendPreview: { target: Layer | LayerGroup; mode: BlendMode | undefined } | null = null;
   /** New files left untouched so far: any change to one takes it out. */
   private fresh = new Set<string>();
   private brushes: CustomBrush[] = [];
@@ -644,12 +647,18 @@ export class Editor {
 
   /* ------------------------------------------------------------------ document */
 
-  resize(width: number, height: number): void {
+  /**
+   * Changes the canvas size. `offset` is where the old canvas's top-left lands in the new one, in
+   * whole pixels; without it the drawing stays centered.
+   */
+  resize(width: number, height: number, offset?: { x: number; y: number }): void {
     const w = clamp(Math.round(width) || this.doc.width, 1, MAX_SIZE);
     const h = clamp(Math.round(height) || this.doc.height, 1, MAX_SIZE);
-    if (w === this.doc.width && h === this.doc.height) return;
+    const o = offset ? { x: Math.round(offset.x), y: Math.round(offset.y) } : centeredOffset(this.doc, w, h);
+    // The same size can still shift the drawing.
+    if (w === this.doc.width && h === this.doc.height && !o.x && !o.y) return;
     this.edit((doc) => {
-      resizeDocument(doc, w, h);
+      resizeDocument(doc, w, h, o.x, o.y);
       this.active.selection = null;
     });
   }
@@ -1155,6 +1164,8 @@ export class Editor {
   }
 
   setGroupBlendMode(id: string, mode: GroupBlendMode): void {
+    this.endBlendPreview();
+    if ((findGroup(this.doc, id)?.blendMode ?? 'pass-through') === mode) return;
     this.changeGroup(id, (g) => {
       if (mode === 'pass-through') delete g.blendMode;
       else g.blendMode = mode;
@@ -1318,8 +1329,43 @@ export class Editor {
   }
 
   /** Opacity drags: one undo step per gesture. Call with `done` on release. */
+  /**
+   * Shows the active layer in another blend mode without keeping it (hovering the blend mode menu);
+   * `null` shows it as it was. Not in the history: `endBlendPreview` puts it back.
+   */
+  previewLayerBlendMode(mode: BlendMode | null): void {
+    this.previewBlend(activeLayer(this.doc), mode === 'normal' ? undefined : mode);
+  }
+
+  /** The same for a group; `pass-through` is its own default. */
+  previewGroupBlendMode(id: string, mode: GroupBlendMode | null): void {
+    const group = findGroup(this.doc, id);
+    if (group) this.previewBlend(group, mode === 'pass-through' ? undefined : mode);
+  }
+
+  /** `null`: as it was before the preview; `undefined`: the default (normal, or pass-through). */
+  private previewBlend(target: Layer | LayerGroup, mode: BlendMode | undefined | null): void {
+    if (this.blendPreview && this.blendPreview.target !== target) this.endBlendPreview();
+    if (!this.blendPreview) this.blendPreview = { target, mode: target.blendMode };
+    const next = mode === null ? this.blendPreview.mode : mode;
+    if (target.blendMode === next) return;
+    if (next) target.blendMode = next;
+    else delete target.blendMode;
+    this.pixelsChanged();
+  }
+
+  endBlendPreview(): void {
+    const p = this.blendPreview;
+    if (!p) return;
+    this.blendPreview = null;
+    if (p.mode) p.target.blendMode = p.mode;
+    else delete p.target.blendMode;
+    this.pixelsChanged();
+  }
+
   /** The active layer's blend mode, as one undo step. */
   setLayerBlendMode(mode: BlendMode): void {
+    this.endBlendPreview();
     const layer = activeLayer(this.doc);
     if ((layer.blendMode ?? 'normal') === mode) return;
     this.checkpoint();
@@ -1625,13 +1671,13 @@ export class Editor {
     });
   }
 
-  /** Rotates the selection (or the layer) by 90° clockwise; the selection follows the new shape. */
-  rotate(): void {
+  /** Rotates the selection (or the layer) by 90°; the selection follows the new shape. */
+  rotate(clockwise = true): void {
     if (this.activeLocked()) return;
     const hadSelection = this.active.selection !== null;
     this.edit((doc) => {
       const layer = activeLayer(doc);
-      const rotated = rotateRect(layer.pixels, doc.width, doc.height, this.targetRect());
+      const rotated = rotateRect(layer.pixels, doc.width, doc.height, this.targetRect(), clockwise);
       if (hadSelection) this.active.selection = rotated;
       // Rotating the layer turns it within the canvas: what was outside doesn't follow.
       else delete layer.outside;
@@ -1851,6 +1897,51 @@ export class Editor {
   }
 
   /** Moves the selection (or the layer) by a few pixels, as one undo step. */
+  /**
+   * Moves what's drawn in the selection (or the whole layer) against an edge of the canvas, or to
+   * its middle, as one undo step. Only the drawn pixels count, not the empty part of the selection.
+   */
+  align(to: 'left' | 'centerX' | 'right' | 'top' | 'centerY' | 'bottom'): void {
+    const doc = this.doc;
+    const area = clipRect(this.targetRect(), doc.width, doc.height);
+    // Several layers selected (a group), no selection: what they draw together.
+    const layers =
+      !this.active.selection && this.state.selectedLayers.length > 1
+        ? this.pickedLayers()
+        : [activeLayer(doc)];
+    let b: Rect | null = null;
+    for (const layer of layers) {
+      const block = extractBlock(layer.pixels, doc.width, doc.height, area);
+      const inner = pixelBounds(block.pixels, block.width, block.height);
+      if (!inner) continue;
+      const r = { x: area.x + inner.x, y: area.y + inner.y, w: inner.w, h: inner.h };
+      if (!b) b = r;
+      else {
+        const x = Math.min(b.x, r.x);
+        const y = Math.min(b.y, r.y);
+        b = { x, y, w: Math.max(b.x + b.w, r.x + r.w) - x, h: Math.max(b.y + b.h, r.y + r.h) - y };
+      }
+    }
+    if (!b) return;
+    const dx =
+      to === 'left'
+        ? -b.x
+        : to === 'right'
+          ? doc.width - b.w - b.x
+          : to === 'centerX'
+            ? Math.floor((doc.width - b.w) / 2) - b.x
+            : 0;
+    const dy =
+      to === 'top'
+        ? -b.y
+        : to === 'bottom'
+          ? doc.height - b.h - b.y
+          : to === 'centerY'
+            ? Math.floor((doc.height - b.h) / 2) - b.y
+            : 0;
+    if (dx || dy) this.nudge(dx, dy);
+  }
+
   nudge(dx: number, dy: number): void {
     const r = this.doc.reference;
     if (this.state.referenceSelected && r) {

@@ -590,6 +590,9 @@ export function CanvasView() {
 
     const onDown = (e: PointerEvent) => {
       canvas.setPointerCapture(e.pointerId);
+      // Back on the canvas, Delete clears pixels again rather than removing the layer clicked in the list.
+      const focused = document.activeElement;
+      if (focused instanceof HTMLElement && focused.closest('.item-list')) focused.blur();
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
       if (e.pointerType === 'touch' && touches().length >= 2) {
         editor.cancelStroke();

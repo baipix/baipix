@@ -1,6 +1,6 @@
-import { Fragment, useRef } from 'react';
+import { useRef } from 'react';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
-import { BLEND_MODE_GROUPS, type BlendMode } from '../../engine/composite';
+import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, MAX_SIZE } from '../../engine/document';
 import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
@@ -9,7 +9,8 @@ import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Checkbox } from '../components/Checkbox';
 import { IconButton } from '../components/IconButton';
-import { openMenu } from '../components/Menu';
+import { openMenu, type MenuItem } from '../components/Menu';
+import { Icon } from '../components/Icon';
 import { NumberField } from '../components/NumberField';
 import { PaletteGrid } from '../components/PaletteGrid';
 import { Row, Section } from '../components/Section';
@@ -281,28 +282,36 @@ function GroupSection({ id }: { id: string }) {
       }
     >
       <div className="two-columns">
-        <label className="field">
-          <select
-            value={group.blendMode ?? 'pass-through'}
-            aria-label={t('blend.mode')}
-            data-tip={t('blend.mode')}
-            onChange={(e) => editor.setGroupBlendMode(id, e.target.value as GroupBlendMode)}
-          >
-            <option value="pass-through">{t('blend.pass-through')}</option>
-            {BLEND_MODE_GROUPS.map((modes, i) => (
-              <Fragment key={i}>
-                <option disabled aria-hidden="true">
-                  ──────────
-                </option>
-                {modes.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {t(`blend.${mode}`)}
-                  </option>
-                ))}
-              </Fragment>
-            ))}
-          </select>
-        </label>
+        {/* Hovering a mode shows it on the canvas; only a click keeps it. */}
+        <button
+          type="button"
+          className="field field-menu"
+          aria-haspopup="menu"
+          aria-label={t('blend.mode')}
+          data-tip={t('blend.mode')}
+          onClick={(e) => {
+            const item = (m: GroupBlendMode): MenuItem => ({
+              label: t(`blend.${m}`),
+              checked: (group.blendMode ?? 'pass-through') === m,
+              onHover: () => editor.previewGroupBlendMode(id, m),
+              onSelect: () => editor.setGroupBlendMode(id, m),
+            });
+            openMenu(
+              e.currentTarget,
+              [
+                item('pass-through'),
+                ...BLEND_MODE_GROUPS.flatMap((modes): MenuItem[] => ['-', ...modes.map(item)]),
+              ],
+              {
+                onHoverEnd: () => editor.previewGroupBlendMode(id, null),
+                onClose: () => editor.endBlendPreview(),
+              },
+            );
+          }}
+        >
+          <span className="truncate">{t(`blend.${group.blendMode ?? 'pass-through'}`)}</span>
+          <Icon name="caret" size={12} />
+        </button>
         <NumberField
           value={Math.round(group.opacity * 100)}
           min={0}
@@ -346,29 +355,35 @@ function LayerSection() {
       }
     >
       <div className="two-columns">
-        <label className="field">
-          <select
-            value={layer.blendMode ?? 'normal'}
-            aria-label={t('blend.mode')}
-            data-tip={t('blend.mode')}
-            onChange={(e) => editor.setLayerBlendMode(e.target.value as BlendMode)}
-          >
-            {BLEND_MODE_GROUPS.map((group, i) => (
-              <Fragment key={i}>
-                {i > 0 && (
-                  <option disabled aria-hidden="true">
-                    ──────────
-                  </option>
-                )}
-                {group.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {t(`blend.${mode}`)}
-                  </option>
-                ))}
-              </Fragment>
-            ))}
-          </select>
-        </label>
+        {/* Hovering a mode shows it on the canvas; only a click keeps it. */}
+        <button
+          type="button"
+          className="field field-menu"
+          aria-haspopup="menu"
+          aria-label={t('blend.mode')}
+          data-tip={t('blend.mode')}
+          onClick={(e) =>
+            openMenu(
+              e.currentTarget,
+              BLEND_MODE_GROUPS.flatMap((group, i): MenuItem[] => [
+                ...(i > 0 ? (['-'] as const) : []),
+                ...group.map((mode) => ({
+                  label: t(`blend.${mode}`),
+                  checked: (layer.blendMode ?? 'normal') === mode,
+                  onHover: () => editor.previewLayerBlendMode(mode),
+                  onSelect: () => editor.setLayerBlendMode(mode),
+                })),
+              ]),
+              {
+                onHoverEnd: () => editor.previewLayerBlendMode(null),
+                onClose: () => editor.endBlendPreview(),
+              },
+            )
+          }
+        >
+          <span className="truncate">{t(`blend.${layer.blendMode ?? 'normal'}`)}</span>
+          <Icon name="caret" size={12} />
+        </button>
         <NumberField
           value={Math.round(layer.opacity * 100)}
           min={0}
@@ -399,7 +414,7 @@ function CanvasSection() {
       info={t('canvas.resizeHint')}
       aside={<IconButton icon="plus" label={t('file.new')} onClick={() => openDialog({ type: 'newFile' })} />}
     >
-      <div className="two-columns">
+      <div className="canvas-size-row">
         <NumberField
           value={doc.width}
           min={1}
@@ -418,6 +433,7 @@ function CanvasSection() {
           sensitivity={3}
           onChange={(v, final) => final && editor.resize(doc.width, v)}
         />
+        <IconButton icon="crop" label={t('resize.open')} onClick={() => openDialog({ type: 'canvasSize' })} />
       </div>
       {/* The gap is part of the drawing's look: shown on the canvas, used by exports. In px at the export size. */}
       <Row label={t('render.gap')}>

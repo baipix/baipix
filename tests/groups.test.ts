@@ -251,3 +251,21 @@ describe('Groups in .baipix files', () => {
     expect(deserializeDocument(broken).groups).toBeUndefined();
   });
 });
+
+describe('Align a group', () => {
+  it('moves the group as one, against the edge', () => {
+    const e = new Editor();
+    e.newFile(8, 8);
+    e.addLayer();
+    const [a, b] = e.getState().doc.layers;
+    a.pixels[2 * 8 + 3] = RED; // (3, 2)
+    b.pixels[4 * 8 + 5] = RED; // (5, 4)
+    e.selectLayer(0, 'single');
+    e.selectLayer(1, 'toggle');
+    e.groupSelection();
+    e.align('left');
+    const [a2, b2] = e.getState().doc.layers;
+    expect(a2.pixels[2 * 8 + 0]).toBe(RED);
+    expect(b2.pixels[4 * 8 + 2]).toBe(RED);
+  });
+});

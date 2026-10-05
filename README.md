@@ -1,6 +1,6 @@
 # Baipix
 
-**A pixel art editor for designers, with the interface of a modern design tool.** Free, open source, runs in the browser, no account needed.
+**A free online pixel art editor, with the interface of a modern design tool.** Open source, runs in the browser, no account needed, and exports clean SVG you can paste straight into Figma.
 
 **[Open the editor](https://baipix.app/app/)** · [Website](https://baipix.app)
 

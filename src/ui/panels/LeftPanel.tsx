@@ -307,7 +307,20 @@ function LayersSection() {
         </>
       }
     >
-      <div className="item-list" ref={listRef}>
+      {/* Clicking a layer focuses the list: Delete then removes the layer (on the canvas, it clears pixels). */}
+      <div
+        className="item-list"
+        ref={listRef}
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+          if ((e.target as HTMLElement).closest('input')) return;
+          e.preventDefault();
+          e.stopPropagation();
+          if (referenceSelected) actions.removeReference();
+          else if (selected.length < doc.layers.length) actions.deleteLayers();
+        }}
+      >
         {rows.map((row, k) =>
           row.kind === 'group' ? (
             <div
@@ -435,7 +448,10 @@ function LayersSection() {
             className={`item reference-item${referenceSelected ? ' is-active' : ''}${
               reference.visible ? '' : ' is-hidden'
             }${reference.locked ? ' is-locked' : ''}`}
-            onClick={() => editor.selectReference()}
+            onClick={() => {
+              listRef.current?.focus({ preventScroll: true });
+              editor.selectReference();
+            }}
           >
             <img className="thumb reference-thumb" src={reference.src} alt="" />
             <span className="item-name">{t('reference.title')}</span>
