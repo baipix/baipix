@@ -7,6 +7,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Changed
 
 - The blend mode menu previews each mode on the canvas as you hover it (or reach it with the arrow keys), like in Figma; only a click keeps it. Leaving the menu or Escape puts the layer back. (#215)
+- Click a layer in the list, then Delete or Backspace removes it (or the selected layers, or the reference image), with Undo in the toast. On the canvas, Delete still clears the selection's pixels. (#214)
 
 ### Website
 

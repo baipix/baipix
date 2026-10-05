@@ -46,6 +46,7 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
       ['layer.new', 'Shift+N'],
       ['layer.duplicate', 'Shift+D'],
       ['layer.mergeDown', 'Shift+M'],
+      ['shortcuts.deleteLayer', 'Del'],
       ['adjust.outline', 'Shift+O'],
       ['menu.layerUp', 'Alt+↑'],
       ['menu.layerDown', 'Alt+↓'],
