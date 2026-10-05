@@ -19,6 +19,8 @@ export type MenuItem =
       disabled?: boolean;
       /** CSS colors shown as a strip under the label (a palette). */
       swatches?: string[];
+      /** Hovered or reached with the arrow keys: a live preview of what it would do. */
+      onHover?: () => void;
       /** A submenu, opened on hover, click or →. */
       items?: MenuItem[];
       onSelect?: () => void;
@@ -27,6 +29,10 @@ export type MenuItem =
 export interface MenuOptions {
   /** ← / → on the top level: the menu bar opens its previous or next menu. */
   onSwitch?: (direction: 1 | -1) => void;
+  /** The pointer left the menu: the preview goes back to how things were. */
+  onHoverEnd?: () => void;
+  /** The menu closed, before the chosen item (if any) runs: ends a preview. */
+  onClose?: () => void;
 }
 
 const menuStore = createStore<{
@@ -45,14 +51,17 @@ const menuStore = createStore<{
 /** Opens a menu under `anchor`. Clicking the same anchor again closes it. */
 export function openMenu(anchor: HTMLElement, items: MenuItem[], options: MenuOptions = {}): void {
   if (menuStore.get().anchor === anchor) return closeMenu();
+  menuStore.get().options.onClose?.();
   menuStore.get().anchor?.setAttribute('aria-expanded', 'false');
   anchor.setAttribute('aria-expanded', 'true');
   menuStore.set((s) => ({ anchor, items, options, seq: s.seq + 1 }));
 }
 
 export function closeMenu(): void {
-  menuStore.get().anchor?.setAttribute('aria-expanded', 'false');
+  const { anchor, options } = menuStore.get();
+  anchor?.setAttribute('aria-expanded', 'false');
   menuStore.set({ anchor: null, items: [], options: {} });
+  options.onClose?.();
 }
 
 export const isMenuOpen = (): boolean => menuStore.get().anchor !== null;
@@ -134,7 +143,18 @@ function MenuPanel({
 
   const sub = open && items[open.index];
   return (
-    <div ref={ref} className="menu" role="menu" style={pos} onKeyDown={onKeyDown}>
+    <div
+      ref={ref}
+      className="menu"
+      role="menu"
+      style={pos}
+      onKeyDown={onKeyDown}
+      onPointerLeave={(e) => {
+        // Only when leaving the whole menu, not into one of its submenus.
+        if (!(e.relatedTarget instanceof Node && ref.current?.contains(e.relatedTarget)))
+          menuStore.get().options.onHoverEnd?.();
+      }}
+    >
       {items.map((item, i) =>
         item === '-' ? (
           <div key={i} className="menu-separator" />
@@ -150,9 +170,11 @@ function MenuPanel({
             }`}
             disabled={item.disabled}
             onPointerEnter={(e) => {
+              item.onHover?.();
               if (item.items) openSub(i, e.currentTarget, false);
               else setOpen(null);
             }}
+            onFocus={() => item.onHover?.()}
             onClick={(e) => {
               if (item.items) return openSub(i, e.currentTarget, false);
               closeMenu();

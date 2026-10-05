@@ -66,4 +66,22 @@ describe('Layer blend modes', () => {
     e.undo();
     expect(mode()).toBeUndefined();
   });
+
+  it('previews a mode without keeping it, and keeps it in one undo step', () => {
+    const e = new Editor();
+    const mode = () => e.getState().doc.layers[e.getState().doc.activeLayer].blendMode;
+    e.previewLayerBlendMode('screen');
+    expect(mode()).toBe('screen');
+    e.previewLayerBlendMode(null);
+    expect(mode()).toBeUndefined();
+    e.previewLayerBlendMode('multiply');
+    e.endBlendPreview();
+    expect(mode()).toBeUndefined();
+    expect(e.getState().canUndo).toBe(false);
+    e.previewLayerBlendMode('overlay');
+    e.setLayerBlendMode('overlay');
+    expect(mode()).toBe('overlay');
+    e.undo();
+    expect(mode()).toBeUndefined();
+  });
 });

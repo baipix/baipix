@@ -4,6 +4,11 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- The blend mode menu previews each mode on the canvas as you hover it (or reach it with the arrow keys), like in Figma; only a click keeps it. Leaving the menu or Escape puts the layer back. (#215)
+- Click a layer in the list, then Delete or Backspace removes it (or the selected layers, or the reference image), with Undo in the toast. On the canvas, Delete still clears the selection's pixels. (#214)
+
 ### Website
 
 - Better found in search engines: a sitemap and robots.txt, canonical addresses, a share card made for links (1200×630) with Twitter/X tags, structured data describing Baipix as a free web app, and titles that say what it is ("Free online pixel art editor, export to SVG and Figma"). The 404 page stays out of search results. (#PR)
