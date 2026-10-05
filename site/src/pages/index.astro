@@ -9,6 +9,7 @@ import Base from '../layouts/Base.astro';
 import { APP_URL, REPO_URL } from '../links';
 
 const base = import.meta.env.BASE_URL;
+const ARROW = ['...#...', '....#..', '.....#.', '#######', '.....#.', '....#..', '...#...'];
 const clone = 'git clone https://github.com/baipix/baipix.git\ncd baipix\nnpm install\nnpm run dev';
 
 const features = [
@@ -160,12 +161,16 @@ const features = [
       <h2>Everything you need. Nothing you don't.</h2>
       <div class="feature-grid">
         {features.map((f) => (
-          <a class="feature" data-tone={f.tone} href={`${base}draw/#${f.tone}`}>
+          <article class="feature" data-tone={f.tone}>
             <PixelIcon rows={f.icon} size={24} />
-            <h3>{f.title}</h3>
+            <h3>
+              <a href={`${base}draw/#${f.tone}`}>{f.title}</a>
+            </h3>
             <p class="muted">{f.text}</p>
-            <span class="feature-more">In detail →</span>
-          </a>
+            <span class="feature-arrow" aria-hidden="true">
+              <PixelIcon rows={ARROW} size={14} />
+            </span>
+          </article>
         ))}
       </div>
     </section>
@@ -375,25 +380,49 @@ const features = [
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
   }
-  /* Each card leads to its section of the Draw page, in that section's accent. */
+  /*
+   * Each card leads to its section of the Draw page, in that section's accent. The link is the
+   * title (a clear link text), stretched over the whole card so all of it is clickable.
+   */
   .feature {
+    position: relative;
     color: var(--accent);
   }
-  .feature:hover {
+  .feature:hover,
+  .feature:focus-within {
     background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
   }
   .feature h3 {
     margin-top: 12px;
     color: var(--text);
   }
-  .feature-more {
-    margin-top: auto;
-    padding-top: 4px;
-    font: 500 12px/1 var(--mono);
-    color: var(--muted);
+  .feature h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
   }
-  .feature:hover .feature-more {
-    color: var(--text);
+  .feature h3 a:focus-visible {
+    outline: none;
+  }
+  .feature:has(a:focus-visible) {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+  }
+  /* A pixel arrow in the corner, on hover. */
+  .feature-arrow {
+    position: absolute;
+    top: 32px;
+    right: 28px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition:
+      opacity 0.15s,
+      transform 0.15s;
+  }
+  .feature:hover .feature-arrow,
+  .feature:focus-within .feature-arrow {
+    opacity: 1;
+    transform: none;
   }
   .feature p {
     font-size: 15px;
