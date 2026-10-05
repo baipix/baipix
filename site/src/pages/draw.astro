@@ -14,6 +14,8 @@ import { APP_URL, REPO_URL } from '../links';
 
 const EYE = ['.......', '..###..', '.#...#.', '#..#..#', '.#...#.', '..###..', '.......'];
 const EYE_CLOSED = ['.......', '.......', '.......', '#.....#', '.#####.', '#.#.#.#', '.......'];
+/** The editor's cursor over a field that you drag to change its value. */
+const SCRUB = ['..#...#..', '.##...##.', '#########', '.##...##.', '..#...#..'];
 const CURSOR = [
   '#.......',
   '##......',
@@ -732,16 +734,21 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </div>
       <div class="figures">
         <figure class="frame">
-          <div class="pair knights">
-            <div>
-              <div class="pix" set:html={ill.knight.solid} />
-              <p class="cap">No gap</p>
+          <div class="gap-demo" data-gap-demo>
+            <div class="pix gap-art" set:html={ill.knight} />
+            <div class="gap-field" aria-hidden="true">
+              <span class="gap-label">Gap</span>
+              <span class="gap-input" data-gap-input>
+                <span class="muted">⇔</span>
+                <b data-gap-value>0</b>
+                <span class="muted">px at 8×</span>
+              </span>
             </div>
-            <div>
-              <div class="pix" set:html={ill.knight.gap} />
-              <p class="cap">1 px gap</p>
-            </div>
+            <span class="cursor gap-cursor" data-gap-cursor aria-hidden="true">
+              <PixelIcon rows={SCRUB} size={18} />
+            </span>
           </div>
+          <p class="cap">Drag the Gap field to space the pixels apart, on the canvas and in exports.</p>
         </figure>
         <figure class="frame code">
           <div class="pix heart" set:html={ill.heartCode} />
@@ -879,6 +886,53 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         if (entry.isIntersecting)
           timer = window.setInterval(() => show((current + 1) % versions.length), 2400);
       }).observe(recolor);
+    }
+
+    // Gap: the cursor drags the Gap field from 0 to 3 px and back; the pixels move apart live.
+    const gapDemo = document.querySelector<HTMLElement>('[data-gap-demo]');
+    if (gapDemo && !gapDemo.dataset.playing && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gapDemo.dataset.playing = 'true';
+      const art = gapDemo.querySelector<HTMLElement>('.gap-art')!;
+      const value = gapDemo.querySelector<HTMLElement>('[data-gap-value]')!;
+      const input = gapDemo.querySelector<HTMLElement>('[data-gap-input]')!;
+      const cursor = gapDemo.querySelector<HTMLElement>('[data-gap-cursor]')!;
+      // The editor's pixels are 8 px here: with a gap of g, a pixel fills 8 / (8 + g) of its step.
+      const setGap = (g: number) => {
+        value.textContent = String(g);
+        art.style.setProperty('--s', String(8 / (8 + g)));
+      };
+      const SEQUENCE = [0, 1, 2, 3, 3, 3, 2, 1, 0, 0, 0];
+      let timers: number[] = [];
+      const run = () => {
+        timers.forEach(clearTimeout);
+        timers = [];
+        const box = gapDemo.getBoundingClientRect();
+        const field = input.getBoundingClientRect();
+        const x0 = field.left - box.left + field.width / 2 - 9;
+        const y0 = field.top - box.top + field.height / 2 - 6;
+        const step = 300;
+        cursor.getAnimations().forEach((a) => a.cancel());
+        cursor.animate(
+          [
+            { opacity: 0, transform: `translate(${x0 - 30}px, ${y0 + 30}px)` },
+            { opacity: 1, transform: `translate(${x0}px, ${y0}px)`, offset: 0.12 },
+            { opacity: 1, transform: `translate(${x0 + 36}px, ${y0}px)`, offset: 0.4 },
+            { opacity: 1, transform: `translate(${x0 + 36}px, ${y0}px)`, offset: 0.5 },
+            { opacity: 1, transform: `translate(${x0}px, ${y0}px)`, offset: 0.78 },
+            { opacity: 0, transform: `translate(${x0}px, ${y0}px)`, offset: 0.95 },
+            { opacity: 0, transform: `translate(${x0}px, ${y0}px)` },
+          ],
+          { duration: SEQUENCE.length * step + 600, easing: 'linear' },
+        );
+        SEQUENCE.forEach((g, i) => timers.push(window.setTimeout(() => setGap(g), 400 + i * step)));
+        timers.push(window.setTimeout(run, SEQUENCE.length * step + 1400));
+      };
+      new IntersectionObserver(([entry]) => {
+        timers.forEach(clearTimeout);
+        timers = [];
+        if (entry.isIntersecting) run();
+        else setGap(0);
+      }).observe(gapDemo);
     }
 
     // Guides: the CSS animation only runs while the card is on screen.
@@ -1511,10 +1565,50 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 32px;
   }
-  /* The knights fill their card: the gap only reads when the pixels are big. */
-  .pair.knights {
-    gap: 48px;
-    padding: 8px 4%;
+  /* The gap demo: the knight, each pixel shrinking around its center as the gap grows. */
+  .gap-demo {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 24px;
+  }
+  .gap-art {
+    width: min(100%, 220px);
+    --s: 1;
+  }
+  .gap-art :global(rect) {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(var(--s));
+  }
+  /* A copy of the editor's Gap field. */
+  .gap-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--bg);
+    font-size: 12px;
+  }
+  .gap-label {
+    color: var(--muted);
+  }
+  .gap-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+  }
+  .gap-input b {
+    min-width: 1ch;
+    font-weight: 500;
+  }
+  .gap-cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
   }
   .outline-demo {
     width: 100%;
