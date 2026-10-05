@@ -735,7 +735,9 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       <div class="figures">
         <figure class="frame">
           <div class="gap-demo" data-gap-demo>
-            <div class="pix gap-art" set:html={ill.knight} />
+            <div class="gap-stage">
+              <div class="pix gap-art" set:html={ill.knight} />
+            </div>
             <div class="gap-field" aria-hidden="true">
               <span class="gap-label">Gap</span>
               <span class="gap-input" data-gap-input>
@@ -896,10 +898,29 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       const value = gapDemo.querySelector<HTMLElement>('[data-gap-value]')!;
       const input = gapDemo.querySelector<HTMLElement>('[data-gap-input]')!;
       const cursor = gapDemo.querySelector<HTMLElement>('[data-gap-cursor]')!;
-      // The editor's pixels are 8 px here: with a gap of g, a pixel fills 8 / (8 + g) of its step.
+      /*
+       * As in the editor: the pixels keep their size and the gap is added between them, so the
+       * drawing grows. Its pixels are 8 px at export, shown here 11 px on screen.
+       */
+      const svg = art.querySelector('svg')!;
+      const rects = [...svg.querySelectorAll('rect')].map((r) => ({
+        r,
+        x: +r.getAttribute('x')!,
+        y: +r.getAttribute('y')!,
+      }));
+      const [, , cols, rows] = svg.getAttribute('viewBox')!.split(' ').map(Number);
+      const PIXEL = 11;
       const setGap = (g: number) => {
         value.textContent = String(g);
-        art.style.setProperty('--s', String(8 / (8 + g)));
+        const step = 1 + g / 8;
+        for (const { r, x, y } of rects) {
+          r.setAttribute('x', String(x * step));
+          r.setAttribute('y', String(y * step));
+        }
+        const w = cols + ((cols - 1) * g) / 8;
+        const h = rows + ((rows - 1) * g) / 8;
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        art.style.setProperty('--art-w', `${w * PIXEL}px`);
       };
       const SEQUENCE = [0, 1, 2, 3, 3, 3, 2, 1, 0, 0, 0];
       let timers: number[] = [];
@@ -1565,21 +1586,27 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 32px;
   }
-  /* The gap demo: the knight, each pixel shrinking around its center as the gap grows. */
+  /* The gap demo: the knight, its pixels keeping their size as the gap grows, like the editor. */
   .gap-demo {
     position: relative;
     display: grid;
     justify-items: center;
     gap: 24px;
   }
-  .gap-art {
-    width: min(100%, 220px);
-    --s: 1;
+  /*
+   * Room for the knight at the largest gap (16 pixels of 11 px, plus 15 gaps of 3 px at 11/8),
+   * so the field under it doesn't move while the cursor drags it.
+   */
+  .gap-stage {
+    display: grid;
+    place-items: center;
+    width: min(100%, 238px);
+    aspect-ratio: 1;
   }
-  .gap-art :global(rect) {
-    transform-box: fill-box;
-    transform-origin: center;
-    transform: scale(var(--s));
+  .gap-art {
+    /* Set by the script: the drawing's width, growing with the gap. */
+    width: var(--art-w, 176px);
+    max-width: 100%;
   }
   /* A copy of the editor's Gap field. */
   .gap-field {
