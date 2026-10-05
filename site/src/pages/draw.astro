@@ -448,6 +448,19 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </figure>
     </section>
 
+    <!-- Halfway down a long page: a way to try it without scrolling back up. -->
+    <aside class="try container" aria-label="Try Baipix">
+      <div class="try-band">
+        <p>
+          <strong>All of this is one click away.</strong>
+          <span>Free, in your browser, no account.</span>
+        </p>
+        <a class="btn btn-light btn-small" href={APP_URL}>
+          Open the editor
+        </a>
+      </div>
+    </aside>
+
     <!-- Rework -->
     <section class="block container" id="rework" data-tone="rework">
       <SectionHead label="05 · Rework" />
@@ -2045,6 +2058,43 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   }
   .snippet :global(.tok-value) {
     color: var(--tok-value);
+  }
+
+  /* ---- Try it: a slim band halfway down, in the closing card's colors ---- */
+  .try {
+    padding-top: 120px;
+  }
+  .try-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+    padding: 24px 32px;
+    background: var(--cta-bg);
+    color: var(--cta-text);
+  }
+  .try-band p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 17px;
+  }
+  .try-band strong {
+    font-weight: 500;
+  }
+  .try-band span {
+    color: rgb(255 255 255 / 0.65);
+  }
+  .try-band .btn-light {
+    --side: var(--cta-button-side);
+    border-color: var(--cta-button);
+    background: var(--cta-button);
+    color: var(--cta-bg);
+  }
+  .try-band .btn-light:hover {
+    border-color: var(--cta-button-hover);
+    background: var(--cta-button-hover);
   }
 
   /* ---- Keys ---- */
