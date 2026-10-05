@@ -28,6 +28,8 @@ const { animation, label, class: className } = Astro.props;
 
   /** How long a pixel stays lit after landing, in ms. */
   const GLOW_MS = 700;
+  /** How much of a canvas must be on screen for it to play. */
+  const VISIBLE = 0.25;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
   function player(canvas: HTMLCanvasElement) {
@@ -71,6 +73,7 @@ const { animation, label, class: className } = Astro.props;
     };
     // Sharp pixels at any size: one canvas pixel per art pixel, scaled up without smoothing.
     const scale = () => Math.max(1, Math.round((canvas.clientWidth * devicePixelRatio) / a.w));
+
     const draw = (t: number) => {
       const k = scale();
       if (canvas.width !== a.w * k) {
@@ -83,15 +86,25 @@ const { animation, label, class: className } = Astro.props;
       ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
       lit = lit.filter((p) => t - p.t < GLOW_MS);
       if (!lit.length) return;
+      /*
+       * The light of a pixel that just landed, in pixels rather than a blur: the pixel itself
+       * brightens, and its four neighbors light up faintly in a cross, then both fade. Plain
+       * squares are cheap (a canvas shadow blur cost so much that the page stalled).
+       */
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      ctx.shadowBlur = k * 3;
       for (const p of lit) {
         const f = 1 - (t - p.t) / GLOW_MS;
-        ctx.globalAlpha = f * f * a.glow;
-        ctx.shadowColor = p.color;
+        const x = p.x * k;
+        const y = p.y * k;
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x * k, p.y * k, k, k);
+        ctx.globalAlpha = f * f * a.glow;
+        ctx.fillRect(x, y, k, k);
+        ctx.globalAlpha = f * f * a.glow * 0.35;
+        ctx.fillRect(x - k, y, k, k);
+        ctx.fillRect(x + k, y, k, k);
+        ctx.fillRect(x, y - k, k, k);
+        ctx.fillRect(x, y + k, k, k);
       }
       ctx.restore();
     };
@@ -126,11 +139,18 @@ const { animation, label, class: className } = Astro.props;
     };
 
     still();
-    new IntersectionObserver(([entry]) => {
-      if (reduced.matches) return still();
-      if (entry.isIntersecting) play();
-      else cancelAnimationFrame(frame);
-    }).observe(canvas);
+    // Plays once a quarter of it is on screen, stops when less: fewer canvases running at once.
+    let playing = false;
+    new IntersectionObserver(
+      ([entry]) => {
+        if (reduced.matches) return still();
+        const visible = entry.intersectionRatio >= VISIBLE;
+        if (visible && !playing) play();
+        else if (!visible && playing) cancelAnimationFrame(frame);
+        playing = visible;
+      },
+      { threshold: [0, VISIBLE] },
+    ).observe(canvas);
   }
 
   document.querySelectorAll<HTMLCanvasElement>('[data-pixel-play]').forEach(player);
