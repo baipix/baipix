@@ -1,4 +1,5 @@
 import { alpha, type Color } from './color';
+import { syncInstances, type ComponentFrame, type InstanceRef } from './components';
 import type { BlendMode } from './composite';
 import { reframe, type Outside } from './outside';
 
@@ -20,6 +21,10 @@ export interface Layer {
   outside?: Outside;
   /** The group it's in (its innermost one); missing: at the top level. */
   group?: string;
+  /** This layer is a component's master: the sprite is its pixels inside this frame. */
+  component?: ComponentFrame;
+  /** This layer is an instance of a master: its pixels are rendered from it (see components.ts). */
+  instance?: InstanceRef;
 }
 
 /**
@@ -142,6 +147,8 @@ export const cloneLayer = (layer: Layer, keepId = true): Layer => ({
   ...layer,
   id: keepId ? layer.id : newId('layer'),
   pixels: layer.pixels.slice(),
+  ...(layer.component && { component: { ...layer.component } }),
+  ...(layer.instance && { instance: { ...layer.instance } }),
 });
 
 export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
@@ -151,8 +158,17 @@ export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
     render: { ...doc.render },
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.groups && { groups: doc.groups.map((g) => ({ ...g })) }),
-    layers: doc.layers.map((l) => cloneLayer(l, keepIds)),
+    layers: keepIds ? doc.layers.map((l) => cloneLayer(l)) : cloneLayersWithNewIds(doc.layers),
   };
+}
+
+/** Copies layers under new ids, instances still pointing at their (copied) masters. */
+function cloneLayersWithNewIds(layers: Layer[]): Layer[] {
+  const copies = layers.map((l) => cloneLayer(l, false));
+  const ids = new Map(layers.map((l, i) => [l.id, copies[i].id]));
+  for (const copy of copies)
+    if (copy.instance) copy.instance.of = ids.get(copy.instance.of) ?? copy.instance.of;
+  return copies;
 }
 
 export const activeLayer = (doc: PixelDoc): Layer => doc.layers[doc.activeLayer];
@@ -195,7 +211,24 @@ export function resizeDocument(
     const r = reframe(layer.pixels, doc.width, doc.height, layer.outside, offsetX, offsetY, width, height);
     layer.pixels = r.pixels;
     layer.outside = r.outside;
+    // Masters' frames and instances' places stay on the same pixels.
+    if (layer.component) {
+      const f = layer.component;
+      const x = Math.max(0, f.x + offsetX);
+      const y = Math.max(0, f.y + offsetY);
+      const w = Math.min(width, f.x + offsetX + f.w) - x;
+      const h = Math.min(height, f.y + offsetY + f.h) - y;
+      layer.component = {
+        x: Math.min(x, width - 1),
+        y: Math.min(y, height - 1),
+        w: Math.max(1, w),
+        h: Math.max(1, h),
+      };
+    }
+    if (layer.instance)
+      layer.instance = { ...layer.instance, x: layer.instance.x + offsetX, y: layer.instance.y + offsetY };
   }
   doc.width = width;
   doc.height = height;
+  syncInstances(doc);
 }

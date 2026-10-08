@@ -1,6 +1,7 @@
 import type { Color } from '../engine/color';
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
 import { MAX_SIZE, newId, type Layer, type LayerGroup, type PixelDoc } from '../engine/document';
+import { normalizeComponents } from '../engine/components';
 import { normalizeGroups } from '../engine/groups';
 import { clamp } from '../engine/math';
 
@@ -22,6 +23,13 @@ export interface BaipixLayer {
   blendMode?: string;
   /** The group it's in, as an index in `groups` (missing: the top level). */
   group?: number;
+  /** A component's master: the frame of its sprite, in canvas pixels. */
+  component?: { x: number; y: number; w: number; h: number };
+  /**
+   * An instance: its master as an index in `layers`, and where the sprite lands. Its pixels are
+   * saved too, so a version without components still shows them.
+   */
+  instance?: { of: number; x: number; y: number };
   /** Distinct colors as unsigned 32-bit integers (0xAABBGGRR). */
   colors: number[];
   /** Flat list of [colorIndex, runLength] pairs, row-major. */
@@ -99,6 +107,7 @@ export function decodePixels(colors: number[], runs: number[], length: number): 
 export function serializeDocument(doc: PixelDoc): BaipixFile {
   const groups = doc.groups ?? [];
   const groupIndex = new Map(groups.map((g, k) => [g.id, k]));
+  const layerIndex = new Map(doc.layers.map((l, k) => [l.id, k]));
   return {
     format: FILE_FORMAT,
     version: FILE_VERSION,
@@ -122,6 +131,11 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
       opacity: l.opacity,
       ...(l.blendMode && l.blendMode !== 'normal' && { blendMode: l.blendMode }),
       ...(l.group && groupIndex.has(l.group) && { group: groupIndex.get(l.group) }),
+      ...(l.component && { component: { ...l.component } }),
+      ...(l.instance &&
+        layerIndex.has(l.instance.of) && {
+          instance: { of: layerIndex.get(l.instance.of)!, x: l.instance.x, y: l.instance.y },
+        }),
       ...encodePixels(l.pixels),
     })),
     ...(groups.length && {
@@ -160,6 +174,19 @@ function readGroups(raw: unknown, layers: Layer[], refs: unknown[]): LayerGroup[
     if (id) l.group = id;
   });
   return groups;
+}
+
+/** Components from a file: masters' frames, and instances pointing at their master by index. */
+function readComponents(layers: Layer[], raw: Partial<BaipixLayer>[]): void {
+  const whole = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
+  raw.forEach((l, i) => {
+    const c = l.component;
+    if (c && whole(c.x) && whole(c.y) && whole(c.w) && whole(c.h))
+      layers[i].component = { x: c.x, y: c.y, w: c.w, h: c.h };
+    const ref = l.instance;
+    if (ref && whole(ref.of) && whole(ref.x) && whole(ref.y) && layers[ref.of] && ref.of !== i)
+      layers[i].instance = { of: layers[ref.of].id, x: Math.round(ref.x), y: Math.round(ref.y) };
+  });
 }
 
 export class FileFormatError extends Error {}
@@ -230,6 +257,8 @@ export function deserializeDocument(data: unknown): PixelDoc {
     ...(groups && { groups }),
   };
   normalizeGroups(doc);
+  readComponents(layers, Array.isArray(f.layers) ? f.layers : []);
+  normalizeComponents(doc);
   return doc;
 }
 
