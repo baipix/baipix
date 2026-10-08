@@ -179,6 +179,16 @@ function LayersSection() {
   const selectedGroup = useEditorState((s) => s.selectedGroup);
   const multi = !referenceSelected && selected.length > 1;
   const n = doc.layers.length;
+  // A component needs something drawn on a plain layer (not an instance, not one already).
+  const active = doc.layers[doc.activeLayer];
+  const canMakeComponent =
+    !referenceSelected &&
+    !multi &&
+    !selectedGroup &&
+    !!active &&
+    !active.instance &&
+    !active.component &&
+    active.pixels.some((c) => c !== 0);
   // The layers and groups as rows, top first, folded groups without their children.
   const rows = layerRows(doc);
   const listRef = useRef<HTMLDivElement>(null);
@@ -201,6 +211,12 @@ function LayersSection() {
       const count = selected.length;
       const visible = doc.layers.filter((l) => selected.includes(l.id) && l.visible).length;
       openMenu(e.currentTarget, [
+        {
+          label: t('group.create'),
+          icon: 'folderPlus',
+          shortcut: 'Ctrl+G',
+          onSelect: () => editor.groupSelection(),
+        },
         {
           label: t('layer.mergeCount', { count }),
           icon: 'merge',
@@ -227,10 +243,16 @@ function LayersSection() {
       },
       { label: t('layer.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
       {
+        label: t('group.create'),
+        icon: 'folderPlus',
+        shortcut: 'Ctrl+G',
+        onSelect: () => editor.groupSelection(),
+      },
+      {
         label: t('component.create'),
         icon: 'component',
         shortcut: 'Ctrl+Alt+K',
-        disabled: !!layer.instance || !!layer.component,
+        disabled: !!layer.instance || !!layer.component || !layer.pixels.some((c) => c !== 0),
         onSelect: () => editor.createComponent(),
       },
       {
@@ -355,6 +377,13 @@ function LayersSection() {
           {!reference && (
             <IconButton icon="image" label={t('reference.add')} onClick={() => void actions.addReference()} />
           )}
+          <IconButton
+            icon="component"
+            label={t('component.create')}
+            shortcut="Ctrl+Alt+K"
+            disabled={!canMakeComponent}
+            onClick={() => editor.createComponent()}
+          />
           <IconButton icon="plus" label={t('layer.new')} onClick={() => editor.addLayer()} />
         </>
       }
@@ -543,81 +572,6 @@ function LayersSection() {
               />
             </span>
           </div>
-        )}
-      </div>
-      <div className="layer-actions">
-        <IconButton
-          icon="duplicate"
-          label={t('layer.duplicate')}
-          disabled={referenceSelected}
-          onClick={() => editor.duplicateLayer()}
-        />
-        <IconButton
-          icon="up"
-          label={t('layer.moveUp')}
-          disabled={referenceSelected || !editor.canMoveLayer(1)}
-          onClick={() => editor.moveLayer(1)}
-        />
-        <IconButton
-          icon="down"
-          label={t('layer.moveDown')}
-          disabled={referenceSelected || !editor.canMoveLayer(-1)}
-          onClick={() => editor.moveLayer(-1)}
-        />
-        <IconButton
-          icon="merge"
-          label={
-            selectedGroup
-              ? t('group.merge')
-              : multi
-                ? t('layer.mergeCount', { count: selected.length })
-                : t('layer.mergeDown')
-          }
-          disabled={referenceSelected || (!selectedGroup && !multi && !editor.canMergeDown())}
-          onClick={() =>
-            selectedGroup
-              ? editor.mergeGroup(selectedGroup)
-              : multi
-                ? editor.mergeLayers()
-                : editor.mergeDown()
-          }
-        />
-        <IconButton
-          icon="folderPlus"
-          label={t('group.create')}
-          shortcut="Ctrl+G"
-          disabled={referenceSelected}
-          onClick={() => editor.groupSelection()}
-        />
-        <IconButton
-          icon="component"
-          label={t('component.create')}
-          shortcut="Ctrl+Alt+K"
-          disabled={
-            referenceSelected ||
-            multi ||
-            !!selectedGroup ||
-            !!doc.layers[doc.activeLayer]?.instance ||
-            !!doc.layers[doc.activeLayer]?.component
-          }
-          onClick={() => editor.createComponent()}
-        />
-        <span className="spacer" />
-        {referenceSelected ? (
-          <IconButton icon="trash" label={t('reference.remove')} onClick={() => actions.removeReference()} />
-        ) : (
-          <IconButton
-            icon="trash"
-            label={
-              selectedGroup
-                ? t('group.delete')
-                : multi
-                  ? t('layer.deleteCount', { count: selected.length })
-                  : t('layer.delete')
-            }
-            disabled={doc.layers.length < 2 || selected.length >= doc.layers.length}
-            onClick={() => actions.deleteLayers()}
-          />
         )}
       </div>
     </Section>
