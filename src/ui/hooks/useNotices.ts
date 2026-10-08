@@ -34,5 +34,14 @@ const message = (n: Notice): string => {
 
 /** Turns engine notices into translated toasts. */
 export function useNotices(editor: Editor) {
-  useEffect(() => editor.onNotice((n) => toast(message(n))), [editor]);
+  useEffect(
+    () =>
+      editor.onNotice((n) =>
+        // Painting on an instance: the way to its component, right there.
+        n.type === 'instanceLocked'
+          ? toast(message(n), { label: t('component.goTo'), run: () => editor.goToMaster() })
+          : toast(message(n)),
+      ),
+    [editor],
+  );
 }

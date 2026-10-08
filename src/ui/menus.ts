@@ -1,4 +1,5 @@
 import { alpha, pack } from '../engine/color';
+import { isLinkedInstance } from '../engine/components';
 import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
 import type { Actions } from './actions';
@@ -202,6 +203,17 @@ export const MENU_BAR: MenuBarMenu[] = [
           shortcut: 'Ctrl+Alt+K',
           disabled: disabled || !!layer.instance,
           onSelect: () => editor.createComponent(),
+        },
+        {
+          label: t('component.goTo'),
+          disabled: disabled || !isLinkedInstance(doc, layer),
+          onSelect: () => editor.goToMaster(),
+        },
+        {
+          label: t('component.detach'),
+          shortcut: 'Ctrl+Alt+B',
+          disabled: disabled || !isLinkedInstance(doc, layer),
+          onSelect: () => editor.detachInstance(),
         },
         {
           label: t('group.ungroup'),

@@ -57,6 +57,8 @@ export const en = {
   'component.create': 'Create component',
   'component.master': 'Component',
   'component.instance': 'Instance of {name}',
+  'component.goTo': 'Go to component',
+  'component.detach': 'Detach instance',
   'component.dragHint': 'Drag onto the canvas to add an instance',
   'section.preview': 'Preview',
   'section.render': 'Pixel rendering',

@@ -6,7 +6,8 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Components, like in Figma: Ctrl+Alt+K (or the diamond button next to + in the Layers panel, a layer's right-click menu, or Layer › Create component) turns the active layer into a component, its sprite being the selection or what's drawn. Components are listed at the top of the left panel; drag one onto the canvas to place an instance. Instances follow their component as you draw on it, can't be painted on themselves, move with the Move tool, and Alt+drag copies one; Alt+drag on a component places an instance of it. A diamond marks components and instances in the Layers list.
+- Components, like in Figma: Ctrl+Alt+K (or the diamond button next to + in the Layers panel, a layer's right-click menu, or Layer › Create component) turns the active layer into a component, its sprite being the selection or what's drawn. Components are listed at the top of the left panel; drag one onto the canvas to place an instance. Instances follow their component as you draw on it, can't be painted on themselves, move with the Move tool, and Alt+drag copies one; Alt+drag on a component places an instance of it. A diamond marks components and instances in the Layers list. (#235, #236)
+- Edit a component, detach an instance: from an instance's right-click menu or the Layer menu, Go to component makes its component the active layer, and Detach instance (Ctrl+Alt+B) turns it back into plain pixels, in one undo step. Trying to paint on an instance offers Go to component right in the message. Drawing next to a component grows its frame, and its instances show the new pixels.
 
 ### Changed
 

@@ -58,6 +58,8 @@ export const fr: Record<MessageKey, string> = {
   'component.create': 'Créer un composant',
   'component.master': 'Composant',
   'component.instance': 'Instance de {name}',
+  'component.goTo': 'Aller au composant',
+  'component.detach': 'Détacher l’instance',
   'component.dragHint': 'Glisse-le sur le canevas pour ajouter une instance',
   'section.preview': 'Aperçu',
   'section.render': 'Rendu des pixels',

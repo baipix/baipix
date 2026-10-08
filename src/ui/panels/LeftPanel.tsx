@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { findMaster, masters, spritePixels } from '../../engine/components';
+import { findMaster, isLinkedInstance, masters, spritePixels } from '../../engine/components';
 import type { LayerGroup, PixelDoc } from '../../engine/document';
 import {
   groupChain,
@@ -248,13 +248,26 @@ function LayersSection() {
         shortcut: 'Ctrl+G',
         onSelect: () => editor.groupSelection(),
       },
-      {
-        label: t('component.create'),
-        icon: 'component',
-        shortcut: 'Ctrl+Alt+K',
-        disabled: !!layer.instance || !!layer.component || !layer.pixels.some((c) => c !== 0),
-        onSelect: () => editor.createComponent(),
-      },
+      // An instance offers its own two actions in place of making a component of it.
+      ...(isLinkedInstance(doc, layer)
+        ? [
+            { label: t('component.goTo'), icon: 'component' as const, onSelect: () => editor.goToMaster() },
+            {
+              label: t('component.detach'),
+              icon: 'detach' as const,
+              shortcut: 'Ctrl+Alt+B',
+              onSelect: () => editor.detachInstance(),
+            },
+          ]
+        : [
+            {
+              label: t('component.create'),
+              icon: 'component' as const,
+              shortcut: 'Ctrl+Alt+K',
+              disabled: !!layer.component || !layer.pixels.some((c) => c !== 0),
+              onSelect: () => editor.createComponent(),
+            },
+          ]),
       {
         label: t('layer.mergeDown'),
         icon: 'merge',
