@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-08
+
+Layers you can group and turn: layer groups, rotation by dragging a corner, rotate counterclockwise and align, a canvas size screen, and a Draw page on the website that shows every tool.
+
 ### Added
 
 - Rotate by dragging, like in Figma: with the Move tool, just outside a corner of the frame the cursor turns into a rotate arrow; drag to turn the layer or the selection to any angle (Shift snaps to 15°), with the angle under the frame. Pixels turn the RotSprite way, so lines stay clean and no new colors appear; right angles stay exact. One undo step. (#226)
@@ -169,7 +173,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.3.1...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.4.0...main
+[0.4.0]: https://github.com/baipix/baipix/releases/tag/v0.4.0
 [0.3.1]: https://github.com/baipix/baipix/releases/tag/v0.3.1
 [0.3.0]: https://github.com/baipix/baipix/releases/tag/v0.3.0
 [0.2.0]: https://github.com/baipix/baipix/releases/tag/v0.2.0
