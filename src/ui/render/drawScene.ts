@@ -180,28 +180,28 @@ export function drawScene(
 
   const checker = checkerPattern(ctx, Math.max(4, Math.round(8 * dpr)), theme.checkA, theme.checkB);
 
-  // Tile preview: the 8 neighbors are drawn like the real canvas (checkerboard included) so seams
-  // are easy to spot, then slightly dimmed to keep the editable copy in focus.
+  // Tile preview: copies all around, as far as the view goes, drawn like the real canvas
+  // (checkerboard included) so seams are easy to spot, then dimmed to keep the editable copy in
+  // focus. Two pattern fills over the whole view, however many copies show when zoomed out.
   if (view.tile) {
-    for (let j = -1; j <= 1; j++)
-      for (let i = -1; i <= 1; i++) {
-        if (!i && !j) continue;
-        const x = X + i * cw;
-        const y = Y + j * ch;
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.fillStyle = checker;
-        ctx.fillRect(0, 0, cw, ch);
-        ctx.restore();
-        ctx.drawImage(scene.composite, x, y, cw, ch);
-      }
+    ctx.save();
+    ctx.translate(X, Y);
+    ctx.fillStyle = checker;
+    ctx.fillRect(-X, -Y, width, height);
+    const copies = ctx.createPattern(scene.composite, 'repeat');
+    if (copies) {
+      ctx.scale(s, s);
+      ctx.fillStyle = copies;
+      ctx.fillRect(-X / s, -Y / s, width / s, height / s);
+    }
+    ctx.restore();
     // The copies are dimmed so the editable one stands out, as much as the tile opacity says.
     const dim = 1 - view.tileOpacity;
     if (dim > 0) {
       ctx.save();
       ctx.globalAlpha = dim;
       ctx.fillStyle = theme.canvas;
-      ctx.fillRect(X - cw, Y - ch, cw * 3, ch * 3);
+      ctx.fillRect(0, 0, width, height);
       ctx.restore();
     }
   }
