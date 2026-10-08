@@ -759,6 +759,21 @@ body.is-resizing * {
   flex: none;
   color: var(--muted);
 }
+/* Components: a diamond next to a master's or an instance's thumbnail. */
+.component-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-left: -4px;
+  color: var(--component);
+}
+.component-item {
+  cursor: grab;
+}
+.component-item:active {
+  cursor: grabbing;
+}
+
 .item.is-active,
 .item.is-selected {
   background: var(--selected);

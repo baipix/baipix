@@ -50,6 +50,7 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
       ['layer.mergeDown', 'Shift+M'],
       ['group.create', 'Ctrl+G'],
       ['group.ungroup', 'Ctrl+Shift+G'],
+      ['component.create', 'Ctrl+Alt+K'],
       ['shortcuts.deleteLayer', 'Del'],
       ['adjust.outline', 'Shift+O'],
       ['menu.layerUp', 'Alt+↑'],

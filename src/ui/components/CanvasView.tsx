@@ -26,6 +26,7 @@ import {
 import { readTheme, type Theme } from '../render/theme';
 import { BRUSH_TOOLS, SHAPE_IDS } from '../tools';
 import { hoverStore, uiStore } from '../uiStore';
+import { COMPONENT_MIME } from '../dragTypes';
 import { viewport } from '../viewport';
 
 const DRAWING_TOOLS: ToolId[] = [
@@ -669,7 +670,7 @@ export function CanvasView() {
       const started = editor.beginStroke(
         p,
         e.button === 2,
-        { shift: e.shiftKey, keepLayer: e.metaKey || e.ctrlKey },
+        { shift: e.shiftKey, keepLayer: e.metaKey || e.ctrlKey, duplicate: e.altKey },
         override,
       );
       // The spray and the jumble keep going while the pointer holds still, like a real can.
@@ -909,12 +910,21 @@ export function CanvasView() {
       data-drop-label={t('canvas.drop')}
       onDragOver={(e) => {
         e.preventDefault();
-        setDropping(true);
+        // A component from the Components list isn't a file: no "drop an image" overlay.
+        if (e.dataTransfer.types.includes(COMPONENT_MIME)) e.dataTransfer.dropEffect = 'copy';
+        else setDropping(true);
       }}
       onDragLeave={() => setDropping(false)}
       onDrop={(e) => {
         e.preventDefault();
         setDropping(false);
+        const component = e.dataTransfer.getData(COMPONENT_MIME);
+        const canvas = canvasRef.current;
+        if (component && canvas) {
+          const r = canvas.getBoundingClientRect();
+          editor.addInstanceAt(component, viewport.toPixel(e.clientX - r.left, e.clientY - r.top));
+          return;
+        }
         const file = e.dataTransfer.files[0];
         if (file) void actions.importImage(file);
       }}

@@ -198,6 +198,12 @@ export const MENU_BAR: MenuBarMenu[] = [
         { label: t('layer.new'), shortcut: 'Shift+N', onSelect: () => editor.addLayer() },
         { label: t('group.create'), shortcut: 'Ctrl+G', disabled, onSelect: () => editor.groupSelection() },
         {
+          label: t('component.create'),
+          shortcut: 'Ctrl+Alt+K',
+          disabled: disabled || !!layer.instance,
+          onSelect: () => editor.createComponent(),
+        },
+        {
           label: t('group.ungroup'),
           shortcut: 'Ctrl+Shift+G',
           disabled: !selectedGroup,

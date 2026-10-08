@@ -23,6 +23,22 @@ export interface InstanceRef {
 export const isMaster = (layer: Layer): boolean => !!layer.component;
 export const isInstance = (layer: Layer): boolean => !!layer.instance;
 
+/**
+ * An instance whose master is there. One whose master was just deleted keeps its pixels and
+ * reconnects if the master comes back (Undo); meanwhile it behaves like a plain layer.
+ */
+export const isLinkedInstance = (doc: PixelDoc, layer: Layer): boolean =>
+  !!layer.instance && !!findMaster(doc, layer.instance.of);
+
+/** The master's sprite as its own small image, for thumbnails. */
+export function spritePixels(doc: PixelDoc, master: Layer): Uint32Array {
+  const f = master.component!;
+  const out = new Uint32Array(f.w * f.h);
+  for (let y = 0; y < f.h; y++)
+    out.set(master.pixels.subarray((f.y + y) * doc.width + f.x, (f.y + y) * doc.width + f.x + f.w), y * f.w);
+  return out;
+}
+
 /** The masters of a document, bottom to top. */
 export const masters = (doc: PixelDoc): Layer[] => doc.layers.filter(isMaster);
 
@@ -46,14 +62,19 @@ export function clampFrame(doc: PixelDoc, r: Rect): ComponentFrame {
 function render(doc: PixelDoc, master: Layer, target: Layer, at: { x: number; y: number }): void {
   const frame = master.component!;
   const { width: W, height: H } = doc;
-  const out = new Uint32Array(W * H);
+  // Drawn in place when the size is right: this runs on every pointer move while dragging.
+  const out = target.pixels.length === W * H ? target.pixels.fill(0) : new Uint32Array(W * H);
   for (let sy = 0; sy < frame.h; sy++) {
     const ty = at.y + sy;
     if (ty < 0 || ty >= H) continue;
     for (let sx = 0; sx < frame.w; sx++) {
       const tx = at.x + sx;
       if (tx < 0 || tx >= W) continue;
-      out[ty * W + tx] = master.pixels[(frame.y + sy) * W + frame.x + sx];
+      // A master dragged partly off the canvas: its frame follows it, what's outside is empty.
+      const fx = frame.x + sx;
+      const fy = frame.y + sy;
+      if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+      out[ty * W + tx] = master.pixels[fy * W + fx];
     }
   }
   target.pixels = out;

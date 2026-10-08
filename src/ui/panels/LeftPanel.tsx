@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { findMaster, masters, spritePixels } from '../../engine/components';
 import type { LayerGroup, PixelDoc } from '../../engine/document';
 import {
   groupChain,
@@ -17,6 +18,7 @@ import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { Section } from '../components/Section';
 import { Thumbnail } from '../components/Thumbnail';
+import { COMPONENT_MIME } from '../dragTypes';
 import { openAdjust } from '../uiStore';
 
 /** Inline rename on double-click, used by files and layers. */
@@ -120,6 +122,49 @@ function dropPlace(
   const under = rows[gap];
   if (under) return { parent: under.parent, aboveLayer: top(under) };
   return { parent: over?.parent, aboveLayer: null };
+}
+
+/**
+ * The document's components (their masters, top first): drag one onto the canvas to add an
+ * instance, click one to select its master. Only shown once there's a component.
+ */
+function ComponentsSection() {
+  const t = useT();
+  const editor = useEditor();
+  const doc = useEditorState((s) => s.doc);
+  const revision = useEditorState((s) => s.revision);
+  const list = masters(doc).reverse();
+  if (!list.length) return null;
+  return (
+    <Section id="components" title={t('section.components')} info={t('component.dragHint')}>
+      <div className="item-list">
+        {list.map((m) => (
+          <div
+            key={m.id}
+            className="item component-item"
+            draggable
+            title={t('component.dragHint')}
+            onDragStart={(e) => {
+              e.dataTransfer.setData(COMPONENT_MIME, m.id);
+              e.dataTransfer.effectAllowed = 'copy';
+            }}
+            onClick={() => editor.selectLayer(doc.layers.indexOf(m), 'single')}
+          >
+            <Thumbnail
+              pixels={() => spritePixels(doc, m)}
+              width={m.component!.w}
+              height={m.component!.h}
+              version={revision}
+            />
+            <span className="component-icon">
+              <Icon name="component" size={12} />
+            </span>
+            <span className="item-name">{m.name}</span>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
 }
 
 function LayersSection() {
@@ -407,6 +452,19 @@ function LayersSection() {
                 height={doc.height}
                 version={revision}
               />
+              {row.layer.component && (
+                <span className="component-icon" title={t('component.master')}>
+                  <Icon name="component" size={12} />
+                </span>
+              )}
+              {row.layer.instance && findMaster(doc, row.layer.instance.of) && (
+                <span
+                  className="component-icon is-instance"
+                  title={t('component.instance', { name: findMaster(doc, row.layer.instance.of)!.name })}
+                >
+                  <Icon name="instance" size={12} />
+                </span>
+              )}
               <EditableName
                 value={row.layer.name}
                 onRename={(v) => editor.renameLayer(row.index, v)}
@@ -550,6 +608,7 @@ export function LeftPanel() {
   const t = useT();
   return (
     <aside className="panel panel-left" aria-label={t('panel.left')}>
+      <ComponentsSection />
       <LayersSection />
     </aside>
   );
