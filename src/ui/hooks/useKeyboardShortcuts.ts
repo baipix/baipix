@@ -38,6 +38,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         const handled = (() => {
           // Ctrl/Cmd+Alt+K, like Figma: by key position, since Alt changes the character on a Mac.
           if (e.altKey && e.code === 'KeyK') return (editor.createComponent(), true);
+          if (e.altKey && e.code === 'KeyB') return (editor.detachInstance(), true);
           if (key === 'z' && !e.shiftKey) return (editor.undo(), true);
           if ((key === 'z' && e.shiftKey) || key === 'y') return (editor.redo(), true);
           if (key === 'c' && e.shiftKey) return (void actions.copySvg(), true);

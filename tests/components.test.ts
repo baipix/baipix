@@ -241,4 +241,54 @@ describe('components in the editor', () => {
     e.undo();
     expect(doc().layers).toHaveLength(1);
   });
+
+  it('goes from an instance to its component', () => {
+    const { e, doc } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    expect(e.goToMaster()).toBe(true);
+    expect(doc().activeLayer).toBe(0);
+    // Not from the component itself.
+    expect(e.goToMaster()).toBe(false);
+  });
+
+  it('detaches an instance into plain pixels, and one undo links it back', () => {
+    const { e, draw, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    expect(e.detachInstance()).toBe(true);
+    expect(doc().layers[1].instance).toBeUndefined();
+    expect(px(1, 9, 10)).toBe(RED);
+    // It's a plain layer now: it can be painted, and the component no longer changes it.
+    draw([[0, 0]]);
+    expect(px(1, 0, 0)).toBe(RED);
+    e.setActiveLayer(0);
+    e.setColor('primary', BLUE);
+    draw([[1, 1]]);
+    expect(px(1, 9, 10)).toBe(RED);
+    e.undo();
+    e.undo();
+    e.undo();
+    expect(doc().layers[1].instance).toMatchObject({ x: 9, y: 10 });
+    expect(px(1, 0, 0)).toBe(0);
+  });
+
+  it('grows the frame when drawing outside it on the component', () => {
+    const { e, draw, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    e.setActiveLayer(0);
+    e.setColor('primary', BLUE);
+    draw([[0, 0]]);
+    expect(doc().layers[0].component).toEqual({ x: 0, y: 0, w: 3, h: 2 });
+    // The instance shows the new pixel, and its sprite hasn't moved.
+    expect(doc().layers[1].instance).toMatchObject({ x: 8, y: 9 });
+    expect(px(1, 8, 9)).toBe(BLUE);
+    expect(px(1, 9, 10)).toBe(RED);
+    // One undo puts the frame back as it was.
+    e.undo();
+    expect(doc().layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 1 });
+    expect(doc().layers[1].instance).toMatchObject({ x: 9, y: 10 });
+    expect(px(1, 8, 9)).toBe(0);
+  });
 });

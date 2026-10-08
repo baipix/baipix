@@ -185,10 +185,27 @@ const Instance = drawn([
   '.....##.....',
 ]);
 
+// Detach: the instance's diamond broken open, like Figma's.
+const Detach = drawn([
+  '.....##.....',
+  '....#..#....',
+  '...#....#...',
+  '..#.........',
+  '.#..........',
+  '#...........',
+  '...........#',
+  '..........#.',
+  '.........#..',
+  '...#....#...',
+  '....#..#....',
+  '.....##.....',
+]);
+
 /** Interface icons, from Pixelarticons (MIT, https://pixelarticons.com) plus a few drawn here. */
 export const ICONS = {
   component: Component,
   instance: Instance,
+  detach: Detach,
   move: CursorMinimal,
   hand: Hand,
   select: Select,

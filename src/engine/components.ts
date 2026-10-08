@@ -128,6 +128,39 @@ export function moveInstance(doc: PixelDoc, layer: Layer, x: number, y: number):
   syncInstances(doc, layer.instance.of);
 }
 
+/**
+ * After a stroke on a master: its frame grows to take in what was just drawn outside it (pixels
+ * that changed from `before` and aren't empty), like a component in Figma. Returns true if it grew.
+ */
+export function growFrame(doc: PixelDoc, master: Layer, before: Uint32Array): boolean {
+  const f = master.component;
+  if (!f) return false;
+  const W = doc.width;
+  let x0 = f.x;
+  let y0 = f.y;
+  let x1 = f.x + f.w - 1;
+  let y1 = f.y + f.h - 1;
+  const p = master.pixels;
+  for (let i = 0; i < p.length; i++) {
+    if (p[i] === before[i] || !(p[i] >>> 24)) continue;
+    const x = i % W;
+    const y = (i / W) | 0;
+    if (x < x0) x0 = x;
+    if (x > x1) x1 = x;
+    if (y < y0) y0 = y;
+    if (y > y1) y1 = y;
+  }
+  if (x0 === f.x && y0 === f.y && x1 === f.x + f.w - 1 && y1 === f.y + f.h - 1) return false;
+  // The sprite keeps its place in its instances: they move by as much as the frame's corner.
+  const dx = x0 - f.x;
+  const dy = y0 - f.y;
+  master.component = { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+  for (const layer of instancesOf(doc, master.id))
+    layer.instance = { ...layer.instance!, x: layer.instance!.x + dx, y: layer.instance!.y + dy };
+  syncInstances(doc, master.id);
+  return true;
+}
+
 /** Turns an instance back into a plain layer, keeping its pixels as they are. */
 export function detachInstance(layer: Layer): void {
   delete layer.instance;

@@ -38,6 +38,7 @@ import {
   addInstance,
   detachInstance,
   findMaster,
+  growFrame,
   isLinkedInstance,
   makeComponent,
   syncInstances,
@@ -1709,6 +1710,22 @@ export class Editor {
     return true;
   }
 
+  /** From an instance: its component becomes the active layer, to edit every copy at once. */
+  goToMaster(): boolean {
+    const layer = activeLayer(this.doc);
+    const master = layer.instance && findMaster(this.doc, layer.instance.of);
+    if (!master) return false;
+    this.setActiveLayer(this.doc.layers.indexOf(master));
+    return true;
+  }
+
+  /** Turns the active instance into a plain layer with the same pixels (Ctrl/Cmd+Alt+B). */
+  detachInstance(): boolean {
+    if (!isLinkedInstance(this.doc, activeLayer(this.doc))) return false;
+    this.edit((d) => detachInstance(activeLayer(d)));
+    return true;
+  }
+
   /**
    * A new instance of a master (dropped from the Components list), its sprite centered on `p`,
    * above the master. It becomes the active layer.
@@ -2354,6 +2371,8 @@ export class Editor {
       this.commit(false);
       return;
     }
+    // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
+    if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
     if (tool.paintsColor) {
       const [c1, c2] = strokeColors(s);
       if (s.options.dither) this.remember(c1, c2);
