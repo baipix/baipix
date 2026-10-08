@@ -226,4 +226,19 @@ describe('components in the editor', () => {
     expect(px(1, 20, 20)).toBe(RED);
     expect(px(1, 9, 10)).toBe(RED);
   });
+
+  it('Alt+drag on a component places an instance of it, like in Figma', () => {
+    const { e, doc, px } = setup();
+    e.createComponent();
+    e.setTool('move');
+    move(e, [1, 1], [11, 6], true);
+    expect(doc().layers).toHaveLength(2);
+    expect(doc().layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 1 });
+    expect(doc().layers[1].instance).toMatchObject({ of: doc().layers[0].id, x: 11, y: 6 });
+    expect(px(1, 11, 6)).toBe(RED);
+    // The component stays where it was.
+    expect(px(0, 1, 1)).toBe(RED);
+    e.undo();
+    expect(doc().layers).toHaveLength(1);
+  });
 });

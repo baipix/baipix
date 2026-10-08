@@ -2213,18 +2213,23 @@ export class Editor {
       return false;
     }
     if (tool.editsPixels) this.checkpoint();
-    // Alt+drag an instance with the Move tool: a new instance, which is the one that moves.
+    // Alt+drag a component or an instance with the Move tool, like in Figma: a new instance, which
+    // is the one that moves, just above the layer dragged and in its group.
     const picked = activeLayer(this.doc);
-    if (id === 'move' && mods.duplicate && !this.active.selection && isLinkedInstance(this.doc, picked)) {
-      // Just above the one copied, in its group, like a duplicated layer.
-      const { of, x, y } = picked.instance!;
-      const at = addInstance(this.doc, of, x, y, this.doc.activeLayer + 1);
+    const source =
+      picked.component && !isLinkedInstance(this.doc, picked)
+        ? { of: picked.id, x: picked.component.x, y: picked.component.y }
+        : isLinkedInstance(this.doc, picked)
+          ? picked.instance!
+          : null;
+    if (id === 'move' && mods.duplicate && !this.active.selection && source) {
+      const at = addInstance(this.doc, source.of, source.x, source.y, this.doc.activeLayer + 1);
       const copy = this.doc.layers[at];
       copy.name = picked.name;
       if (picked.group) copy.group = picked.group;
       else delete copy.group;
       this.doc.activeLayer = at;
-      this.active.picked = [this.doc.layers[at].id];
+      this.active.picked = [copy.id];
       this.refresh();
     }
     this.stroke = this.createStroke(p, secondary);

@@ -227,6 +227,13 @@ function LayersSection() {
       },
       { label: t('layer.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
       {
+        label: t('component.create'),
+        icon: 'component',
+        shortcut: 'Ctrl+Alt+K',
+        disabled: !!layer.instance || !!layer.component,
+        onSelect: () => editor.createComponent(),
+      },
+      {
         label: t('layer.mergeDown'),
         icon: 'merge',
         disabled: index === 0,
@@ -581,6 +588,19 @@ function LayersSection() {
           shortcut="Ctrl+G"
           disabled={referenceSelected}
           onClick={() => editor.groupSelection()}
+        />
+        <IconButton
+          icon="component"
+          label={t('component.create')}
+          shortcut="Ctrl+Alt+K"
+          disabled={
+            referenceSelected ||
+            multi ||
+            !!selectedGroup ||
+            !!doc.layers[doc.activeLayer]?.instance ||
+            !!doc.layers[doc.activeLayer]?.component
+          }
+          onClick={() => editor.createComponent()}
         />
         <span className="spacer" />
         {referenceSelected ? (
