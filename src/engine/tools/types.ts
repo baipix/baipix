@@ -110,6 +110,8 @@ export interface Modifiers {
   shift: boolean;
   /** Move tool: Cmd/Ctrl held, move the active layer instead of the one under the pointer. */
   keepLayer?: boolean;
+  /** Move tool: Alt held, an instance is copied and the copy moves. */
+  duplicate?: boolean;
 }
 
 /** Everything a tool needs during one pointer gesture. Created by the editor on pointer down. */

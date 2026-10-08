@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { findMaster, masters, spritePixels } from '../../engine/components';
 import type { LayerGroup, PixelDoc } from '../../engine/document';
 import {
   groupChain,
@@ -17,6 +18,7 @@ import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { Section } from '../components/Section';
 import { Thumbnail } from '../components/Thumbnail';
+import { COMPONENT_MIME } from '../dragTypes';
 import { openAdjust } from '../uiStore';
 
 /** Inline rename on double-click, used by files and layers. */
@@ -122,6 +124,49 @@ function dropPlace(
   return { parent: over?.parent, aboveLayer: null };
 }
 
+/**
+ * The document's components (their masters, top first): drag one onto the canvas to add an
+ * instance, click one to select its master. Only shown once there's a component.
+ */
+function ComponentsSection() {
+  const t = useT();
+  const editor = useEditor();
+  const doc = useEditorState((s) => s.doc);
+  const revision = useEditorState((s) => s.revision);
+  const list = masters(doc).reverse();
+  if (!list.length) return null;
+  return (
+    <Section id="components" title={t('section.components')} info={t('component.dragHint')}>
+      <div className="item-list">
+        {list.map((m) => (
+          <div
+            key={m.id}
+            className="item component-item"
+            draggable
+            title={t('component.dragHint')}
+            onDragStart={(e) => {
+              e.dataTransfer.setData(COMPONENT_MIME, m.id);
+              e.dataTransfer.effectAllowed = 'copy';
+            }}
+            onClick={() => editor.selectLayer(doc.layers.indexOf(m), 'single')}
+          >
+            <Thumbnail
+              pixels={() => spritePixels(doc, m)}
+              width={m.component!.w}
+              height={m.component!.h}
+              version={revision}
+            />
+            <span className="component-icon">
+              <Icon name="component" size={12} />
+            </span>
+            <span className="item-name">{m.name}</span>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
 function LayersSection() {
   const t = useT();
   const editor = useEditor();
@@ -134,6 +179,16 @@ function LayersSection() {
   const selectedGroup = useEditorState((s) => s.selectedGroup);
   const multi = !referenceSelected && selected.length > 1;
   const n = doc.layers.length;
+  // A component needs something drawn on a plain layer (not an instance, not one already).
+  const active = doc.layers[doc.activeLayer];
+  const canMakeComponent =
+    !referenceSelected &&
+    !multi &&
+    !selectedGroup &&
+    !!active &&
+    !active.instance &&
+    !active.component &&
+    active.pixels.some((c) => c !== 0);
   // The layers and groups as rows, top first, folded groups without their children.
   const rows = layerRows(doc);
   const listRef = useRef<HTMLDivElement>(null);
@@ -156,6 +211,12 @@ function LayersSection() {
       const count = selected.length;
       const visible = doc.layers.filter((l) => selected.includes(l.id) && l.visible).length;
       openMenu(e.currentTarget, [
+        {
+          label: t('group.create'),
+          icon: 'folderPlus',
+          shortcut: 'Ctrl+G',
+          onSelect: () => editor.groupSelection(),
+        },
         {
           label: t('layer.mergeCount', { count }),
           icon: 'merge',
@@ -181,6 +242,19 @@ function LayersSection() {
         onSelect: () => setRenaming(layer.id),
       },
       { label: t('layer.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
+      {
+        label: t('group.create'),
+        icon: 'folderPlus',
+        shortcut: 'Ctrl+G',
+        onSelect: () => editor.groupSelection(),
+      },
+      {
+        label: t('component.create'),
+        icon: 'component',
+        shortcut: 'Ctrl+Alt+K',
+        disabled: !!layer.instance || !!layer.component || !layer.pixels.some((c) => c !== 0),
+        onSelect: () => editor.createComponent(),
+      },
       {
         label: t('layer.mergeDown'),
         icon: 'merge',
@@ -303,6 +377,13 @@ function LayersSection() {
           {!reference && (
             <IconButton icon="image" label={t('reference.add')} onClick={() => void actions.addReference()} />
           )}
+          <IconButton
+            icon="component"
+            label={t('component.create')}
+            shortcut="Ctrl+Alt+K"
+            disabled={!canMakeComponent}
+            onClick={() => editor.createComponent()}
+          />
           <IconButton icon="plus" label={t('layer.new')} onClick={() => editor.addLayer()} />
         </>
       }
@@ -407,6 +488,19 @@ function LayersSection() {
                 height={doc.height}
                 version={revision}
               />
+              {row.layer.component && (
+                <span className="component-icon" title={t('component.master')}>
+                  <Icon name="component" size={12} />
+                </span>
+              )}
+              {row.layer.instance && findMaster(doc, row.layer.instance.of) && (
+                <span
+                  className="component-icon is-instance"
+                  title={t('component.instance', { name: findMaster(doc, row.layer.instance.of)!.name })}
+                >
+                  <Icon name="instance" size={12} />
+                </span>
+              )}
               <EditableName
                 value={row.layer.name}
                 onRename={(v) => editor.renameLayer(row.index, v)}
@@ -480,68 +574,6 @@ function LayersSection() {
           </div>
         )}
       </div>
-      <div className="layer-actions">
-        <IconButton
-          icon="duplicate"
-          label={t('layer.duplicate')}
-          disabled={referenceSelected}
-          onClick={() => editor.duplicateLayer()}
-        />
-        <IconButton
-          icon="up"
-          label={t('layer.moveUp')}
-          disabled={referenceSelected || !editor.canMoveLayer(1)}
-          onClick={() => editor.moveLayer(1)}
-        />
-        <IconButton
-          icon="down"
-          label={t('layer.moveDown')}
-          disabled={referenceSelected || !editor.canMoveLayer(-1)}
-          onClick={() => editor.moveLayer(-1)}
-        />
-        <IconButton
-          icon="merge"
-          label={
-            selectedGroup
-              ? t('group.merge')
-              : multi
-                ? t('layer.mergeCount', { count: selected.length })
-                : t('layer.mergeDown')
-          }
-          disabled={referenceSelected || (!selectedGroup && !multi && !editor.canMergeDown())}
-          onClick={() =>
-            selectedGroup
-              ? editor.mergeGroup(selectedGroup)
-              : multi
-                ? editor.mergeLayers()
-                : editor.mergeDown()
-          }
-        />
-        <IconButton
-          icon="folderPlus"
-          label={t('group.create')}
-          shortcut="Ctrl+G"
-          disabled={referenceSelected}
-          onClick={() => editor.groupSelection()}
-        />
-        <span className="spacer" />
-        {referenceSelected ? (
-          <IconButton icon="trash" label={t('reference.remove')} onClick={() => actions.removeReference()} />
-        ) : (
-          <IconButton
-            icon="trash"
-            label={
-              selectedGroup
-                ? t('group.delete')
-                : multi
-                  ? t('layer.deleteCount', { count: selected.length })
-                  : t('layer.delete')
-            }
-            disabled={doc.layers.length < 2 || selected.length >= doc.layers.length}
-            onClick={() => actions.deleteLayers()}
-          />
-        )}
-      </div>
     </Section>
   );
 }
@@ -550,6 +582,7 @@ export function LeftPanel() {
   const t = useT();
   return (
     <aside className="panel panel-left" aria-label={t('panel.left')}>
+      <ComponentsSection />
       <LayersSection />
     </aside>
   );

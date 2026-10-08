@@ -155,8 +155,40 @@ const Layers = drawn([
   '............',
 ]);
 
+// Components, like Figma's: a filled diamond for a master, an outlined one for an instance.
+const Component = drawn([
+  '.....##.....',
+  '....####....',
+  '...######...',
+  '..########..',
+  '.##########.',
+  '############',
+  '############',
+  '.##########.',
+  '..########..',
+  '...######...',
+  '....####....',
+  '.....##.....',
+]);
+const Instance = drawn([
+  '.....##.....',
+  '....#..#....',
+  '...#....#...',
+  '..#......#..',
+  '.#........#.',
+  '#..........#',
+  '#..........#',
+  '.#........#.',
+  '..#......#..',
+  '...#....#...',
+  '....#..#....',
+  '.....##.....',
+]);
+
 /** Interface icons, from Pixelarticons (MIT, https://pixelarticons.com) plus a few drawn here. */
 export const ICONS = {
+  component: Component,
+  instance: Instance,
   move: CursorMinimal,
   hand: Hand,
   select: Select,

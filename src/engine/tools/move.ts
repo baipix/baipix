@@ -1,3 +1,4 @@
+import { syncInstances } from '../components';
 import type { Rect } from '../math';
 import { reframe } from '../outside';
 import { extractBlock, fillRect, stampBlock, type PixelBlock } from '../region';
@@ -7,6 +8,10 @@ interface MoveState {
   block?: PixelBlock;
   cleared?: Uint32Array;
   origin?: Rect;
+  /** An instance moves by its position, its pixels coming from the master. */
+  instance?: { x: number; y: number };
+  /** A master's frame, which moves with its pixels. */
+  frame?: Rect;
 }
 
 /**
@@ -15,7 +20,8 @@ interface MoveState {
  */
 export function beginMove(s: Stroke): void {
   const state: MoveState = {};
-  if (s.selection) {
+  if (s.layer.instance) state.instance = { x: s.layer.instance.x, y: s.layer.instance.y };
+  else if (s.selection) {
     const { width, height } = s.doc;
     state.origin = { ...s.selection };
     state.block = extractBlock(s.base, width, height, s.selection);
@@ -25,17 +31,25 @@ export function beginMove(s: Stroke): void {
     state.origin.x = Math.max(0, state.origin.x);
     state.origin.y = Math.max(0, state.origin.y);
   }
+  if (s.layer.component && !s.selection) state.frame = { ...s.layer.component };
   s.scratch.move = state;
 }
 
 export function applyMove(s: Stroke, dx: number, dy: number): void {
   const { width, height } = s.doc;
   const state = s.scratch.move as MoveState;
+  if (state.instance && s.layer.instance) {
+    s.layer.instance = { ...s.layer.instance, x: state.instance.x + dx, y: state.instance.y + dy };
+    syncInstances(s.doc, s.layer.instance.of);
+    return;
+  }
   if (!state.block || !state.cleared || !state.origin) {
     // The whole layer: what goes off the canvas is kept, and comes back when moved back.
     const r = reframe(s.base, width, height, s.baseOutside, dx, dy, width, height);
     s.layer.pixels.set(r.pixels);
     s.layer.outside = r.outside;
+    // A master's frame goes with its drawing, so its instances stay the same.
+    if (state.frame) s.layer.component = { ...state.frame, x: state.frame.x + dx, y: state.frame.y + dy };
     return;
   }
   s.layer.pixels.set(state.cleared);

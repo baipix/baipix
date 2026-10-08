@@ -34,6 +34,14 @@ import {
   type LayerItem,
   type LayerNode,
 } from './groups';
+import {
+  addInstance,
+  detachInstance,
+  findMaster,
+  isLinkedInstance,
+  makeComponent,
+  syncInstances,
+} from './components';
 import { History, takeSnapshot, type Snapshot } from './history';
 import { flipOutside, layerContent, reframe, type Outside } from './outside';
 import { clamp, clipRect, type Point, type Rect } from './math';
@@ -145,7 +153,9 @@ export type Notice =
   | { type: 'extracted'; count: number }
   | { type: 'pasted' }
   | { type: 'merged' }
-  | { type: 'groupTooDeep' };
+  | { type: 'groupTooDeep' }
+  | { type: 'instanceLocked' }
+  | { type: 'componentCreated' };
 
 export interface Preferences {
   tool: ToolId;
@@ -295,7 +305,11 @@ export class Editor {
   /** The Move tool moving a group (or several selected layers) together. */
   private groupMove: {
     start: Point;
-    items: { layer: Layer; base: Uint32Array; outside?: Outside }[];
+    /**
+     * `at`: an instance's position when the move started (it moves by its position). `frame`: a
+     * master's frame, which moves with its drawing.
+     */
+    items: { layer: Layer; base: Uint32Array; outside?: Outside; at?: Point; frame?: Rect }[];
   } | null = null;
   /** The active layer's blend mode while another one is previewed. */
   private blendPreview: { target: Layer | LayerGroup; mode: BlendMode | undefined } | null = null;
@@ -393,6 +407,8 @@ export class Editor {
 
   /** Publishes a change. `persist` is false for pure UI changes that don't need saving. */
   private commit(persist = true): void {
+    // Instances show their master as it is now, whatever changed it.
+    syncInstances(this.doc);
     this.refresh();
     this.listeners.forEach((l) => l());
     this.pixelListeners.forEach((l) => l());
@@ -1220,6 +1236,8 @@ export class Editor {
       return;
     }
     this.edit((doc) => {
+      // Merged into an instance, it becomes plain pixels: they're no longer its master's.
+      detachInstance(doc.layers[i - 1]);
       mergeLayerInto(doc.layers[i], doc.layers[i - 1]);
       doc.layers.splice(i, 1);
       doc.activeLayer = i - 1;
@@ -1263,6 +1281,7 @@ export class Editor {
     }
     this.edit((doc) => {
       const [bottom, ...rest] = layers;
+      detachInstance(bottom);
       for (const layer of rest) mergeLayerInto(layer, bottom);
       doc.layers = doc.layers.filter((l) => !rest.includes(l));
       doc.activeLayer = doc.layers.indexOf(bottom);
@@ -1316,11 +1335,21 @@ export class Editor {
     });
   }
 
-  /** Paint on a locked layer: tells the user why nothing happens. */
-  private activeLocked(): boolean {
-    if (!isLocked(this.doc, activeLayer(this.doc))) return false;
-    this.notice({ type: 'layerLocked' });
-    return true;
+  /**
+   * Paint on a locked layer, or on an instance (its pixels come from its master): tells the user
+   * why nothing happens. `moving`: an instance can still be moved.
+   */
+  private activeLocked(moving = false): boolean {
+    const layer = activeLayer(this.doc);
+    if (isLocked(this.doc, layer)) {
+      this.notice({ type: 'layerLocked' });
+      return true;
+    }
+    if (!moving && isLinkedInstance(this.doc, layer)) {
+      this.notice({ type: 'instanceLocked' });
+      return true;
+    }
+    return false;
   }
 
   renameLayer(index: number, name: string): void {
@@ -1652,6 +1681,53 @@ export class Editor {
     delete s.pickedGroup;
     s.picked = [activeLayer(this.doc).id];
     s.unframed = true;
+    this.commit(false);
+    return true;
+  }
+
+  /* ------------------------------------------------------------------ components */
+
+  /**
+   * Turns the active layer into a component (Ctrl/Cmd+Alt+K): its sprite is the selection, or
+   * else what's drawn on it. Returns false when there's nothing to make one of.
+   */
+  createComponent(): boolean {
+    const doc = this.doc;
+    const layer = activeLayer(doc);
+    if (isLinkedInstance(doc, layer)) {
+      this.notice({ type: 'instanceLocked' });
+      return false;
+    }
+    const frame = this.active.selection ?? pixelBounds(layer.pixels, doc.width, doc.height);
+    if (!frame) {
+      this.notice({ type: 'emptyDrawing' });
+      return false;
+    }
+    this.active.selection = null;
+    this.edit((d) => makeComponent(d, d.activeLayer, frame));
+    this.notice({ type: 'componentCreated' });
+    return true;
+  }
+
+  /**
+   * A new instance of a master (dropped from the Components list), its sprite centered on `p`,
+   * above the master. It becomes the active layer.
+   */
+  addInstanceAt(masterId: string, p: Point): boolean {
+    const master = findMaster(this.doc, masterId);
+    if (!master?.component) return false;
+    const { w, h } = master.component;
+    let index = -1;
+    this.edit((d) => {
+      index = addInstance(d, masterId, p.x - Math.floor(w / 2), p.y - Math.floor(h / 2));
+      if (index >= 0) d.activeLayer = index;
+    });
+    if (index < 0) return false;
+    const s = this.active;
+    delete s.pickedGroup;
+    s.referencePicked = false;
+    s.unframed = false;
+    s.picked = [this.doc.layers[index].id];
     this.commit(false);
     return true;
   }
@@ -2001,7 +2077,7 @@ export class Editor {
       this.commit();
       return;
     }
-    if (!isShown(this.doc, activeLayer(this.doc)) || this.activeLocked()) return;
+    if (!isShown(this.doc, activeLayer(this.doc)) || this.activeLocked(true)) return;
     this.active.unframed = false;
     this.checkpoint();
     const s = this.createStroke({ x: 0, y: 0 }, false);
@@ -2131,12 +2207,31 @@ export class Editor {
     // A group (or several layers) selected: the Move tool moves them all.
     if (id === 'move' && !this.active.selection && this.state.selectedLayers.length > 1)
       return this.beginGroupMove(p);
-    if (tool.editsPixels && this.activeLocked()) return false;
+    if (tool.editsPixels && this.activeLocked(id === 'move')) return false;
     if (tool.editsPixels && !isShown(this.doc, activeLayer(this.doc))) {
       this.notice({ type: 'layerHidden' });
       return false;
     }
     if (tool.editsPixels) this.checkpoint();
+    // Alt+drag a component or an instance with the Move tool, like in Figma: a new instance, which
+    // is the one that moves, just above the layer dragged and in its group.
+    const picked = activeLayer(this.doc);
+    const source =
+      picked.component && !isLinkedInstance(this.doc, picked)
+        ? { of: picked.id, x: picked.component.x, y: picked.component.y }
+        : isLinkedInstance(this.doc, picked)
+          ? picked.instance!
+          : null;
+    if (id === 'move' && mods.duplicate && !this.active.selection && source) {
+      const at = addInstance(this.doc, source.of, source.x, source.y, this.doc.activeLayer + 1);
+      const copy = this.doc.layers[at];
+      copy.name = picked.name;
+      if (picked.group) copy.group = picked.group;
+      else delete copy.group;
+      this.doc.activeLayer = at;
+      this.active.picked = [copy.id];
+      this.refresh();
+    }
     this.stroke = this.createStroke(p, secondary);
     this.strokeTool = id;
     tool.onDown(this.stroke, p, mods);
@@ -2183,18 +2278,30 @@ export class Editor {
     this.checkpoint();
     this.groupMove = {
       start: p,
-      items: layers.map((layer) => ({ layer, base: layer.pixels.slice(), outside: layer.outside })),
+      items: layers.map((layer) => ({
+        layer,
+        base: layer.pixels.slice(),
+        outside: layer.outside,
+        ...(layer.instance && { at: { x: layer.instance.x, y: layer.instance.y } }),
+        ...(layer.component && { frame: { ...layer.component } }),
+      })),
     };
     return true;
   }
 
   private applyGroupMove(dx: number, dy: number): void {
     const { width, height } = this.doc;
-    for (const { layer, base, outside } of this.groupMove!.items) {
+    for (const { layer, base, outside, at, frame } of this.groupMove!.items) {
+      if (at && layer.instance) {
+        layer.instance = { ...layer.instance, x: at.x + dx, y: at.y + dy };
+        continue;
+      }
       const r = reframe(base, width, height, outside, dx, dy, width, height);
       layer.pixels.set(r.pixels);
       layer.outside = r.outside;
+      if (frame) layer.component = { ...frame, x: frame.x + dx, y: frame.y + dy };
     }
+    syncInstances(this.doc);
     this.pixelsChanged();
   }
 
@@ -2203,6 +2310,8 @@ export class Editor {
       return this.applyGroupMove(p.x - this.groupMove.start.x, p.y - this.groupMove.start.y);
     if (!this.stroke || !this.strokeTool) return;
     TOOLS[this.strokeTool].onMove(this.stroke, this.stabilized(p), mods);
+    // Drawing on a master: its instances follow as it goes.
+    if (this.stroke.layer.component) syncInstances(this.doc, this.stroke.layer.id);
     this.pixelsChanged();
   }
 

@@ -759,6 +759,21 @@ body.is-resizing * {
   flex: none;
   color: var(--muted);
 }
+/* Components: a diamond next to a master's or an instance's thumbnail. */
+.component-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-left: -4px;
+  color: var(--component);
+}
+.component-item {
+  cursor: grab;
+}
+.component-item:active {
+  cursor: grabbing;
+}
+
 .item.is-active,
 .item.is-selected {
   background: var(--selected);
@@ -840,11 +855,6 @@ body.is-resizing * {
   box-shadow: 0 0 0 1px var(--line);
   background: conic-gradient(var(--check-b) 25%, var(--check-a) 0 50%, var(--check-b) 0 75%, var(--check-a) 0)
     0 0 / 6px 6px;
-}
-.layer-actions {
-  display: flex;
-  gap: 2px;
-  margin-top: 6px;
 }
 .preview {
   position: relative;

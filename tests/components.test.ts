@@ -11,6 +11,7 @@ import {
   syncInstances,
 } from '../src/engine/components';
 import { flatten } from '../src/engine/composite';
+import { Editor } from '../src/engine/editor';
 import { cloneDocument, createDocument, resizeDocument, type PixelDoc } from '../src/engine/document';
 import { documentFromJson, documentToJson, serializeDocument } from '../src/storage/fileFormat';
 
@@ -132,5 +133,112 @@ describe('components', () => {
     expect(doc.layers[0].component).toEqual({ x: 3, y: 4, w: 2, h: 2 });
     expect(doc.layers[1].instance).toMatchObject({ x: 12, y: 8 });
     expect(at(doc, 1, 12, 8)).toBe(RED);
+  });
+});
+
+describe('components in the editor', () => {
+  const setup = () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    const draw = (pts: [number, number][]) => {
+      e.beginStroke({ x: pts[0][0], y: pts[0][1] }, false, { shift: false });
+      for (const [x, y] of pts.slice(1)) e.moveStroke({ x, y }, { shift: false });
+      e.endStroke();
+    };
+    draw([
+      [1, 1],
+      [2, 1],
+    ]);
+    const doc = () => e.getState().doc;
+    const px = (layer: number, x: number, y: number) => doc().layers[layer].pixels[y * doc().width + x];
+    return { e, draw, doc, px };
+  };
+  const move = (e: Editor, from: [number, number], to: [number, number], duplicate = false) => {
+    e.beginStroke({ x: from[0], y: from[1] }, false, { shift: false, duplicate });
+    e.moveStroke({ x: to[0], y: to[1] }, { shift: false });
+    e.endStroke();
+  };
+
+  it('makes a component of what is drawn, and drops instances of it', () => {
+    const { e, doc, px } = setup();
+    expect(e.createComponent()).toBe(true);
+    expect(doc().layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 1 });
+    expect(e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 })).toBe(true);
+    // Centered on the drop point, and active.
+    expect(doc().activeLayer).toBe(1);
+    expect(doc().layers[1].instance).toMatchObject({ x: 9, y: 10 });
+    expect(px(1, 9, 10)).toBe(RED);
+    expect(px(1, 10, 10)).toBe(RED);
+  });
+
+  it('keeps instances in step with their master, and keeps them from being painted', () => {
+    const { e, draw, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    // Painting on the instance: nothing happens.
+    expect(e.beginStroke({ x: 0, y: 0 }, false, { shift: false })).toBe(false);
+    e.setActiveLayer(0);
+    e.setColor('primary', BLUE);
+    draw([[1, 1]]);
+    expect(px(1, 9, 10)).toBe(BLUE);
+    e.undo();
+    expect(px(1, 9, 10)).toBe(RED);
+  });
+
+  it('moves an instance by its position, and Alt+drag copies it', () => {
+    const { e, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    e.setTool('move');
+    move(e, [9, 10], [12, 14]);
+    expect(doc().layers[1].instance).toMatchObject({ x: 12, y: 14 });
+    expect(px(1, 12, 14)).toBe(RED);
+    expect(px(1, 9, 10)).toBe(0);
+    move(e, [12, 14], [2, 20], true);
+    expect(doc().layers).toHaveLength(3);
+    expect(doc().layers[1].instance).toMatchObject({ x: 12, y: 14 });
+    expect(doc().layers[2].instance).toMatchObject({ x: 2, y: 20 });
+    // One undo takes the copy away.
+    e.undo();
+    expect(doc().layers).toHaveLength(2);
+  });
+
+  it('moves a master with its frame, so its instances stay the same', () => {
+    const { e, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    e.setActiveLayer(0);
+    e.setTool('move');
+    move(e, [1, 1], [5, 5]);
+    expect(doc().layers[0].component).toEqual({ x: 5, y: 5, w: 2, h: 1 });
+    expect(px(1, 9, 10)).toBe(RED);
+    expect(px(1, 10, 10)).toBe(RED);
+  });
+
+  it('turns an instance into plain pixels when a layer is merged into it', () => {
+    const { e, draw, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    e.addLayer();
+    draw([[20, 20]]);
+    e.mergeDown();
+    expect(doc().layers[1].instance).toBeUndefined();
+    expect(px(1, 20, 20)).toBe(RED);
+    expect(px(1, 9, 10)).toBe(RED);
+  });
+
+  it('Alt+drag on a component places an instance of it, like in Figma', () => {
+    const { e, doc, px } = setup();
+    e.createComponent();
+    e.setTool('move');
+    move(e, [1, 1], [11, 6], true);
+    expect(doc().layers).toHaveLength(2);
+    expect(doc().layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 1 });
+    expect(doc().layers[1].instance).toMatchObject({ of: doc().layers[0].id, x: 11, y: 6 });
+    expect(px(1, 11, 6)).toBe(RED);
+    // The component stays where it was.
+    expect(px(0, 1, 1)).toBe(RED);
+    e.undo();
+    expect(doc().layers).toHaveLength(1);
   });
 });
