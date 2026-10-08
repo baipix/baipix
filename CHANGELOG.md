@@ -13,8 +13,8 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
-- Escape now lets go of the selected layer: with no pixel selection, it drops the Move tool's frame and leaves a multiple or group selection for the active layer alone, like a click beside every layer.
-- The tile preview repeats the drawing as far as the view goes, instead of only the eight copies around it.
+- Escape now lets go of the selected layer: with no pixel selection, it drops the Move tool's frame and leaves a multiple or group selection for the active layer alone, like a click beside every layer. (#232)
+- The tile preview repeats the drawing as far as the view goes, instead of only the eight copies around it. (#232)
 
 ### Website
 
