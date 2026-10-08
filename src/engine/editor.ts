@@ -1640,6 +1640,22 @@ export class Editor {
     this.commit(false);
   }
 
+  /**
+   * Escape with no pixel selection: back to the active layer alone, without the Move tool's frame
+   * (as a click beside every layer), and out of a multiple or group selection. The active layer
+   * stays: it's where drawing goes. Returns false when there was nothing to drop.
+   */
+  deselectLayers(): boolean {
+    const s = this.active;
+    const multiple = !!s.pickedGroup || this.state.selectedLayers.length > 1;
+    if (s.unframed && !multiple) return false;
+    delete s.pickedGroup;
+    s.picked = [activeLayer(this.doc).id];
+    s.unframed = true;
+    this.commit(false);
+    return true;
+  }
+
   private targetRect(): Rect {
     return this.active.selection ?? { x: 0, y: 0, w: this.doc.width, h: this.doc.height };
   }

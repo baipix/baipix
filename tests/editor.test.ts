@@ -105,6 +105,16 @@ describe('Editor', () => {
     expect(e.getState().layerFramed).toBe(false);
     expect(e.getState().doc.activeLayer).toBe(0);
     expect(layer(e)[1 * 32 + 2]).toBe(RED);
+    // Escape does the same, and leaves a multiple selection for the active layer alone.
+    move([5, 5], [5, 5]);
+    expect(e.getState().layerFramed).toBe(true);
+    e.selectLayer(0, 'toggle');
+    expect(e.getState().selectedLayers).toHaveLength(2);
+    expect(e.deselectLayers()).toBe(true);
+    expect(e.getState().layerFramed).toBe(false);
+    expect(e.getState().selectedLayers).toEqual([e.getState().doc.layers[0].id]);
+    expect(e.deselectLayers()).toBe(false);
+    e.setActiveLayer(0);
     // Cmd/Ctrl: the active layer moves (and is framed again), even over another layer's pixel.
     move([5, 5], [5, 6], true);
     expect(e.getState().layerFramed).toBe(true);
