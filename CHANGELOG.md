@@ -8,14 +8,18 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Components, like in Figma: Ctrl+Alt+K (or the diamond button next to + in the Layers panel, a layer's right-click menu, or Layer › Create component) turns the active layer into a component, its sprite being the selection or what's drawn. Components are listed at the top of the left panel; drag one onto the canvas to place an instance. Instances follow their component as you draw on it, can't be painted on themselves, move with the Move tool, and Alt+drag copies one; Alt+drag on a component places an instance of it. A diamond marks components and instances in the Layers list. (#235, #236)
 - Edit a component, detach an instance: from an instance's right-click menu or the Layer menu, Go to component makes its component the active layer, and Detach instance (Ctrl+Alt+B) turns it back into plain pixels, in one undo step. Trying to paint on an instance offers Go to component right in the message. Drawing next to a component grows its frame, and its instances show the new pixels. (#238)
+- Double-click on a group with the Move tool to go into it, like in Figma: its subgroup first, then the layer under the cursor. Escape goes back out one level at a time. (#244)
+- Select several layers on the canvas: with the Move tool, Shift+click adds a layer (or its group) to the selection, or takes it out; a drag moves them all. Shift+D duplicates every selected layer at once (also in their right-click menu), and Alt+drag copies what it takes, any layer or group, the copies being what moves. One undo step each. (#245)
 - Copy, cut and paste whole layers: Cmd+C or Cmd+X in the Layers panel, or on the canvas with no pixels selected, takes the selected layers (or group) with their name, settings, group and component links; Cmd+V pastes them above the active layer. It goes through the system clipboard, so they paste in another file or another tab, and other apps get a PNG. Pasted in a canvas of another size, layers keep their place. An instance pasted without its component becomes plain pixels, unless the component is in that file. With pixels selected, Cmd+C still copies those pixels. (#247)
 
 ### Changed
 
+- Layers panel drag and drop: drop a layer, an instance or a group on a group's row to put it inside, even folded. Between rows, the drop line follows the pointer: right, at the bottom of the group that ends there; left, out of it. Groups now nest four levels deep instead of two. (#246)
 - The Layers panel loses its bottom bar of buttons: layers move by dragging, and duplicate, group, merge and delete are in the right-click menu (which now groups the selection too), the Layer menu and their shortcuts.
 
 ### Fixed
 
+- After dragging a layer onto another row, the next click on a layer was ignored. (#246)
 - Delete (or Backspace) removes the selected layers when no pixels are selected, wherever the focus is; before, it only worked with the focus in the Layers list. (#243)
 
 ## [0.4.0] - 2026-10-08

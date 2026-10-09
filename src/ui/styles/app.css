@@ -1077,11 +1077,26 @@ body.is-panning .canvas {
 .item.is-dragging {
   opacity: 0.5;
 }
-.item.drop-before {
-  box-shadow: inset 0 2px 0 var(--accent);
+/* The drop line, set in to the depth the rows would land at (16px a level, like the rows). */
+.item.drop-before::after,
+.item.drop-after::after {
+  content: '';
+  position: absolute;
+  left: calc(8px + var(--drop-depth, 0) * 16px);
+  right: 0;
+  height: 2px;
+  background: var(--drop-line, var(--accent));
+  pointer-events: none;
 }
-.item.drop-after {
-  box-shadow: inset 0 -2px 0 var(--accent);
+.item.drop-before::after {
+  top: -1px;
+}
+.item.drop-after::after {
+  bottom: -1px;
+}
+/* Dropped on a group's row: into the group. */
+.item.drop-into {
+  box-shadow: inset 0 0 0 2px var(--drop-line, var(--accent));
 }
 body.is-dragging-layer,
 body.is-dragging-layer *,
@@ -2182,11 +2197,8 @@ body.is-dragging-swatch * {
 .resizer.is-dragging::after {
   opacity: 1;
 }
-.item.drop-before {
-  box-shadow: inset 0 2px 0 var(--glow-line);
-}
-.item.drop-after {
-  box-shadow: inset 0 -2px 0 var(--glow-line);
+.item-list {
+  --drop-line: var(--glow-line);
 }
 .canvas-wrap.is-dropping::after {
   border-color: var(--glow-line);
