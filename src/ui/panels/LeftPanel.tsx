@@ -401,7 +401,7 @@ function LayersSection() {
         </>
       }
     >
-      {/* Clicking a layer focuses the list: Delete then removes the layer (on the canvas, it clears pixels). */}
+      {/* Delete in the list removes the layers even with pixels selected (on the canvas, it clears them). */}
       <div
         className="item-list"
         ref={listRef}
