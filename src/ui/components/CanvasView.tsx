@@ -851,12 +851,14 @@ export function CanvasView() {
     };
 
     const noMenu = (e: Event) => e.preventDefault();
-    // Double-click: on the frame name, rename; on an axis grip, put the axis back in the middle.
+    // Double-click: on the frame name, rename; on an axis grip, put the axis back in the middle;
+    // with the Move tool on a group, go into it (to a subgroup, then a layer).
     const onDoubleClick = (e: MouseEvent) => {
       const l = local(e);
       const axis = axisAt(l);
       if (axis) editor.setMirrorAxis(axis, null);
       else if (onLabel(l)) setRenaming(true);
+      else if (editor.getState().tool === 'move') editor.enterAt(viewport.toPixel(l.x, l.y));
     };
     wrap.addEventListener('pointerdown', closeSheets, true);
     canvas.addEventListener('pointerdown', onDown);
