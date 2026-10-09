@@ -7,6 +7,18 @@ export async function copyText(text: string): Promise<boolean> {
   }
 }
 
+/** Puts HTML and a PNG on the clipboard together (copied layers: see storage/layerClip.ts). */
+export async function copyHtmlAndPng(html: string, png: Promise<Blob>): Promise<boolean> {
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'image/png': png }),
+    ]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function copyPng(blob: Blob): Promise<boolean> {
   try {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);

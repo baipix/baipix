@@ -42,6 +42,11 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
           if (key === 'z' && !e.shiftKey) return (editor.undo(), true);
           if ((key === 'z' && e.shiftKey) || key === 'y') return (editor.redo(), true);
           if (key === 'c' && e.shiftKey) return (void actions.copySvg(), true);
+          // In the Layers panel, or with no pixels selected: whole layers. Pixels selected: those pixels.
+          const wholeLayers =
+            (e.target instanceof HTMLElement && !!e.target.closest('.item-list')) ||
+            !editor.getState().selection;
+          if ((key === 'c' || key === 'x') && wholeLayers) return (actions.copyLayers(key === 'x'), true);
           if (key === 'c')
             return (
               editor.copy() &&
@@ -166,8 +171,9 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
     const onPaste = (e: ClipboardEvent) => {
       if (isTyping(e.target) || uiStore.get().home) return;
       const files = [...(e.clipboardData?.files ?? [])];
-      void actions.pasteFromClipboard(files).then((pasted) => pasted && e.preventDefault());
-      if (files.length || editor.hasClipboard()) e.preventDefault();
+      const html = e.clipboardData?.getData('text/html') ?? '';
+      void actions.pasteFromClipboard(files, html);
+      if (files.length || html || editor.hasClipboard()) e.preventDefault();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
