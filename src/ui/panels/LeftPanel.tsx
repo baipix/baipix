@@ -237,6 +237,12 @@ function LayersSection() {
       const visible = doc.layers.filter((l) => selected.includes(l.id) && l.visible).length;
       openMenu(e.currentTarget, [
         {
+          label: t('layer.duplicateCount', { count }),
+          icon: 'duplicate',
+          shortcut: 'Shift+D',
+          onSelect: () => editor.duplicateLayer(),
+        },
+        {
           label: t('group.create'),
           icon: 'folderPlus',
           shortcut: 'Ctrl+G',

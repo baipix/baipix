@@ -182,6 +182,7 @@ export const en = {
   'layer.moveDown': 'Move down',
   'layer.mergeDown': 'Merge down',
   'layer.mergeVisible': 'Merge visible layers',
+  'layer.duplicateCount': 'Duplicate {count} layers',
   'layer.mergeCount': 'Merge {count} layers',
   'layer.deleteCount': 'Delete {count} layers',
   'layer.flatten': 'Flatten image',
