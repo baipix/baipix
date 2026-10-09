@@ -137,7 +137,9 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         if (editor.getState().referenceSelected) return actions.removeReference();
-        return e.shiftKey ? editor.fill() : editor.clearSelection();
+        if (e.shiftKey) return editor.fill();
+        // Pixels selected: they're cleared. Nothing selected: the layer goes, like in Figma (Undo in the toast).
+        return editor.getState().selection ? editor.clearSelection() : actions.deleteLayers();
       }
       if (e.key.startsWith('Arrow') && (editor.getState().tool === 'move' || editor.getState().selection)) {
         e.preventDefault();
