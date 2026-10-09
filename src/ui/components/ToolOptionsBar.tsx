@@ -6,6 +6,13 @@ import { toolMeta } from '../tools';
 import { Checkbox } from './Checkbox';
 import { Icon } from './Icon';
 import { DITHER_PATTERNS, type DitherPattern } from '../../engine/dither';
+import {
+  GRADIENT_DITHERS,
+  GRADIENT_SHAPES,
+  type GradientDither,
+  type GradientShape,
+} from '../../engine/gradient';
+import { GradientEditor } from './GradientEditor';
 import { IconButton } from './IconButton';
 import { openMenu, type MenuItem } from './Menu';
 import { NumberField } from './NumberField';
@@ -356,6 +363,62 @@ export function ToolOptionsBar() {
               {hasSelection ? t('menu.fillSelection') : t('menu.fillLayer')}
             </button>
           </div>
+        </>
+      );
+      break;
+    case 'gradient':
+      info = t('hint.gradient');
+      body = (
+        <>
+          <select
+            className="select-plain"
+            aria-label={t('gradient.shape')}
+            value={options.gradientShape}
+            onChange={(e) => editor.setOption('gradientShape', e.target.value as GradientShape)}
+          >
+            {GRADIENT_SHAPES.map((s) => (
+              <option key={s} value={s}>
+                {t(`gradient.${s}`)}
+              </option>
+            ))}
+          </select>
+          <GradientEditor />
+          <div className="button-group">
+            <IconButton icon="swap" label={t('gradient.reverse')} onClick={() => editor.reverseGradient()} />
+            <IconButton icon="rotate" label={t('gradient.rotate')} onClick={() => editor.rotateGradient()} />
+          </div>
+          <select
+            className="select-plain"
+            aria-label={t('options.dither')}
+            value={options.gradientDither}
+            onChange={(e) => editor.setOption('gradientDither', e.target.value as GradientDither)}
+          >
+            {GRADIENT_DITHERS.map((d) => (
+              <option key={d} value={d}>
+                {t(`gradient.dither.${d}`)}
+              </option>
+            ))}
+          </select>
+          <IconButton
+            icon="more"
+            className={`icon-btn options-more${options.gradientLayer ? ' has-active' : ''}`}
+            label={t('options.more')}
+            aria-haspopup="menu"
+            onClick={(e) =>
+              openMenu(e.currentTarget, [
+                {
+                  label: t('gradient.wholeLayer'),
+                  checked: options.gradientLayer,
+                  onSelect: () => editor.setOption('gradientLayer', !options.gradientLayer),
+                },
+                {
+                  label: t('gradient.reset'),
+                  disabled: !options.gradientStops,
+                  onSelect: () => editor.setOption('gradientStops', null),
+                },
+              ])
+            }
+          />
         </>
       );
       break;

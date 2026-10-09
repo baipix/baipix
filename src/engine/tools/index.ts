@@ -1,6 +1,7 @@
 import { blur } from './blur';
 import { bucket } from './bucket';
 import { eraser } from './eraser';
+import { gradientTool } from './gradient';
 import { hand } from './hand';
 import { move } from './move';
 import { lassoFillTool, pencil } from './pencil';
@@ -22,6 +23,7 @@ export const TOOLS: Record<ToolId, Tool> = {
   lassoFill: lassoFillTool,
   eraser,
   bucket,
+  gradient: gradientTool,
   line: lineTool,
   rect: rectTool,
   roundRect: roundRectTool,

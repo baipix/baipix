@@ -35,6 +35,7 @@ const DRAWING_TOOLS: ToolId[] = [
   'eraser',
   ...SHAPE_IDS,
   'bucket',
+  'gradient',
   'shade',
   'lighten',
   'blur',
