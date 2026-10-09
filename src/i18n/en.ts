@@ -503,7 +503,7 @@ export const en = {
   'toast.selectionCopied': 'Selection copied.',
   'toast.layerCopied': 'Layer copied.',
   'toast.pixelsRecovered': 'Pixels recovered: {w} × {h}, from an image scaled up ×{scale}.',
-  'toast.groupTooDeep': 'Groups go two levels deep.',
+  'toast.groupTooDeep': 'Groups go four levels deep.',
   'toast.instanceLocked': 'This is an instance: draw on its component to change every copy.',
   'toast.componentCreated': 'Component created. Drag it from the Components list to place copies.',
   'toast.cut': 'Cut.',

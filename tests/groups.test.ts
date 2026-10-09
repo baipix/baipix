@@ -58,14 +58,25 @@ describe('moveItems', () => {
     expect(d.groups?.find((g) => g.id === 'H')?.parent).toBeUndefined();
   });
 
-  it('refuses a third level, and a group into itself', () => {
+  it('refuses a fifth level, and a group into itself', () => {
     const d = doc();
     expect(moveItems(d, [{ kind: 'group', id: 'G' }], { parent: 'H', aboveLayer: 'd' })).toBe(false);
-    d.groups!.push({ id: 'K', name: 'K', visible: true, locked: false, opacity: 1 });
-    d.layers[4].group = 'K';
-    d.groups!.push({ id: 'L', name: 'L', visible: true, locked: false, opacity: 1, parent: 'K' });
-    d.layers[4].group = 'L';
+    // K holds L, M and N, each inside the one before: four levels on its own.
+    const g = (id: string, parent?: string) => ({
+      id,
+      name: id,
+      visible: true,
+      locked: false,
+      opacity: 1,
+      parent,
+    });
+    d.groups!.push(g('K'), g('L', 'K'), g('M', 'L'), g('N', 'M'));
+    d.layers[4].group = 'N';
     expect(moveItems(d, [{ kind: 'group', id: 'K' }], { parent: 'G', aboveLayer: 'c' })).toBe(false);
+    // Without N, it fits: G, K, L, M.
+    d.layers[4].group = 'M';
+    d.groups = d.groups!.filter((x) => x.id !== 'N');
+    expect(moveItems(d, [{ kind: 'group', id: 'K' }], { parent: 'G', aboveLayer: 'c' })).toBe(true);
   });
 });
 
@@ -153,13 +164,30 @@ describe('Editor groups', () => {
     expect(e.getState().doc.groups).toBeUndefined();
   });
 
-  it('nests two levels deep, not three', () => {
+  it('nests four levels deep, not five', () => {
     const e = editor();
     pick(e, 'b', 'c');
-    e.groupSelection();
-    e.groupSelection();
-    expect(e.getState().doc.groups).toHaveLength(2);
+    for (let i = 0; i < 4; i++) expect(e.groupSelection()).toBe(true);
+    expect(e.getState().doc.groups).toHaveLength(4);
     expect(e.groupSelection()).toBe(false);
+  });
+
+  it('drops a layer into a group, and a group with a subgroup into another group', () => {
+    const e = editor();
+    pick(e, 'b', 'c');
+    e.groupSelection(); // Group 1: b, c
+    pick(e, 'c');
+    e.groupSelection(); // Group 2 in Group 1: c
+    const doc = () => e.getState().doc;
+    const id = (name: string) => doc().groups!.find((g) => g.name === name)!.id;
+    // An instance or a plain layer goes in the same way: by its id.
+    expect(e.moveItemsTo([{ kind: 'layer', id: doc().layers[3].id }], id('Group 2'), null)).toBe(true);
+    expect(order(e)).toBe('a b:Group 1 d:Group 2 c:Group 2');
+    pick(e, 'a');
+    e.groupSelection(); // Group 3: a
+    expect(e.moveItemsTo([{ kind: 'group', id: id('Group 1') }], id('Group 3'), null)).toBe(true);
+    expect(doc().groups!.find((g) => g.name === 'Group 1')!.parent).toBe(id('Group 3'));
+    expect(order(e)).toBe('b:Group 1 d:Group 2 c:Group 2 a:Group 3');
   });
 
   it('moves a whole group with the Move tool, and undoes it in one step', () => {

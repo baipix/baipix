@@ -3,6 +3,7 @@ import { findMaster, isLinkedInstance, masters, spritePixels } from '../../engin
 import type { LayerGroup, PixelDoc } from '../../engine/document';
 import {
   groupChain,
+  groupDepth,
   groupLayers,
   isLocked,
   isShown,
@@ -104,24 +105,48 @@ function layerRows(doc: PixelDoc): LayerRow[] {
   return rows;
 }
 
+/** Where dragged rows would land: in a gap between rows (0: above the first) at a depth, or into a group's row. */
+type DropTarget = { gap: number; depth: number } | { into: number };
+
 /**
- * Where rows dropped in a gap go: right under an open group's row, at the top of that group;
- * otherwise right above the row under the gap, in its group; below the last row, at the bottom
- * of its group.
+ * The depths a gap offers. Right under an open group's row, only inside it. Where groups end, from
+ * the row above's depth (the bottom of its group) out to the row below's: the pointer picks.
+ */
+function gapDepths(rows: LayerRow[], gap: number): [number, number] {
+  const over = rows[gap - 1];
+  const under = rows[gap];
+  if (over?.kind === 'group' && !over.group.collapsed) return [over.depth + 1, over.depth + 1];
+  const min = under?.depth ?? 0;
+  return [min, Math.max(min, over?.depth ?? 0)];
+}
+
+/**
+ * Where rows dropped on a target go. Into a group: at its top. In a gap: right under an open
+ * group's row, at the top of that group; deeper than the row below, at the bottom of the group
+ * that ends there; otherwise right above the row below, in its group (or at the very bottom).
  */
 function dropPlace(
   doc: PixelDoc,
   rows: LayerRow[],
-  gap: number,
+  target: DropTarget,
 ): { parent?: string; aboveLayer: string | null } {
   const top = (row: LayerRow) =>
     row.kind === 'layer' ? row.layer.id : groupLayers(doc, row.group.id).at(-1)!.id;
+  if ('into' in target) {
+    const row = rows[target.into];
+    return row.kind === 'group' ? { parent: row.group.id, aboveLayer: top(row) } : { aboveLayer: null };
+  }
+  const { gap, depth } = target;
   const over = rows[gap - 1];
   if (over?.kind === 'group' && !over.group.collapsed)
     return { parent: over.group.id, aboveLayer: top(over) };
   const under = rows[gap];
+  if (over && depth > (under?.depth ?? 0)) {
+    const parent = groupChain(doc, over.parent).find((g) => groupDepth(doc, g.id) === depth);
+    if (parent) return { parent: parent.id, aboveLayer: null };
+  }
   if (under) return { parent: under.parent, aboveLayer: top(under) };
-  return { parent: over?.parent, aboveLayer: null };
+  return { parent: undefined, aboveLayer: null };
 }
 
 /**
@@ -192,8 +217,8 @@ function LayersSection() {
   // The layers and groups as rows, top first, folded groups without their children.
   const rows = layerRows(doc);
   const listRef = useRef<HTMLDivElement>(null);
-  // Drag to reorder: `gap` is where the dragged rows would land (0: above the first row).
-  const [drag, setDrag] = useState<{ ids: string[]; gap: number } | null>(null);
+  // Drag to reorder: `target` is where the dragged rows would land.
+  const [drag, setDrag] = useState<{ ids: string[]; target: DropTarget } | null>(null);
   const dragged = useRef(false);
   const [renaming, setRenaming] = useState<string | null>(null);
 
@@ -328,13 +353,29 @@ function LayersSection() {
     if (e.button !== 0 || (e.target as HTMLElement).closest('button, input')) return;
     const y0 = e.clientY;
     let started = false;
-    const gapAt = (y: number) => {
+    // Rows indent 16px a level (see .item in app.css): the pointer's x picks the depth of a gap.
+    const targetAt = (x: number, y: number): DropTarget => {
       const els = [...(listRef.current?.querySelectorAll('.item:not(.reference-item)') ?? [])];
-      const k = els.findIndex((el) => {
-        const r = el.getBoundingClientRect();
-        return y < r.top + r.height / 2;
-      });
-      return k < 0 ? els.length : k;
+      const left = els[0]?.getBoundingClientRect().left ?? 0;
+      const gap = (k: number): DropTarget => {
+        const [min, max] = gapDepths(rows, k);
+        return { gap: k, depth: Math.max(min, Math.min(max, Math.floor((x - left - 8) / 16))) };
+      };
+      for (let k = 0; k < els.length; k++) {
+        const r = els[k].getBoundingClientRect();
+        if (y >= r.bottom) continue;
+        // The middle of a group's row: into the group, folded or not.
+        const row = rows[k];
+        const dragged =
+          row.kind === 'group' &&
+          [row.group.id, ...groupChain(doc, row.group.parent).map((g) => g.id)].some((id) =>
+            ids.includes(id),
+          );
+        if (row.kind === 'group' && !dragged && y > r.top + r.height / 4 && y < r.bottom - r.height / 4)
+          return { into: k };
+        return gap(y < r.top + r.height / 2 ? k : k + 1);
+      }
+      return gap(els.length);
     };
     // A group moves whole; one of several selected layers moves the whole selection.
     const items: LayerItem[] =
@@ -348,7 +389,7 @@ function LayersSection() {
       if (!started && Math.abs(ev.clientY - y0) < 4) return;
       started = true;
       document.body.classList.add('is-dragging-layer');
-      setDrag({ ids, gap: gapAt(ev.clientY) });
+      setDrag({ ids, target: targetAt(ev.clientX, ev.clientY) });
     };
     const end = (ev: PointerEvent) => {
       window.removeEventListener('pointermove', move);
@@ -357,9 +398,11 @@ function LayersSection() {
       document.body.classList.remove('is-dragging-layer');
       setDrag(null);
       if (!started) return;
-      dragged.current = true; // swallow the click that follows the drag
+      // Swallow the click that follows the drag, if one does (released on another row, none does).
+      dragged.current = true;
+      setTimeout(() => (dragged.current = false));
       if (ev.type !== 'pointerup') return;
-      const to = dropPlace(doc, rows, gapAt(ev.clientY));
+      const to = dropPlace(doc, rows, targetAt(ev.clientX, ev.clientY));
       editor.moveItemsTo(items, to.parent, to.aboveLayer);
     };
     window.addEventListener('pointermove', move);
@@ -368,9 +411,11 @@ function LayersSection() {
   };
   const rowId = (row: LayerRow) => (row.kind === 'group' ? row.group.id : row.layer.id);
   const dropClass = (k: number) => {
-    if (!drag) return '';
-    if (drag.gap === k) return ' drop-before';
-    if (drag.gap === rows.length && k === rows.length - 1) return ' drop-after';
+    const target = drag?.target;
+    if (!target) return '';
+    if ('into' in target) return target.into === k ? ' drop-into' : '';
+    if (target.gap === k) return ' drop-before';
+    if (target.gap === rows.length && k === rows.length - 1) return ' drop-after';
     return '';
   };
   // A dragged row, and the rows inside a dragged group.
@@ -406,6 +451,12 @@ function LayersSection() {
         className="item-list"
         ref={listRef}
         tabIndex={-1}
+        // The drop line sits at the depth the dragged rows would land at.
+        style={
+          drag && 'depth' in drag.target
+            ? ({ '--drop-depth': drag.target.depth } as CSSProperties)
+            : undefined
+        }
         onKeyDown={(e) => {
           if (e.key !== 'Delete' && e.key !== 'Backspace') return;
           if ((e.target as HTMLElement).closest('input')) return;

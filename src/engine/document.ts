@@ -29,7 +29,7 @@ export interface Layer {
 
 /**
  * A group of layers. Its layers sit next to each other in `doc.layers`, each pointing at its
- * innermost group; groups nest two levels deep (see groups.ts).
+ * innermost group; groups nest up to four levels deep (see groups.ts).
  */
 export interface LayerGroup {
   id: string;

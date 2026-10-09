@@ -1,8 +1,8 @@
 import type { BlendMode } from './composite';
 import type { Layer, LayerGroup, PixelDoc } from './document';
 
-/** Groups go this deep: a group, and groups inside it. */
-export const MAX_GROUP_DEPTH = 2;
+/** Groups go this deep: a group, groups inside it, and so on. Enough for a scene without getting lost. */
+export const MAX_GROUP_DEPTH = 4;
 
 /** A group's blend mode: `pass-through` (the default) lets each layer blend on its own. */
 export type GroupBlendMode = BlendMode | 'pass-through';
@@ -24,7 +24,7 @@ export function groupChain(doc: PixelDoc, id: string | undefined): LayerGroup[] 
   return chain;
 }
 
-/** How deep a group is: 1 at the top level, 2 inside another group. */
+/** How deep a group is: 1 at the top level, 2 inside another group, and so on. */
 export const groupDepth = (doc: PixelDoc, id: string): number => groupChain(doc, id).length;
 
 /** Whether `inner` is `outer` or inside it. */
@@ -113,11 +113,13 @@ export const itemLayers = (doc: PixelDoc, item: LayerItem): Layer[] =>
 export const itemParent = (doc: PixelDoc, item: LayerItem): string | undefined =>
   item.kind === 'layer' ? doc.layers.find((l) => l.id === item.id)?.group : findGroup(doc, item.id)?.parent;
 
-/** How many group levels an item adds when put in a group: 0 for a layer, 1 or 2 for a group. */
-function itemHeight(doc: PixelDoc, item: LayerItem): number {
+/** How many group levels an item adds when put in a group: 0 for a layer, 1 or more for a group. */
+export function itemHeight(doc: PixelDoc, item: LayerItem, depth = 0): number {
   if (item.kind === 'layer') return 0;
-  const childGroups = groupsOf(doc).filter((g) => g.parent === item.id);
-  return 1 + (childGroups.length ? 1 : 0);
+  const children = groupsOf(doc).filter((g) => g.parent === item.id);
+  // The depth guard keeps a broken file (a loop of parents) from running forever.
+  if (depth > MAX_GROUP_DEPTH) return 1;
+  return 1 + Math.max(0, ...children.map((g) => itemHeight(doc, { kind: 'group', id: g.id }, depth + 1)));
 }
 
 /**
@@ -147,7 +149,7 @@ export interface Placement {
 
 /**
  * Moves items (keeping their order) to a placement, putting them in its group. Returns false when
- * it can't: a group into itself, or deeper than two levels. Normalizes the groups after.
+ * it can't: a group into itself, or deeper than `MAX_GROUP_DEPTH`. Normalizes the groups after.
  */
 export function moveItems(doc: PixelDoc, items: LayerItem[], to: Placement): boolean {
   if (!items.length) return false;

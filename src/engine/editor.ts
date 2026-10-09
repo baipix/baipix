@@ -24,6 +24,7 @@ import {
   isLocked,
   isShown,
   isWithin,
+  itemHeight,
   itemLayers,
   layerTree,
   MAX_GROUP_DEPTH,
@@ -1029,7 +1030,7 @@ export class Editor {
 
   /**
    * Puts the selected layers (and groups) in a new group, where the top one was. Returns false when
-   * it would go deeper than two levels.
+   * it would go deeper than `MAX_GROUP_DEPTH`.
    */
   groupSelection(): boolean {
     const doc = this.doc;
@@ -1042,11 +1043,7 @@ export class Editor {
       return groupChain(doc, p).map((g) => g.id);
     });
     const parent = chains[0].find((id) => chains.every((c) => c.includes(id)));
-    const height = Math.max(
-      ...items.map((it) =>
-        it.kind === 'layer' ? 0 : 1 + ((doc.groups ?? []).some((g) => g.parent === it.id) ? 1 : 0),
-      ),
-    );
+    const height = Math.max(...items.map((it) => itemHeight(doc, it)));
     if ((parent ? groupDepth(doc, parent) : 0) + 1 + height > MAX_GROUP_DEPTH) {
       this.notice({ type: 'groupTooDeep' });
       return false;
