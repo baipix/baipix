@@ -509,7 +509,7 @@ export const fr: Record<MessageKey, string> = {
   'toast.selectionCopied': 'Sélection copiée.',
   'toast.layerCopied': 'Calque copié.',
   'toast.pixelsRecovered': 'Pixels retrouvés : {w} × {h}, depuis une image agrandie ×{scale}.',
-  'toast.groupTooDeep': 'Les groupes vont jusqu’à deux niveaux.',
+  'toast.groupTooDeep': 'Les groupes vont jusqu’à quatre niveaux.',
   'toast.instanceLocked': 'C’est une instance : dessine sur son composant pour modifier toutes les copies.',
   'toast.componentCreated': 'Composant créé. Glisse-le depuis la liste Composants pour en placer des copies.',
   'toast.cut': 'Coupé.',

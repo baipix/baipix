@@ -13,10 +13,12 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Layers panel drag and drop: drop a layer, an instance or a group on a group's row to put it inside, even folded. Between rows, the drop line follows the pointer: right, at the bottom of the group that ends there; left, out of it. Groups now nest four levels deep instead of two. (#246)
 - The Layers panel loses its bottom bar of buttons: layers move by dragging, and duplicate, group, merge and delete are in the right-click menu (which now groups the selection too), the Layer menu and their shortcuts.
 
 ### Fixed
 
+- After dragging a layer onto another row, the next click on a layer was ignored. (#246)
 - Delete (or Backspace) removes the selected layers when no pixels are selected, wherever the focus is; before, it only worked with the focus in the Layers list. (#243)
 
 ## [0.4.0] - 2026-10-08
