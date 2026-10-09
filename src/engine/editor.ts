@@ -280,6 +280,8 @@ export class Editor {
   };
   private clipboard: PixelBlock | null = null;
   private stroke: Stroke | null = null;
+  /** Shift+press on a layer already selected: it leaves the selection on release, unless dragged. */
+  private unpick: { ids: string[]; start: Point; moved: boolean } | null = null;
   /** Color adjustment in progress: the original pixels of the layers being adjusted. */
   /** Resizing by the handles: the content being resized and how to put it back. */
   private scaling: {
@@ -937,14 +939,38 @@ export class Editor {
     });
   }
 
+  /** Duplicates the selected layers, or the selected group (Shift+D). One undo step. */
   duplicateLayer(): void {
-    if (this.active.pickedGroup) return this.duplicateGroup(this.active.pickedGroup);
-    this.edit((doc) => {
-      const copy = cloneLayer(activeLayer(doc), false);
+    if (this.active.pickedGroup && !groupLayers(this.doc, this.active.pickedGroup).length) return;
+    this.edit(() => this.duplicatePicked());
+  }
+
+  /**
+   * Copies of the selected layers, each just above its original (in its group), or of the selected
+   * group, which become the selection. In place, without an undo step of its own.
+   */
+  private duplicatePicked(): void {
+    const d = this.doc;
+    const s = this.active;
+    if (s.pickedGroup) return this.duplicateGroupIn(s.pickedGroup);
+    const picked = this.state.selectedLayers;
+    const active = activeLayer(d).id;
+    const copyOf = new Map<string, string>();
+    // From the top down, so the indices below stay where they were.
+    for (let i = d.layers.length - 1; i >= 0; i--) {
+      const layer = d.layers[i];
+      if (!picked.includes(layer.id)) continue;
+      const copy = cloneLayer(layer, false);
       copy.name = this.labels.copyOf(copy.name);
-      doc.layers.splice(doc.activeLayer + 1, 0, copy);
-      doc.activeLayer += 1;
-    });
+      d.layers.splice(i + 1, 0, copy);
+      copyOf.set(layer.id, copy.id);
+    }
+    if (!copyOf.size) return;
+    const ids = new Set(copyOf.values());
+    s.picked = d.layers.filter((l) => ids.has(l.id)).map((l) => l.id);
+    const top = copyOf.get(active) ?? s.picked[s.picked.length - 1];
+    d.activeLayer = d.layers.findIndex((l) => l.id === top);
+    s.anchor = top;
   }
 
   /**
@@ -1171,28 +1197,27 @@ export class Editor {
   }
 
   /** Duplicates a group with everything in it, right above it, and selects the copy. */
-  private duplicateGroup(id: string): void {
-    const doc = this.doc;
-    const layers = groupLayers(doc, id);
+  /** Copies a group (and its subgroups) just above it, the copy becoming the selection. In place. */
+  private duplicateGroupIn(id: string): void {
+    const d = this.doc;
+    const layers = groupLayers(d, id);
     if (!layers.length) return;
-    this.edit((d) => {
-      const groups = (d.groups ?? []).filter((x) => isWithin(d, x.id, id));
-      const ids = new Map(groups.map((x) => [x.id, newId('group')]));
-      const copies = groups.map((x) => ({
-        ...x,
-        id: ids.get(x.id)!,
-        ...(x.id === id && { name: this.labels.copyOf(x.name) }),
-        ...(x.parent && ids.has(x.parent) && { parent: ids.get(x.parent)! }),
-      }));
-      const layerCopies = layers.map((l) => ({ ...cloneLayer(l, false), group: ids.get(l.group!) }));
-      const at = d.layers.indexOf(layers[layers.length - 1]) + 1;
-      d.layers.splice(at, 0, ...layerCopies);
-      d.groups = [...(d.groups ?? []), ...copies];
-      d.activeLayer = at + layerCopies.length - 1;
-      normalizeGroups(d);
-      this.active.pickedGroup = ids.get(id);
-      this.active.picked = layerCopies.map((l) => l.id);
-    });
+    const groups = (d.groups ?? []).filter((x) => isWithin(d, x.id, id));
+    const ids = new Map(groups.map((x) => [x.id, newId('group')]));
+    const copies = groups.map((x) => ({
+      ...x,
+      id: ids.get(x.id)!,
+      ...(x.id === id && { name: this.labels.copyOf(x.name) }),
+      ...(x.parent && ids.has(x.parent) && { parent: ids.get(x.parent)! }),
+    }));
+    const layerCopies = layers.map((l) => ({ ...cloneLayer(l, false), group: ids.get(l.group!) }));
+    const at = d.layers.indexOf(layers[layers.length - 1]) + 1;
+    d.layers.splice(at, 0, ...layerCopies);
+    d.groups = [...(d.groups ?? []), ...copies];
+    d.activeLayer = at + layerCopies.length - 1;
+    normalizeGroups(d);
+    this.active.pickedGroup = ids.get(id);
+    this.active.picked = layerCopies.map((l) => l.id);
   }
 
   private changeGroup(id: string, change: (g: LayerGroup) => void, history = true): void {
@@ -2245,7 +2270,7 @@ export class Editor {
     }
     if (id === 'move' && !this.active.selection) {
       // Beside every layer (and outside the active one's frame), a click just drops the frame.
-      if (!mods.keepLayer && !this.pickLayerAt(p)) {
+      if (!mods.keepLayer && !this.pickLayerAt(p, mods.add)) {
         if (!this.active.unframed) {
           this.active.unframed = true;
           this.commit(false);
@@ -2256,7 +2281,7 @@ export class Editor {
     }
     // A group (or several layers) selected: the Move tool moves them all.
     if (id === 'move' && !this.active.selection && this.state.selectedLayers.length > 1)
-      return this.beginGroupMove(p);
+      return this.beginGroupMove(p, mods.duplicate);
     if (tool.editsPixels && this.activeLocked(id === 'move')) return false;
     if (tool.editsPixels && !isShown(this.doc, activeLayer(this.doc))) {
       this.notice({ type: 'layerHidden' });
@@ -2281,6 +2306,10 @@ export class Editor {
       this.doc.activeLayer = at;
       this.active.picked = [copy.id];
       this.refresh();
+    } else if (id === 'move' && mods.duplicate && !this.active.selection) {
+      // Alt+drag any other layer (or a group): its copy is what moves.
+      this.duplicatePicked();
+      this.refresh();
     }
     this.stroke = this.createStroke(p, secondary);
     this.strokeTool = id;
@@ -2294,7 +2323,7 @@ export class Editor {
    * Returns false when there's nothing to take there: no layer pixel, and not inside the frame of
    * the active layer (a hole in a drawing still moves it).
    */
-  private pickLayerAt(p: Point): boolean {
+  private pickLayerAt(p: Point, add = false): boolean {
     const k = this.layerAt(p);
     if (k < 0) {
       const { width, height } = this.doc;
@@ -2305,6 +2334,13 @@ export class Editor {
     const layer = this.doc.layers[k];
     // In a group, the Move tool takes the whole group, like in a design tool.
     const { group } = this.moveTarget(k);
+    const taken = group ? groupLayers(this.doc, group).map((l) => l.id) : [layer.id];
+    const picked = this.state.selectedLayers;
+    const inPicked = taken.every((id) => picked.includes(id));
+    if (add && !inPicked) return this.togglePicked(taken, false, layer);
+    if (add) this.unpick = { ids: taken, start: p, moved: false };
+    // Part of a bigger selection (Shift+click, or the Layers panel): a drag moves it all.
+    if (inPicked && picked.length > taken.length && !s.pickedGroup) return true;
     if (group) {
       if (s.pickedGroup !== group) this.selectGroup(group);
       return true;
@@ -2318,14 +2354,40 @@ export class Editor {
     return true;
   }
 
+  /**
+   * Shift+click with the Move tool, like in Figma: what's under the cursor (a layer, or its group)
+   * joins the selected layers, or leaves them (`remove`). Returns whether there's something to drag.
+   */
+  private togglePicked(taken: string[], remove: boolean, layer: Layer): boolean {
+    const s = this.active;
+    const picked = this.state.selectedLayers;
+    const ids = remove ? picked.filter((id) => !taken.includes(id)) : [...picked, ...taken];
+    if (!ids.length) return false;
+    const keep = new Set(ids);
+    delete s.pickedGroup;
+    s.referencePicked = false;
+    s.unframed = false;
+    s.picked = this.doc.layers.filter((l) => keep.has(l.id)).map((l) => l.id);
+    const active = remove ? s.picked[s.picked.length - 1] : layer.id;
+    this.doc.activeLayer = this.doc.layers.findIndex((l) => l.id === active);
+    s.anchor = active;
+    this.commit(false);
+    return !remove;
+  }
+
   /** Moving every selected layer together (a group), whole layers with what's off the canvas. */
-  private beginGroupMove(p: Point): boolean {
-    const layers = this.pickedLayers();
-    if (layers.some((l) => isLocked(this.doc, l))) {
+  private beginGroupMove(p: Point, duplicate = false): boolean {
+    if (this.pickedLayers().some((l) => isLocked(this.doc, l))) {
       this.notice({ type: 'layerLocked' });
       return false;
     }
     this.checkpoint();
+    // Alt+drag: the copies are what moves, the originals stay.
+    if (duplicate) {
+      this.duplicatePicked();
+      this.refresh();
+    }
+    const layers = this.pickedLayers();
     this.groupMove = {
       start: p,
       items: layers.map((layer) => ({
@@ -2356,6 +2418,7 @@ export class Editor {
   }
 
   moveStroke(p: Point, mods: Modifiers): void {
+    if (this.unpick && (p.x !== this.unpick.start.x || p.y !== this.unpick.start.y)) this.unpick.moved = true;
     if (this.groupMove)
       return this.applyGroupMove(p.x - this.groupMove.start.x, p.y - this.groupMove.start.y);
     if (!this.stroke || !this.strokeTool) return;
@@ -2387,6 +2450,9 @@ export class Editor {
   }
 
   endStroke(): void {
+    const unpick = this.unpick;
+    this.unpick = null;
+    if (unpick && !unpick.moved) this.togglePicked(unpick.ids, true, activeLayer(this.doc));
     if (this.groupMove) {
       this.groupMove = null;
       this.commit();
@@ -2415,6 +2481,7 @@ export class Editor {
   }
 
   cancelStroke(): void {
+    this.unpick = null;
     if (this.groupMove) {
       for (const { layer, base, outside } of this.groupMove.items) {
         layer.pixels.set(base);
