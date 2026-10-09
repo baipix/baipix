@@ -80,6 +80,11 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         return;
       }
 
+      // A repeat grid being set up: Enter keeps it, Escape drops it.
+      if (editor.getState().repeat && (e.key === 'Enter' || e.key === 'Escape')) {
+        e.preventDefault();
+        return editor.endRepeat(e.key === 'Enter');
+      }
       if (e.key === 'Escape') {
         if (uiStore.get().picker) uiStore.set({ picker: null });
         else if (editor.getState().referenceSelected) editor.deselectReference();

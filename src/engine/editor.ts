@@ -35,6 +35,7 @@ import {
   type LayerItem,
   type LayerNode,
 } from './groups';
+import { applyRepeat, clampGrid, DEFAULT_REPEAT, type RepeatGrid, type RepeatSource } from './repeat';
 import { fragmentOf, pasteFragment, type LayerFragment } from './layerClipboard';
 import {
   addInstance,
@@ -129,6 +130,8 @@ export interface EditorState {
   referenceSelected: boolean;
   /** The Move tool frames the active layer (until a click beside every layer). */
   layerFramed: boolean;
+  /** A repeat grid being set up (see `beginRepeat`), or null. */
+  repeat: RepeatGrid | null;
   canUndo: boolean;
   canRedo: boolean;
   revision: number;
@@ -284,6 +287,17 @@ export class Editor {
   private clipboard: PixelBlock | null = null;
   /** Whole layers copied (the last copy wins over `clipboard`). */
   private layerClip: LayerFragment | null = null;
+  /** A repeat grid being set up: what it repeats, and how things were, to lay it out again or drop it. */
+  private repeatSession: {
+    source: RepeatSource;
+    base: Uint32Array;
+    layers: Layer[];
+    picked: string[];
+    activeLayer: number;
+    grid: RepeatGrid;
+  } | null = null;
+  /** The last repeat grid kept, to start the next one from. */
+  private lastRepeat: RepeatGrid = DEFAULT_REPEAT;
   /** The id of the last layers copied here, even if pixels were copied since. */
   private layerClipId: string | null = null;
   private stroke: Stroke | null = null;
@@ -409,6 +423,7 @@ export class Editor {
       selectedGroup: s.pickedGroup ?? null,
       referenceSelected: !!s.referencePicked && !!s.doc.reference,
       layerFramed: !s.unframed,
+      repeat: this.repeatSession?.grid ?? null,
       canUndo: s.history.canUndo,
       canRedo: s.history.canRedo,
       revision: this.revision,
@@ -436,6 +451,8 @@ export class Editor {
   }
 
   private checkpoint(): void {
+    // Anything else done during a repeat grid keeps the grid first: two steps, never mixed.
+    if (this.repeatSession) this.endRepeat(true);
     this.active.history.push(takeSnapshot(this.doc, this.active.selection));
     this.touch();
   }
@@ -459,6 +476,7 @@ export class Editor {
   }
 
   undo(): void {
+    if (this.repeatSession) return this.endRepeat(false);
     if (this.stroke || this.adjusting || this.scaling) return;
     const current = takeSnapshot(this.doc, this.active.selection);
     const prev = this.active.history.undo(current);
@@ -1745,6 +1763,86 @@ export class Editor {
     s.unframed = true;
     this.commit(false);
     return true;
+  }
+
+  /* ------------------------------------------------------------------ repeat grid */
+
+  /**
+   * Starts a repeat grid, set up live with `setRepeat`, then kept or dropped with `endRepeat`. It
+   * repeats an instance or a component as instances, else the pixel selection, else what's drawn
+   * on the active layer. Returns false when there's nothing to repeat.
+   */
+  beginRepeat(): boolean {
+    if (this.repeatSession) this.endRepeat(false);
+    const doc = this.doc;
+    const layer = activeLayer(doc);
+    const selection = this.active.selection;
+    let source: RepeatSource;
+    const master = layer.instance && findMaster(doc, layer.instance.of);
+    if (master?.component && layer.instance) {
+      const { w, h } = master.component;
+      source = { kind: 'instances', layer, of: master.id, x: layer.instance.x, y: layer.instance.y, w, h };
+    } else if (layer.component && !selection) {
+      const { x, y, w, h } = layer.component;
+      source = { kind: 'instances', layer, of: layer.id, x, y, w, h };
+    } else {
+      if (this.activeLocked()) return false;
+      const rect = selection
+        ? clipRect(selection, doc.width, doc.height)
+        : pixelBounds(layer.pixels, doc.width, doc.height);
+      if (!rect || !rect.w || !rect.h) {
+        this.notice({ type: 'emptyDrawing' });
+        return false;
+      }
+      source = { kind: 'pixels', layer, rect };
+    }
+    this.checkpoint();
+    this.repeatSession = {
+      source,
+      base: layer.pixels.slice(),
+      layers: doc.layers.slice(),
+      picked: [...this.state.selectedLayers],
+      activeLayer: doc.activeLayer,
+      grid: this.lastRepeat,
+    };
+    this.setRepeat(this.lastRepeat);
+    return true;
+  }
+
+  /** Lays the repeat grid out again with new numbers: live, from where it started. */
+  setRepeat(grid: RepeatGrid): void {
+    const r = this.repeatSession;
+    if (!r) return;
+    const { source } = r;
+    const size = source.kind === 'pixels' ? source.rect : source;
+    r.grid = clampGrid(grid, size.w, size.h);
+    const doc = this.doc;
+    doc.layers = r.layers.slice();
+    doc.activeLayer = r.activeLayer;
+    const added = applyRepeat(doc, source, r.base, r.grid);
+    // Instances: the original and its copies are selected, so they move together.
+    this.active.picked = added.length ? [source.layer.id, ...added] : r.picked;
+    // Shown live, saved once kept.
+    this.commit(false);
+  }
+
+  /** Keeps the repeat grid (one undo step), or drops it and puts everything back. */
+  endRepeat(keep: boolean): void {
+    const r = this.repeatSession;
+    if (!r) return;
+    this.repeatSession = null;
+    if (keep) {
+      this.lastRepeat = r.grid;
+      this.commit();
+      return;
+    }
+    this.doc.layers = r.layers;
+    this.doc.activeLayer = r.activeLayer;
+    r.source.layer.pixels.set(r.base);
+    this.active.picked = r.picked;
+    syncInstances(this.doc);
+    this.active.history.discardLast();
+    this.commit(false);
   }
 
   /* ------------------------------------------------------------------ components */

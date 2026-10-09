@@ -185,6 +185,22 @@ const Instance = drawn([
   '.....##.....',
 ]);
 
+// Repeat grid: one square drawn, its copies outlined.
+const Repeat = drawn([
+  '#####..#####',
+  '#####..#...#',
+  '#####..#...#',
+  '#####..#...#',
+  '#####..#####',
+  '............',
+  '............',
+  '#####..#####',
+  '#...#..#...#',
+  '#...#..#...#',
+  '#...#..#...#',
+  '#####..#####',
+]);
+
 // Detach: the instance's diamond broken open, like Figma's.
 const Detach = drawn([
   '.....##.....',
@@ -206,6 +222,7 @@ export const ICONS = {
   component: Component,
   instance: Instance,
   detach: Detach,
+  repeat: Repeat,
   move: CursorMinimal,
   hand: Hand,
   select: Select,

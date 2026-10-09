@@ -211,6 +211,11 @@ export const MENU_BAR: MenuBarMenu[] = [
           onSelect: () => editor.createComponent(),
         },
         {
+          label: t('repeat.menu'),
+          disabled,
+          onSelect: () => editor.beginRepeat(),
+        },
+        {
           label: t('component.goTo'),
           disabled: disabled || !isLinkedInstance(doc, layer),
           onSelect: () => editor.goToMaster(),

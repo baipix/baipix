@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Double-click on a group with the Move tool to go into it, like in Figma: its subgroup first, then the layer under the cursor. Escape goes back out one level at a time. (#244)
 - Select several layers on the canvas: with the Move tool, Shift+click adds a layer (or its group) to the selection, or takes it out; a drag moves them all. Shift+D duplicates every selected layer at once (also in their right-click menu), and Alt+drag copies what it takes, any layer or group, the copies being what moves. One undo step each. (#245)
 - Copy, cut and paste whole layers: Cmd+C or Cmd+X in the Layers panel, or on the canvas with no pixels selected, takes the selected layers (or group) with their name, settings, group and component links; Cmd+V pastes them above the active layer. It goes through the system clipboard, so they paste in another file or another tab, and other apps get a PNG. Pasted in a canvas of another size, layers keep their place. An instance pasted without its component becomes plain pixels, unless the component is in that file. With pixels selected, Cmd+C still copies those pixels. (#247)
+- Repeat in a grid (Layer menu, or a layer's right-click menu): copies of the selection, or of what's drawn on the layer, in columns and rows, with a gap between them (negative to overlap). The numbers update the copies live; Enter applies, Escape cancels, one undo step. An instance or a component repeats as instances, selected together. (#249)
 
 ### Changed
 
