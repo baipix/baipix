@@ -273,6 +273,7 @@ function LayersSection() {
         onSelect: () => setRenaming(layer.id),
       },
       { label: t('layer.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
+      { label: t('repeat.menu'), icon: 'repeat', onSelect: () => editor.beginRepeat() },
       {
         label: t('group.create'),
         icon: 'folderPlus',

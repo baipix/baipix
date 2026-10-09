@@ -185,6 +185,22 @@ const Instance = drawn([
   '.....##.....',
 ]);
 
+// Repeat grid: one square drawn, its copies outlined.
+const Repeat = drawn([
+  '#####..#####',
+  '#####..#...#',
+  '#####..#...#',
+  '#####..#...#',
+  '#####..#####',
+  '............',
+  '............',
+  '#####..#####',
+  '#...#..#...#',
+  '#...#..#...#',
+  '#...#..#...#',
+  '#####..#####',
+]);
+
 // Gradient: a square whose fill thins out in dithering, left to right.
 const Gradient = drawn([
   '############',
@@ -222,6 +238,7 @@ export const ICONS = {
   component: Component,
   instance: Instance,
   detach: Detach,
+  repeat: Repeat,
   gradient: Gradient,
   move: CursorMinimal,
   hand: Hand,

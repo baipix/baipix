@@ -40,6 +40,7 @@ export function ToolOptionsBar() {
   const editor = useEditor();
   const tool = useEditorState((s) => s.tool);
   const options = useEditorState((s) => s.options);
+  const repeat = useEditorState((s) => s.repeat);
   const hasSelection = useEditorState((s) => s.selection !== null);
   const brushes = useEditorState((s) => s.brushes);
   const meta = toolMeta(tool);
@@ -218,6 +219,49 @@ export function ToolOptionsBar() {
       ))}
     </div>
   );
+
+  // A repeat grid being set up takes the bar over until it's applied or canceled.
+  if (repeat) {
+    const field = (key: keyof typeof repeat, label: string, glyph: string, min: number) => (
+      <Row label={label}>
+        <NumberField
+          value={repeat[key]}
+          min={min}
+          max={key === 'cols' || key === 'rows' ? 64 : 256}
+          label={glyph}
+          ariaLabel={label}
+          scrubHint={t('common.dragToAdjust')}
+          sensitivity={key === 'cols' || key === 'rows' ? 16 : 8}
+          onChange={(v) => editor.setRepeat({ ...repeat, [key]: v })}
+        />
+      </Row>
+    );
+    return (
+      <div className="tool-options" role="toolbar" aria-label={t('repeat.title')}>
+        <span className="tool-options-name" data-tip={t('repeat.hint')} tabIndex={0}>
+          {t('repeat.title')}
+          <Icon name="info" size={14} />
+        </span>
+        {field('cols', t('repeat.cols'), '⇥', 1)}
+        {field('rows', t('repeat.rows'), '⤓', 1)}
+        {field('gapX', t('repeat.gapX'), '⇔', -64)}
+        {field('gapY', t('repeat.gapY'), '⇕', -64)}
+        <div className="button-row">
+          <button type="button" className="btn" data-kbd="Esc" onClick={() => editor.endRepeat(false)}>
+            {t('common.cancel')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            data-kbd="Enter"
+            onClick={() => editor.endRepeat(true)}
+          >
+            {t('repeat.apply')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   let body: ReactNode;
   switch (tool) {
