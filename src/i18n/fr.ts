@@ -183,6 +183,7 @@ export const fr: Record<MessageKey, string> = {
   'layer.moveDown': 'Descendre',
   'layer.mergeDown': 'Fusionner vers le bas',
   'layer.mergeVisible': 'Fusionner les calques visibles',
+  'layer.duplicateCount': 'Dupliquer {count} calques',
   'layer.mergeCount': 'Fusionner {count} calques',
   'layer.deleteCount': 'Supprimer {count} calques',
   'layer.flatten': "Aplatir l'image",
