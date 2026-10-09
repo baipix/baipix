@@ -22,7 +22,11 @@ const showDesign = (section?: string) => () =>
   }));
 
 const STEPS: Step[] = [
-  { title: 'tour.drawTitle', text: 'tour.draw', target: tools('pencil', 'lassoFill', 'eraser', 'bucket') },
+  {
+    title: 'tour.drawTitle',
+    text: 'tour.draw',
+    target: tools('pencil', 'lassoFill', 'eraser', 'bucket', 'gradient'),
+  },
   { title: 'tour.shapesTitle', text: 'tour.shapes', target: all('.toolbar .tool-split') },
   { title: 'tour.colorsTitle', text: 'tour.colors', target: tools('shade', 'lighten', 'blur', 'spray') },
   { title: 'tour.warpTitle', text: 'tour.warp', target: tools('jumble', 'liquify') },

@@ -1,6 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { pack } from '../engine/color';
+import { Editor } from '../engine/editor';
+import { EditorContext } from '../ui/EditorContext';
 import { AnchorGrid, type Anchor } from '../ui/components/AnchorGrid';
+import { GradientEditor } from '../ui/components/GradientEditor';
 import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
@@ -48,6 +51,14 @@ function Block({
 }
 
 /** A component shown with a caption saying when to use it. */
+/** A bare editor for specimens that read the editor's state (the gradient bar), with a 3-stop gradient. */
+const gradientEditor = new Editor();
+gradientEditor.setOption('gradientStops', [
+  { at: 0, color: pack(26, 28, 44) },
+  { at: 0.5, color: pack(239, 125, 87) },
+  { at: 1, color: pack(255, 205, 117) },
+]);
+
 function Specimen({
   label,
   use,
@@ -382,6 +393,14 @@ function FieldsBlock() {
           <div className="ds-field">
             <NumberField value={n} min={1} max={512} label="W" ariaLabel="Width" onChange={(v) => setN(v)} />
           </div>
+        </Specimen>
+        <Specimen
+          label="Gradient bar"
+          use="The Gradient tool's stops: click the bar to add one, drag one to move it, click it for its palette color. Dithered as on the canvas."
+        >
+          <EditorContext.Provider value={gradientEditor}>
+            <GradientEditor />
+          </EditorContext.Provider>
         </Specimen>
         <Specimen
           label="Color row"

@@ -33,6 +33,7 @@ export const TOOL_GROUPS: ToolMeta[][] = [
     { id: 'lassoFill', icon: 'lassoFill', label: 'tool.lassoFill', shortcut: 'K' },
     { id: 'eraser', icon: 'eraser', label: 'tool.eraser', shortcut: 'E' },
     { id: 'bucket', icon: 'bucket', label: 'tool.bucket', shortcut: 'G' },
+    { id: 'gradient', icon: 'gradient', label: 'tool.gradient', shortcut: 'D' },
   ],
   SHAPES,
   [
