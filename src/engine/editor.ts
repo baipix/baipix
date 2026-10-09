@@ -35,6 +35,7 @@ import {
   type LayerItem,
   type LayerNode,
 } from './groups';
+import { fragmentOf, pasteFragment, type LayerFragment } from './layerClipboard';
 import {
   addInstance,
   detachInstance,
@@ -154,6 +155,7 @@ export type Notice =
   | { type: 'rampAdded'; count: number }
   | { type: 'extracted'; count: number }
   | { type: 'pasted' }
+  | { type: 'layersPasted'; count: number }
   | { type: 'merged' }
   | { type: 'groupTooDeep' }
   | { type: 'instanceLocked' }
@@ -280,6 +282,10 @@ export class Editor {
     rulers: false,
   };
   private clipboard: PixelBlock | null = null;
+  /** Whole layers copied (the last copy wins over `clipboard`). */
+  private layerClip: LayerFragment | null = null;
+  /** The id of the last layers copied here, even if pixels were copied since. */
+  private layerClipId: string | null = null;
   private stroke: Stroke | null = null;
   /** Shift+press on a layer already selected: it leaves the selection on release, unless dragged. */
   private unpick: { ids: string[]; start: Point; moved: boolean } | null = null;
@@ -2162,6 +2168,42 @@ export class Editor {
     const r = clipRect(this.targetRect(), this.doc.width, this.doc.height);
     if (!r.w || !r.h) return false;
     this.clipboard = extractBlock(activeLayer(this.doc).pixels, this.doc.width, this.doc.height, r);
+    this.layerClip = null;
+    return true;
+  }
+
+  /** Copies the selected layers whole (or the selected group), for `pasteLayers` here or in another file. */
+  copyLayers(): LayerFragment | null {
+    const fragment = fragmentOf(this.doc, this.state.selectedLayers);
+    if (!fragment) return null;
+    fragment.id = this.layerClipId = newId('clip');
+    this.layerClip = fragment;
+    this.clipboard = null;
+    return fragment;
+  }
+
+  /** Copies the selected layers, then deletes them (at least one layer stays). */
+  cutLayers(): LayerFragment | null {
+    const fragment = this.copyLayers();
+    if (fragment) this.deleteLayers();
+    return fragment;
+  }
+
+  /** Pastes whole layers above the active one (see `pasteFragment`); they become the selection. */
+  pasteLayers(fragment: LayerFragment | null = this.layerClip): boolean {
+    if (!fragment?.layers.length) return false;
+    this.edit((doc) => {
+      const { ids, group } = pasteFragment(doc, fragment);
+      const s = this.active;
+      s.referencePicked = false;
+      s.unframed = false;
+      if (group) s.pickedGroup = group;
+      else delete s.pickedGroup;
+      s.picked = ids;
+      s.anchor = ids[ids.length - 1];
+      doc.activeLayer = doc.layers.findIndex((l) => l.id === s.anchor);
+    });
+    this.notice({ type: 'layersPasted', count: fragment.layers.length });
     return true;
   }
 
@@ -2172,12 +2214,24 @@ export class Editor {
     return true;
   }
 
+  /**
+   * Layers found on the system clipboard are an older copy from here, pixels having been copied
+   * since (that copy stays inside the app): paste those instead.
+   */
+  isOlderCopy(fragment: LayerFragment): boolean {
+    return !!fragment.id && fragment.id === this.layerClipId && this.clipboard !== null;
+  }
+
   hasClipboard(): boolean {
-    return this.clipboard !== null;
+    return this.clipboard !== null || this.layerClip !== null;
   }
 
   /** Pastes the clipboard (or a given block) on a new layer, selected, with the move tool active. */
   paste(block: PixelBlock | null = this.clipboard, name = this.labels.pasted): void {
+    if (!block && this.layerClip) {
+      this.pasteLayers();
+      return;
+    }
     if (!block) return;
     this.edit((doc) => {
       const sel = this.active.selection;

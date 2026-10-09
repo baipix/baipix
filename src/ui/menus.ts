@@ -61,11 +61,13 @@ function revealCanvas(then: () => void) {
 async function paste(editor: Editor, actions: Actions) {
   try {
     const files: File[] = [];
+    let html = '';
     for (const item of await navigator.clipboard.read()) {
+      if (item.types.includes('text/html')) html = await (await item.getType('text/html')).text();
       const type = item.types.find((x) => x.startsWith('image/'));
       if (type) files.push(new File([await item.getType(type)], 'clipboard', { type }));
     }
-    if (await actions.pasteFromClipboard(files)) return;
+    if (await actions.pasteFromClipboard(files, html)) return;
   } catch {
     /* no permission to read the clipboard: fall back to our own */
   }
@@ -135,12 +137,16 @@ export const MENU_BAR: MenuBarMenu[] = [
           onSelect: () => editor.redo(),
         },
         '-',
-        { label: t('menu.cut'), shortcut: 'Ctrl+X', onSelect: () => editor.cut() && toast(t('toast.cut')) },
+        {
+          label: t('menu.cut'),
+          shortcut: 'Ctrl+X',
+          onSelect: () => (s.selection ? editor.cut() && toast(t('toast.cut')) : actions.copyLayers(true)),
+        },
         {
           label: t('menu.copy'),
           shortcut: 'Ctrl+C',
           onSelect: () =>
-            editor.copy() && toast(t(s.selection ? 'toast.selectionCopied' : 'toast.layerCopied')),
+            s.selection ? editor.copy() && toast(t('toast.selectionCopied')) : actions.copyLayers(),
         },
         { label: t('menu.paste'), shortcut: 'Ctrl+V', onSelect: () => void paste(editor, actions) },
         { label: t('menu.copyPng'), onSelect: () => void actions.copyPng() },

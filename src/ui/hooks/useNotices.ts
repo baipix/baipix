@@ -21,6 +21,8 @@ const message = (n: Notice): string => {
       return t('toast.extracted', { count: n.count });
     case 'pasted':
       return t('toast.pasted');
+    case 'layersPasted':
+      return n.count > 1 ? t('toast.layersPasted', { count: n.count }) : t('toast.layerPasted');
     case 'merged':
       return t('toast.merged');
     case 'groupTooDeep':

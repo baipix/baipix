@@ -1,4 +1,5 @@
 import { alpha, type Color } from '../engine/color';
+import { flatten } from '../engine/composite';
 import { hasBackground, MAX_SIZE, createDocument } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import type { PixelBlock } from '../engine/region';
@@ -6,13 +7,14 @@ import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { renderGeometry, toSvg } from '../engine/export/svg';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
-import { copyPng, copyText } from '../io/clipboard';
+import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
 import { saveFile, safeFileName } from '../io/download';
 import { imageToBlock, loadImage, readPixels } from '../io/image';
 import { pickFile } from '../io/pickFile';
 import { referenceFromFile } from '../io/reference';
 import { canvasToBlob, renderToCanvas } from '../io/png';
 import { documentFromJson, documentToJson, FILE_EXTENSION } from '../storage/fileFormat';
+import { layerClipFromHtml, layerClipHtml } from '../storage/layerClip';
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
@@ -240,8 +242,39 @@ export function createActions(editor: Editor) {
       );
     },
 
-    /** Paste event: images from the system clipboard go on a new layer, otherwise the internal clipboard. */
-    async pasteFromClipboard(files: File[]) {
+    /**
+     * Copies the selected layers whole (Cmd+C with no pixels selected, or in the Layers panel), also
+     * to the system clipboard: another file or tab pastes them, other apps get a PNG. `cut` deletes them.
+     */
+    copyLayers(cut = false) {
+      const f = cut ? editor.cutLayers() : editor.copyLayers();
+      if (!f) return false;
+      const n = f.layers.length;
+      if (cut) toast(n > 1 ? t('toast.layersCut', { count: n }) : t('toast.layerCut'));
+      else toast(n > 1 ? t('toast.layersCopied', { count: n }) : t('toast.layerCopied'));
+      const d = doc();
+      const pixels = flatten(
+        { ...d, width: f.width, height: f.height, layers: f.layers, groups: f.groups },
+        {
+          includeBackground: false,
+        },
+      );
+      const geometry = renderGeometry(f.width, f.height, d.render.pixelSize, d.render.gap);
+      // Not awaited: the browser may refuse (no focus, no permission); the copy here still works.
+      void copyHtmlAndPng(
+        layerClipHtml(f),
+        canvasToBlob(renderToCanvas(pixels, f.width, f.height, geometry, 0)),
+      );
+      return true;
+    },
+
+    /**
+     * Paste event: layers copied in Baipix (this file, another one, another tab) come back whole;
+     * images from the system clipboard go on a new layer; otherwise the internal clipboard.
+     */
+    async pasteFromClipboard(files: File[], html = '') {
+      const layers = html ? layerClipFromHtml(html) : null;
+      if (layers && !editor.isOlderCopy(layers)) return editor.pasteLayers(layers);
       const image = files.find((f) => f.type.startsWith('image/'));
       if (image) {
         try {
