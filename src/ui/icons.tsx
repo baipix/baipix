@@ -185,6 +185,22 @@ const Instance = drawn([
   '.....##.....',
 ]);
 
+// Gradient: a square whose fill thins out in dithering, left to right.
+const Gradient = drawn([
+  '############',
+  '#####.#.#..#',
+  '######.#...#',
+  '#####.#.#..#',
+  '######.#...#',
+  '#####.#.#..#',
+  '######.#...#',
+  '#####.#.#..#',
+  '######.#...#',
+  '#####.#.#..#',
+  '######.#...#',
+  '############',
+]);
+
 // Detach: the instance's diamond broken open, like Figma's.
 const Detach = drawn([
   '.....##.....',
@@ -206,6 +222,7 @@ export const ICONS = {
   component: Component,
   instance: Instance,
   detach: Detach,
+  gradient: Gradient,
   move: CursorMinimal,
   hand: Hand,
   select: Select,

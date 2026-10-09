@@ -68,6 +68,8 @@ import {
   type ToolId,
   type ToolOptions,
 } from './tools';
+import { paintGradient, stopsOf } from './tools/gradient';
+import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
 import { strokeColors } from './tools/paint';
@@ -284,6 +286,18 @@ export class Editor {
   private clipboard: PixelBlock | null = null;
   /** Whole layers copied (the last copy wins over `clipboard`). */
   private layerClip: LayerFragment | null = null;
+  /**
+   * The last gradient drawn, kept editable: while its layer still shows it, changing the gradient's
+   * options redraws it in place (same undo step), like a gradient in Figma.
+   */
+  private lastGradient: {
+    layer: Layer;
+    base: Uint32Array;
+    mask: Uint8Array;
+    a: Point;
+    b: Point;
+    result: Uint32Array;
+  } | null = null;
   /** The id of the last layers copied here, even if pixels were copied since. */
   private layerClipId: string | null = null;
   private stroke: Stroke | null = null;
@@ -1614,7 +1628,54 @@ export class Editor {
 
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
     this.options = { ...this.options, [key]: value };
+    if (key.startsWith('gradient')) this.redrawGradient();
     this.commit();
+  }
+
+  /** The last gradient, still on its layer as drawn, or null. */
+  private editableGradient() {
+    const g = this.lastGradient;
+    if (!g || this.tool !== 'gradient' || !this.doc.layers.includes(g.layer)) return null;
+    return g.layer.pixels.length === g.result.length && !changed(g.result, g.layer.pixels) ? g : null;
+  }
+
+  /** Redraws the last gradient with the current options, in place (no undo step of its own). */
+  private redrawGradient(a?: Point, b?: Point): boolean {
+    const g = this.editableGradient();
+    if (!g) return false;
+    if (a && b) Object.assign(g, { a, b });
+    paintGradient(
+      g.layer.pixels,
+      g.base,
+      g.mask,
+      this.doc.width,
+      this.options,
+      stopsOf(this.options, this.primary, this.secondary),
+      g.a,
+      g.b,
+    );
+    syncInstances(this.doc, g.layer.id);
+    g.result = g.layer.pixels.slice();
+    this.pixelsChanged();
+    return true;
+  }
+
+  /** Turns the last gradient by 90° around its middle (clockwise). Returns false without one. */
+  rotateGradient(): boolean {
+    const g = this.editableGradient();
+    if (!g) return false;
+    const cx = (g.a.x + g.b.x) / 2;
+    const cy = (g.a.y + g.b.y) / 2;
+    const turn = (p: Point) => ({ x: Math.round(cx - (p.y - cy)), y: Math.round(cy + (p.x - cx)) });
+    this.redrawGradient(turn(g.a), turn(g.b));
+    this.commit();
+    return true;
+  }
+
+  /** Reverses the gradient's stops (the last one first), and redraws the last gradient. */
+  reverseGradient(): void {
+    const stops = stopsOf(this.options, this.primary, this.secondary);
+    this.setOption('gradientStops', stops.map((s) => ({ at: 1 - s.at, color: s.color })).reverse());
   }
 
   setView<K extends keyof ViewSettings>(key: K, value: ViewSettings[K]): void {
@@ -1641,7 +1702,15 @@ export class Editor {
 
   setPreferences(p: Partial<Preferences>): void {
     if (p.tool && p.tool in TOOLS) this.tool = p.tool;
-    if (p.options) this.options = { ...DEFAULT_TOOL_OPTIONS, ...p.options };
+    if (p.options) {
+      const o = { ...DEFAULT_TOOL_OPTIONS, ...p.options };
+      this.options = {
+        ...o,
+        gradientStops: cleanStops(o.gradientStops),
+        gradientShape: GRADIENT_SHAPES.includes(o.gradientShape) ? o.gradientShape : 'linear',
+        gradientDither: GRADIENT_DITHERS.includes(o.gradientDither) ? o.gradientDither : 'bayer',
+      };
+    }
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;
     if (typeof p.secondary === 'number') this.secondary = p.secondary >>> 0;
     if (p.view) {
@@ -2523,6 +2592,15 @@ export class Editor {
     }
     // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
     if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
+    if (id === 'gradient')
+      this.lastGradient = {
+        layer: s.layer,
+        base: s.base,
+        mask: s.scratch.mask as Uint8Array,
+        a: s.start,
+        b: s.scratch.end as Point,
+        result: s.layer.pixels.slice(),
+      };
     if (tool.paintsColor) {
       const [c1, c2] = strokeColors(s);
       if (s.options.dither) this.remember(c1, c2);

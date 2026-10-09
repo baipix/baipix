@@ -3,6 +3,7 @@ import type { Layer, PixelDoc } from '../document';
 import type { Outside } from '../outside';
 import type { PixelBlock } from '../region';
 import type { DitherPattern } from '../dither';
+import type { GradientDither, GradientShape, GradientStop } from '../gradient';
 import type { LiquifyMode } from './liquify';
 import type { Point, Rect } from '../math';
 import type { PaletteIndex, ShadeMode } from '../palette';
@@ -14,6 +15,7 @@ export type ToolId =
   | 'pencil'
   | 'eraser'
   | 'bucket'
+  | 'gradient'
   | 'line'
   | 'rect'
   | 'roundRect'
@@ -75,6 +77,14 @@ export interface ToolOptions {
   jumbleSize: number;
   /** Jumble: how many swaps per step, 1 to 3. */
   jumbleStrength: number;
+  /** Gradient: linear, radial, angular or diamond. */
+  gradientShape: GradientShape;
+  /** Gradient: how one stop fades into the next. */
+  gradientDither: GradientDither;
+  /** Gradient: its stops, or null for the primary color to the secondary. */
+  gradientStops: GradientStop[] | null;
+  /** Gradient: fill the whole layer, not only the area of the same color under the first click. */
+  gradientLayer: boolean;
 }
 
 export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
@@ -104,6 +114,10 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   sprayOpacity: false,
   jumbleSize: 6,
   jumbleStrength: 1,
+  gradientShape: 'linear',
+  gradientDither: 'bayer',
+  gradientStops: null,
+  gradientLayer: false,
 };
 
 export interface Modifiers {
