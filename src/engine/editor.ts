@@ -820,6 +820,39 @@ export class Editor {
     return outer && !entered ? { group: outer.id } : {};
   }
 
+  /**
+   * Double-click with the Move tool, like in Figma: one level into the group taken at `p`, its
+   * subgroup there if it has one, else the layer itself. Returns false when there's nothing to enter.
+   */
+  enterAt(p: Point): boolean {
+    const k = this.layerAt(p);
+    if (k < 0) return false;
+    const s = this.active;
+    const chain = groupChain(this.doc, this.doc.layers[k].group);
+    const at = s.pickedGroup ? chain.findIndex((g) => g.id === s.pickedGroup) : -1;
+    if (at > 0) {
+      this.selectGroup(chain[at - 1].id);
+      return true;
+    }
+    if (!chain.length || (k === this.doc.activeLayer && !s.pickedGroup)) return false;
+    this.setActiveLayer(k);
+    return true;
+  }
+
+  /**
+   * Escape on a layer or a subgroup taken inside a group: the group around it gets selected, like
+   * in Figma. Returns false at the top level.
+   */
+  selectParent(): boolean {
+    const s = this.active;
+    // Several loose layers picked in the Layers panel have no one group around them.
+    if (!s.pickedGroup && (s.unframed || this.state.selectedLayers.length > 1)) return false;
+    const parent = s.pickedGroup ? findGroup(this.doc, s.pickedGroup)?.parent : activeLayer(this.doc).group;
+    if (!parent) return false;
+    this.selectGroup(parent);
+    return true;
+  }
+
   /** The layers the Move tool would move from pixel `p` (a layer, or a group's layers), for its outline. */
   moveTargetLayers(p: Point): Layer[] {
     const k = this.layerAt(p);
