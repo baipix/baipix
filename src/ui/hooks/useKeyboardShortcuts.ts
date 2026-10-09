@@ -79,9 +79,9 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         if (uiStore.get().picker) uiStore.set({ picker: null });
         else if (editor.getState().referenceSelected) editor.deselectReference();
         else if (editor.isStroking) editor.cancelStroke();
-        // The pixel selection first, then the layer (its frame, or several layers, or a group).
+        // The pixel selection first, then up to the group around (like Figma), then the layer.
         else if (editor.getState().selection) editor.deselect();
-        else editor.deselectLayers();
+        else if (!editor.selectParent()) editor.deselectLayers();
         return;
       }
       if (e.key === '?') return openDialog({ type: 'shortcuts' });

@@ -288,6 +288,39 @@ describe('Editor groups', () => {
     expect(order(e)).toBe('a a copy b c d');
     expect(e.getState().doc.layers[0].pixels[0]).toBe(RED);
   });
+
+  it('goes into a group with a double-click on the canvas, and back out with Escape', () => {
+    const e = editor();
+    pick(e, 'b', 'c');
+    e.groupSelection();
+    e.groupSelection(); // Group 2, around Group 1
+    const groups = e.getState().doc.groups!;
+    const [inner, outer] = [groups.find((g) => g.parent)!.id, groups.find((g) => !g.parent)!.id];
+    pick(e, 'd');
+    e.setTool('move');
+    // A click on b's pixel takes the outer group, a double-click goes one level in each time.
+    e.beginStroke({ x: 1, y: 0 }, false, { shift: false });
+    e.endStroke();
+    expect(e.getState().selectedGroup).toBe(outer);
+    expect(e.enterAt({ x: 1, y: 0 })).toBe(true);
+    expect(e.getState().selectedGroup).toBe(inner);
+    expect(e.enterAt({ x: 1, y: 0 })).toBe(true);
+    expect(e.getState().selectedGroup).toBeNull();
+    expect(e.getState().doc.layers[e.getState().doc.activeLayer].name).toBe('b');
+    expect(e.enterAt({ x: 1, y: 0 })).toBe(false);
+    // Clicking c now takes c alone: we're inside the group.
+    e.beginStroke({ x: 2, y: 0 }, false, { shift: false });
+    e.endStroke();
+    expect(e.getState().doc.layers[e.getState().doc.activeLayer].name).toBe('c');
+    expect(e.getState().selectedGroup).toBeNull();
+    expect(e.selectParent()).toBe(true);
+    expect(e.getState().selectedGroup).toBe(inner);
+    expect(e.selectParent()).toBe(true);
+    expect(e.getState().selectedGroup).toBe(outer);
+    expect(e.selectParent()).toBe(false);
+    // Nothing to go into on a layer outside any group.
+    expect(e.enterAt({ x: 3, y: 0 })).toBe(false);
+  });
 });
 
 describe('Groups in .baipix files', () => {
