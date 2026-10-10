@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Resize a layer or a selection by its sides too, not only its corners: a handle in the middle of each side, and the whole side can be grabbed. A side changes the width or the height alone, the opposite side staying put; Alt resizes from the center, Shift keeps the proportions. (#266)
+
 ### Fixed
 
 - Cmd+Z (Ctrl+Z) right after typing a size, an opacity or any number: it now undoes the change in the editor instead of the text in the field. Undoing a canvas resize puts the guides and the reference image back too. (#264)
