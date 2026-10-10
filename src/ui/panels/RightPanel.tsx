@@ -25,26 +25,25 @@ import { ExportPreview } from './ExportPreview';
 
 const PIXEL_SIZES = [1, 2, 4, 8, 16, 32];
 
-function RenderSection() {
+/** The exported pixel size, from 1× to 32×, across the panel (each button says what it does). */
+function PixelSizes() {
   const t = useT();
   const editor = useEditor();
   const render = useEditorState((s) => s.doc.render);
   return (
-    <Section id="render" title={t('section.render')}>
-      <div className="segmented" role="group" aria-label={t('render.pixelSizeHint')}>
-        {PIXEL_SIZES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            aria-pressed={render.pixelSize === s}
-            data-tip={t('render.scaleTip', { size: s })}
-            onClick={() => editor.setRender({ pixelSize: s })}
-          >
-            {s}×
-          </button>
-        ))}
-      </div>
-    </Section>
+    <div className="segmented" role="group" aria-label={t('render.pixelSizeHint')}>
+      {PIXEL_SIZES.map((s) => (
+        <button
+          key={s}
+          type="button"
+          aria-pressed={render.pixelSize === s}
+          data-tip={t('render.scaleTip', { size: s })}
+          onClick={() => editor.setRender({ pixelSize: s })}
+        >
+          {s}×
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -556,7 +555,10 @@ function ExportSection() {
   const includeBackground = uiStore.use((s) => s.exportBackground);
   const editor = useEditor();
   return (
-    <Section id="export" title={t('section.exportFile')}>
+    // At the bottom of the panel, like Figma: the file's preview, its pixel size, format and buttons.
+    <Section id="export" title={t('panel.export')} className="export-section">
+      <ExportPreview />
+      <PixelSizes />
       <Row label={t('export.name')}>
         <label className="field">
           <input
@@ -636,60 +638,16 @@ function ExportSection() {
   );
 }
 
-const TABS = ['design', 'export'] as const;
-
-/** Design (what you touch while drawing) and Export (the output file) tabs. The choice is remembered. */
-function PanelTabs() {
-  const t = useT();
-  const tab = uiStore.use((s) => s.rightTab);
-  return (
-    <div className="panel-tabs" role="tablist" aria-label={t('panel.right')}>
-      {TABS.map((id) => (
-        <button
-          key={id}
-          type="button"
-          role="tab"
-          id={`panel-tab-${id}`}
-          aria-selected={tab === id}
-          aria-controls="panel-tab-body"
-          className="panel-tab"
-          onClick={() => uiStore.set({ rightTab: id })}
-        >
-          {t(id === 'design' ? 'panel.design' : 'panel.export')}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function RightPanel() {
   const t = useT();
-  const tab = uiStore.use((s) => s.rightTab);
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
-      <PanelTabs />
-      <div
-        id="panel-tab-body"
-        role="tabpanel"
-        aria-labelledby={`panel-tab-${tab}`}
-        className="panel-tab-body"
-      >
-        {tab === 'design' ? (
-          <>
-            <CanvasSection />
-            <PaletteSection />
-            <LayerSection />
-            <EffectsSection />
-            <DisplaySection />
-          </>
-        ) : (
-          <>
-            <ExportPreview />
-            <RenderSection />
-            <ExportSection />
-          </>
-        )}
-      </div>
+      <CanvasSection />
+      <PaletteSection />
+      <LayerSection />
+      <EffectsSection />
+      <DisplaySection />
+      <ExportSection />
     </aside>
   );
 }

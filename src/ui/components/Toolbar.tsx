@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import type { ToolId } from '../../engine/tools';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
-import { SHAPES, TOOL_GROUPS, toolMeta, type ToolMeta } from '../tools';
+import { FAMILY_LABELS, TOOL_GROUPS, toolMeta, type ToolMeta } from '../tools';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 
@@ -69,7 +69,7 @@ export function Toolbar() {
               <SplitToolButton
                 key={meta[0].id}
                 tools={meta}
-                label={t(meta === SHAPES ? 'toolbar.shapes' : 'toolbar.selections')}
+                label={t(FAMILY_LABELS[meta[0].id as keyof typeof FAMILY_LABELS])}
               />
             ) : (
               <IconButton
