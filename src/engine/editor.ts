@@ -1,4 +1,4 @@
-import { adjustColor, alpha, opaque, withAlpha, type Color, type ColorAdjustment } from './color';
+import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
 import { flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   activeLayer,
@@ -36,6 +36,7 @@ import {
   type LayerNode,
 } from './groups';
 import { applyRepeat, clampGrid, DEFAULT_REPEAT, type RepeatGrid, type RepeatSource } from './repeat';
+import { bakeEffects, newEffect, type EffectType, type LayerEffect } from './effects';
 import { fragmentOf, pasteFragment, type LayerFragment } from './layerClipboard';
 import {
   addInstance,
@@ -338,6 +339,8 @@ export class Editor {
   } | null = null;
   private strokeTool: ToolId | null = null;
   private opacityChange = false;
+  /** An effect's setting being dragged: one undo step for the whole drag. */
+  private effectChange = false;
   private deleted: Deleted | null = null;
   private recent: Color[] = [];
   /** The Move tool moving a group (or several selected layers) together. */
@@ -1332,7 +1335,7 @@ export class Editor {
     this.edit((doc) => {
       // Merged into an instance, it becomes plain pixels: they're no longer its master's.
       detachInstance(doc.layers[i - 1]);
-      mergeLayerInto(doc.layers[i], doc.layers[i - 1]);
+      mergeLayerInto(doc.layers[i], doc.layers[i - 1], doc.width, doc.height);
       doc.layers.splice(i, 1);
       doc.activeLayer = i - 1;
     });
@@ -1376,7 +1379,7 @@ export class Editor {
     this.edit((doc) => {
       const [bottom, ...rest] = layers;
       detachInstance(bottom);
-      for (const layer of rest) mergeLayerInto(layer, bottom);
+      for (const layer of rest) mergeLayerInto(layer, bottom, doc.width, doc.height);
       doc.layers = doc.layers.filter((l) => !rest.includes(l));
       doc.activeLayer = doc.layers.indexOf(bottom);
       normalizeGroups(doc);
@@ -1510,6 +1513,60 @@ export class Editor {
       this.opacityChange = false;
       this.commit();
     } else this.pixelsChanged();
+  }
+
+  /* ------------------------------------------------------------------ effects */
+
+  /**
+   * Adds an effect to the active layer, on top of its list. Outlines and shadows start in the
+   * palette's darkest color, glows in the primary one.
+   */
+  addEffect(type: EffectType): void {
+    const colors = this.palette.colors.filter((c) => alpha(c) === 255);
+    const darkest = colors.reduce<Color | null>(
+      (d, c) => (d === null || toOklab(c)[0] < toOklab(d)[0] ? c : d),
+      null,
+    );
+    const color = type === 'glow' ? this.primary : (darkest ?? 0xff000000);
+    this.edit((doc) => {
+      const layer = activeLayer(doc);
+      layer.effects = [newEffect(type, color), ...(layer.effects ?? [])];
+    });
+  }
+
+  /** Changes an effect of the active layer. While dragging (`done` false), one undo step in all. */
+  setEffect(index: number, patch: Partial<LayerEffect>, done = true): void {
+    const effects = activeLayer(this.doc).effects;
+    if (!effects?.[index]) return;
+    if (!this.effectChange) {
+      this.checkpoint();
+      this.effectChange = true;
+    }
+    effects[index] = { ...effects[index], ...patch } as LayerEffect;
+    if (done) {
+      this.effectChange = false;
+      this.commit();
+    } else {
+      this.refresh();
+      this.listeners.forEach((l) => l());
+      this.pixelsChanged();
+    }
+  }
+
+  removeEffect(index: number): void {
+    const effects = activeLayer(this.doc).effects;
+    if (!effects?.[index]) return;
+    this.edit((doc) => {
+      const layer = activeLayer(doc);
+      layer.effects = layer.effects!.filter((_, k) => k !== index);
+      if (!layer.effects.length) delete layer.effects;
+    });
+  }
+
+  /** Writes the active layer's visible effects into its pixels, and removes them all. */
+  applyEffects(): void {
+    if (!activeLayer(this.doc).effects || this.activeLocked()) return;
+    this.edit((doc) => bakeEffects(activeLayer(doc), doc.width, doc.height));
   }
 
   /* ------------------------------------------------------------------ colors & palette */

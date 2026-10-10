@@ -1,5 +1,6 @@
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
 import { MAX_SIZE, type Layer, type LayerGroup } from '../engine/document';
+import { cleanEffects } from '../engine/effects';
 import type { LayerFragment } from '../engine/layerClipboard';
 import { clamp } from '../engine/math';
 import { decodePixels, encodePixels } from './fileFormat';
@@ -29,6 +30,7 @@ export function encodeLayerClip(f: LayerFragment): string {
       ...(l.group && { group: l.group }),
       ...(l.component && { component: { ...l.component } }),
       ...(l.instance && { instance: { ...l.instance } }),
+      ...(l.effects?.length && { effects: l.effects }),
       ...encodePixels(l.pixels),
     })),
     groups: f.groups,
@@ -91,6 +93,7 @@ export function decodeLayerClip(json: string): LayerFragment | null {
             whole(ref.y) && {
               instance: { of: ref.of, x: Math.round(ref.x), y: Math.round(ref.y) },
             }),
+          ...(cleanEffects(l.effects) && { effects: cleanEffects(l.effects) }),
           pixels: decodePixels(l.colors as number[], l.runs as number[], width * height),
         };
       });
