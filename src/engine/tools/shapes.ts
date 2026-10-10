@@ -4,6 +4,8 @@ import {
   constrainSquare,
   ellipseFilled,
   ellipseOutline,
+  heartFilled,
+  heartOutline,
   line,
   mirroredHalf,
   polygonFilled,
@@ -18,7 +20,7 @@ import {
 import { stamp, strokeColors } from './paint';
 import type { Modifiers, Stroke, Tool, ToolId } from './types';
 
-type ShapeKind = 'line' | 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star';
+type ShapeKind = 'line' | 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart';
 
 /** Shapes are redrawn from the original pixels on every move, so they can be previewed live. */
 function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void {
@@ -58,6 +60,9 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
     case 'ellipse':
       (filled ? ellipseFilled : ellipseOutline)(x0, y0, x1, y1, filled ? fill : outline);
       return;
+    case 'heart':
+      (filled ? heartFilled : heartOutline)(x0, y0, x1, y1, filled ? fill : outline);
+      return;
     case 'triangle':
     case 'star': {
       const points = (kind === 'star' ? starPoints : trianglePoints)(x0, y0, x1, y1);
@@ -81,3 +86,4 @@ export const roundRectTool = shapeTool('roundRect');
 export const ellipseTool = shapeTool('ellipse');
 export const triangleTool = shapeTool('triangle');
 export const starTool = shapeTool('star');
+export const heartTool = shapeTool('heart');

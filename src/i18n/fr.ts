@@ -46,6 +46,7 @@ export const fr: Record<MessageKey, string> = {
   'tool.ellipse': 'Ellipse',
   'tool.triangle': 'Triangle',
   'tool.star': 'Étoile',
+  'tool.heart': 'Cœur',
   'tool.shade': 'Ombrer',
   'tool.lighten': 'Éclaircir',
   'tool.blur': 'Flou',

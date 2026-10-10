@@ -15,6 +15,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Repeat in a grid (Layer menu, or a layer's right-click menu): copies of the selection, or of what's drawn on the layer, in columns and rows, with a gap between them (negative to overlap). The numbers update the copies live; Enter applies, Escape cancels, one undo step. An instance or a component repeats as instances, selected together. (#249)
 - Export to Aseprite: pick Aseprite as the format in the Export tab to keep working on the drawing there. The .aseprite file has the layers with their names, visibility, lock, opacity and blend modes, the groups, and the palette, on one frame; the background color becomes Aseprite's background layer if it's included. (#250)
 - Layer effects, like in Figma: an Effects section under Layer in the right panel. "+" adds an outline (outside or inside, 1 to 16 pixels, round or square corners), a drop shadow (offset in pixels) or a glow (solid next to the drawing, thinning out in dithering). Each one is drawn from the layer's pixels without changing them: tune it, hide it or remove it at any time; it shows on the canvas and in exports. Colors come from the palette. "Apply the effects to the pixels" writes them in; merging a layer does too. Saved in .baipix files. (#251)
+- A heart in the shapes, next to the star: outlined or filled, drawn so it reads as a heart even at 7×6. (#255)
 
 ### Changed
 

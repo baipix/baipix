@@ -11,7 +11,7 @@ import { lighten, shade } from './shade';
 import { jumbleTool } from './jumble';
 import { liquifyTool } from './liquify';
 import { sprayTool } from './spray';
-import { ellipseTool, lineTool, rectTool, roundRectTool, starTool, triangleTool } from './shapes';
+import { ellipseTool, heartTool, lineTool, rectTool, roundRectTool, starTool, triangleTool } from './shapes';
 import type { Tool, ToolId } from './types';
 
 /** To add a tool: create a file exporting a `Tool`, register it here, then add its UI metadata in `ui/tools.ts`. */
@@ -30,6 +30,7 @@ export const TOOLS: Record<ToolId, Tool> = {
   ellipse: ellipseTool,
   triangle: triangleTool,
   star: starTool,
+  heart: heartTool,
   shade,
   lighten,
   blur,

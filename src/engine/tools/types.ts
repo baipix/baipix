@@ -22,6 +22,7 @@ export type ToolId =
   | 'ellipse'
   | 'triangle'
   | 'star'
+  | 'heart'
   | 'shade'
   | 'lighten'
   | 'blur'
