@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- Gradient stops and layer effects take any color, not only the palette's: under the palette come the primary, secondary and recent colors, and a hex field. A color that isn't in the palette gets a + to add it there. (#265)
+
 ### Fixed
 
 - Cmd+Z (Ctrl+Z) right after typing a size, an opacity or any number: it now undoes the change in the editor instead of the text in the field. Undoing a canvas resize puts the guides and the reference image back too. (#264)
