@@ -5,6 +5,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import type { IconName } from '../icons';
 import { createStore } from '../store';
 import { Icon } from './Icon';
@@ -225,6 +226,9 @@ export function MenuHost() {
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        // Only the menu: a dialog it opened from stays open.
+        e.preventDefault();
+        e.stopPropagation();
         closeMenu();
         anchor.focus();
         return;
@@ -253,7 +257,7 @@ export function MenuHost() {
   }, [anchor]);
 
   if (!anchor) return null;
-  return (
+  const menu = (
     <div ref={ref} className="menu-host">
       <MenuPanel
         key={seq}
@@ -264,4 +268,8 @@ export function MenuHost() {
       />
     </div>
   );
+  // A modal dialog sits above the whole page and leaves it inert: a menu opened from one goes
+  // inside it, or it would open behind it.
+  const dialog = anchor.closest('dialog');
+  return dialog ? createPortal(menu, dialog) : menu;
 }
