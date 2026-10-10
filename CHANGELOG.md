@@ -10,7 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
-- A + after the last swatch of the palette adds the color in use to it; it's greyed out when that color is already there. The Create a ramp and Export buttons under the palette go away: both are in its ... menu. (#PR)
+- A + after the last swatch of the palette adds the color in use to it; it's greyed out when that color is already there. The Create a ramp and Export buttons under the palette go away: both are in its ... menu. (#280)
 - The primary and secondary colors are two overlapping chips, like Photoshop, next to the palette in one Colors section. The front one is what the tools draw with: click it for its picker (hex, opacity). A click on the one behind brings it to the front, so drawing with the secondary color no longer needs a right click; the arrows in the corner swap them (X). (#276)
 - The palette belongs to the file: it's saved in the .baipix file, and switching files switches palettes. Pick a preset, or Drawing colors, the colors the drawing uses, kept up to date as you draw; a new file starts that way, and so do older files. The palette menu shows the palette in use first, then Drawing colors with its colors, then the other presets. The row of recent colors goes away, and the color choices of gradients and effects show the colors in the drawing instead. (#274)
 - Gradient stops and layer effects take any color, not only the palette's: under the palette come the primary, secondary and recent colors, and a hex field. A color that isn't in the palette gets a + to add it there. (#265)
