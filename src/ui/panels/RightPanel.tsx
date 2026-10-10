@@ -4,7 +4,8 @@ import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, MAX_SIZE } from '../../engine/document';
-import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
+import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
+import { uniqueColors } from '../../engine/region';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -95,27 +96,29 @@ function PaletteSection() {
             aria-haspopup="menu"
             aria-label={t('palette.preset')}
             data-tip={t('palette.preset')}
-            onClick={(e) =>
+            onClick={(e) => {
+              const presetItem = (key: string) => {
+                const colors = presetColors(key);
+                return {
+                  label: PALETTE_PRESETS[key].name,
+                  shortcut: String(colors.length),
+                  checked: key === palette.key,
+                  swatches: colors.map(toCss),
+                  onSelect: () => editor.setPalettePreset(key),
+                };
+              };
+              const drawing = sortByLightness(uniqueColors(editor.flatten({ includeBackground: false })));
+              const current = palette.key in PALETTE_PRESETS ? [presetItem(palette.key)] : [];
+              // The file's palettes first, the one in use on top; then the other presets.
               openMenu(e.currentTarget, [
-                // The file's own: the colors its drawing uses, kept up to date.
+                ...current,
                 {
                   label: t('palette.drawing'),
+                  shortcut: String(drawing.length),
                   checked: palette.key === 'drawing',
+                  swatches: drawing.slice(0, 32).map(toCss),
                   onSelect: () => editor.setPalettePreset('drawing'),
                 },
-                '-',
-                ...Object.entries(PALETTE_PRESETS)
-                  .filter(([key]) => key === palette.key || !hidden.includes(key))
-                  .map(([key, p]) => {
-                    const colors = presetColors(key);
-                    return {
-                      label: p.name,
-                      shortcut: String(colors.length),
-                      checked: key === palette.key,
-                      swatches: colors.map(toCss),
-                      onSelect: () => editor.setPalettePreset(key),
-                    };
-                  }),
                 ...(palette.custom
                   ? [
                       {
@@ -128,9 +131,13 @@ function PaletteSection() {
                     ]
                   : []),
                 '-',
+                ...Object.keys(PALETTE_PRESETS)
+                  .filter((key) => key !== palette.key && !hidden.includes(key))
+                  .map(presetItem),
+                '-',
                 { label: t('palette.manage'), onSelect: () => openDialog({ type: 'paletteManager' }) },
-              ])
-            }
+              ]);
+            }}
           >
             <span className="truncate">
               {palette.key === 'custom'
