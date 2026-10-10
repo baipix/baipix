@@ -5,6 +5,7 @@ import { gradientColor, type GradientStop } from '../../engine/gradient';
 import { stopsOf } from '../../engine/tools/gradient';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
+import { ColorChoices } from './ColorChoices';
 
 /** The bar's preview, in art pixels: dithered as the canvas will be. */
 const PREVIEW_W = 48;
@@ -21,7 +22,6 @@ export function GradientEditor() {
   const options = useEditorState((s) => s.options);
   const primary = useEditorState((s) => s.primary);
   const secondary = useEditorState((s) => s.secondary);
-  const palette = useEditorState((s) => s.palette.colors);
   const stops = stopsOf(options, primary, secondary);
   const [open, setOpen] = useState<number | null>(null);
   // Fixed, above the bar: the options bar scrolls sideways and would cut it off.
@@ -134,25 +134,11 @@ export function GradientEditor() {
             aria-label={t('gradient.stopColor')}
             style={{ left: at.left, bottom: at.bottom }}
           >
-            <div className="gradient-swatches">
-              {palette.map((c, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`gradient-swatch${c === stop.color ? ' is-active' : ''}`}
-                  style={{ background: toCss(c) }}
-                  aria-label={toCss(c)}
-                  onClick={() => save(stops.map((s, k) => (k === open ? { ...s, color: c } : s)))}
-                />
-              ))}
-              <button
-                type="button"
-                className={`gradient-swatch is-clear${alpha(stop.color) ? '' : ' is-active'}`}
-                aria-label={t('gradient.transparent')}
-                data-tip={t('gradient.transparent')}
-                onClick={() => save(stops.map((s, k) => (k === open ? { ...s, color: 0 } : s)))}
-              />
-            </div>
+            <ColorChoices
+              color={stop.color}
+              allowClear
+              onPick={(c) => save(stops.map((s, k) => (k === open ? { ...s, color: c } : s)))}
+            />
             <div className="gradient-pop-row">
               <span>{Math.round(stop.at * 100)} %</span>
               <button

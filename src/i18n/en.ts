@@ -83,7 +83,6 @@ export const en = {
   'effects.inside': 'Inside',
   'effects.insideCorners': 'Inside, square corners',
   'effects.apply': 'Apply the effects to the pixels',
-  'effects.noPalette': 'The palette is empty.',
   'section.components': 'Components',
   'component.create': 'Create component',
   'component.master': 'Component',
@@ -377,6 +376,8 @@ export const en = {
   'color.leftClick': 'Left click',
   'color.rightClick': 'Right click',
   'color.swap': 'Swap colors',
+  'colorChoices.hex': 'Hex color',
+  'colorChoices.addToPalette': 'Add this color to the palette',
   'color.recent': 'Recent colors',
   'color.choose': 'Choose a color',
 

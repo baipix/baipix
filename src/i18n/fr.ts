@@ -84,7 +84,6 @@ export const fr: Record<MessageKey, string> = {
   'effects.inside': 'Intérieur',
   'effects.insideCorners': 'Intérieur, coins carrés',
   'effects.apply': 'Appliquer les effets aux pixels',
-  'effects.noPalette': 'La palette est vide.',
   'section.components': 'Composants',
   'component.create': 'Créer un composant',
   'component.master': 'Composant',
@@ -382,6 +381,8 @@ export const fr: Record<MessageKey, string> = {
   'color.leftClick': 'Clic gauche',
   'color.rightClick': 'Clic droit',
   'color.swap': 'Permuter les couleurs',
+  'colorChoices.hex': 'Couleur hexadécimale',
+  'colorChoices.addToPalette': 'Ajouter cette couleur à la palette',
   'color.recent': 'Couleurs récentes',
   'color.choose': 'Choisir une couleur',
 
