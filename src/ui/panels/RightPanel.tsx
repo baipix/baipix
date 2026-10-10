@@ -578,20 +578,25 @@ function ExportSection() {
         <label className="field">
           <select
             value={format}
-            onChange={(e) => uiStore.set({ exportFormat: e.target.value as 'png' | 'svg' })}
+            onChange={(e) => uiStore.set({ exportFormat: e.target.value as 'png' | 'svg' | 'aseprite' })}
             aria-label={t('export.format')}
           >
             <option value="png">PNG</option>
             <option value="svg">SVG</option>
+            <option value="aseprite">Aseprite</option>
           </select>
         </label>
       </Row>
-      <Checkbox
-        checked={onlyLayer}
-        onChange={(v) => uiStore.set({ exportActiveLayer: v })}
-        label={t('export.activeLayerOnly')}
-      />
-      {hasBackground(doc) && !onlyLayer && (
+      {/* Aseprite keeps every layer, as layers: that's what it's for. */}
+      {format !== 'aseprite' && (
+        <Checkbox
+          checked={onlyLayer}
+          onChange={(v) => uiStore.set({ exportActiveLayer: v })}
+          label={t('export.activeLayerOnly')}
+        />
+      )}
+      {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
+      {hasBackground(doc) && (!onlyLayer || format === 'aseprite') && (
         <Checkbox
           checked={includeBackground}
           onChange={(v) => uiStore.set({ exportBackground: v })}
@@ -601,7 +606,7 @@ function ExportSection() {
       <button
         type="button"
         className="btn btn-primary btn-wide"
-        onClick={() => void actions.exportImage(format, onlyLayer)}
+        onClick={() => void actions.exportImage(format, onlyLayer && format !== 'aseprite')}
       >
         {t('export.button')}
       </button>
