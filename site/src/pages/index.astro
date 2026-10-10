@@ -163,7 +163,19 @@ const features = [
       <SectionHead label="Features" link={{ href: `${base}draw/`, text: 'Every tool in detail →' }} />
       <h2>Everything you need. Nothing you don't.</h2>
       <div class="feature-grid">
-        {/* Components get a wide card of their own, with the picture that shows what they do. */}
+        {features.map((f) => (
+          <article class="feature" data-tone={f.tone}>
+            <PixelIcon rows={f.icon} size={24} />
+            <h3>
+              <a href={`${base}draw/#${f.tone}`}>{f.title}</a>
+            </h3>
+            <p class="muted">{f.text}</p>
+            <span class="feature-arrow" aria-hidden="true">
+              <PixelIcon rows={ARROW} size={14} />
+            </span>
+          </article>
+        ))}
+        {/* Components close the list with a wide card, and the picture that shows what they do. */}
         <article class="feature feature-wide" data-tone="components">
           <div class="feature-wide-text">
             <PixelIcon
@@ -186,18 +198,6 @@ const features = [
             <PixelIcon rows={ARROW} size={14} />
           </span>
         </article>
-        {features.map((f) => (
-          <article class="feature" data-tone={f.tone}>
-            <PixelIcon rows={f.icon} size={24} />
-            <h3>
-              <a href={`${base}draw/#${f.tone}`}>{f.title}</a>
-            </h3>
-            <p class="muted">{f.text}</p>
-            <span class="feature-arrow" aria-hidden="true">
-              <PixelIcon rows={ARROW} size={14} />
-            </span>
-          </article>
-        ))}
       </div>
     </section>
 
