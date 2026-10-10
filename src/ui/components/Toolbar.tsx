@@ -2,19 +2,20 @@ import { Fragment, useEffect, useState } from 'react';
 import type { ToolId } from '../../engine/tools';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
-import { SHAPES, SHAPE_IDS, TOOL_GROUPS, toolMeta } from '../tools';
+import { SHAPES, TOOL_GROUPS, toolMeta, type ToolMeta } from '../tools';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 
-/** One button for all shapes: it picks the last shape used, the caret opens the list. */
-function ShapesButton() {
+/** One button for a family of tools (shapes, selections): it picks the last one used, the caret opens the list. */
+function SplitToolButton({ tools, label }: { tools: ToolMeta[]; label: string }) {
   const t = useT();
   const editor = useEditor();
   const tool = useEditorState((s) => s.tool);
-  const [last, setLast] = useState<ToolId>('rect');
+  const ids = tools.map((x) => x.id);
+  const [last, setLast] = useState<ToolId>(tools[0].id);
   useEffect(() => {
-    if (SHAPE_IDS.includes(tool)) setLast(tool);
-  }, [tool]);
+    if (tools.some((x) => x.id === tool)) setLast(tool);
+  }, [tool, tools]);
   const meta = toolMeta(last);
   return (
     <div className="tool-split">
@@ -24,19 +25,20 @@ function ShapesButton() {
         iconSize={24}
         label={t(meta.label)}
         shortcut={meta.shortcut || undefined}
-        pressed={SHAPE_IDS.includes(tool)}
+        pressed={ids.includes(tool)}
+        data-tool={meta.id}
         onClick={() => editor.setTool(last)}
       />
       <IconButton
         className="tool-caret"
         icon="caret"
         iconSize={12}
-        label={t('toolbar.shapes')}
+        label={label}
         aria-haspopup="menu"
         onClick={(e) =>
           openMenu(
             e.currentTarget,
-            SHAPES.map((s) => ({
+            tools.map((s) => ({
               label: t(s.label),
               icon: s.icon,
               shortcut: s.shortcut || undefined,
@@ -62,10 +64,14 @@ export function Toolbar() {
       {TOOL_GROUPS.map((group, i) => (
         <Fragment key={i}>
           {i > 0 && <div className="toolbar-divider" />}
-          {group === SHAPES ? (
-            <ShapesButton />
-          ) : (
-            group.map((meta) => (
+          {group.map((meta) =>
+            Array.isArray(meta) ? (
+              <SplitToolButton
+                key={meta[0].id}
+                tools={meta}
+                label={t(meta === SHAPES ? 'toolbar.shapes' : 'toolbar.selections')}
+              />
+            ) : (
               <IconButton
                 key={meta.id}
                 className="tool-btn"
@@ -77,7 +83,7 @@ export function Toolbar() {
                 data-tool={meta.id}
                 onClick={() => editor.setTool(meta.id)}
               />
-            ))
+            ),
           )}
         </Fragment>
       ))}

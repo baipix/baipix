@@ -611,9 +611,18 @@ export function ToolOptionsBar() {
       body = null;
       break;
     case 'select':
-      info = t('hint.select');
+    case 'lassoSelect':
+    case 'wand':
+      info = t(tool === 'select' ? 'hint.select' : tool === 'wand' ? 'hint.wand' : 'hint.lassoSelect');
       body = (
         <>
+          {tool === 'wand' && (
+            <Checkbox
+              checked={options.wandContiguous}
+              onChange={set('wandContiguous')}
+              label={t('options.wandContiguous')}
+            />
+          )}
           <div className="button-row">
             <button type="button" className="btn" onClick={() => editor.selectAll()}>
               {t('menu.selectAll')}

@@ -1,7 +1,7 @@
 import { addInstance } from './components';
 import type { Layer, PixelDoc } from './document';
-import type { Rect } from './math';
 import { extractBlock } from './region';
+import { maskBlock, type Selection } from './selection';
 
 /** A repeat grid, like in Adobe XD and Figma: columns × rows copies, with a gap between them. */
 export interface RepeatGrid {
@@ -16,7 +16,7 @@ export const DEFAULT_REPEAT: RepeatGrid = { cols: 3, rows: 1, gapX: 1, gapY: 1 }
 
 /** What gets repeated: pixels of a layer inside a rectangle, or a component's sprite as instances. */
 export type RepeatSource =
-  | { kind: 'pixels'; layer: Layer; rect: Rect }
+  | { kind: 'pixels'; layer: Layer; rect: Selection }
   | { kind: 'instances'; layer: Layer; of: string; x: number; y: number; w: number; h: number };
 
 /** Keeps a grid sensible: 1 to 64 copies each way, gaps no smaller than overlapping a whole copy. */
@@ -52,7 +52,8 @@ export function applyRepeat(
   const { width: W, height: H } = doc;
   if (source.kind === 'pixels') {
     const { rect } = source;
-    const block = extractBlock(base, W, H, rect);
+    // A selection of any shape repeats its own pixels only.
+    const block = maskBlock(extractBlock(base, W, H, rect), rect);
     const pixels = source.layer.pixels;
     pixels.set(base);
     for (const { dx, dy } of gridOffsets(grid, block.width, block.height))

@@ -1,9 +1,46 @@
+import type { Selection } from '../../engine/selection';
 import { alpha, toCss, type Color } from '../../engine/color';
 import { hasBackground, mirrorAxes, type PixelDoc } from '../../engine/document';
 import type { ViewSettings } from '../../engine/editor';
 import type { Point, Rect } from '../../engine/math';
 import { brush, mirrored } from '../../engine/raster';
 import type { PixelBlock } from '../../engine/region';
+
+/** The edge of a shaped selection, in its own pixels: one segment per run of edge, kept per mask. */
+const edgeCache = new WeakMap<Uint8Array, Path2D>();
+function maskEdges(sel: Selection): Path2D {
+  const mask = sel.mask!;
+  const cached = edgeCache.get(mask);
+  if (cached) return cached;
+  const { w, h } = sel;
+  const on = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && mask[y * w + x] === 1;
+  const path = new Path2D();
+  // Horizontal edges, on each line between two rows; then vertical ones, between two columns.
+  for (let y = 0; y <= h; y++)
+    for (let x = 0; x < w;) {
+      if (on(x, y) === on(x, y - 1)) {
+        x++;
+        continue;
+      }
+      const start = x;
+      while (x < w && on(x, y) !== on(x, y - 1)) x++;
+      path.moveTo(start, y);
+      path.lineTo(x, y);
+    }
+  for (let x = 0; x <= w; x++)
+    for (let y = 0; y < h;) {
+      if (on(x, y) === on(x - 1, y)) {
+        y++;
+        continue;
+      }
+      const start = y;
+      while (y < h && on(x, y) !== on(x - 1, y)) y++;
+      path.moveTo(x, start);
+      path.lineTo(x, y);
+    }
+  edgeCache.set(mask, path);
+  return path;
+}
 import { checkerPattern, type Theme } from './theme';
 
 export interface Camera {
@@ -47,7 +84,7 @@ export interface Scene {
   /** When set, `composite` leaves out the background: it is painted here, under the reference. */
   reference: SceneReference | null;
   view: ViewSettings;
-  selection: Rect | null;
+  selection: Selection | null;
   /** Animated selection outline offset, in CSS pixels. */
   selectionDashOffset: number;
   brush: BrushPreview | null;
@@ -390,13 +427,28 @@ export function drawScene(
     ctx.strokeStyle = theme.accent;
     ctx.lineWidth = lw;
     ctx.save();
+    // A selection of any shape (lasso, magic wand) shows its own edge; a rectangle, its box.
+    const edge = () => {
+      if (!sel.mask) return ctx.strokeRect(rx + lw / 2, ry + lw / 2, rw - lw, rh - lw);
+      // Drawn in art pixels: the line width and the dashes are scaled back to screen pixels.
+      const dashes = ctx.getLineDash();
+      const offset = ctx.lineDashOffset;
+      ctx.save();
+      ctx.translate(rx, ry);
+      ctx.scale(s, s);
+      ctx.lineWidth = lw / s;
+      ctx.setLineDash(dashes.map((d) => d / s));
+      ctx.lineDashOffset = offset / s;
+      ctx.stroke(maskEdges(sel));
+      ctx.restore();
+    };
     ctx.strokeStyle = theme.accentInk;
-    ctx.strokeRect(rx + lw / 2, ry + lw / 2, rw - lw, rh - lw);
+    edge();
     ctx.strokeStyle = theme.accent;
     const dash = 4 * dpr;
     ctx.setLineDash([dash, dash]);
     ctx.lineDashOffset = -scene.selectionDashOffset * dpr;
-    ctx.strokeRect(rx + lw / 2, ry + lw / 2, rw - lw, rh - lw);
+    edge();
     ctx.restore();
     const hs = Math.round(7 * dpr);
     for (const [cx, cy] of [

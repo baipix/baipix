@@ -6,7 +6,7 @@ import { hand } from './hand';
 import { move } from './move';
 import { lassoFillTool, pencil } from './pencil';
 import { picker } from './picker';
-import { select } from './select';
+import { lassoSelect, select, wand } from './select';
 import { lighten, shade } from './shade';
 import { jumbleTool } from './jumble';
 import { liquifyTool } from './liquify';
@@ -18,6 +18,8 @@ import type { Tool, ToolId } from './types';
 export const TOOLS: Record<ToolId, Tool> = {
   move,
   select,
+  lassoSelect,
+  wand,
   hand,
   pencil,
   lassoFill: lassoFillTool,

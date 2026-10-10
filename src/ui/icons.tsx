@@ -27,6 +27,7 @@ import {
   FlipVertical2,
   Hand,
   Lasso,
+  Wand,
   Image,
   Lock,
   Menu,
@@ -83,6 +84,21 @@ const Select = drawn([
   '............',
   '.#........#.',
   '.##..##..##.',
+  '............',
+]);
+// Lasso selection: the selection's dashes along a free loop, its string hanging down.
+const LassoSelect = drawn([
+  '...##..##...',
+  '.#........#.',
+  '#..........#',
+  '............',
+  '#..........#',
+  '.#........#.',
+  '..##..##.#..',
+  '....#.......',
+  '...#........',
+  '...#........',
+  '....##......',
   '............',
 ]);
 const Bucket = drawn([
@@ -259,6 +275,8 @@ export const ICONS = {
   lighten: Sun,
   spray: SprayCan,
   lassoFill: Lasso,
+  lassoSelect: LassoSelect,
+  wand: Wand,
   jumble: Shuffle,
   liquify: Waves,
   blur: Drop,

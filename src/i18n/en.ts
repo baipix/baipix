@@ -35,6 +35,14 @@ export const en = {
   'tool.hand': 'Hand',
   'tool.select': 'Selection',
   'tool.pencil': 'Pencil',
+  'tool.lassoSelect': 'Lasso',
+  'tool.wand': 'Magic wand',
+  'toolbar.selections': 'Selection tools',
+  'hint.lassoSelect':
+    'Draw around what to select; the path closes when you let go. Shift adds to the selection, Alt takes from it.',
+  'hint.wand':
+    'Click a color to select its area, or that color everywhere. Shift adds to the selection, Alt takes from it.',
+  'options.wandContiguous': 'Touching area only',
   'tool.lassoFill': 'Lasso fill',
   'tool.eraser': 'Eraser',
   'tool.bucket': 'Paint bucket',
@@ -111,6 +119,7 @@ export const en = {
   'menu.undo': 'Undo',
   'menu.redo': 'Redo',
   'menu.selectAll': 'Select all',
+  'menu.invertSelection': 'Invert selection',
   'menu.deselect': 'Deselect',
   'menu.fillLayer': 'Fill the layer',
   'menu.fillSelection': 'Fill the selection',

@@ -1,7 +1,8 @@
+import { inSelection } from '../selection';
 import { alpha, type Color } from '../color';
 import { blendOver } from '../composite';
 import { ditherSecond } from '../dither';
-import { rectContains, type Point } from '../math';
+import type { Point } from '../math';
 import { mirrorAxes } from '../document';
 import { brush, line, mirrored } from '../raster';
 import type { Stroke } from './types';
@@ -22,7 +23,7 @@ export function pixelIndex(s: Stroke, x: number, y: number): number {
     x = mod(x, width);
     y = mod(y, height);
   } else if (x < 0 || y < 0 || x >= width || y >= height) return -1;
-  return rectContains(s.selection, x, y) ? y * width + x : -1;
+  return inSelection(s.selection, x, y) ? y * width + x : -1;
 }
 
 /**

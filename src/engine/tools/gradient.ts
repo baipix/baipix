@@ -1,6 +1,7 @@
+import { inSelection } from '../selection';
 import type { Color } from '../color';
 import { gradientColor, gradientT, sortedStops, type GradientStop } from '../gradient';
-import { rectContains, type Point } from '../math';
+import type { Point } from '../math';
 import { constrainAngle, floodFill } from '../raster';
 import type { Stroke, Tool, ToolOptions } from './types';
 
@@ -21,7 +22,7 @@ export function stopsOf(options: ToolOptions, primary: Color, secondary: Color):
 export function gradientArea(s: Stroke, p: Point): Uint8Array {
   const { width, height } = s.doc;
   const mask = new Uint8Array(width * height);
-  const inside = (x: number, y: number) => rectContains(s.selection, x, y);
+  const inside = (x: number, y: number) => inSelection(s.selection, x, y);
   const outOfCanvas = p.x < 0 || p.y < 0 || p.x >= width || p.y >= height;
   if (s.selection || s.options.gradientLayer || outOfCanvas) {
     for (let i = 0; i < mask.length; i++) if (inside(i % width, (i / width) | 0)) mask[i] = 1;

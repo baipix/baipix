@@ -36,6 +36,14 @@ export const fr: Record<MessageKey, string> = {
   'tool.hand': 'Main',
   'tool.select': 'Sélection',
   'tool.pencil': 'Crayon',
+  'tool.lassoSelect': 'Lasso',
+  'tool.wand': 'Baguette magique',
+  'toolbar.selections': 'Outils de sélection',
+  'hint.lassoSelect':
+    'Dessine autour de ce que tu veux sélectionner ; le tracé se ferme quand tu lâches. Shift ajoute à la sélection, Alt en retire.',
+  'hint.wand':
+    'Clique une couleur pour sélectionner sa zone, ou cette couleur partout. Shift ajoute à la sélection, Alt en retire.',
+  'options.wandContiguous': 'Zone qui se touche seulement',
   'tool.lassoFill': 'Remplissage au lasso',
   'tool.eraser': 'Gomme',
   'tool.bucket': 'Pot de peinture',
@@ -112,6 +120,7 @@ export const fr: Record<MessageKey, string> = {
   'menu.undo': 'Annuler',
   'menu.redo': 'Rétablir',
   'menu.selectAll': 'Tout sélectionner',
+  'menu.invertSelection': 'Inverser la sélection',
   'menu.deselect': 'Désélectionner',
   'menu.fillLayer': 'Remplir le calque',
   'menu.fillSelection': 'Remplir la sélection',

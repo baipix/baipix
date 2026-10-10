@@ -54,6 +54,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
               true
             );
           if (key === 'x') return (editor.cut() && toast(t('toast.cut')), true);
+          if (key === 'i' && e.shiftKey) return (editor.invertSelection(), true);
           if (key === 'a') return (editor.selectAll(), true);
           if (key === 'd') return (editor.deselect(), true);
           if (key === 'e' || key === 's')

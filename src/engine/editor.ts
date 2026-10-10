@@ -37,6 +37,18 @@ import {
 } from './groups';
 import { applyRepeat, clampGrid, DEFAULT_REPEAT, type RepeatGrid, type RepeatSource } from './repeat';
 import { bakeEffects, newEffect, type EffectType, type LayerEffect } from './effects';
+import {
+  clipSelection,
+  fromCanvasMask,
+  toCanvasMask,
+  fillSelection,
+  flipMask,
+  inSelection,
+  maskBlock,
+  rotateMask,
+  scaleMask,
+  type Selection,
+} from './selection';
 import { fragmentOf, pasteFragment, type LayerFragment } from './layerClipboard';
 import {
   addInstance,
@@ -53,7 +65,6 @@ import { clamp, clipRect, type Point, type Rect } from './math';
 import { PaletteIndex, hueShiftedRamp, presetColors, sortByLightness } from './palette';
 import {
   extractBlock,
-  fillRect,
   flipRect,
   pixelBounds,
   rotateRect,
@@ -114,7 +125,7 @@ export interface EditorState {
   activeId: string;
   /** The active document. Its pixel buffers are mutable; rely on `revision` to detect changes. */
   doc: PixelDoc;
-  selection: Rect | null;
+  selection: Selection | null;
   tool: ToolId;
   options: ToolOptions;
   primary: Color;
@@ -182,7 +193,7 @@ export interface Preferences {
 interface Session {
   doc: PixelDoc;
   history: History;
-  selection: Rect | null;
+  selection: Selection | null;
   /** Ids of the selected layers (always including the active one), and where a Shift+click range starts. */
   picked?: string[];
   anchor?: string;
@@ -325,6 +336,8 @@ export class Editor {
     base: Uint32Array;
     baseOutside: Outside | undefined;
     from: Rect;
+    /** The selection as it was, its shape included, to scale it along or put it back. */
+    fromSelection?: Selection;
     block: PixelBlock;
     /** With a selection: the layer with the selection emptied, to stamp the resized block on. */
     cleared?: Uint32Array;
@@ -380,7 +393,12 @@ export class Editor {
   getState = (): EditorState => this.state;
 
   /** Live document and selection, updated during strokes (the state snapshot is not). */
-  getLive = (): { doc: PixelDoc; selection: Rect | null; view: ViewSettings; stroking: ToolId | null } => ({
+  getLive = (): {
+    doc: PixelDoc;
+    selection: Selection | null;
+    view: ViewSettings;
+    stroking: ToolId | null;
+  } => ({
     doc: this.active.doc,
     selection: this.active.selection,
     view: this.view,
@@ -1831,8 +1849,9 @@ export class Editor {
     const sel = this.active.selection;
     if (!sel) return false;
     const { width, height } = this.doc;
-    const r = clipRect(sel, width, height);
-    const block = extractBlock(activeLayer(this.doc).pixels, width, height, r);
+    const r = clipSelection(sel, width, height);
+    if (!r) return false;
+    const block = maskBlock(extractBlock(activeLayer(this.doc).pixels, width, height, r), r);
     const bounds = pixelBounds(block.pixels, block.width, block.height);
     if (!bounds) return false;
     let brush = extractBlock(block.pixels, block.width, block.height, bounds);
@@ -1875,6 +1894,15 @@ export class Editor {
     this.commit(false);
   }
 
+  /** Selects what wasn't, and lets go of what was (nothing selected: everything). */
+  invertSelection(): void {
+    const { width, height } = this.doc;
+    const mask = toCanvasMask(this.active.selection, width, height);
+    for (let i = 0; i < mask.length; i++) mask[i] = 1 - mask[i];
+    this.active.selection = fromCanvasMask(mask, width, height);
+    this.commit(false);
+  }
+
   /**
    * Escape with no pixel selection: back to the active layer alone, without the Move tool's frame
    * (as a click beside every layer), and out of a multiple or group selection. The active layer
@@ -1914,7 +1942,7 @@ export class Editor {
     } else {
       if (this.activeLocked()) return false;
       const rect = selection
-        ? clipRect(selection, doc.width, doc.height)
+        ? clipSelection(selection, doc.width, doc.height)
         : pixelBounds(layer.pixels, doc.width, doc.height);
       if (!rect || !rect.w || !rect.h) {
         this.notice({ type: 'emptyDrawing' });
@@ -2040,7 +2068,9 @@ export class Editor {
 
   clearSelection(): void {
     if (!this.active.selection || this.activeLocked()) return;
-    this.edit((doc) => fillRect(activeLayer(doc).pixels, doc.width, doc.height, this.targetRect(), 0));
+    this.edit((doc) =>
+      fillSelection(activeLayer(doc).pixels, doc.width, doc.height, this.active.selection, 0),
+    );
   }
 
   /** Fills the selection, or the whole layer, with the primary color. */
@@ -2052,13 +2082,19 @@ export class Editor {
     }
     this.remember(this.primary);
     this.edit((doc) =>
-      fillRect(activeLayer(doc).pixels, doc.width, doc.height, this.targetRect(), this.primary),
+      fillSelection(activeLayer(doc).pixels, doc.width, doc.height, this.active.selection, this.primary),
     );
   }
 
   flip(horizontal: boolean): void {
     if (this.activeLocked()) return;
-    const wholeLayer = !this.active.selection;
+    const sel = this.active.selection;
+    if (sel?.mask)
+      return this.transformShape(
+        (p, w, h, r) => (flipRect(p, w, h, r, horizontal), r),
+        (s) => flipMask(s, horizontal),
+      );
+    const wholeLayer = !sel;
     this.edit((doc) => {
       const layer = activeLayer(doc);
       flipRect(layer.pixels, doc.width, doc.height, this.targetRect(), horizontal);
@@ -2071,6 +2107,11 @@ export class Editor {
   /** Rotates the selection (or the layer) by 90°; the selection follows the new shape. */
   rotate(clockwise = true): void {
     if (this.activeLocked()) return;
+    if (this.active.selection?.mask)
+      return this.transformShape(
+        (p, w, h, r) => rotateRect(p, w, h, r, clockwise),
+        (s, to) => rotateMask(s, to, clockwise),
+      );
     const hadSelection = this.active.selection !== null;
     this.edit((doc) => {
       const layer = activeLayer(doc);
@@ -2078,6 +2119,28 @@ export class Editor {
       if (hadSelection) this.active.selection = rotated;
       // Rotating the layer turns it within the canvas: what was outside doesn't follow.
       else delete layer.outside;
+    });
+  }
+
+  /**
+   * Flips or turns a selection of any shape (lasso, magic wand): its pixels are lifted on their
+   * own, transformed in their rectangle, and put back over what's left, the mask following.
+   */
+  private transformShape(
+    transform: (pixels: Uint32Array, width: number, height: number, rect: Rect) => Rect,
+    moveMask: (sel: Selection, to: Rect) => Selection,
+  ): void {
+    const sel = clipSelection(this.active.selection!, this.doc.width, this.doc.height);
+    if (!sel) return;
+    this.edit((doc) => {
+      const { width: W, height: H } = doc;
+      const pixels = activeLayer(doc).pixels;
+      const lifted = new Uint32Array(W * H);
+      stampBlock(lifted, W, H, maskBlock(extractBlock(pixels, W, H, sel), sel), sel.x, sel.y, true);
+      const to = transform(lifted, W, H, sel);
+      fillSelection(pixels, W, H, sel, 0);
+      for (let i = 0; i < lifted.length; i++) if (lifted[i] >>> 24) pixels[i] = lifted[i];
+      this.active.selection = moveMask(sel, to);
     });
   }
 
@@ -2111,9 +2174,17 @@ export class Editor {
   private writeAdjustment(change: PixelChange | null): void {
     const { layers, rect } = this.adjusting!;
     const width = this.doc.width;
+    const sel = this.active.selection;
     for (const { id, base } of layers) {
       const layer = this.doc.layers.find((l) => l.id === id);
-      if (layer) layer.pixels.set(change ? change(base, width, rect) : base);
+      if (!layer) continue;
+      const out = change ? change(base, width, rect) : base;
+      // A selection of any shape: what's in its rectangle but not selected stays as it was.
+      if (change && sel?.mask)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++)
+            if (!inSelection(sel, x, y)) out[y * width + x] = base[y * width + x];
+      layer.pixels.set(out);
     }
   }
 
@@ -2225,14 +2296,16 @@ export class Editor {
     // A group (several layers) isn't resized by its handles yet: it can be moved.
     if (!this.active.selection && this.state.selectedLayers.length > 1) return null;
     const base = layer.pixels.slice();
-    const sel = this.active.selection ? clipRect(this.active.selection, doc.width, doc.height) : null;
+    const sel = this.active.selection ? clipSelection(this.active.selection, doc.width, doc.height) : null;
     if (sel && sel.w && sel.h) {
-      const block = extractBlock(base, doc.width, doc.height, sel);
+      // Only the selected pixels are lifted, whatever the selection's shape.
+      const block = maskBlock(extractBlock(base, doc.width, doc.height, sel), sel);
       const cleared = base.slice();
-      fillRect(cleared, doc.width, doc.height, sel, 0);
+      fillSelection(cleared, doc.width, doc.height, sel, 0);
       this.checkpoint();
-      this.scaling = { layer, base, baseOutside: layer.outside, from: sel, block, cleared };
-      return { ...sel };
+      const from = { x: sel.x, y: sel.y, w: sel.w, h: sel.h };
+      this.scaling = { layer, base, baseOutside: layer.outside, from, fromSelection: sel, block, cleared };
+      return { ...from };
     }
     const content = layerContent(base, doc.width, doc.height, layer.outside);
     if (!content) return null;
@@ -2255,17 +2328,19 @@ export class Editor {
     const h = Math.max(1, Math.round(rect.h));
     const x = Math.round(rect.x);
     const y = Math.round(rect.y);
-    this.placeTransformed(scaleBlock(sc.block, w, h), x, y);
+    this.placeTransformed(scaleBlock(sc.block, w, h), x, y, true);
   }
 
   /** Puts the lifted content back, transformed, at (x, y): on the emptied layer, or as the whole layer. */
-  private placeTransformed(block: PixelBlock, x: number, y: number): void {
+  private placeTransformed(block: PixelBlock, x: number, y: number, scaled = false): void {
     const sc = this.scaling!;
     const { width, height } = this.doc;
     if (sc.cleared) {
       sc.layer.pixels.set(sc.cleared);
       stampBlock(sc.layer.pixels, width, height, block, x, y);
-      this.active.selection = { x, y, w: block.width, h: block.height };
+      const rect = { x, y, w: block.width, h: block.height };
+      // Resized, a shaped selection keeps its shape; turned freely, it becomes the turned box.
+      this.active.selection = scaled && sc.fromSelection?.mask ? scaleMask(sc.fromSelection, rect) : rect;
     } else {
       // A whole layer: what lands outside the canvas is kept, like a move.
       const r = reframe(block.pixels, block.width, block.height, undefined, x, y, width, height);
@@ -2308,7 +2383,7 @@ export class Editor {
     if (!sc) return;
     sc.layer.pixels.set(sc.base);
     sc.layer.outside = sc.baseOutside;
-    if (sc.cleared) this.active.selection = sc.from;
+    if (sc.cleared) this.active.selection = sc.fromSelection ?? sc.from;
     this.active.history.discardLast();
     this.scaling = null;
     this.commit(false);
@@ -2389,9 +2464,14 @@ export class Editor {
   }
 
   copy(): boolean {
-    const r = clipRect(this.targetRect(), this.doc.width, this.doc.height);
+    const { width, height } = this.doc;
+    const sel = this.active.selection ? clipSelection(this.active.selection, width, height) : null;
+    if (this.active.selection && !sel) return false;
+    const r = sel ?? { x: 0, y: 0, w: width, h: height };
     if (!r.w || !r.h) return false;
-    this.clipboard = extractBlock(activeLayer(this.doc).pixels, this.doc.width, this.doc.height, r);
+    // A selection of any shape copies its own pixels only.
+    const block = extractBlock(activeLayer(this.doc).pixels, width, height, r);
+    this.clipboard = sel ? maskBlock(block, sel) : block;
     this.layerClip = null;
     return true;
   }
