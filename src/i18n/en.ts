@@ -407,6 +407,7 @@ export const en = {
 
   'export.button': 'Export',
   'export.format': 'Format',
+  'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
   'export.activeLayerOnly': 'Active layer only',
   'export.copySvg': 'Copy as SVG',
   'export.copyPng': 'Copy as PNG',

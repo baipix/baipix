@@ -53,7 +53,7 @@ export interface UiState {
   adjustTab: AdjustTab;
   panelWidths: { left: number; right: number };
   uiHidden: boolean;
-  exportFormat: 'png' | 'svg';
+  exportFormat: 'png' | 'svg' | 'aseprite';
   exportActiveLayer: boolean;
   /** Ids of the collapsed panel sections. */
   collapsed: string[];

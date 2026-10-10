@@ -4,6 +4,7 @@ import { hasBackground, MAX_SIZE, createDocument } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import type { PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
+import { toAseprite } from '../engine/export/aseprite';
 import { renderGeometry, toSvg } from '../engine/export/svg';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
@@ -18,7 +19,7 @@ import { layerClipFromHtml, layerClipHtml } from '../storage/layerClip';
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
-export type ExportFormat = 'png' | 'svg';
+export type ExportFormat = 'png' | 'svg' | 'aseprite';
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
 
@@ -91,8 +92,18 @@ export function createActions(editor: Editor) {
 
   const actions = {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
-      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
       const filename = `${baseName()}.${format}`;
+      // Aseprite: the layers as they are, to keep working on them there.
+      if (format === 'aseprite') {
+        const d = doc();
+        const bytes = await toAseprite(d, {
+          palette: editor.getState().palette.colors,
+          background: uiStore.get().exportBackground && hasBackground(d) ? d.background : undefined,
+        });
+        await report(filename, saveFile(filename, new Blob([bytes as BlobPart])));
+        return;
+      }
+      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
       if (format === 'svg') {
         await report(
           filename,

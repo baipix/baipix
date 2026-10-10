@@ -411,6 +411,7 @@ export const fr: Record<MessageKey, string> = {
 
   'export.button': 'Exporter',
   'export.format': 'Format',
+  'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
   'export.activeLayerOnly': 'Calque actif uniquement',
   'export.copySvg': 'Copier en SVG',
   'export.copyPng': 'Copier en PNG',
