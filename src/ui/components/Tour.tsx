@@ -33,7 +33,7 @@ const STEPS: Step[] = [
   {
     title: 'tour.paletteTitle',
     text: 'tour.palette',
-    prepare: showDesign('palette'),
+    prepare: showDesign('colors'),
     target: () =>
       [document.querySelector('.panel-right .palette-picker')?.closest('.section')].filter(
         (x) => !!x,

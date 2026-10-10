@@ -380,6 +380,7 @@ export const fr: Record<MessageKey, string> = {
   'color.background': 'Fond',
   'color.leftClick': 'Clic gauche',
   'color.rightClick': 'Clic droit',
+  'color.bringFront': 'Passer devant : dessiner avec',
   'color.swap': 'Permuter les couleurs',
   'colorChoices.inDrawing': 'Dans le dessin',
   'colorChoices.hex': 'Couleur hexadécimale',
