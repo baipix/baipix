@@ -9,7 +9,7 @@ import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu } from '../menus';
-import { TemplateCards } from '../components/TemplateCards';
+import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
 import { openDialog } from '../uiStore';
 
@@ -130,9 +130,13 @@ export function HomeScreen() {
           {shown.length === 0 && (
             <div className="home-templates">
               <p className="muted">{t('template.start')}</p>
-              <TemplateCards
-                onPick={(template) => {
-                  createFromTemplate(editor, template, t('default.untitled'));
+              <SizeList
+                onPick={(choice) => {
+                  if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
+                  leaveHome(editor);
+                }}
+                onCreate={(choice) => {
+                  if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
                   leaveHome(editor);
                 }}
               />

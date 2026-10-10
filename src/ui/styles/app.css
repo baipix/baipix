@@ -383,13 +383,6 @@ body.is-resizing * {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.reference-pick {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  margin-top: 12px;
-}
 /* The reference sits last in the Layers list, set apart from the layers above it. */
 .reference-item .item-name {
   font-style: italic;
@@ -2604,50 +2597,91 @@ body.is-dragging-swatch * {
   top: 26px;
 }
 
-/* ---------- Templates (new file dialog, first launch) ---------- */
-.template-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: 6px;
+/* ---------- New file: sizes as plain rows (new file dialog, first launch) ---------- */
+.new-file-dialog {
+  width: min(320px, calc(100vw - 32px));
 }
-.template-card {
+.size-fields {
   display: grid;
-  justify-items: center;
-  gap: 2px;
-  padding: 8px 6px;
-  border: 1px solid var(--line);
-  background: var(--panel);
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 4px;
+}
+.size-list {
+  display: grid;
+}
+.size-group {
+  padding: 8px 8px 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.size-group:first-child {
+  padding-top: 0;
+}
+.size-row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
   color: var(--text);
   font: inherit;
-  text-align: center;
+  text-align: left;
   cursor: pointer;
-  clip-path: var(--notch);
 }
-.template-card:hover,
-.template-card:focus-visible {
-  border-color: var(--glow-line);
-  outline: none;
+.size-row:hover {
+  background: var(--hover);
 }
-.template-thumb {
-  width: 44px;
-  height: 32px;
+.size-row[aria-pressed='true'] {
+  background: var(--glow);
+  color: var(--glow-ink);
+}
+.size-row[aria-pressed='true'] .muted {
+  color: var(--glow-muted);
+}
+/* The canvas's proportions, a small outline instead of a picture. */
+.size-shape {
   display: grid;
   place-items: center;
-  margin-bottom: 4px;
+  width: 16px;
+  height: 14px;
 }
-.template-shape {
+.size-shape > span {
   display: block;
-  box-shadow: inset 0 0 0 1px var(--swatch-edge);
+  border: 1px solid currentColor;
+  opacity: 0.6;
 }
-.template-name {
-  font-weight: 500;
+.dialog-footer-start {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.link-btn:hover {
+  color: var(--text);
 }
 .home-templates {
-  width: min(560px, 100%);
+  width: min(320px, 100%);
   margin-top: 40px;
 }
 .home-templates > p {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
 }
 
 /* The imported image with the pixel grid found in it. */

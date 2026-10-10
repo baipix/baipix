@@ -18,6 +18,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- A smaller New file dialog: the size on top, filled with the last one used and ready for Enter, with a button to swap width and height; then the last sizes used and six templates as plain rows (a name, its size, what it sets up), with no picture. A click picks one, a double-click starts with it. From an image… moves to the footer. The first launch shows the same list. Avatar, Sprite sheet, Wallpaper and Commodore 64 are no longer templates. (#253)
 - Layers panel drag and drop: drop a layer, an instance or a group on a group's row to put it inside, even folded. Between rows, the drop line follows the pointer: right, at the bottom of the group that ends there; left, out of it. Groups now nest four levels deep instead of two. (#246)
 - The Layers panel loses its bottom bar of buttons: layers move by dragging, and duplicate, group, merge and delete are in the right-click menu (which now groups the selection too), the Layer menu and their shortcuts.
 

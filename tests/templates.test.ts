@@ -23,12 +23,4 @@ describe('Templates', () => {
     expect([s.doc.width, s.doc.height]).toEqual([128, 32]);
     expect(s.view.mirrorX).toBe(false);
   });
-
-  it('draw a sprite sheet’s cells with guides, rulers shown', () => {
-    const e = new Editor();
-    createFromTemplate(e, template('sheet'));
-    const s = e.getState();
-    expect(s.doc.guides).toEqual({ x: [16, 32, 48, 64, 80, 96, 112], y: [16, 32, 48, 64, 80, 96, 112] });
-    expect(s.view.rulers).toBe(true);
-  });
 });

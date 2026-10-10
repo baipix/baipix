@@ -12,7 +12,7 @@ import { NumberField } from '../ui/components/NumberField';
 import { Tooltips } from '../ui/components/Tooltips';
 import { ICONS, type IconName } from '../ui/icons';
 import { ColorRow } from '../ui/panels/ColorRow';
-import { TemplateCards } from '../ui/components/TemplateCards';
+import { SizeList } from '../ui/components/SizeList';
 import { getTheme, setTheme, type ThemePreference } from '../ui/theme';
 import { contrast } from './contrast';
 import { download, LOGO_COLORS, logoPng, logoSvg } from './logo';
@@ -630,11 +630,16 @@ function SurfacesBlock() {
           </div>
         </Specimen>
         <Specimen
-          label="Template cards"
-          use="Starting points for a new file (the new file dialog, the first launch): the canvas's shape in its palette's colors, the name and the size. One click creates the file."
+          label="Size list"
+          use="Starting points for a new file (the new file dialog, the first launch): plain rows, the canvas's shape as a small outline, the name, the size and what it sets up. A click picks one, a double-click or Enter starts with it."
         >
-          <div style={{ width: 230 }}>
-            <TemplateCards onPick={() => {}} />
+          <div style={{ width: 288 }}>
+            <SizeList
+              recent={[{ width: 48, height: 48 }]}
+              selected="sprite"
+              onPick={() => {}}
+              onCreate={() => {}}
+            />
           </div>
         </Specimen>
         <Specimen

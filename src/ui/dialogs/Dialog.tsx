@@ -12,6 +12,10 @@ interface DialogProps {
   hideCancel?: boolean;
   /** The cancel button's label, when it does something else than cancel. */
   cancelLabel?: string;
+  /** Extra class on the dialog (its width, for one). */
+  className?: string;
+  /** On the left of the footer, before the buttons: a secondary action. */
+  footer?: ReactNode;
 }
 
 /** Modal based on the native <dialog> element (focus trap and Escape for free). */
@@ -23,6 +27,8 @@ export function Dialog({
   submitLabel,
   hideCancel,
   cancelLabel,
+  className = '',
+  footer,
 }: DialogProps) {
   const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
@@ -42,11 +48,12 @@ export function Dialog({
     onClose();
   };
   return (
-    <dialog ref={ref} className="dialog">
+    <dialog ref={ref} className={`dialog ${className}`}>
       <form onSubmit={submit}>
         <div className="dialog-header">{title}</div>
         <div className="dialog-body">{children}</div>
         <div className="dialog-footer">
+          {footer && <div className="dialog-footer-start">{footer}</div>}
           {!hideCancel && (
             <button type="button" className="btn" onClick={onClose}>
               {cancelLabel ?? t('common.cancel')}
