@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- The home page, the Draw page and the README catch up with 0.5: the gradient, the lasso and the magic wand, the heart, components, layer effects, groups four levels deep, export to Aseprite. The Draw page gets a Components section and a gradient animation, the home page a wide Components card closing its feature list, both with a potion whose copies fill along with it. (#259)
 - The screenshots of the editor on the home page and in the README show the current interface, and `npm run screenshots` takes them again in dark and light whenever it changes. (#260)
 
 ## [0.5.0] - 2026-10-10
