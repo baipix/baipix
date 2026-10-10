@@ -10,6 +10,11 @@ export interface Snapshot {
    * the palette too): undoing it restores both, so they stay in step.
    */
   palette?: Color[];
+  /**
+   * A canvas resize: it moved the guides and the reference image along with the drawing, so
+   * undoing it puts them back too (otherwise they stay as they are, outside the history).
+   */
+  resized?: boolean;
 }
 
 export const takeSnapshot = (doc: PixelDoc, selection: Selection | null): Snapshot => ({

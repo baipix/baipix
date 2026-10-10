@@ -500,12 +500,15 @@ export class Editor {
 
   private restore(snapshot: Snapshot): void {
     if (snapshot.palette) this.usePalette(snapshot.palette);
-    // The reference image and the guides aren't part of the history: undo and redo leave them.
+    // The reference image and the guides aren't part of the history: undo and redo leave them,
+    // except across a canvas resize, which moved them with the drawing.
     const { reference, guides } = this.active.doc;
-    snapshot.doc.reference = reference;
-    if (!reference) delete snapshot.doc.reference;
-    snapshot.doc.guides = guides;
-    if (!guides) delete snapshot.doc.guides;
+    if (!snapshot.resized) {
+      snapshot.doc.reference = reference;
+      if (!reference) delete snapshot.doc.reference;
+      snapshot.doc.guides = guides;
+      if (!guides) delete snapshot.doc.guides;
+    }
     this.active.doc = snapshot.doc;
     this.active.selection = snapshot.selection;
   }
@@ -518,6 +521,7 @@ export class Editor {
     if (prev) {
       // A step that changed the palette swaps it back and forth with the pixels.
       if (prev.palette) current.palette = this.palette.colors;
+      if (prev.resized) current.resized = true;
       this.forgetDeletedLayer();
       this.restore(prev);
       this.touch();
@@ -531,6 +535,7 @@ export class Editor {
     const next = this.active.history.redo(current);
     if (next) {
       if (next.palette) current.palette = this.palette.colors;
+      if (next.resized) current.resized = true;
       this.forgetDeletedLayer();
       this.restore(next);
       this.touch();
@@ -740,6 +745,7 @@ export class Editor {
     // The same size can still shift the drawing.
     if (w === this.doc.width && h === this.doc.height && !o.x && !o.y) return;
     this.edit((doc) => {
+      this.active.history.top()!.resized = true;
       resizeDocument(doc, w, h, o.x, o.y);
       this.active.selection = null;
     });
