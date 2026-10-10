@@ -5,6 +5,8 @@ import Footer from '../components/Footer.astro';
 import Gallery from '../components/Gallery.astro';
 import Nav from '../components/Nav.astro';
 import PixelIcon from '../components/PixelIcon.astro';
+import PixelPlay from '../components/PixelPlay.astro';
+import { animations as anim } from '../animations';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import { APP_URL, REPO_URL } from '../links';
@@ -63,9 +65,9 @@ const features = [
     icon: ['#..#..#', '##.#.##', '###.###', '###.###', '###.###', '##.#.##', '#..#..#'],
   },
   {
-    title: 'Layers, components and effects',
+    title: 'Layers, effects and preview',
     tone: 'layers',
-    text: 'Layers like a design tool, with groups, blend modes, and handles to resize and rotate them. Components whose copies follow, outline, shadow and glow effects, and layers you copy from one file to another.',
+    text: 'Layers like a design tool, with groups, blend modes, and handles to resize and rotate them. Outline, shadow and glow effects, layers you copy from one file to another, and a floating preview.',
     icon: ['#######', '.......', '.#####.', '.......', '..###..', '.......', '...#...'],
   },
 ];
@@ -161,6 +163,29 @@ const features = [
       <SectionHead label="Features" link={{ href: `${base}draw/`, text: 'Every tool in detail →' }} />
       <h2>Everything you need. Nothing you don't.</h2>
       <div class="feature-grid">
+        {/* Components get a wide card of their own, with the picture that shows what they do. */}
+        <article class="feature feature-wide" data-tone="components">
+          <div class="feature-wide-text">
+            <PixelIcon
+              rows={['...#...', '..###..', '.#####.', '#######', '.#####.', '..###..', '...#...']}
+              size={24}
+            />
+            <h3>
+              <a href={`${base}draw/#components`}>Components, like in Figma</a>
+            </h3>
+            <p class="muted">
+              Draw a sprite once and place instances of it anywhere: change the component, and every copy
+              follows. Repeat one in a grid, or detach a copy to change it on its own.
+            </p>
+          </div>
+          <PixelPlay
+            animation={anim.components}
+            label="A potion and three instances of it: the component is filled, and the copies fill along with it."
+          />
+          <span class="feature-arrow" aria-hidden="true">
+            <PixelIcon rows={ARROW} size={14} />
+          </span>
+        </article>
         {features.map((f) => (
           <article class="feature" data-tone={f.tone}>
             <PixelIcon rows={f.icon} size={24} />
@@ -417,6 +442,25 @@ const features = [
   .feature h3 {
     margin-top: 12px;
     color: var(--text);
+  }
+  /* The components' card: across the grid, its text and its picture side by side. */
+  .feature-wide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+    align-items: center;
+    gap: 40px;
+  }
+  .feature-wide-text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  @media (max-width: 720px) {
+    .feature-wide {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
   }
   .feature h3 a::after {
     content: '';

@@ -724,6 +724,70 @@ const MUSHROOM = [
   '....cCCCCC....',
 ];
 
+// ---- Components: draw once, every copy follows -------------------------------------------------
+
+const POTION = [
+  '...KKK...',
+  '...KWK...',
+  '...KKK...',
+  '..K...K..',
+  '.K.....K.',
+  'K.......K',
+  'K.......K',
+  'K.......K',
+  'K.......K',
+  '.K.....K.',
+  '..KKKKK..',
+];
+/** Where the component and its three instances sit, a sprite and a gap apart. */
+export const POTION_SLOTS = [1, 13, 25, 37];
+
+/**
+ * A potion and three instances of it: the bucket fills the component, and the copies fill along,
+ * row by row, then a glint lands on all of them. What a component does, in one picture.
+ */
+function components(): PixelAnimation {
+  const w = 48;
+  const h = 13;
+  const t = new Timeline(w, h);
+  t.tool = 'bucket';
+  const top = 1;
+  for (const ox of POTION_SLOTS)
+    POTION.forEach((row, y) =>
+      [...row].forEach((ch, x) => {
+        // A cork on top, a light glass outline that reads on the dark frame.
+        if (ch === 'K') t.base(ox + x, top + y, y < 3 ? S.orange : S.silver);
+        if (ch === 'W') t.base(ox + x, top + y, S.yellow);
+      }),
+    );
+  // The inside of the bottle, by row from the bottom.
+  const rows: Point[][] = [];
+  for (let y = POTION.length - 1; y >= 3; y--) {
+    const row = POTION[y];
+    const left = row.indexOf('K');
+    const right = row.lastIndexOf('K');
+    const inside: Point[] = [];
+    for (let x = left + 1; x < right; x++) if (row[x] === '.') inside.push({ x, y });
+    if (inside.length) rows.push(inside);
+  }
+  const m = POTION_SLOTS[0];
+  t.point(150, 20, 12);
+  t.point(560, m + 4.5, top + 8.5);
+  let time = 700;
+  for (const row of rows) {
+    for (const ox of POTION_SLOTS) for (const p of row) t.at(time, ox + p.x, top + p.y, S.pink);
+    time += 130;
+  }
+  // A glint, drawn once with the pencil: every instance gets it.
+  t.point(time + 200, m + 3.5, top + 5.5);
+  for (const ox of POTION_SLOTS) {
+    t.at(time + 450, ox + 3, top + 5, S.white);
+    t.at(time + 600, ox + 3, top + 6, S.white);
+  }
+  t.point(time + 900, m + 6, top + 11);
+  return t.done(2400, 0.4);
+}
+
 /** When the outline panel changes, in ms: shared with the page, which plays the panel along. */
 export const OUTLINE_STEPS = { tab: 900, square: 2200, round: 3500, apply: 4700, end: 6600 };
 
@@ -781,6 +845,7 @@ export const animations = {
   bucket: bucket(),
   spray: spray(),
   gradient: gradient(),
+  components: components(),
   symmetry: symmetry(),
   tiles: tiles(),
 };

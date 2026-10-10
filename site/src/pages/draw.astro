@@ -646,16 +646,6 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Ctrl Alt K</span>
-            <div>
-              <h3>Components</h3>
-              <p>
-                Turn a sprite into a component and place copies of it: draw on the component and every copy
-                follows. Repeat one in a grid, or detach a copy to change it on its own.
-              </p>
-            </div>
-          </li>
-          <li>
             <span class="key wide">Effects</span>
             <div>
               <h3>Layer effects</h3>
@@ -761,9 +751,69 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </figure>
     </section>
 
+    <!-- Components: drawn once, used everywhere. -->
+    <section class="block container" id="components" data-tone="components">
+      <SectionHead label="08 · Components" />
+      <div class="text">
+        <h2>Draw it once, use it everywhere.</h2>
+        <p class="muted intro">
+          Like components in Figma: the same sprite in ten places, and one change goes to all of them.
+        </p>
+        <ul class="tools">
+          <li>
+            <span class="key wide">Ctrl Alt K</span>
+            <div>
+              <h3>Component</h3>
+              <p>
+                Turn the selection, or what's drawn on a layer, into a component. It's listed at the top of
+                the left panel, with a diamond.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Alt drag</span>
+            <div>
+              <h3>Instances</h3>
+              <p>
+                Drag the component onto the canvas to place a copy, or Alt-drag one. Draw on the component and
+                every instance follows, live.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Layer</span>
+            <div>
+              <h3>Repeat grid</h3>
+              <p>Columns and rows of instances, with a gap between them, set up live.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Ctrl Alt B</span>
+            <div>
+              <h3>Go to component, detach</h3>
+              <p>From an instance, jump to its component, or detach it to change that copy on its own.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure class="frame">
+        <PixelPlay
+          animation={anim.components}
+          label="A potion and three instances of it: the bucket fills the component, and the copies fill along with it, then a glint lands on all four."
+        />
+        <div class="component-tags" aria-hidden="true">
+          <span class="is-master">◆ Component</span>
+          <span>◇ Instance</span>
+          <span>◇ Instance</span>
+          <span>◇ Instance</span>
+        </div>
+        <figcaption class="cap">Fill the component: every instance fills with it.</figcaption>
+      </figure>
+    </section>
+
     <!-- Export -->
     <section class="block container" id="export" data-tone="export">
-      <SectionHead label="08 · Export" />
+      <SectionHead label="09 · Export" />
       <div class="text">
         <h2>Out as clean vector.</h2>
         <p class="muted intro">What you draw goes straight into your design files.</p>
@@ -1800,6 +1850,18 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   .pair.trio {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px;
+  }
+  /* Under the components' animation: one tag per potion, in the same four columns. */
+  .component-tags {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 12px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .component-tags .is-master {
+    color: var(--accent);
   }
   .dither-cap {
     display: grid;

@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
-- The home page, the Draw page and the README catch up with 0.5: the gradient, the lasso and the magic wand, the heart, components, layer effects, groups four levels deep, export to Aseprite. (#259)
+- The home page, the Draw page and the README catch up with 0.5: the gradient, the lasso and the magic wand, the heart, components, layer effects, groups four levels deep, export to Aseprite. The Draw page gets a Components section and a gradient animation, the home page a wide Components card, both with a potion whose copies fill along with it. (#259)
 
 ## [0.5.0] - 2026-10-10
 
