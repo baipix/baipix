@@ -2903,3 +2903,21 @@ body.is-dragging-swatch * {
   background: conic-gradient(var(--check-b) 25%, var(--check-a) 0 50%, var(--check-b) 0 75%, var(--check-a) 0)
     0 0 / 6px 6px;
 }
+
+/* Colors to pick from (a gradient stop, an effect): the palette, then the colors in use, then hex. */
+.color-choices {
+  display: grid;
+  gap: 8px;
+}
+.color-choices-title {
+  color: var(--muted);
+  font-size: 11px;
+}
+.color-choices-hex {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.color-choices-hex .field {
+  flex: 1;
+}

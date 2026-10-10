@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { alpha, toCss, toHex, type Color } from '../../engine/color';
-import { useT } from '../../i18n';
-import { useEditorState } from '../EditorContext';
+import { ColorChoices } from './ColorChoices';
 
 /**
  * A color picked from the palette: a swatch that opens the palette's colors in a popover, so
@@ -17,8 +16,6 @@ export function PaletteColorButton({
   label: string;
   onChange: (c: Color) => void;
 }) {
-  const t = useT();
-  const palette = useEditorState((s) => s.palette.colors);
   const [at, setAt] = useState<{ left: number; top: number } | null>(null);
   const ref = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
@@ -59,22 +56,13 @@ export function PaletteColorButton({
       {at &&
         createPortal(
           <div ref={popRef} className="gradient-pop" role="dialog" aria-label={label} style={at}>
-            <div className="gradient-swatches">
-              {palette.map((c, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`gradient-swatch${c === color ? ' is-active' : ''}`}
-                  style={{ background: toCss(c) }}
-                  aria-label={toHex(c)}
-                  onClick={() => {
-                    onChange(c);
-                    setAt(null);
-                  }}
-                />
-              ))}
-            </div>
-            {!palette.length && <p className="hint">{t('effects.noPalette')}</p>}
+            <ColorChoices
+              color={color}
+              onPick={(c) => {
+                onChange(c);
+                setAt(null);
+              }}
+            />
           </div>,
           document.body,
         )}
