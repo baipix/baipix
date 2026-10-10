@@ -160,6 +160,23 @@ function PaletteSection() {
             secondary={secondary}
             onPick={(c, second) => editor.setColor(second ? 'secondary' : 'primary', c)}
             onMove={(from, to) => editor.movePaletteColor(from, to)}
+            trailing={
+              // The current color into the palette: a + after the last swatch.
+              <button
+                type="button"
+                className="swatch-add"
+                disabled={!alpha(primary) || palette.colors.includes(opaque(primary))}
+                aria-label={t('palette.addColor', { hex: toHex(primary).slice(1).toUpperCase() })}
+                data-tip={
+                  palette.colors.includes(opaque(primary))
+                    ? t('palette.inPaletteAlready')
+                    : t('palette.addColor', { hex: toHex(primary).slice(1).toUpperCase() })
+                }
+                onClick={() => editor.addToPalette()}
+              >
+                <Icon name="plus" size={12} />
+              </button>
+            }
             menu={(c) => {
               const hex = toHex(c).slice(1).toUpperCase();
               return [
@@ -180,32 +197,6 @@ function PaletteSection() {
             }}
           />
         </div>
-      </div>
-      <div className="button-row">
-        <button
-          type="button"
-          className="btn"
-          data-tip={t('palette.addHint')}
-          onClick={() => editor.addToPalette()}
-        >
-          {t('palette.addShort')}
-        </button>
-        <button
-          type="button"
-          className="btn"
-          data-tip={t('palette.rampHint')}
-          onClick={() => editor.addRamp()}
-        >
-          {t('palette.rampShort')}
-        </button>
-        <button
-          type="button"
-          className="btn"
-          data-tip={t('palette.exportHint')}
-          onClick={() => void actions.exportPalette()}
-        >
-          {t('palette.exportShort')}
-        </button>
       </div>
     </Section>
   );

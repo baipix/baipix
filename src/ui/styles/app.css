@@ -2988,3 +2988,24 @@ body.is-dragging-swatch * {
 .color-chips-swap:hover {
   color: var(--text);
 }
+
+/* After the palette's last swatch: a + that adds the current color. */
+.swatch-add {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px dashed var(--muted);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.swatch-add:hover:not(:disabled) {
+  border-color: var(--text);
+  color: var(--text);
+}
+.swatch-add:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

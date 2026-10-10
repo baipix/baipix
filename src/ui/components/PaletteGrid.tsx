@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { alpha, opaque, toCss, toHex, type Color } from '../../engine/color';
 import { openMenu, type MenuItem } from './Menu';
 
@@ -11,9 +11,19 @@ interface PaletteGridProps {
   onMove?: (from: number, to: number) => void;
   /** A right-click menu for a swatch. Without one, right-click picks the secondary color. */
   menu?: (color: Color) => MenuItem[];
+  /** After the last swatch, in the grid (the + that adds a color). */
+  trailing?: ReactNode;
 }
 
-export function PaletteGrid({ colors, primary, secondary, onPick, onMove, menu }: PaletteGridProps) {
+export function PaletteGrid({
+  colors,
+  primary,
+  secondary,
+  onPick,
+  onMove,
+  menu,
+  trailing,
+}: PaletteGridProps) {
   const isPrimary = (c: Color) => alpha(primary) > 0 && opaque(primary) === c;
   const isSecondary = (c: Color) =>
     secondary !== undefined && alpha(secondary) > 0 && opaque(secondary) === c;
@@ -100,6 +110,7 @@ export function PaletteGrid({ colors, primary, secondary, onPick, onMove, menu }
           />
         );
       })}
+      {trailing}
     </div>
   );
 }
