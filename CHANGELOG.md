@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-10
+
+Components and new tools: components and instances like in Figma, layer effects, a gradient tool, the lasso and the magic wand, a repeat grid, layers you can drag into groups and copy between files, export to Aseprite, and a smaller New file dialog.
+
 ### Added
 
 - Components, like in Figma: Ctrl+Alt+K (or the diamond button next to + in the Layers panel, a layer's right-click menu, or Layer › Create component) turns the active layer into a component, its sprite being the selection or what's drawn. Components are listed at the top of the left panel; drag one onto the canvas to place an instance. Instances follow their component as you draw on it, can't be painted on themselves, move with the Move tool, and Alt+drag copies one; Alt+drag on a component places an instance of it. A diamond marks components and instances in the Layers list. (#235, #236)
@@ -198,7 +202,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.4.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.5.0...main
+[0.5.0]: https://github.com/baipix/baipix/releases/tag/v0.5.0
 [0.4.0]: https://github.com/baipix/baipix/releases/tag/v0.4.0
 [0.3.1]: https://github.com/baipix/baipix/releases/tag/v0.3.1
 [0.3.0]: https://github.com/baipix/baipix/releases/tag/v0.3.0
