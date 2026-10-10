@@ -21,6 +21,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- In Manage palettes, the + New palette menu opened behind the dialog. It now opens above it, and Escape closes the menu without closing the dialog. (#282)
 - The Layers panel no longer leaves an empty space under the rows when there are only one or two layers. (#267)
 - Cmd+Z (Ctrl+Z) right after typing a size, an opacity or any number: it now undoes the change in the editor instead of the text in the field. Undoing a canvas resize puts the guides and the reference image back too. (#264)
 
