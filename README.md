@@ -14,13 +14,17 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 
 ## Features
 
-- **Drawing tools:** pencil with pixel-perfect mode, eraser, paint bucket (contiguous or global), selection and move, eyedropper.
-- **Shapes:** line, rectangle, rounded rectangle, ellipse, triangle and star, outlined or filled.
-- **Palette-aware tools:** shade and lighten pick the next darker or lighter palette color in OKLab; blur can snap its result back to the palette.
+- **Drawing tools:** pencil with pixel-perfect mode and a stabilizer, eraser, lasso fill, spray, paint bucket (contiguous or global), a gradient tool (linear, radial, angular, diamond) in palette colors with dithering, eyedropper.
+- **Selections:** rectangle, lasso and magic wand; Shift adds, Alt takes away, and every tool keeps to the selected pixels.
+- **Shapes:** line, rectangle, rounded rectangle, ellipse, triangle, star and heart, outlined or filled.
+- **Palette-aware tools:** shade and lighten pick the next darker or lighter palette color in OKLab; blur can snap its result back to the palette; liquify and jumble rework a drawing without adding colors.
 - **Palettes:** Sweetie 16, PICO-8, Endesga 32, Game Boy… Paste any Lospec palette, build one from your drawing, or generate hue-shifted ramps.
-- **Layers, multiple files, symmetry around axes you can drag anywhere, tile preview, checkerboard dithering, 90° rotation and flips.**
+- **Layers like a design tool:** groups four levels deep, blend modes, handles to resize and rotate, layers you copy from one file to another.
+- **Components, like in Figma:** draw a sprite once, place instances of it anywhere, and they follow when you draw on it. Repeat one in a grid.
+- **Layer effects:** outline, drop shadow and glow, drawn from the layer without changing its pixels.
+- **Symmetry** around axes you can drag anywhere, **tile preview** for seamless textures, rulers and guides, a reference image to trace over.
 - **Rendering for design work:** choose the exported pixel size and a gap between pixels (LED / dot-matrix look), previewed live on the canvas.
-- **Export:** PNG, clean SVG (one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.baipix` project files, Lospec `.hex` palettes.
+- **Export:** PNG, clean SVG (one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files to keep working in Aseprite, `.baipix` project files, Lospec `.hex` palettes.
 - **Local-first:** everything is saved in your browser (IndexedDB). Nothing is sent anywhere.
 - English and French, light and dark themes.
 

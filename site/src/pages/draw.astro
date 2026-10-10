@@ -86,7 +86,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
               <h3>Templates</h3>
               <p>
                 Icons, sprites, tiles, a Game Boy screen and more, each with its size and palette. The sprite
-                opens with symmetry on, the tile with the tile preview, the sprite sheet with its guides.
+                opens with symmetry on, the tile with the tile preview. Or one of the last sizes you used.
               </p>
             </div>
           </li>
@@ -180,7 +180,27 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             <kbd class="key">{key('Paint bucket')}</kbd>
             <div>
               <h3>Paint bucket</h3>
-              <p>Fills an area of the same color, inside the selection if there is one.</p>
+              <p>Fills an area of the same color. Clicked in a selection, it fills all of it.</p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Gradient')}</kbd>
+            <div>
+              <h3>Gradient</h3>
+              <p>
+                Linear, radial, angular or diamond, in palette colors only, dithered from one to the next.
+                Edit its stops like in Figma, and the last gradient follows every change.
+              </p>
+            </div>
+          </li>
+          <li>
+            <kbd class="key">{key('Lasso')}</kbd>
+            <div>
+              <h3>Lasso and magic wand</h3>
+              <p>
+                Select any shape, or a color with one click. Shift adds, Alt takes away, and every tool keeps
+                to what's selected.
+              </p>
             </div>
           </li>
           <li>
@@ -281,7 +301,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         <li>
           <kbd class="key">{key('Ellipse')}</kbd>
           <h3>Ellipse</h3>
-          <p>Shift makes it a circle. The triangle and the star are in the same menu.</p>
+          <p>Shift makes it a circle. The triangle, the star and the heart are in the same menu.</p>
         </li>
         <li>
           <span class="key wide">Image</span>
@@ -611,7 +631,27 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             <div>
               <h3>Groups</h3>
               <p>
-                Group layers, two levels deep. A group hides, locks, and has its own opacity and blend mode.
+                Group layers, four levels deep, and drop layers into groups. A group hides, locks, and has its
+                own opacity and blend mode. Double-click on the canvas to reach a layer inside.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Ctrl Alt K</span>
+            <div>
+              <h3>Components</h3>
+              <p>
+                Turn a sprite into a component and place copies of it: draw on the component and every copy
+                follows. Repeat one in a grid, or detach a copy to change it on its own.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Effects</span>
+            <div>
+              <h3>Layer effects</h3>
+              <p>
+                Outline, drop shadow and glow, drawn from the layer without changing it, in palette colors.
               </p>
             </div>
           </li>
@@ -734,6 +774,15 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             <div>
               <h3>PNG from 1× to 32×</h3>
               <p>With a live preview, a transparent background or not, the whole drawing or one layer.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key wide">Ase</span>
+            <div>
+              <h3>Aseprite</h3>
+              <p>
+                Keep working in Aseprite: layers, groups, blend modes and the palette, in an .aseprite file.
+              </p>
             </div>
           </li>
           <li>
