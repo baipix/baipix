@@ -38,6 +38,9 @@ export const fr: Record<MessageKey, string> = {
   'tool.pencil': 'Crayon',
   'tool.lassoSelect': 'Lasso',
   'tool.wand': 'Baguette magique',
+  'toolbar.fills': 'Outils de remplissage',
+  'toolbar.shading': 'Ombrer et éclaircir',
+  'toolbar.rework': 'Outils de retouche',
   'toolbar.selections': 'Outils de sélection',
   'hint.lassoSelect':
     'Dessine autour de ce que tu veux sélectionner ; le tracé se ferme quand tu lâches. Shift ajoute à la sélection, Alt en retire.',
@@ -513,10 +516,10 @@ export const fr: Record<MessageKey, string> = {
     'Ligne (L), Rectangle (R), Ellipse (C), et d’autres dans le menu de ce bouton. Maj les garde carrées ou rondes.',
   'tour.colorsTitle': 'Retoucher les couleurs',
   'tour.colors':
-    'Ombrer (S) et Éclaircir (O) suivent les rampes de la palette, Flou (F) adoucit les bords, Spray (A) projette des pixels comme une bombe.',
+    'Ombrer (S) et Éclaircir (O) suivent les rampes de la palette, Spray (A) projette des pixels comme une bombe.',
   'tour.warpTitle': 'Déformer sans nouvelles couleurs',
   'tour.warp':
-    'Mélangeur (J) brasse les pixels pour la texture. Fluidité (W) pousse, gonfle ou rétrécit une partie du dessin. Reste immobile pour continuer.',
+    'Flou (F) adoucit les bords, Mélangeur (J) brasse les pixels pour la texture, Fluidité (W) pousse, gonfle ou rétrécit une partie du dessin. Reste immobile pour continuer.',
   'tour.paletteTitle': 'Palette',
   'tour.palette':
     'Clic sur une couleur pour la principale, clic droit pour plus : secondaire, remplacer partout… Change de palette juste au-dessus.',

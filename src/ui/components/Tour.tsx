@@ -28,8 +28,9 @@ const STEPS: Step[] = [
     target: tools('pencil', 'lassoFill', 'eraser', 'bucket', 'gradient'),
   },
   { title: 'tour.shapesTitle', text: 'tour.shapes', target: all('.toolbar .tool-split') },
-  { title: 'tour.colorsTitle', text: 'tour.colors', target: tools('shade', 'lighten', 'blur', 'spray') },
-  { title: 'tour.warpTitle', text: 'tour.warp', target: tools('jumble', 'liquify') },
+  // A family's button carries the tool it shows: whichever of them is there gets pointed at.
+  { title: 'tour.colorsTitle', text: 'tour.colors', target: tools('shade', 'lighten', 'spray') },
+  { title: 'tour.warpTitle', text: 'tour.warp', target: tools('blur', 'jumble', 'liquify') },
   {
     title: 'tour.paletteTitle',
     text: 'tour.palette',

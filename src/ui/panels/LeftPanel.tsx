@@ -523,7 +523,7 @@ function LayersSection() {
                 />
                 <IconButton
                   icon={row.group.visible ? 'eye' : 'eyeOff'}
-                  className="icon-btn item-action"
+                  className="icon-btn item-action item-eye"
                   label={row.group.visible ? t('layer.hide') : t('layer.show')}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -594,7 +594,7 @@ function LayersSection() {
                 />
                 <IconButton
                   icon={row.layer.visible ? 'eye' : 'eyeOff'}
-                  className="icon-btn item-action"
+                  className="icon-btn item-action item-eye"
                   label={row.layer.visible ? t('layer.hide') : t('layer.show')}
                   shortcut={t('layer.solo')}
                   onClick={(e) => {
@@ -634,7 +634,7 @@ function LayersSection() {
               />
               <IconButton
                 icon={reference.visible ? 'eye' : 'eyeOff'}
-                className="icon-btn item-action"
+                className="icon-btn item-action item-eye"
                 label={reference.visible ? t('reference.hide') : t('reference.show')}
                 onClick={(e) => {
                   e.stopPropagation();
