@@ -72,3 +72,44 @@ describe('the palette belongs to the file', () => {
     expect(palette.colors).toEqual([doc.layers[0].pixels[0]]);
   });
 });
+
+describe('my palettes', () => {
+  it('saves the file’s palette under a name, and copies it into another file', () => {
+    const e = new Editor();
+    e.setPaletteColors([RED, BLUE]);
+    const id = e.savePalette('Sunset')!;
+    expect(e.getState().myPalettes).toEqual([{ id, name: 'Sunset', colors: [RED, BLUE] }]);
+    e.newFile(8, 8);
+    e.useMyPalette(id);
+    expect(e.getState().palette).toMatchObject({ key: `mine:${id}`, colors: [RED, BLUE] });
+    // A copy: editing the file's palette doesn't change mine, and the other way round.
+    e.addToPalette(pack(0, 255, 0));
+    expect(e.getState().palette.key).toBe('custom');
+    expect(e.getState().myPalettes[0].colors).toEqual([RED, BLUE]);
+  });
+
+  it('renames, replaces with the file’s palette, deletes, and is kept in the preferences', () => {
+    const e = new Editor();
+    e.setPaletteColors([RED]);
+    const id = e.savePalette('')!;
+    expect(e.getState().myPalettes[0].name).toBe('My palette 1');
+    e.renamePalette(id, 'Reds');
+    e.setPaletteColors([BLUE]);
+    e.updatePalette(id);
+    expect(e.getState().myPalettes[0]).toMatchObject({ name: 'Reds', colors: [BLUE] });
+    const other = new Editor();
+    other.setPreferences(e.getPreferences());
+    expect(other.getState().myPalettes).toEqual(e.getState().myPalettes);
+    e.deletePalette(id);
+    expect(e.getState().myPalettes).toEqual([]);
+  });
+
+  it('keeps a file’s palette taken from mine when saved, even where mine is gone', () => {
+    const e = new Editor();
+    e.setPaletteColors([RED, BLUE]);
+    e.useMyPalette(e.savePalette('Two')!);
+    const back = documentFromJson(documentToJson(e.getState().doc));
+    expect(back.palette?.key.startsWith('mine:')).toBe(true);
+    expect(back.palette?.colors).toEqual([RED, BLUE]);
+  });
+});

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { ColorChips } from '../components/ColorChips';
+import { MY_PALETTE } from '../../engine/editor';
 import { ColorRow } from './ColorRow';
 import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
@@ -51,6 +52,10 @@ function PaletteSection() {
   const editor = useEditor();
   const actions = useActions();
   const palette = useEditorState((s) => s.palette);
+  const myPalettes = useEditorState((s) => s.myPalettes);
+  const mine = palette.key.startsWith(MY_PALETTE)
+    ? myPalettes.find((m) => MY_PALETTE + m.id === palette.key)
+    : undefined;
   const hidden = uiStore.use((s) => s.hiddenPalettes);
   const primary = useEditorState((s) => s.primary);
   const secondary = useEditorState((s) => s.secondary);
@@ -101,6 +106,15 @@ function PaletteSection() {
                       },
                     ]
                   : []),
+                // The user's own palettes, from every file: picking one copies it into this one.
+                ...(myPalettes.length ? (['-'] as const) : []),
+                ...myPalettes.map((m) => ({
+                  label: m.name,
+                  shortcut: String(m.colors.length),
+                  checked: palette.key === MY_PALETTE + m.id,
+                  swatches: m.colors.map(toCss),
+                  onSelect: () => editor.useMyPalette(m.id),
+                })),
                 '-',
                 ...Object.keys(PALETTE_PRESETS)
                   .filter((key) => key !== palette.key && !hidden.includes(key))
@@ -111,11 +125,11 @@ function PaletteSection() {
             }}
           >
             <span className="truncate">
-              {palette.key === 'custom'
-                ? t('palette.custom')
+              {mine
+                ? mine.name
                 : palette.key === 'drawing'
                   ? t('palette.drawing')
-                  : PALETTE_PRESETS[palette.key]?.name}
+                  : (PALETTE_PRESETS[palette.key]?.name ?? t('palette.custom'))}
             </span>
             <span className="caret">▾</span>
           </button>

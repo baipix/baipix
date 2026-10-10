@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- My palettes: keep your own palettes in the browser and use them in every file. In Manage palettes, + New palette makes one from the file's palette or from a .hex or .gpl file; each can be renamed, replaced with the file's palette or deleted. They're listed in the palette menu, after the file's own; picking one copies it into the file, its name in the header. (#279)
 - Resize a layer or a selection by its sides too, not only its corners: a handle in the middle of each side, and the whole side can be grabbed. A side changes the width or the height alone, the opposite side staying put; Alt resizes from the center, Shift keeps the proportions. (#266)
 
 ### Changed
