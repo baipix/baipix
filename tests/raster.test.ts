@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  heartMask,
+  heartOutline,
   brush,
   constrainAngle,
   ellipseFilled,
@@ -139,5 +141,32 @@ describe('round brush tip', () => {
     expect(cells(1, true)).toEqual(cells(1, false));
     expect(cells(2, true)).toEqual(cells(2, false));
     expect(cells(5, false)).toHaveLength(25);
+  });
+});
+
+describe('heart', () => {
+  const draw = (w: number, h: number) => {
+    const m = heartMask(w, h);
+    return Array.from({ length: h }, (_, y) =>
+      [...m.slice(y * w, y * w + w)].map((c) => (c ? '#' : '.')).join(''),
+    );
+  };
+
+  it('looks like a heart, even small', () => {
+    expect(draw(7, 6)).toEqual(['.##.##.', '#######', '#######', '.#####.', '..###..', '...#...']);
+  });
+
+  it('reaches the bottom of the box, with an even width too', () => {
+    const rows = draw(16, 14);
+    expect(rows.at(-1)).toBe('.......##.......');
+    // Symmetric.
+    expect(rows.every((r) => r === [...r].reverse().join(''))).toBe(true);
+  });
+
+  it('outlines its edge only', () => {
+    const edge: string[] = [];
+    heartOutline(0, 0, 8, 7, (x, y) => edge.push(`${x},${y}`));
+    expect(edge).toContain('0,1');
+    expect(edge).not.toContain('4,3'); // the middle stays empty
   });
 });

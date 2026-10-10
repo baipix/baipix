@@ -308,6 +308,7 @@ export function ToolOptionsBar() {
     case 'ellipse':
     case 'triangle':
     case 'star':
+    case 'heart':
       info = t('hint.shape');
       body = (
         <>

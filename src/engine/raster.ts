@@ -314,3 +314,48 @@ export function floodFill(
     if (py < height - 1) stack.push(i + width);
   }
 }
+
+/**
+ * A heart filling a w × h box, as a mask: the pixels whose center is inside the classic heart
+ * curve (x² + y² − 1)³ = x²y³. Its tip is always there, even when it falls between two pixels.
+ */
+export function heartMask(w: number, h: number): Uint8Array {
+  const mask = new Uint8Array(w * h);
+  if (w < 3 || h < 3) return mask.fill(1);
+  let last = 0;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const u = ((x + 0.5) / w) * 2.4 - 1.2;
+      const v = 1.25 - ((y + 0.5) / h) * 2.3;
+      const a = u * u + v * v - 1;
+      if (a * a * a - u * u * v * v * v > 0) continue;
+      mask[y * w + x] = 1;
+      last = y;
+    }
+  // Down to the bottom of the box: the middle pixel, or the two middle ones for an even width.
+  for (let y = last + 1; y < h; y++) {
+    mask[y * w + ((w - 1) >> 1)] = 1;
+    mask[y * w + (w >> 1)] = 1;
+  }
+  return mask;
+}
+
+/** A filled heart in the box from (x0, y0) to (x1, y1). */
+export function heartFilled(x0: number, y0: number, x1: number, y1: number, plot: PlotFn): void {
+  const w = x1 - x0 + 1;
+  const h = y1 - y0 + 1;
+  const mask = heartMask(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) plot(x0 + x, y0 + y);
+}
+
+/** The edge of a heart: its pixels touching the outside on a side. */
+export function heartOutline(x0: number, y0: number, x1: number, y1: number, plot: PlotFn): void {
+  const w = x1 - x0 + 1;
+  const h = y1 - y0 + 1;
+  const mask = heartMask(w, h);
+  const inside = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && mask[y * w + x] === 1;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (inside(x, y) && (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)))
+        plot(x0 + x, y0 + y);
+}

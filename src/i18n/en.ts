@@ -45,6 +45,7 @@ export const en = {
   'tool.ellipse': 'Ellipse',
   'tool.triangle': 'Triangle',
   'tool.star': 'Star',
+  'tool.heart': 'Heart',
   'tool.shade': 'Shade',
   'tool.lighten': 'Lighten',
   'tool.blur': 'Blur',
