@@ -208,7 +208,7 @@ function PaletteManagerDialog() {
       hiddenPalettes: shown ? s.hiddenPalettes.filter((k) => k !== key) : [...s.hiddenPalettes, key],
     }));
   return (
-    <Dialog title={t('palette.manageTitle')} submitLabel={t('common.close')} onClose={closeDialog} hideCancel>
+    <Dialog title={t('palette.manageTitle')} onClose={closeDialog}>
       <p className="muted">{t('palette.manageHint')}</p>
       <div className="palette-list">
         {Object.entries(PALETTE_PRESETS).map(([key, p]) => {
@@ -302,7 +302,7 @@ function PaletteManagerDialog() {
 function ShortcutsDialog() {
   const t = useT();
   return (
-    <Dialog title={t('menu.shortcuts')} submitLabel={t('common.close')} onClose={closeDialog} hideCancel>
+    <Dialog title={t('menu.shortcuts')} onClose={closeDialog}>
       <div className="shortcuts">
         {SHORTCUT_GROUPS.map((group) => (
           <div key={group.title}>
@@ -322,7 +322,6 @@ function ShortcutsDialog() {
 
 /** Renders the active dialog from the UI store. */
 export function Dialogs() {
-  const t = useT();
   const dialog = uiStore.use((s) => s.dialog);
   if (!dialog) return null;
   switch (dialog.type) {
@@ -351,7 +350,7 @@ export function Dialogs() {
       );
     case 'output':
       return (
-        <Dialog title={dialog.title} submitLabel={t('common.close')} onClose={closeDialog} hideCancel>
+        <Dialog title={dialog.title} onClose={closeDialog}>
           <p className="muted">{dialog.message}</p>
           {dialog.image && <img className="output-image" src={dialog.image} alt="" />}
           {dialog.text && (

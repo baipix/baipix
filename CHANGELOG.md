@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Every dialog has a × at the top right, like the floating panels: it closes it without doing anything, like Escape. Dialogs that only had a Close button (palettes, shortcuts) lose it. (#PR)
 - Cmd+Z (Ctrl+Z) undoes the changes made to the palette: a sort, an added or removed color, a color moved, a ramp, another palette picked. Undoing a sort gives a preset back in its own order. Undoing a drawing step still leaves the palette as it is. Sort by lightness is greyed out for Drawing colors, which are sorted already: it used to turn them into a custom palette that no longer followed the drawing. (#281)
 - A + after the last swatch of the palette adds the color in use to it; it's greyed out when that color is already there. The Create a ramp and Export buttons under the palette go away: both are in its ... menu. (#280)
 - A shorter toolbar, 12 tools instead of 20: like the shapes and the selections, the paint bucket and the gradient share a button, so do shade and lighten, and blur, jumble and liquify (Rework). Each button shows the last tool used of its family; single-key shortcuts don't change. A hidden layer's eye shows in the Layers panel without its lock. (#278)

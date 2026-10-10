@@ -1,15 +1,14 @@
 import { useEffect, useRef, type FormEvent, type ReactNode } from 'react';
 import { useT } from '../../i18n';
+import { IconButton } from '../components/IconButton';
 
 interface DialogProps {
   title: string;
   children: ReactNode;
   onClose: () => void;
-  /** Called on submit (Enter / primary button). */
+  /** Called on submit (Enter / primary button). Without it, no footer: the × closes it. */
   onSubmit?: () => void;
   submitLabel?: string;
-  /** Hide the cancel button (informational dialogs). */
-  hideCancel?: boolean;
   /** The cancel button's label, when it does something else than cancel. */
   cancelLabel?: string;
   /** Extra class on the dialog (its width, for one). */
@@ -25,7 +24,6 @@ export function Dialog({
   onClose,
   onSubmit,
   submitLabel,
-  hideCancel,
   cancelLabel,
   className = '',
   footer,
@@ -34,7 +32,14 @@ export function Dialog({
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const el = ref.current!;
-    if (!el.open) el.showModal();
+    if (!el.open) {
+      el.showModal();
+      // The × comes first but shouldn't take the focus: the first field or button after it does.
+      if (document.activeElement === el.querySelector('.dialog-close'))
+        el.querySelector<HTMLElement>(
+          '.dialog-body :is(input, textarea, select, button), .dialog-footer button',
+        )?.focus();
+    }
     const onCancel = (e: Event) => {
       e.preventDefault();
       onClose();
@@ -50,19 +55,28 @@ export function Dialog({
   return (
     <dialog ref={ref} className={`dialog ${className}`}>
       <form onSubmit={submit}>
-        <div className="dialog-header">{title}</div>
+        <div className="dialog-header">
+          <span>{title}</span>
+          {/* Closes without doing anything, like Escape and Cancel. */}
+          <IconButton
+            className="icon-btn dialog-close"
+            icon="close"
+            label={t('common.close')}
+            onClick={onClose}
+          />
+        </div>
         <div className="dialog-body">{children}</div>
-        <div className="dialog-footer">
-          {footer && <div className="dialog-footer-start">{footer}</div>}
-          {!hideCancel && (
+        {onSubmit && (
+          <div className="dialog-footer">
+            {footer && <div className="dialog-footer-start">{footer}</div>}
             <button type="button" className="btn" onClick={onClose}>
               {cancelLabel ?? t('common.cancel')}
             </button>
-          )}
-          <button type="submit" className="btn btn-primary" autoFocus={hideCancel}>
-            {submitLabel ?? t('common.ok')}
-          </button>
-        </div>
+            <button type="submit" className="btn btn-primary">
+              {submitLabel ?? t('common.ok')}
+            </button>
+          </div>
+        )}
       </form>
     </dialog>
   );

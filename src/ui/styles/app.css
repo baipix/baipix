@@ -1654,8 +1654,9 @@ body.is-dragging-swatch * {
 .dialog-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 48px;
-  padding: 0 16px;
+  padding: 0 8px 0 16px;
   border-bottom: 1px solid var(--line);
   font-size: 13px;
   font-weight: 600;
