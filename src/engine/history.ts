@@ -1,15 +1,15 @@
 import type { Selection } from './selection';
-import type { Color } from './color';
-import { cloneDocument, type PixelDoc } from './document';
+import { cloneDocument, type DocPalette, type PixelDoc } from './document';
 
 export interface Snapshot {
   doc: PixelDoc;
   selection: Selection | null;
   /**
-   * The palette, only for steps that change it along with the pixels (an adjustment applied to
-   * the palette too): undoing it restores both, so they stay in step.
+   * The palette, only for steps that change it: an edit of the palette alone, or along with the
+   * pixels (an adjustment applied to the palette too). Undoing it restores both, so they stay in
+   * step; other steps leave the palette as it is.
    */
-  palette?: Color[];
+  palette?: DocPalette;
   /**
    * A canvas resize: it moved the guides and the reference image along with the drawing, so
    * undoing it puts them back too (otherwise they stay as they are, outside the history).

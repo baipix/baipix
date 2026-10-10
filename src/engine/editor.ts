@@ -10,6 +10,7 @@ import {
   MAX_SIZE,
   newId,
   resizeDocument,
+  type DocPalette,
   type Layer,
   type LayerGroup,
   type PixelDoc,
@@ -551,7 +552,7 @@ export class Editor {
   private restore(snapshot: Snapshot): void {
     // The palette isn't part of the history either, except for the steps that changed it along
     // with the pixels (`snapshot.palette`).
-    const palette = this.active.doc.palette;
+    const palette = snapshot.palette ?? this.active.doc.palette;
     if (palette) snapshot.doc.palette = palette;
     else delete snapshot.doc.palette;
     // The reference image and the guides aren't part of the history: undo and redo leave them,
@@ -565,7 +566,6 @@ export class Editor {
     }
     this.active.doc = snapshot.doc;
     this.active.selection = snapshot.selection;
-    if (snapshot.palette) this.usePalette(snapshot.palette);
   }
 
   undo(): void {
@@ -575,7 +575,7 @@ export class Editor {
     const prev = this.active.history.undo(current);
     if (prev) {
       // A step that changed the palette swaps it back and forth with the pixels.
-      if (prev.palette) current.palette = this.palette.colors;
+      if (prev.palette) current.palette = this.savedPalette();
       if (prev.resized) current.resized = true;
       this.forgetDeletedLayer();
       this.restore(prev);
@@ -589,7 +589,7 @@ export class Editor {
     const current = takeSnapshot(this.doc, this.active.selection);
     const next = this.active.history.redo(current);
     if (next) {
-      if (next.palette) current.palette = this.palette.colors;
+      if (next.palette) current.palette = this.savedPalette();
       if (next.resized) current.resized = true;
       this.forgetDeletedLayer();
       this.restore(next);
@@ -1671,6 +1671,7 @@ export class Editor {
   setPalettePreset(key: string): void {
     const colors =
       key === 'custom' ? (this.palette.custom ?? []) : key === 'drawing' ? [] : presetColors(key);
+    this.paletteStep();
     this.palette = { ...this.palette, key, colors };
     this.commit();
   }
@@ -1717,6 +1718,7 @@ export class Editor {
   useMyPalette(id: string): void {
     const m = this.myPalettes.find((x) => x.id === id);
     if (!m) return;
+    this.paletteStep();
     this.palette = { key: MY_PALETTE + id, colors: m.colors, custom: this.palette.custom };
     this.commit();
   }
@@ -1730,8 +1732,21 @@ export class Editor {
 
   /** Replaces the palette with custom colors. */
   setPaletteColors(colors: Color[]): void {
+    this.paletteStep();
     this.usePalette(colors);
     this.commit();
+  }
+
+  /** Records the palette as it is, so the change about to be made to it can be undone. */
+  private paletteStep(): void {
+    this.cancelStroke();
+    this.checkpoint();
+    this.active.history.top()!.palette = this.savedPalette();
+  }
+
+  /** The file's palette as saved in it, for the history. */
+  private savedPalette(): DocPalette {
+    return this.doc.palette ?? { key: 'drawing', colors: [] };
   }
 
   /** Sets the palette (as a custom one) without publishing the change. */
@@ -1772,7 +1787,7 @@ export class Editor {
     if (!hits.some(Boolean) && !inPalette) return 0;
     this.cancelStroke();
     this.checkpoint();
-    if (this.palette.key !== 'drawing') this.active.history.top()!.palette = this.palette.colors;
+    this.active.history.top()!.palette = this.savedPalette();
     let count = 0;
     layers.forEach((layer, k) => {
       if (!hits[k]) return;
@@ -1806,6 +1821,8 @@ export class Editor {
   }
 
   sortPalette(): void {
+    // The colors of the drawing are sorted already: a copy would just stop following the drawing.
+    if (this.palette.key === 'drawing') return;
     this.setPaletteColors(sortByLightness(this.palette.colors));
   }
 
@@ -2380,7 +2397,7 @@ export class Editor {
     this.checkpoint();
     // The colors of the drawing follow the pixels on their own: nothing to swap or set.
     const ownColors = palette && base.key !== 'drawing';
-    if (ownColors) this.active.history.top()!.palette = base.colors;
+    if (ownColors) this.active.history.top()!.palette = this.savedPalette();
     this.writeAdjustment(change);
     this.adjusting = null;
     if (ownColors) this.usePalette(palette(base.colors));
