@@ -75,10 +75,10 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           editor.setLabels(editorLabels());
           const widths = ui.panelWidths;
           uiStore.set({
-            exportFormat: ui.exportFormat === 'svg' ? 'svg' : 'png',
+            exportFormat:
+              ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' ? ui.exportFormat : 'png',
             exportActiveLayer: !!ui.exportActiveLayer,
             collapsed: Array.isArray(ui.collapsed) ? ui.collapsed.filter((x) => typeof x === 'string') : [],
-            rightTab: ui.rightTab === 'export' ? 'export' : 'design',
             exportBackground: ui.exportBackground !== false,
             hiddenPalettes: Array.isArray(ui.hiddenPalettes)
               ? ui.hiddenPalettes.filter((x) => typeof x === 'string')

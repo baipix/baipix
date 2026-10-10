@@ -23,7 +23,6 @@ export const en = {
 
   'panel.left': 'Files and layers',
   'panel.right': 'Properties',
-  'panel.design': 'Design',
   'panel.export': 'Export',
   'panel.resizeLeft': 'Resize the left panel',
   'panel.resizeRight': 'Resize the right panel',
@@ -103,7 +102,6 @@ export const en = {
   'component.detach': 'Detach instance',
   'component.dragHint': 'Drag onto the canvas to add an instance',
   'section.preview': 'Preview',
-  'section.render': 'Pixel rendering',
   'section.colors': 'Colors',
   'section.palette': 'Palette',
   'section.layer': 'Layer',
