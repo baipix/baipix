@@ -11,6 +11,7 @@ import { gallery } from '../gallery';
 import { animations as anim, OUTLINE_STEPS } from '../animations';
 import { draw as ill } from '../draw';
 import { APP_URL, REPO_URL } from '../links';
+import { icon } from '../toolIcons';
 
 const EYE = ['.......', '..###..', '.#...#.', '#..#..#', '.#...#.', '..###..', '.......'];
 const EYE_CLOSED = ['.......', '.......', '.......', '#.....#', '.#####.', '#.#.#.#', '.......'];
@@ -81,7 +82,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <ul class="tools">
           <li>
-            <span class="key wide">New</span>
+            <span class="key icon" set:html={icon('plus')} />
             <div>
               <h3>Templates</h3>
               <p>
@@ -91,7 +92,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Import</span>
+            <span class="key icon" set:html={icon('crop')} />
             <div>
               <h3>Recover the pixels</h3>
               <p>
@@ -101,7 +102,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Trace</span>
+            <span class="key icon" set:html={icon('image')} />
             <div>
               <h3>Reference image</h3>
               <p>
@@ -160,7 +161,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <ul class="tools">
           <li>
-            <kbd class="key">{key('Pencil')}</kbd>
+            <span class="key icon" set:html={icon('pencil')} />
             <div>
               <h3>Pencil</h3>
               <p>
@@ -170,21 +171,21 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Lasso fill')}</kbd>
+            <span class="key icon" set:html={icon('lassoFill')} />
             <div>
               <h3>Lasso fill</h3>
               <p>Draw around a shape and it's filled, in one gesture.</p>
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Paint bucket')}</kbd>
+            <span class="key icon" set:html={icon('bucket')} />
             <div>
               <h3>Paint bucket</h3>
               <p>Fills an area of the same color. Clicked in a selection, it fills all of it.</p>
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Gradient')}</kbd>
+            <span class="key icon" set:html={icon('gradient')} />
             <div>
               <h3>Gradient</h3>
               <p>
@@ -194,7 +195,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Lasso')}</kbd>
+            <span class="key icon" set:html={icon('lassoSelect')} />
             <div>
               <h3>Lasso and magic wand</h3>
               <p>
@@ -204,21 +205,21 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Spray')}</kbd>
+            <span class="key icon" set:html={icon('spray')} />
             <div>
               <h3>Spray</h3>
               <p>Scatters pixels around the cursor: stars, dust, leaves.</p>
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Eraser')}</kbd>
+            <span class="key icon" set:html={icon('eraser')} />
             <div>
               <h3>Eraser</h3>
               <p>Back to transparent, with the same tips as the pencil.</p>
             </div>
           </li>
           <li>
-            <span class="key wide">Tip</span>
+            <span class="key icon" set:html={icon('select')} />
             <div>
               <h3>Brushes and dithering</h3>
               <p>
@@ -296,22 +297,22 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </div>
       <ul class="tools tools-row">
         <li>
-          <kbd class="key">{key('Line')}</kbd>
+          <span class="key icon" set:html={icon('line')} />
           <h3>Line</h3>
           <p>Shift locks it to 0°, 45° or 90°.</p>
         </li>
         <li>
-          <kbd class="key">{key('Rectangle')}</kbd>
+          <span class="key icon" set:html={icon('rect')} />
           <h3>Rectangle</h3>
           <p>Shift makes it a square. The rounded rectangle is in the same menu.</p>
         </li>
         <li>
-          <kbd class="key">{key('Ellipse')}</kbd>
+          <span class="key icon" set:html={icon('ellipse')} />
           <h3>Ellipse</h3>
           <p>Shift makes it a circle. The triangle, the star and the heart are in the same menu.</p>
         </li>
         <li>
-          <span class="key wide">Image</span>
+          <span class="key icon" set:html={icon('panel')} />
           <h3>Outline</h3>
           <p>A 1 px outline around the drawing or along its edge, with square or round corners, in one go.</p>
         </li>
@@ -388,11 +389,9 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <ul class="tools">
           <li>
-            <kbd class="key">{key('Shade')}</kbd>
+            <span class="key icon" set:html={icon('shade')} />
             <div>
-              <h3>
-                Shade and Lighten <kbd class="key small">{key('Lighten')}</kbd>
-              </h3>
+              <h3>Shade and Lighten</h3>
               <p>
                 Paint over pixels to step them down or up their ramp: the same hue in the palette, any color
                 in the palette, or free.
@@ -400,14 +399,14 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Eyedropper')}</kbd>
+            <span class="key icon" set:html={icon('picker')} />
             <div>
               <h3>Eyedropper</h3>
               <p>Picks a color from the canvas. Alt does the same from any drawing tool.</p>
             </div>
           </li>
           <li>
-            <span class="key wide">Palette</span>
+            <span class="key icon" set:html={icon('more')} />
             <div>
               <h3>Palettes</h3>
               <p>
@@ -418,7 +417,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Image</span>
+            <span class="key icon" set:html={icon('panel')} />
             <div>
               <h3>Adjustments</h3>
               <p>
@@ -501,21 +500,21 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <ul class="tools">
           <li>
-            <kbd class="key">{key('Liquify')}</kbd>
+            <span class="key icon" set:html={icon('liquify')} />
             <div>
               <h3>Liquify</h3>
               <p>Push a part of the drawing, grow it or shrink it, like fluid.</p>
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Jumble')}</kbd>
+            <span class="key icon" set:html={icon('jumble')} />
             <div>
               <h3>Jumble</h3>
               <p>Shuffles the pixels under the brush: foliage, rock, noise, a ragged edge.</p>
             </div>
           </li>
           <li>
-            <kbd class="key">{key('Blur')}</kbd>
+            <span class="key icon" set:html={icon('blur')} />
             <div>
               <h3>Blur</h3>
               <p>
@@ -619,7 +618,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         </p>
         <ul class="tools">
           <li>
-            <kbd class="key">{key('Move')}</kbd>
+            <span class="key icon" set:html={icon('move')} />
             <div>
               <h3>Move</h3>
               <p>
@@ -629,14 +628,14 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Layer</span>
+            <span class="key icon" set:html={icon('layers')} />
             <div>
               <h3>Blend modes and opacity</h3>
               <p>{ill.blendModes} blend modes, from Multiply to Difference, and an opacity for each layer.</p>
             </div>
           </li>
           <li>
-            <span class="key wide">Ctrl G</span>
+            <span class="key icon" set:html={icon('folder')} />
             <div>
               <h3>Groups</h3>
               <p>
@@ -646,7 +645,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Effects</span>
+            <span class="key icon" set:html={icon('lighten')} />
             <div>
               <h3>Layer effects</h3>
               <p>
@@ -655,14 +654,14 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Layer</span>
+            <span class="key icon" set:html={icon('eye')} />
             <div>
               <h3>Hide, lock, solo</h3>
               <p>Alt-click an eye to see one layer alone. Merge down, merge visible, flatten.</p>
             </div>
           </li>
           <li>
-            <span class="key wide">View</span>
+            <span class="key icon" set:html={icon('search')} />
             <div>
               <h3>Floating preview</h3>
               <p>
@@ -759,7 +758,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         <p class="muted intro">The same sprite in ten places, and one change goes to all of them.</p>
         <ul class="tools">
           <li>
-            <span class="key wide">Ctrl Alt K</span>
+            <span class="key icon" set:html={icon('component')} />
             <div>
               <h3>Component</h3>
               <p>
@@ -769,7 +768,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Alt drag</span>
+            <span class="key icon" set:html={icon('instance')} />
             <div>
               <h3>Instances</h3>
               <p>
@@ -779,14 +778,14 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Layer</span>
+            <span class="key icon" set:html={icon('repeat')} />
             <div>
               <h3>Repeat grid</h3>
               <p>Columns and rows of instances, with a gap between them, set up live.</p>
             </div>
           </li>
           <li>
-            <span class="key wide">Ctrl Alt B</span>
+            <span class="key icon" set:html={icon('detach')} />
             <div>
               <h3>Go to component, detach</h3>
               <p>From an instance, jump to its component, or detach it to change that copy on its own.</p>
@@ -817,7 +816,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         <p class="muted intro">What you draw goes straight into your design files.</p>
         <ul class="tools">
           <li>
-            <span class="key wide">Copy</span>
+            <span class="key icon" set:html={icon('duplicate')} />
             <div>
               <h3>Copy as SVG</h3>
               <p>
@@ -827,14 +826,14 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">PNG</span>
+            <span class="key icon" set:html={icon('image')} />
             <div>
               <h3>PNG from 1× to 32×</h3>
               <p>With a live preview, a transparent background or not, the whole drawing or one layer.</p>
             </div>
           </li>
           <li>
-            <span class="key wide">Ase</span>
+            <span class="key icon" set:html={icon('folder')} />
             <div>
               <h3>Aseprite</h3>
               <p>
@@ -843,7 +842,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             </div>
           </li>
           <li>
-            <span class="key wide">Gap</span>
+            <span class="key icon" set:html={icon('swap')} />
             <div>
               <h3>Pixel gap</h3>
               <p>Space the pixels apart for an LED or dot-matrix look, on the canvas and in both exports.</p>
@@ -1440,6 +1439,12 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   .key.wide {
     font-size: 11px;
     color: var(--muted);
+  }
+  /* In the tool lists: the editor's own icon for the tool, as in its toolbar. */
+  .key.icon {
+    padding: 0;
+    width: 32px;
+    color: var(--accent);
   }
   .key.small {
     min-width: 22px;
