@@ -1,5 +1,6 @@
 import { alpha, blue, green, pack, red, type Color } from './color';
 import { hasBackground, type Layer, type PixelDoc } from './document';
+import { bakeEffects, withEffects } from './effects';
 import { layerTree, type LayerNode } from './groups';
 
 /** Straight-alpha "source over" of one color onto another, with an extra opacity factor. */
@@ -101,12 +102,12 @@ export function flatten(doc: PixelDoc, options: FlattenOptions = {}): Uint32Arra
   const { includeBackground = true, onlyLayer } = options;
   const out = new Uint32Array(doc.width * doc.height);
   if (onlyLayer) {
-    out.set(onlyLayer.pixels);
+    out.set(withEffects(onlyLayer.pixels, doc.width, doc.height, onlyLayer.effects));
     return out;
   }
   const background = includeBackground && hasBackground(doc);
   if (background) out.fill(doc.background);
-  composeNodes(layerTree(doc), out, 1, !background);
+  composeNodes(layerTree(doc), out, 1, !background, doc.width, doc.height);
   return out;
 }
 
@@ -115,18 +116,26 @@ export function flatten(doc: PixelDoc, options: FlattenOptions = {}): Uint32Arra
  * otherwise its layers are put together on their own first, then laid down in its mode and
  * opacity. `empty`: nothing is under yet, so the first full-opacity layer is just copied.
  */
-function composeNodes(nodes: LayerNode[], out: Uint32Array, opacity: number, empty: boolean): boolean {
+function composeNodes(
+  nodes: LayerNode[],
+  out: Uint32Array,
+  opacity: number,
+  empty: boolean,
+  width: number,
+  height: number,
+): boolean {
   for (const node of nodes) {
     if (node.kind === 'layer') {
       const layer = node.layer;
       const k = layer.opacity * opacity;
       if (!layer.visible || k <= 0) continue;
       const mode = layer.blendMode ?? 'normal';
+      const pixels = withEffects(layer.pixels, width, height, layer.effects);
       // Nothing under it yet: every mode gives the layer as it is.
-      if (empty && k === 1) out.set(layer.pixels);
+      if (empty && k === 1) out.set(pixels);
       else
         for (let i = 0; i < out.length; i++) {
-          const c = layer.pixels[i];
+          const c = pixels[i];
           if (c >>> 24) out[i] = blendWith(mode, c, out[i], k);
         }
       empty = false;
@@ -135,11 +144,11 @@ function composeNodes(nodes: LayerNode[], out: Uint32Array, opacity: number, emp
     const group = node.group;
     if (!group.visible || group.opacity <= 0) continue;
     if (!group.blendMode && group.opacity === 1) {
-      empty = composeNodes(node.children, out, opacity, empty);
+      empty = composeNodes(node.children, out, opacity, empty, width, height);
       continue;
     }
     const own = new Uint32Array(out.length);
-    if (!composeNodes(node.children, own, 1, true)) {
+    if (!composeNodes(node.children, own, 1, true, width, height)) {
       const mode = group.blendMode ?? 'normal';
       const k = group.opacity * opacity;
       for (let i = 0; i < out.length; i++) {
@@ -152,12 +161,17 @@ function composeNodes(nodes: LayerNode[], out: Uint32Array, opacity: number, emp
   return empty;
 }
 
-/** Merges `top` into `bottom` in place (used by "merge down"), in `top`'s blend mode. */
-export function mergeLayerInto(top: Layer, bottom: Layer): void {
+/**
+ * Merges `top` into `bottom` in place (used by "merge down"), in `top`'s blend mode. Effects of
+ * both are written into the pixels first: the result looks as the two did.
+ */
+export function mergeLayerInto(top: Layer, bottom: Layer, width: number, height: number): void {
+  bakeEffects(bottom, width, height);
   if (!top.visible) return;
   const mode = top.blendMode ?? 'normal';
-  for (let i = 0; i < top.pixels.length; i++) {
-    const c = top.pixels[i];
+  const pixels = withEffects(top.pixels, width, height, top.effects);
+  for (let i = 0; i < pixels.length; i++) {
+    const c = pixels[i];
     if (c >>> 24) bottom.pixels[i] = blendWith(mode, c, bottom.pixels[i], top.opacity);
   }
 }

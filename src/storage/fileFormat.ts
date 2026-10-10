@@ -2,6 +2,7 @@ import type { Color } from '../engine/color';
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
 import { MAX_SIZE, newId, type Layer, type LayerGroup, type PixelDoc } from '../engine/document';
 import { normalizeComponents } from '../engine/components';
+import { cleanEffects, type LayerEffect } from '../engine/effects';
 import { normalizeGroups } from '../engine/groups';
 import { clamp } from '../engine/math';
 
@@ -30,6 +31,8 @@ export interface BaipixLayer {
    * saved too, so a version without components still shows them.
    */
   instance?: { of: number; x: number; y: number };
+  /** Layer effects (missing: none), colors as unsigned 32-bit integers. */
+  effects?: LayerEffect[];
   /** Distinct colors as unsigned 32-bit integers (0xAABBGGRR). */
   colors: number[];
   /** Flat list of [colorIndex, runLength] pairs, row-major. */
@@ -136,6 +139,7 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
         layerIndex.has(l.instance.of) && {
           instance: { of: layerIndex.get(l.instance.of)!, x: l.instance.x, y: l.instance.y },
         }),
+      ...(l.effects?.length && { effects: l.effects.map((e) => ({ ...e, color: e.color >>> 0 })) }),
       ...encodePixels(l.pixels),
     })),
     ...(groups.length && {
@@ -258,6 +262,10 @@ export function deserializeDocument(data: unknown): PixelDoc {
   };
   normalizeGroups(doc);
   readComponents(layers, Array.isArray(f.layers) ? f.layers : []);
+  (Array.isArray(f.layers) ? f.layers : []).forEach((l, i) => {
+    const effects = cleanEffects((l as Partial<BaipixLayer>).effects);
+    if (effects && layers[i]) layers[i].effects = effects;
+  });
   normalizeComponents(doc);
   return doc;
 }

@@ -4,6 +4,7 @@ import { Editor } from '../engine/editor';
 import { EditorContext } from '../ui/EditorContext';
 import { AnchorGrid, type Anchor } from '../ui/components/AnchorGrid';
 import { GradientEditor } from '../ui/components/GradientEditor';
+import { PaletteColorButton } from '../ui/components/PaletteColorButton';
 import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
@@ -58,6 +59,11 @@ gradientEditor.setOption('gradientStops', [
   { at: 0.5, color: pack(239, 125, 87) },
   { at: 1, color: pack(255, 205, 117) },
 ]);
+
+function PaletteColorDemo() {
+  const [color, setColor] = useState(pack(239, 125, 87));
+  return <PaletteColorButton color={color} label="Outline color" onChange={setColor} />;
+}
 
 function Specimen({
   label,
@@ -400,6 +406,14 @@ function FieldsBlock() {
         >
           <EditorContext.Provider value={gradientEditor}>
             <GradientEditor />
+          </EditorContext.Provider>
+        </Specimen>
+        <Specimen
+          label="Palette color"
+          use="A color that must come from the palette (an effect's): the swatch opens the palette's colors."
+        >
+          <EditorContext.Provider value={gradientEditor}>
+            <PaletteColorDemo />
           </EditorContext.Provider>
         </Specimen>
         <Specimen

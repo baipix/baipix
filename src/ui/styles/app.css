@@ -2845,3 +2845,39 @@ body.is-dragging-swatch * {
   margin-top: 8px;
   color: var(--muted);
 }
+
+/* Layer effects: a row per effect, its name and color on top, its settings under. */
+.effect-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.effect-row + .effect-row {
+  margin-top: 8px;
+}
+.effect-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.effect-name {
+  flex: 1;
+}
+.effect-row.is-hidden .effect-name,
+.effect-row.is-hidden .two-columns {
+  opacity: 0.45;
+}
+.palette-color {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--swatch-edge);
+  cursor: pointer;
+}
+.palette-color.is-clear {
+  background: conic-gradient(var(--check-b) 25%, var(--check-a) 0 50%, var(--check-b) 0 75%, var(--check-a) 0)
+    0 0 / 6px 6px;
+}

@@ -1,4 +1,5 @@
 import { alpha, type Color } from './color';
+import type { LayerEffect } from './effects';
 import { syncInstances, type ComponentFrame, type InstanceRef } from './components';
 import type { BlendMode } from './composite';
 import { reframe, type Outside } from './outside';
@@ -25,6 +26,8 @@ export interface Layer {
   component?: ComponentFrame;
   /** This layer is an instance of a master: its pixels are rendered from it (see components.ts). */
   instance?: InstanceRef;
+  /** Effects drawn from its pixels when the picture is put together (see effects.ts). */
+  effects?: LayerEffect[];
 }
 
 /**
@@ -149,6 +152,7 @@ export const cloneLayer = (layer: Layer, keepId = true): Layer => ({
   pixels: layer.pixels.slice(),
   ...(layer.component && { component: { ...layer.component } }),
   ...(layer.instance && { instance: { ...layer.instance } }),
+  ...(layer.effects && { effects: layer.effects.map((e) => ({ ...e })) }),
 });
 
 export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {

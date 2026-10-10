@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
@@ -677,6 +678,7 @@ export function RightPanel() {
             <ColorsSection />
             <PaletteSection />
             <LayerSection />
+            <EffectsSection />
             <DisplaySection />
           </>
         ) : (
