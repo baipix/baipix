@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Resize a layer or a selection by its sides too, not only its corners: a handle in the middle of each side, and the whole side can be grabbed. A side changes the width or the height alone, the opposite side staying put; Alt resizes from the center, Shift keeps the proportions. (#266)
+
 ### Changed
 
 - Gradient stops and layer effects take any color, not only the palette's: under the palette come the primary, secondary and recent colors, and a hex field. A color that isn't in the palette gets a + to add it there. (#265)

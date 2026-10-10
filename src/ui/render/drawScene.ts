@@ -140,6 +140,30 @@ function strokeTwoTone(ctx: CanvasRenderingContext2D, lw: number, theme: Theme):
  * A blue frame with white square handles on its corners, like a selected object in a design tool,
  * and an optional size badge under it. In device pixels.
  */
+/**
+ * Where a frame's handles go: its corners, and the middle of its sides when there's room for them
+ * between the corners (the sides resize in one direction).
+ */
+function handlePoints(
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number,
+  hs: number,
+  sides: boolean,
+): number[][] {
+  const points = [
+    [rx, ry],
+    [rx + rw, ry],
+    [rx, ry + rh],
+    [rx + rw, ry + rh],
+  ];
+  if (!sides) return points;
+  if (rw > hs * 3) points.push([rx + rw / 2, ry], [rx + rw / 2, ry + rh]);
+  if (rh > hs * 3) points.push([rx, ry + rh / 2], [rx + rw, ry + rh / 2]);
+  return points;
+}
+
 function drawFrame(
   ctx: CanvasRenderingContext2D,
   rx: number,
@@ -149,18 +173,14 @@ function drawFrame(
   dpr: number,
   theme: Theme,
   label?: string,
+  sides = false,
 ): void {
   const lw = Math.max(1, Math.round(dpr));
   ctx.strokeStyle = theme.highlight;
   ctx.lineWidth = lw;
   ctx.strokeRect(rx - lw / 2, ry - lw / 2, rw + lw, rh + lw);
   const hs = Math.round(8 * dpr);
-  for (const [cx, cy] of [
-    [rx, ry],
-    [rx + rw, ry],
-    [rx, ry + rh],
-    [rx + rw, ry + rh],
-  ]) {
+  for (const [cx, cy] of handlePoints(rx, ry, rw, rh, hs, sides)) {
     const hx = Math.round(cx - hs / 2);
     const hy = Math.round(cy - hs / 2);
     ctx.fillStyle = theme.handle;
@@ -414,7 +434,7 @@ export function drawScene(
     const rw = r.w * s - gap;
     const rh = r.h * s - gap;
     const note = scene.sizeNote ? ` · ${scene.sizeNote}` : '';
-    drawFrame(ctx, X + r.x * s, Y + r.y * s, rw, rh, dpr, theme, `${r.w} × ${r.h}${note}`);
+    drawFrame(ctx, X + r.x * s, Y + r.y * s, rw, rh, dpr, theme, `${r.w} × ${r.h}${note}`, true);
   }
 
   // Selection: blue outline, corner handles and a size badge.
@@ -451,12 +471,7 @@ export function drawScene(
     edge();
     ctx.restore();
     const hs = Math.round(7 * dpr);
-    for (const [cx, cy] of [
-      [rx, ry],
-      [rx + rw, ry],
-      [rx, ry + rh],
-      [rx + rw, ry + rh],
-    ]) {
+    for (const [cx, cy] of handlePoints(rx, ry, rw, rh, hs, true)) {
       const hx = Math.round(cx - hs / 2);
       const hy = Math.round(cy - hs / 2);
       ctx.fillStyle = theme.handle;

@@ -908,6 +908,12 @@ body.is-resizing * {
 .canvas.on-handle-nesw {
   cursor: nesw-resize !important;
 }
+.canvas.on-handle-ns {
+  cursor: ns-resize !important;
+}
+.canvas.on-handle-ew {
+  cursor: ew-resize !important;
+}
 /* Just outside a corner of the frame: rotate (a pixel arc with an arrow, white halo). */
 .canvas.on-rotate {
   cursor:

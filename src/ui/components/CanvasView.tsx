@@ -515,7 +515,11 @@ export function CanvasView() {
       { x: r.x, y: r.y + r.h },
       { x: r.x + r.w, y: r.y + r.h },
     ];
-    /** The handle under the pointer: a corner of the selection, or of the framed active layer. */
+    /**
+     * The handle under the pointer: a corner of the selection, or of the framed active layer (0 to
+     * 3: top left, top right, bottom left, bottom right), or one of its sides, anywhere along it
+     * (4 to 7: top, right, bottom, left).
+     */
     const handleAt = (l: { x: number; y: number }): { rect: Rect; corner: number } | null => {
       const state = editor.getState();
       if (state.tool !== 'move' || state.referenceSelected || editor.isStroking) return null;
@@ -526,7 +530,16 @@ export function CanvasView() {
       const corner = cornersOf(rect).findIndex(
         (c) => Math.abs(c.x - p.x) <= reach && Math.abs(c.y - p.y) <= reach,
       );
-      return corner < 0 ? null : { rect, corner };
+      if (corner >= 0) return { rect, corner };
+      const along = (v: number, from: number, size: number) => v > from + reach && v < from + size - reach;
+      const near = (v: number, at: number) => Math.abs(v - at) <= reach / 2;
+      const inX = along(p.x, rect.x, rect.w);
+      const inY = along(p.y, rect.y, rect.h);
+      if (inX && near(p.y, rect.y)) return { rect, corner: 4 };
+      if (inY && near(p.x, rect.x + rect.w)) return { rect, corner: 5 };
+      if (inX && near(p.y, rect.y + rect.h)) return { rect, corner: 6 };
+      if (inY && near(p.x, rect.x)) return { rect, corner: 7 };
+      return null;
     };
     /** Just outside a corner of the frame (beyond its handle): where dragging rotates. */
     const rotateZoneAt = (l: { x: number; y: number }): Rect | null => {
@@ -557,11 +570,20 @@ export function CanvasView() {
     ): Rect => {
       const p = artPoint(l);
       const center = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
-      const anchor = mods.altKey ? center : cornersOf(from)[3 - corner];
+      // A side resizes one way: its opposite side stays, the other direction keeps its size.
+      const side = corner >= 4 ? corner - 4 : -1;
+      const horizontal = side === 1 || side === 3;
+      const sideAnchor = [
+        { x: center.x, y: from.y + from.h },
+        { x: from.x, y: center.y },
+        { x: center.x, y: from.y },
+        { x: from.x + from.w, y: center.y },
+      ][side];
+      const anchor = mods.altKey ? center : side >= 0 ? sideAnchor : cornersOf(from)[3 - corner];
       const span = mods.altKey ? 2 : 1;
-      let fx = (Math.abs(p.x - anchor.x) * span) / from.w;
-      let fy = (Math.abs(p.y - anchor.y) * span) / from.h;
-      if (mods.shiftKey) fx = fy = Math.max(fx, fy);
+      let fx = side >= 0 && !horizontal ? 1 : (Math.abs(p.x - anchor.x) * span) / from.w;
+      let fy = side >= 0 && horizontal ? 1 : (Math.abs(p.y - anchor.y) * span) / from.h;
+      if (mods.shiftKey) fx = fy = side >= 0 ? (horizontal ? fx : fy) : Math.max(fx, fy);
       const reach = (6 * viewport.dpr) / viewport.scale;
       const snap = (f: number, size: number) => {
         if (mods.metaKey || mods.ctrlKey) return f;
@@ -576,8 +598,11 @@ export function CanvasView() {
       const fmt = (f: number) => (f >= 1 ? `×${+f.toFixed(2)}` : `×1/${Math.round(1 / f)}`);
       const exact = (f: number) => [1, 2, 3, 4, 5, 6, 8, 1 / 2, 1 / 3, 1 / 4].includes(f);
       scaleNote = exact(fx) && exact(fy) ? (fx === fy ? fmt(fx) : `${fmt(fx)} · ${fmt(fy)}`) : null;
-      const x = mods.altKey ? center.x - w / 2 : p.x < anchor.x ? anchor.x - w : anchor.x;
-      const y = mods.altKey ? center.y - h / 2 : p.y < anchor.y ? anchor.y - h : anchor.y;
+      // The direction a side doesn't resize stays centered (it only changes with Shift).
+      const keepX = side >= 0 && !horizontal;
+      const keepY = side >= 0 && horizontal;
+      const x = mods.altKey || keepX ? center.x - w / 2 : p.x < anchor.x ? anchor.x - w : anchor.x;
+      const y = mods.altKey || keepY ? center.y - h / 2 : p.y < anchor.y ? anchor.y - h : anchor.y;
       return { x: Math.round(x), y: Math.round(y), w, h };
     };
     let activeBoxCache: { key: string; rect: Rect | null } | null = null;
@@ -754,6 +779,8 @@ export function CanvasView() {
       const handle = editor.isStroking ? null : handleAt(lastLocal);
       canvas.classList.toggle('on-handle-nwse', !!handle && (handle.corner === 0 || handle.corner === 3));
       canvas.classList.toggle('on-handle-nesw', !!handle && (handle.corner === 1 || handle.corner === 2));
+      canvas.classList.toggle('on-handle-ns', !!handle && (handle.corner === 4 || handle.corner === 6));
+      canvas.classList.toggle('on-handle-ew', !!handle && (handle.corner === 5 || handle.corner === 7));
       canvas.classList.toggle('on-rotate', !editor.isStroking && !handle && rotateZoneAt(lastLocal) !== null);
       // Alt picks a color with drawing tools: show the eyedropper while it is held.
       canvas.classList.toggle('alt-pick', e.altKey && DRAWING_TOOLS.includes(editor.getState().tool));
