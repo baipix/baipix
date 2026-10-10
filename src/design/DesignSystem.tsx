@@ -631,7 +631,7 @@ function SurfacesBlock() {
         </Specimen>
         <Specimen
           label="Size list"
-          use="Starting points for a new file (the new file dialog, the first launch): plain rows, the canvas's shape as a small outline, the name, the size and what it sets up. A click picks one, a double-click or Enter starts with it."
+          use="Starting points for a new file (the new file dialog, the first launch): plain rows: the name, the size and what it sets up. A click picks one, a double-click or Enter starts with it."
         >
           <div style={{ width: 288 }}>
             <SizeList

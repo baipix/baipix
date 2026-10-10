@@ -2620,7 +2620,7 @@ body.is-dragging-swatch * {
 }
 .size-row {
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   height: 28px;
@@ -2642,18 +2642,6 @@ body.is-dragging-swatch * {
 }
 .size-row[aria-pressed='true'] .muted {
   color: var(--glow-muted);
-}
-/* The canvas's proportions, a small outline instead of a picture. */
-.size-shape {
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 14px;
-}
-.size-shape > span {
-  display: block;
-  border: 1px solid currentColor;
-  opacity: 0.6;
 }
 .dialog-footer-start {
   flex: 1;

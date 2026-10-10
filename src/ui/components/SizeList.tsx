@@ -7,18 +7,6 @@ export interface SizeChoice {
   template?: Template;
 }
 
-/** The canvas's proportions, as a small outline in a 14×12 box. */
-function Shape({ width, height }: { width: number; height: number }) {
-  const k = Math.min(14 / width, 12 / height);
-  return (
-    <span className="size-shape" aria-hidden="true">
-      <span
-        style={{ width: Math.max(3, Math.round(width * k)), height: Math.max(3, Math.round(height * k)) }}
-      />
-    </span>
-  );
-}
-
 /**
  * Sizes to start from, as plain rows like a list in Figma: the last sizes used, then the
  * templates (a name, its size, and what it sets up). A click picks one, a double-click or
@@ -52,7 +40,6 @@ export function SizeList({
         onCreate(choice);
       }}
     >
-      <Shape width={choice.width} height={choice.height} />
       <span className="size-name truncate">{name}</span>
       <span className="muted">{aside}</span>
     </button>
