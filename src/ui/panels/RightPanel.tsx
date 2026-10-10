@@ -144,7 +144,12 @@ function PaletteSection() {
                   ? { label: t('palette.remove'), onSelect: () => editor.removeFromPalette() }
                   : { label: t('palette.add'), onSelect: () => editor.addToPalette() },
                 { label: t('palette.ramp'), onSelect: () => editor.addRamp() },
-                { label: t('palette.sort'), onSelect: () => editor.sortPalette() },
+                {
+                  label: t('palette.sort'),
+                  // Drawing colors are sorted already.
+                  disabled: palette.key === 'drawing',
+                  onSelect: () => editor.sortPalette(),
+                },
                 '-',
                 { label: t('palette.fromDrawing'), onSelect: () => editor.paletteFromDrawing() },
                 { label: t('palette.openFile'), onSelect: () => void actions.importPalette() },

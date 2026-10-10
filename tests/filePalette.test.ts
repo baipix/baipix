@@ -56,10 +56,43 @@ describe('the palette belongs to the file', () => {
   it('stays as edited when a drawing step is undone', () => {
     const e = new Editor();
     e.setPalettePreset('sweetie16');
-    dot(e, 0, RED);
     e.addToPalette(RED);
+    dot(e, 0, BLUE);
     e.undo(); // the dot, not the palette
     expect(e.getState().palette.colors).toContain(RED);
+  });
+
+  it('undoes its own changes: sorting a preset gives the preset back, in its order', () => {
+    const e = new Editor();
+    e.setPalettePreset('pico8');
+    e.sortPalette();
+    expect(e.getState().palette.key).toBe('custom');
+    e.undo();
+    expect(e.getState().palette).toMatchObject({ key: 'pico8', colors: presetColors('pico8') });
+    e.redo();
+    expect(e.getState().palette.key).toBe('custom');
+    e.undo();
+    e.undo(); // the choice of the preset
+    expect(e.getState().palette.key).toBe('drawing');
+  });
+
+  it('undoes an added or removed color', () => {
+    const e = new Editor();
+    e.setPaletteColors([RED]);
+    e.addToPalette(BLUE);
+    e.removeFromPalette(RED);
+    expect(e.getState().palette.colors).toEqual([BLUE]);
+    e.undo();
+    expect(e.getState().palette.colors).toEqual([RED, BLUE]);
+    e.undo();
+    expect(e.getState().palette.colors).toEqual([RED]);
+  });
+
+  it('sorting the colors of the drawing does nothing: they are sorted already, and follow the drawing', () => {
+    const e = new Editor();
+    dot(e, 0, RED);
+    e.sortPalette();
+    expect(e.getState().palette.key).toBe('drawing');
   });
 
   it('a color adjustment leaves the colors of the drawing in that mode', () => {
