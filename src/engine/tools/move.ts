@@ -1,13 +1,16 @@
 import { syncInstances } from '../components';
 import type { Rect } from '../math';
 import { reframe } from '../outside';
-import { extractBlock, fillRect, stampBlock, type PixelBlock } from '../region';
+import { extractBlock, stampBlock, type PixelBlock } from '../region';
+import { clipSelection, fillSelection, maskBlock, type Selection } from '../selection';
 import type { Stroke, Tool } from './types';
 
 interface MoveState {
   block?: PixelBlock;
   cleared?: Uint32Array;
   origin?: Rect;
+  /** The selection's shape (lasso, magic wand), which moves with it. */
+  mask?: Uint8Array;
   /** An instance moves by its position, its pixels coming from the master. */
   instance?: { x: number; y: number };
   /** A master's frame, which moves with its pixels. */
@@ -23,13 +26,15 @@ export function beginMove(s: Stroke): void {
   if (s.layer.instance) state.instance = { x: s.layer.instance.x, y: s.layer.instance.y };
   else if (s.selection) {
     const { width, height } = s.doc;
-    state.origin = { ...s.selection };
-    state.block = extractBlock(s.base, width, height, s.selection);
-    state.cleared = s.base.slice();
-    fillRect(state.cleared, width, height, s.selection, 0);
-    // extractBlock clips to the canvas: keep the origin aligned with the clipped block.
-    state.origin.x = Math.max(0, state.origin.x);
-    state.origin.y = Math.max(0, state.origin.y);
+    // Cut to the canvas first: the block, the origin and the shape stay aligned.
+    const sel: Selection | null = clipSelection(s.selection, width, height);
+    if (sel) {
+      state.origin = { x: sel.x, y: sel.y, w: sel.w, h: sel.h };
+      state.block = maskBlock(extractBlock(s.base, width, height, sel), sel);
+      state.mask = sel.mask;
+      state.cleared = s.base.slice();
+      fillSelection(state.cleared, width, height, sel, 0);
+    }
   }
   if (s.layer.component && !s.selection) state.frame = { ...s.layer.component };
   s.scratch.move = state;
@@ -56,7 +61,13 @@ export function applyMove(s: Stroke, dx: number, dy: number): void {
   const x = state.origin.x + dx;
   const y = state.origin.y + dy;
   stampBlock(s.layer.pixels, width, height, state.block, x, y);
-  s.setSelection({ x, y, w: state.block.width, h: state.block.height });
+  s.setSelection({
+    x,
+    y,
+    w: state.block.width,
+    h: state.block.height,
+    ...(state.mask && { mask: state.mask }),
+  });
 }
 
 export const move: Tool = {

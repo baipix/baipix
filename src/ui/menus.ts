@@ -9,6 +9,7 @@ import { openAdjust, openDialog, toast, uiStore } from './uiStore';
 
 import { viewport } from './viewport';
 import { ALIGNS } from './components/ToolOptionsBar';
+import { SELECTS } from './tools';
 
 const GITHUB_URL = 'https://github.com/baipix/baipix';
 const CHANGELOG_URL = `${GITHUB_URL}/blob/main/CHANGELOG.md`;
@@ -309,6 +310,18 @@ export const MENU_BAR: MenuBarMenu[] = [
           disabled: !s.selection,
           onSelect: () => editor.deselect(),
         },
+        {
+          label: t('menu.invertSelection'),
+          shortcut: 'Ctrl+Shift+I',
+          onSelect: () => editor.invertSelection(),
+        },
+        '-',
+        ...SELECTS.map((m) => ({
+          label: t(m.label),
+          shortcut: m.shortcut,
+          checked: s.tool === m.id,
+          onSelect: () => editor.setTool(m.id),
+        })),
         '-',
         {
           label: t('brush.fromSelection'),

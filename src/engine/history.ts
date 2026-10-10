@@ -1,10 +1,10 @@
+import type { Selection } from './selection';
 import type { Color } from './color';
 import { cloneDocument, type PixelDoc } from './document';
-import type { Rect } from './math';
 
 export interface Snapshot {
   doc: PixelDoc;
-  selection: Rect | null;
+  selection: Selection | null;
   /**
    * The palette, only for steps that change it along with the pixels (an adjustment applied to
    * the palette too): undoing it restores both, so they stay in step.
@@ -12,7 +12,7 @@ export interface Snapshot {
   palette?: Color[];
 }
 
-export const takeSnapshot = (doc: PixelDoc, selection: Rect | null): Snapshot => ({
+export const takeSnapshot = (doc: PixelDoc, selection: Selection | null): Snapshot => ({
   doc: cloneDocument(doc),
   selection: selection ? { ...selection } : null,
 });

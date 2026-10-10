@@ -22,11 +22,21 @@ export const SHAPES: ToolMeta[] = [
 ];
 export const SHAPE_IDS: ToolId[] = SHAPES.map((s) => s.id);
 
-/** Toolbar layout: groups are separated by a divider; `SHAPES` renders as a single menu button. */
-export const TOOL_GROUPS: ToolMeta[][] = [
+/** Selection tools share one toolbar button with a menu, like the shapes. */
+export const SELECTS: ToolMeta[] = [
+  { id: 'select', icon: 'select', label: 'tool.select', shortcut: 'M' },
+  { id: 'lassoSelect', icon: 'lassoSelect', label: 'tool.lassoSelect', shortcut: 'Q' },
+  { id: 'wand', icon: 'wand', label: 'tool.wand', shortcut: 'Y' },
+];
+
+/**
+ * Toolbar layout: groups are separated by a divider. A list inside a group (`SELECTS`, `SHAPES`)
+ * renders as a single button with a menu.
+ */
+export const TOOL_GROUPS: (ToolMeta | ToolMeta[])[][] = [
   [
     { id: 'move', icon: 'move', label: 'tool.move', shortcut: 'V' },
-    { id: 'select', icon: 'select', label: 'tool.select', shortcut: 'M' },
+    SELECTS,
     { id: 'hand', icon: 'hand', label: 'tool.hand', shortcut: 'H' },
   ],
   [
@@ -36,7 +46,7 @@ export const TOOL_GROUPS: ToolMeta[][] = [
     { id: 'bucket', icon: 'bucket', label: 'tool.bucket', shortcut: 'G' },
     { id: 'gradient', icon: 'gradient', label: 'tool.gradient', shortcut: 'D' },
   ],
-  SHAPES,
+  [SHAPES],
   [
     { id: 'shade', icon: 'shade', label: 'tool.shade', shortcut: 'S' },
     { id: 'lighten', icon: 'lighten', label: 'tool.lighten', shortcut: 'O' },
@@ -48,7 +58,7 @@ export const TOOL_GROUPS: ToolMeta[][] = [
   ],
 ];
 
-export const TOOL_LIST: ToolMeta[] = TOOL_GROUPS.flat();
+export const TOOL_LIST: ToolMeta[] = TOOL_GROUPS.flat(2);
 export const toolMeta = (id: ToolId): ToolMeta => TOOL_LIST.find((t) => t.id === id)!;
 
 /** Tools that show a brush footprint under the cursor. */

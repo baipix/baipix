@@ -1,3 +1,4 @@
+import type { Selection } from '../selection';
 import type { Color } from '../color';
 import type { Layer, PixelDoc } from '../document';
 import type { Outside } from '../outside';
@@ -5,12 +6,14 @@ import type { PixelBlock } from '../region';
 import type { DitherPattern } from '../dither';
 import type { GradientDither, GradientShape, GradientStop } from '../gradient';
 import type { LiquifyMode } from './liquify';
-import type { Point, Rect } from '../math';
+import type { Point } from '../math';
 import type { PaletteIndex, ShadeMode } from '../palette';
 
 export type ToolId =
   | 'move'
   | 'select'
+  | 'lassoSelect'
+  | 'wand'
   | 'hand'
   | 'pencil'
   | 'eraser'
@@ -86,6 +89,8 @@ export interface ToolOptions {
   gradientStops: GradientStop[] | null;
   /** Gradient: fill the whole layer, not only the area of the same color under the first click. */
   gradientLayer: boolean;
+  /** Magic wand: the area of the color clicked (true), or that color everywhere. */
+  wandContiguous: boolean;
 }
 
 export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
@@ -119,6 +124,7 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   gradientDither: 'bayer',
   gradientStops: null,
   gradientLayer: false,
+  wandContiguous: true,
 };
 
 export interface Modifiers {
@@ -153,7 +159,7 @@ export interface Stroke {
   wrap: boolean;
   /** The custom brush the Pencil paints with, if any. */
   customBrush: PixelBlock | null;
-  selection: Rect | null;
+  selection: Selection | null;
   /** Per-pixel marks, for tools that must affect each pixel once per stroke. */
   visited: Uint8Array;
   /** Points painted so far (pixel-perfect bookkeeping). */
@@ -163,7 +169,7 @@ export interface Stroke {
   /** Color of the flattened image at a point (for the picker). */
   sample(p: Point): Color;
   setColor(slot: 'primary' | 'secondary', color: Color): void;
-  setSelection(rect: Rect | null): void;
+  setSelection(selection: Selection | null): void;
 }
 
 export interface Tool {

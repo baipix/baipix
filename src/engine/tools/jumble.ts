@@ -1,5 +1,5 @@
+import { inSelection } from '../selection';
 import type { Point } from '../math';
-import { rectContains } from '../math';
 import { followPointer, inBounds, mirrorsOf } from './paint';
 import type { Stroke, Tool } from './types';
 
@@ -14,7 +14,7 @@ function jumble(s: Stroke, p: Point, random: () => number = Math.random): void {
   const o = Math.floor((size - 1) / 2);
   const swaps = Math.max(1, Math.round(size * size * 0.1 * s.options.jumbleStrength));
   const { width } = s.doc;
-  const usable = (x: number, y: number) => inBounds(s, x, y) && rectContains(s.selection, x, y);
+  const usable = (x: number, y: number) => inBounds(s, x, y) && inSelection(s.selection, x, y);
   for (let k = 0; k < swaps; k++) {
     const ax = p.x - o + Math.floor(random() * size);
     const ay = p.y - o + Math.floor(random() * size);

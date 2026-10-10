@@ -1,5 +1,6 @@
+import { inSelection } from '../selection';
 import { mirrorAxes } from '../document';
-import { rectContains, type Point } from '../math';
+import type { Point } from '../math';
 import { followPointer } from './paint';
 import type { Stroke, Tool } from './types';
 
@@ -50,7 +51,7 @@ function dab(s: Stroke, p: Point, move: Point): void {
     const y1 = Math.min(height - 1, Math.ceil(c.y + r));
     for (let y = y0; y <= y1; y++)
       for (let x = x0; x <= x1; x++) {
-        if (!rectContains(s.selection, x, y)) continue;
+        if (!inSelection(s.selection, x, y)) continue;
         const ox = x + 0.5 - c.x;
         const oy = y + 0.5 - c.y;
         const d = Math.hypot(ox, oy);
