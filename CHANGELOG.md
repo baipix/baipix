@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Website
+
+- The screenshots of the editor on the home page and in the README show the current interface, and `npm run screenshots` takes them again in dark and light whenever it changes. (#260)
+
 ## [0.5.0] - 2026-10-10
 
 Components and new tools: components and instances like in Figma, layer effects, a gradient tool, the lasso and the magic wand, a repeat grid, layers you can drag into groups and copy between files, export to Aseprite, and a smaller New file dialog.

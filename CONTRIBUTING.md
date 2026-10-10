@@ -33,6 +33,7 @@ Put `Closes #123` in your commit message or pull request description: the issue 
 - Add a line to `CHANGELOG.md`, under _Unreleased_, for anything people will notice.
 - Interface colors come from the tokens in `src/ui/styles/tokens.css`, written once as `light-dark(light, dark)`. Add a token there rather than a color in a component or in `app.css`. The canvas reads the same tokens through `readTheme()`.
 - Follow the design system for anything in the interface: [DESIGN.md](DESIGN.md) sums up the rules, and the design system page (`npm run dev`, then `/design.html`) shows every token and component.
+- Changed how the editor looks? Run `npm run screenshots` (it needs Google Chrome): it takes the screenshots of the website and the README again from the current interface, in dark and light. Commit them with your change.
 
 ## Adding a tool
 
