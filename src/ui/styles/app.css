@@ -306,9 +306,9 @@ body.is-resizing * {
   padding: 4px 16px 12px;
   border-bottom: 1px solid var(--line);
 }
+/* Takes the room left in a full-height panel (the mobile sheet); otherwise as tall as its rows. */
 .section.grow {
   flex: 1 1 auto;
-  min-height: 120px;
 }
 .section-title {
   display: flex;
