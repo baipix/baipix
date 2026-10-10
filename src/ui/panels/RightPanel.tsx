@@ -1,4 +1,6 @@
 import { useRef } from 'react';
+import { ColorChips } from '../components/ColorChips';
+import { ColorRow } from './ColorRow';
 import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
@@ -18,7 +20,6 @@ import { PaletteGrid } from '../components/PaletteGrid';
 import { Row, Section } from '../components/Section';
 import { openAdjust, openDialog, toast, uiStore } from '../uiStore';
 import { copyText } from '../../io/clipboard';
-import { ColorRow } from './ColorRow';
 import { ExportPreview } from './ExportPreview';
 
 const PIXEL_SIZES = [1, 2, 4, 8, 16, 32];
@@ -46,35 +47,6 @@ function RenderSection() {
   );
 }
 
-function ColorsSection() {
-  const t = useT();
-  const editor = useEditor();
-  const primary = useEditorState((s) => s.primary);
-  const secondary = useEditorState((s) => s.secondary);
-  return (
-    <Section
-      id="colors"
-      title={t('section.colors')}
-      aside={
-        <IconButton icon="swap" label={t('color.swap')} shortcut="X" onClick={() => editor.swapColors()} />
-      }
-    >
-      <ColorRow
-        slot="primary"
-        color={primary}
-        onChange={(c) => editor.setColor('primary', c)}
-        role={`${t('color.primary')} · ${t('color.leftClick')}`}
-      />
-      <ColorRow
-        slot="secondary"
-        color={secondary}
-        onChange={(c) => editor.setColor('secondary', c)}
-        role={`${t('color.secondary')} · ${t('color.rightClick')}`}
-      />
-    </Section>
-  );
-}
-
 function PaletteSection() {
   const t = useT();
   const editor = useEditor();
@@ -85,8 +57,8 @@ function PaletteSection() {
   const secondary = useEditorState((s) => s.secondary);
   return (
     <Section
-      id="palette"
-      title={t('section.palette')}
+      id="colors"
+      title={t('section.colors')}
       aside={
         <>
           {/* The palettes with their colors, not just their names. */}
@@ -175,34 +147,40 @@ function PaletteSection() {
         </>
       }
     >
-      {palette.key === 'drawing' && !palette.colors.length && (
-        <p className="hint">{t('palette.drawingEmpty')}</p>
-      )}
-      <PaletteGrid
-        colors={palette.colors}
-        primary={primary}
-        secondary={secondary}
-        onPick={(c, second) => editor.setColor(second ? 'secondary' : 'primary', c)}
-        onMove={(from, to) => editor.movePaletteColor(from, to)}
-        menu={(c) => {
-          const hex = toHex(c).slice(1).toUpperCase();
-          return [
-            { label: t('swatch.secondary'), onSelect: () => editor.setColor('secondary', c) },
-            '-',
-            {
-              label: t('swatch.replace'),
-              disabled: !alpha(primary) || opaque(primary) === c,
-              onSelect: () => toast(t('toast.colorReplaced', { count: editor.replaceColor(c, primary) })),
-            },
-            {
-              label: t('swatch.copyHex', { hex }),
-              onSelect: () => void copyText(hex).then((ok) => ok && toast(t('toast.hexCopied', { hex }))),
-            },
-            '-',
-            { label: t('swatch.remove'), onSelect: () => editor.removeFromPalette(c) },
-          ];
-        }}
-      />
+      {/* The two colors on the left, like Photoshop, the palette next to them. */}
+      <div className="colors-row">
+        <ColorChips />
+        <div className="colors-palette">
+          {palette.key === 'drawing' && !palette.colors.length && (
+            <p className="hint">{t('palette.drawingEmpty')}</p>
+          )}
+          <PaletteGrid
+            colors={palette.colors}
+            primary={primary}
+            secondary={secondary}
+            onPick={(c, second) => editor.setColor(second ? 'secondary' : 'primary', c)}
+            onMove={(from, to) => editor.movePaletteColor(from, to)}
+            menu={(c) => {
+              const hex = toHex(c).slice(1).toUpperCase();
+              return [
+                { label: t('swatch.secondary'), onSelect: () => editor.setColor('secondary', c) },
+                '-',
+                {
+                  label: t('swatch.replace'),
+                  disabled: !alpha(primary) || opaque(primary) === c,
+                  onSelect: () => toast(t('toast.colorReplaced', { count: editor.replaceColor(c, primary) })),
+                },
+                {
+                  label: t('swatch.copyHex', { hex }),
+                  onSelect: () => void copyText(hex).then((ok) => ok && toast(t('toast.hexCopied', { hex }))),
+                },
+                '-',
+                { label: t('swatch.remove'), onSelect: () => editor.removeFromPalette(c) },
+              ];
+            }}
+          />
+        </div>
+      </div>
       <div className="button-row">
         <button
           type="button"
@@ -685,7 +663,6 @@ export function RightPanel() {
         {tab === 'design' ? (
           <>
             <CanvasSection />
-            <ColorsSection />
             <PaletteSection />
             <LayerSection />
             <EffectsSection />

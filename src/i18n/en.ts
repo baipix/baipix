@@ -375,6 +375,7 @@ export const en = {
   'color.background': 'Background',
   'color.leftClick': 'Left click',
   'color.rightClick': 'Right click',
+  'color.bringFront': 'Bring to the front: draw with it',
   'color.swap': 'Swap colors',
   'colorChoices.inDrawing': 'In the drawing',
   'colorChoices.hex': 'Hex color',

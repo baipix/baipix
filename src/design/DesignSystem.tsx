@@ -5,6 +5,7 @@ import { EditorContext } from '../ui/EditorContext';
 import { AnchorGrid, type Anchor } from '../ui/components/AnchorGrid';
 import { GradientEditor } from '../ui/components/GradientEditor';
 import { PaletteColorButton } from '../ui/components/PaletteColorButton';
+import { ColorChips } from '../ui/components/ColorChips';
 import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
@@ -407,6 +408,14 @@ function FieldsBlock() {
         >
           <EditorContext.Provider value={gradientEditor}>
             <GradientEditor />
+          </EditorContext.Provider>
+        </Specimen>
+        <Specimen
+          label="Color chips"
+          use="The primary and secondary colors, like Photoshop: the front one is what the tools draw with (click it for its picker), a click on the back one brings it to the front, the arrows swap them (X)."
+        >
+          <EditorContext.Provider value={gradientEditor}>
+            <ColorChips />
           </EditorContext.Provider>
         </Specimen>
         <Specimen
