@@ -83,6 +83,17 @@ export interface Guides {
   y: number[];
 }
 
+/**
+ * A file's palette: a preset (its key) or the file's own colors ('custom'), or 'drawing', the
+ * colors the drawing uses, kept up to date as it changes (`colors` is then unused).
+ */
+export interface DocPalette {
+  key: string;
+  colors: Color[];
+  /** The file's own colors, kept while trying presets, to come back to them. */
+  custom?: Color[];
+}
+
 export interface PixelDoc {
   id: string;
   name: string;
@@ -110,6 +121,8 @@ export interface PixelDoc {
   guides?: Guides;
   /** Used to name new layers ("Layer 3"). */
   layerCounter: number;
+  /** The file's palette. Missing: the colors of the drawing (see `DocPalette`). */
+  palette?: DocPalette;
   /** Last change, in ms since the epoch (for the home screen). Missing in older files. */
   updatedAt?: number;
   reference?: ReferenceImage;

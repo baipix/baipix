@@ -1,7 +1,5 @@
 import type { Editor } from '../engine/editor';
 import { documentFromJson } from '../storage/fileFormat';
-import { sortByLightness } from '../engine/palette';
-import { uniqueColors } from '../engine/region';
 import { leaveHome } from './home';
 import { uiStore } from './uiStore';
 import { setTheme } from './theme';
@@ -36,7 +34,7 @@ export async function openScreenshotScene(editor: Editor): Promise<void> {
   const middle = doc.layers.findIndex((l) => l.name === 'Middle clouds');
   if (middle >= 0) editor.setActiveLayer(middle);
   // The drawing's own colors as the palette, no pixel grid, and the preview under the layers.
-  editor.setPaletteColors(sortByLightness(uniqueColors(editor.flatten())));
+  editor.setPalettePreset('drawing');
   editor.setView('grid', false);
   uiStore.set((s) => ({ preview: { ...s.preview, x: 10, y: 270 } }));
 }

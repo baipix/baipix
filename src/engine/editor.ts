@@ -104,7 +104,7 @@ type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
 export const DEFAULT_TILE_OPACITY = 0.65;
 
 export interface PaletteState {
-  /** Preset key, or 'custom'. */
+  /** Preset key, 'custom' (the file's own colors), or 'drawing' (the colors the drawing uses). */
   key: string;
   colors: Color[];
   custom: Color[] | null;
@@ -183,7 +183,8 @@ export interface Preferences {
   options: ToolOptions;
   primary: Color;
   secondary: Color;
-  palette: PaletteState;
+  /** Older saves only: the palette belongs to each file now. */
+  palette?: PaletteState;
   recent: Color[];
   view: ViewSettings;
   /** Custom brushes, colors as numbers so they can be saved as they are. */
@@ -288,8 +289,40 @@ export class Editor {
   private options: ToolOptions = { ...DEFAULT_TOOL_OPTIONS };
   private primary: Color;
   private secondary: Color;
-  private palette: PaletteState;
-  private paletteIndex: PaletteIndex;
+  /** The colors the drawing uses, for a palette in 'drawing' mode: worked out once per change. */
+  private drawingColors: { doc: PixelDoc; revision: number; colors: Color[] } | null = null;
+  /** The palette's index for the shading tools, built once per set of colors. */
+  private paletteCache: { colors: Color[]; index: PaletteIndex } | null = null;
+
+  /** The active file's palette (each file has its own, saved with it). */
+  private get palette(): PaletteState {
+    const p = this.doc.palette;
+    const custom = p?.custom ?? null;
+    if (p && p.key !== 'drawing') return { key: p.key, colors: p.colors, custom };
+    return { key: 'drawing', colors: this.colorsOfDrawing(), custom };
+  }
+
+  private set palette(p: PaletteState) {
+    this.doc.palette = {
+      key: p.key,
+      colors: p.key === 'drawing' ? [] : p.colors,
+      ...(p.custom && { custom: p.custom }),
+    };
+  }
+
+  private colorsOfDrawing(): Color[] {
+    const c = this.drawingColors;
+    if (c && c.doc === this.doc && c.revision === this.revision) return c.colors;
+    const colors = sortByLightness(uniqueColors(this.flatten({ includeBackground: false })));
+    this.drawingColors = { doc: this.doc, revision: this.revision, colors };
+    return colors;
+  }
+
+  private get paletteIndex(): PaletteIndex {
+    const colors = this.palette.colors;
+    if (this.paletteCache?.colors !== colors) this.paletteCache = { colors, index: new PaletteIndex(colors) };
+    return this.paletteCache.index;
+  }
   private view: ViewSettings = {
     grid: true,
     tile: false,
@@ -380,8 +413,6 @@ export class Editor {
 
   constructor(private labels: EditorLabels = DEFAULT_LABELS) {
     const colors = presetColors('sweetie16');
-    this.palette = { key: 'sweetie16', colors, custom: null };
-    this.paletteIndex = new PaletteIndex(colors);
     this.primary = colors[0];
     this.secondary = colors[12];
     this.addSession(createDocument(labels.untitled(1), 32, 32, labels.layer(1)));
@@ -499,7 +530,11 @@ export class Editor {
   }
 
   private restore(snapshot: Snapshot): void {
-    if (snapshot.palette) this.usePalette(snapshot.palette);
+    // The palette isn't part of the history either, except for the steps that changed it along
+    // with the pixels (`snapshot.palette`).
+    const palette = this.active.doc.palette;
+    if (palette) snapshot.doc.palette = palette;
+    else delete snapshot.doc.palette;
     // The reference image and the guides aren't part of the history: undo and redo leave them,
     // except across a canvas resize, which moved them with the drawing.
     const { reference, guides } = this.active.doc;
@@ -511,6 +546,7 @@ export class Editor {
     }
     this.active.doc = snapshot.doc;
     this.active.selection = snapshot.selection;
+    if (snapshot.palette) this.usePalette(snapshot.palette);
   }
 
   undo(): void {
@@ -1612,10 +1648,11 @@ export class Editor {
     this.commit();
   }
 
+  /** A preset, the file's own colors ('custom'), or the colors of the drawing ('drawing'). */
   setPalettePreset(key: string): void {
-    const colors = key === 'custom' ? (this.palette.custom ?? []) : presetColors(key);
+    const colors =
+      key === 'custom' ? (this.palette.custom ?? []) : key === 'drawing' ? [] : presetColors(key);
     this.palette = { ...this.palette, key, colors };
-    this.paletteIndex = new PaletteIndex(colors);
     this.commit();
   }
 
@@ -1636,7 +1673,6 @@ export class Editor {
   private usePalette(colors: Color[]): void {
     const unique = [...new Set(colors.map(opaque))];
     this.palette = { key: 'custom', colors: unique, custom: unique };
-    this.paletteIndex = new PaletteIndex(unique);
   }
 
   addToPalette(color: Color = this.primary): void {
@@ -1671,7 +1707,7 @@ export class Editor {
     if (!hits.some(Boolean) && !inPalette) return 0;
     this.cancelStroke();
     this.checkpoint();
-    this.active.history.top()!.palette = this.palette.colors;
+    if (this.palette.key !== 'drawing') this.active.history.top()!.palette = this.palette.colors;
     let count = 0;
     layers.forEach((layer, k) => {
       if (!hits[k]) return;
@@ -1682,8 +1718,9 @@ export class Editor {
           count++;
         }
     });
-    // The swatch takes the new color, unless the palette has it already.
-    if (inPalette) this.usePalette(this.palette.colors.map((c) => (c === a ? b : c)));
+    // The swatch takes the new color, unless the palette has it already (or is the drawing's).
+    if (inPalette && this.palette.key !== 'drawing')
+      this.usePalette(this.palette.colors.map((c) => (c === a ? b : c)));
     this.commit();
     return count;
   }
@@ -1792,7 +1829,6 @@ export class Editor {
       options: this.options,
       primary: this.primary,
       secondary: this.secondary,
-      palette: this.palette,
       recent: this.recent,
       view: this.view,
       brushes: this.brushes.map((b) => ({ ...b, pixels: [...b.pixels] })),
@@ -1831,10 +1867,7 @@ export class Editor {
         .map((b) => ({ ...b, pixels: Uint32Array.from(b.pixels) }));
     if (Array.isArray(p.recent))
       this.recent = p.recent.filter((c) => typeof c === 'number').slice(0, RECENT_COLORS);
-    if (p.palette?.colors?.length) {
-      this.palette = p.palette;
-      this.paletteIndex = new PaletteIndex(p.palette.colors);
-    }
+    // The palette used to be saved here, for every file; it belongs to each file now.
     this.commit(false);
   }
 
@@ -2268,10 +2301,12 @@ export class Editor {
     this.palette = base;
     this.writeAdjustment(null);
     this.checkpoint();
-    if (palette) this.active.history.top()!.palette = base.colors;
+    // The colors of the drawing follow the pixels on their own: nothing to swap or set.
+    const ownColors = palette && base.key !== 'drawing';
+    if (ownColors) this.active.history.top()!.palette = base.colors;
     this.writeAdjustment(change);
     this.adjusting = null;
-    if (palette) this.usePalette(palette(base.colors));
+    if (ownColors) this.usePalette(palette(base.colors));
     this.commit();
   }
 

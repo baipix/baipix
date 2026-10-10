@@ -381,12 +381,15 @@ export const fr: Record<MessageKey, string> = {
   'color.leftClick': 'Clic gauche',
   'color.rightClick': 'Clic droit',
   'color.swap': 'Permuter les couleurs',
+  'colorChoices.inDrawing': 'Dans le dessin',
   'colorChoices.hex': 'Couleur hexadécimale',
   'colorChoices.addToPalette': 'Ajouter cette couleur à la palette',
-  'color.recent': 'Couleurs récentes',
   'color.choose': 'Choisir une couleur',
 
   'palette.preset': 'Palette prédéfinie',
+  'palette.drawing': 'Couleurs du dessin',
+  'palette.drawingEmpty':
+    'Dessine : les couleurs utilisées apparaissent ici. Ou choisis une palette dans le menu au-dessus.',
   'palette.custom': 'Personnalisée',
   'palette.actions': 'Actions de palette',
   'palette.add': 'Ajouter la couleur principale',

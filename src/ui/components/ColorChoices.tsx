@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { uniqueColors } from '../../engine/region';
 import { alpha, fromHex, opaque, toCss, toHex, type Color } from '../../engine/color';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { IconButton } from './IconButton';
 
 /**
- * Colors to pick from, for a gradient stop or an effect: the palette first, then the primary,
- * secondary and recent colors, and any color typed in hex. A color that isn't in the palette
+ * Colors to pick from, for a gradient stop or an effect: the palette first, then the colors of
+ * the drawing and the primary and secondary ones, and any color typed in hex. A color that isn't in the palette
  * can be added to it in one click, so the drawing doesn't drift away from it unnoticed.
  */
 export function ColorChoices({
@@ -24,14 +25,20 @@ export function ColorChoices({
   const palette = useEditorState((s) => s.palette.colors);
   const primary = useEditorState((s) => s.primary);
   const secondary = useEditorState((s) => s.secondary);
-  const recent = useEditorState((s) => s.recent);
+  const revision = useEditorState((s) => s.revision);
+  // The colors the drawing uses, worked out again only when it changes.
+  const drawing = useMemo(
+    () => uniqueColors(editor.flatten({ includeBackground: false })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pixel buffers are mutable, revision tracks them
+    [editor, revision],
+  );
   const [hex, setHex] = useState(toHex(color).slice(1));
   useEffect(() => setHex(toHex(color).slice(1)), [color]);
 
   // The colors in use, without those already in the palette, opaque, and each once.
-  const others = [...new Set([primary, secondary, ...recent].filter((c) => alpha(c)).map(opaque))]
+  const others = [...new Set([primary, secondary, ...drawing].filter((c) => alpha(c)).map(opaque))]
     .filter((c) => !palette.includes(c))
-    .slice(0, 8);
+    .slice(0, 16);
   const inPalette = !alpha(color) || palette.includes(opaque(color));
   const swatch = (c: Color, key: string) => (
     <button
@@ -65,7 +72,7 @@ export function ColorChoices({
       </div>
       {others.length > 0 && (
         <>
-          <div className="color-choices-title">{t('color.recent')}</div>
+          <div className="color-choices-title">{t('colorChoices.inDrawing')}</div>
           <div className="gradient-swatches">{others.map((c, i) => swatch(c, `r${i}`))}</div>
         </>
       )}

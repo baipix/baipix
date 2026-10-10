@@ -50,7 +50,6 @@ function ColorsSection() {
   const editor = useEditor();
   const primary = useEditorState((s) => s.primary);
   const secondary = useEditorState((s) => s.secondary);
-  const recent = useEditorState((s) => s.recent);
   return (
     <Section
       id="colors"
@@ -71,16 +70,6 @@ function ColorsSection() {
         onChange={(c) => editor.setColor('secondary', c)}
         role={`${t('color.secondary')} · ${t('color.rightClick')}`}
       />
-      {recent.length > 0 && (
-        <div className="recent-colors" role="group" aria-label={t('color.recent')}>
-          <PaletteGrid
-            colors={recent}
-            primary={primary}
-            secondary={secondary}
-            onPick={(c, isSecondary) => editor.setColor(isSecondary ? 'secondary' : 'primary', c)}
-          />
-        </div>
-      )}
     </Section>
   );
 }
@@ -108,6 +97,13 @@ function PaletteSection() {
             data-tip={t('palette.preset')}
             onClick={(e) =>
               openMenu(e.currentTarget, [
+                // The file's own: the colors its drawing uses, kept up to date.
+                {
+                  label: t('palette.drawing'),
+                  checked: palette.key === 'drawing',
+                  onSelect: () => editor.setPalettePreset('drawing'),
+                },
+                '-',
                 ...Object.entries(PALETTE_PRESETS)
                   .filter(([key]) => key === palette.key || !hidden.includes(key))
                   .map(([key, p]) => {
@@ -137,7 +133,11 @@ function PaletteSection() {
             }
           >
             <span className="truncate">
-              {palette.key === 'custom' ? t('palette.custom') : PALETTE_PRESETS[palette.key]?.name}
+              {palette.key === 'custom'
+                ? t('palette.custom')
+                : palette.key === 'drawing'
+                  ? t('palette.drawing')
+                  : PALETTE_PRESETS[palette.key]?.name}
             </span>
             <span className="caret">▾</span>
           </button>
@@ -168,6 +168,9 @@ function PaletteSection() {
         </>
       }
     >
+      {palette.key === 'drawing' && !palette.colors.length && (
+        <p className="hint">{t('palette.drawingEmpty')}</p>
+      )}
       <PaletteGrid
         colors={palette.colors}
         primary={primary}
