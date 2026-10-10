@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- A + after the last swatch of the palette adds the color in use to it; it's greyed out when that color is already there. The Create a ramp and Export buttons under the palette go away: both are in its ... menu. (#280)
 - A shorter toolbar, 12 tools instead of 20: like the shapes and the selections, the paint bucket and the gradient share a button, so do shade and lighten, and blur, jumble and liquify (Rework). Each button shows the last tool used of its family; single-key shortcuts don't change. A hidden layer's eye shows in the Layers panel without its lock. (#278)
 - Export is a section at the bottom of the right panel, like Figma, instead of a tab: the preview of the file, its scale from 1× to 32×, its name and format, Export, Copy as SVG and Copy as PNG. The right panel has no tabs anymore. The Aseprite format is now remembered too. (#277)
 - The primary and secondary colors are two overlapping chips, like Photoshop, next to the palette in one Colors section. The front one is what the tools draw with: click it for its picker (hex, opacity). A click on the one behind brings it to the front, so drawing with the secondary color no longer needs a right click; the arrows in the corner swap them (X). (#276)
