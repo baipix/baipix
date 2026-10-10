@@ -34,6 +34,19 @@ describe('Guides', () => {
     e.setGuide('x', null, 2);
     e.resize(width + 4, height);
     expect(guides(e)).toEqual({ x: [4], y: [] });
+    // Undoing the resize puts them back with the drawing, and redoing moves them again.
+    e.undo();
+    expect(e.getState().doc.width).toBe(width);
+    expect(guides(e)).toEqual({ x: [2], y: [] });
+    e.redo();
+    expect(guides(e)).toEqual({ x: [4], y: [] });
+    // Other steps still leave them where they are.
+    e.setGuide('x', 0, 6);
+    e.setColor('primary', 0xff0000ff);
+    e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+    e.endStroke();
+    e.undo();
+    expect(guides(e)).toEqual({ x: [6], y: [] });
   });
 
   it('are saved in .baipix files, and checked when read', () => {

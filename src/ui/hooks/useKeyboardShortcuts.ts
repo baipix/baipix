@@ -16,6 +16,21 @@ const isTyping = (target: EventTarget | null) =>
 export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // Undo and redo in a number field (the canvas size, an opacity…): the editor's, not the
+      // field's text. The field commits what was typed first, so that's what gets undone.
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.code === 'KeyZ' &&
+        e.target instanceof HTMLInputElement &&
+        e.target.type === 'number' &&
+        !document.querySelector('dialog[open]')
+      ) {
+        e.preventDefault();
+        e.target.blur();
+        // Once the field has shown what it committed: then it sees the value change back.
+        const redo = e.shiftKey;
+        return void setTimeout(() => (redo ? editor.redo() : editor.undo()));
+      }
       if (isMenuOpen() || document.querySelector('dialog[open]') || isTyping(e.target)) return;
       if (uiStore.get().home) return;
       const key = e.key.toLowerCase();

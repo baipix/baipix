@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+
+- Cmd+Z (Ctrl+Z) right after typing a size, an opacity or any number: it now undoes the change in the editor instead of the text in the field. Undoing a canvas resize puts the guides and the reference image back too. (#264)
+
 ### Website
 
 - On the Draw page, each tool's row shows the editor's own icon for it instead of its shortcut; the shortcuts stay together at the bottom of the page. (#261)
