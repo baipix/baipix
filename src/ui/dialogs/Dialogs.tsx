@@ -6,6 +6,7 @@ import { PALETTE_PRESETS, parseHexList, presetColors } from '../../engine/palett
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { IconButton } from '../components/IconButton';
+import { openMenu } from '../components/Menu';
 import { loadImage } from '../../io/image';
 import { pickFile } from '../../io/pickFile';
 import { useActions } from '../ActionsContext';
@@ -198,6 +199,8 @@ function PaletteStrip({ colors }: { colors: Color[] }) {
 function PaletteManagerDialog() {
   const t = useT();
   const editor = useEditor();
+  const actions = useActions();
+  const myPalettes = useEditorState((s) => s.myPalettes);
   const palette = useEditorState((s) => s.palette);
   const hidden = uiStore.use((s) => s.hiddenPalettes);
   const toggle = (key: string, shown: boolean) =>
@@ -242,6 +245,55 @@ function PaletteManagerDialog() {
             {t('palette.showAll')}
           </button>
         </div>
+      )}
+      {/* The user's own, in every file: from this file's palette or from a palette file. */}
+      <div className="subsection-title palette-mine-title">
+        <span>{t('palette.mine')}</span>
+        <button
+          type="button"
+          className="btn"
+          aria-haspopup="menu"
+          onClick={(e) =>
+            openMenu(e.currentTarget, [
+              { label: t('palette.newFromFile'), onSelect: () => editor.savePalette('') },
+              { label: t('palette.newFromImport'), onSelect: () => void actions.newPaletteFromFile() },
+            ])
+          }
+        >
+          {t('palette.new')}
+        </button>
+      </div>
+      {myPalettes.length ? (
+        <div className="palette-list">
+          {myPalettes.map((m) => (
+            <div key={m.id} className="palette-row">
+              <input
+                className="palette-name-input"
+                defaultValue={m.name}
+                aria-label={t('palette.rename')}
+                spellCheck={false}
+                onBlur={(e) => editor.renamePalette(m.id, e.currentTarget.value)}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === 'Enter') e.currentTarget.blur();
+                }}
+              />
+              <PaletteStrip colors={m.colors} />
+              <IconButton
+                icon="down"
+                label={t('palette.updateFromFile')}
+                onClick={() => editor.updatePalette(m.id)}
+              />
+              <IconButton
+                icon="trash"
+                label={t('palette.deleteMine')}
+                onClick={() => editor.deletePalette(m.id)}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="muted">{t('palette.mineEmpty')}</p>
       )}
     </Dialog>
   );

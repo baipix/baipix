@@ -103,6 +103,16 @@ type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
 
 export const DEFAULT_TILE_OPACITY = 0.65;
 
+/** A palette of the user's own, kept in the browser and usable in every file (copied into it). */
+export interface MyPalette {
+  id: string;
+  name: string;
+  colors: Color[];
+}
+
+/** A file's palette taken from one of the user's palettes: `mine:` and its id. */
+export const MY_PALETTE = 'mine:';
+
 export interface PaletteState {
   /** Preset key, 'custom' (the file's own colors), or 'drawing' (the colors the drawing uses). */
   key: string;
@@ -135,6 +145,8 @@ export interface EditorState {
   recent: Color[];
   /** Custom brushes made from selections. */
   brushes: BrushInfo[];
+  /** The user's own palettes, kept in the browser for every file. */
+  myPalettes: MyPalette[];
   view: ViewSettings;
   /** Ids of the selected layers, bottom to top. Always includes the active layer. */
   selectedLayers: string[];
@@ -161,6 +173,8 @@ export interface EditorLabels {
   brush: (n: number) => string;
   /** Name of the n-th group. */
   group: (n: number) => string;
+  /** Name of the user's n-th own palette. */
+  palette: (n: number) => string;
 }
 
 export type Notice =
@@ -189,6 +203,8 @@ export interface Preferences {
   view: ViewSettings;
   /** Custom brushes, colors as numbers so they can be saved as they are. */
   brushes: StoredBrush[];
+  /** The user's own palettes. Missing in older saves. */
+  myPalettes?: MyPalette[];
 }
 
 interface Session {
@@ -230,6 +246,7 @@ const DEFAULT_LABELS: EditorLabels = {
   untitled: (n) => (n > 1 ? `Untitled ${n}` : 'Untitled'),
   pasted: 'Pasted',
   brush: (n) => `Brush ${n}`,
+  palette: (n) => `My palette ${n}`,
 };
 
 /** Freehand tools the stabilizer smooths (shapes, selections and fills don't need it). */
@@ -403,6 +420,7 @@ export class Editor {
   /** New files left untouched so far: any change to one takes it out. */
   private fresh = new Set<string>();
   private brushes: CustomBrush[] = [];
+  private myPalettes: MyPalette[] = [];
   private revision = 0;
   private state!: EditorState;
 
@@ -484,6 +502,7 @@ export class Editor {
       palette: this.palette,
       recent: this.recent,
       brushes: this.brushes.map(({ id, name, width, height }) => ({ id, name, width, height })),
+      myPalettes: this.myPalettes,
       view: this.view,
       selectedLayers: s.picked,
       selectedGroup: s.pickedGroup ?? null,
@@ -1656,6 +1675,52 @@ export class Editor {
     this.commit();
   }
 
+  /* ------------------------------------------------------------------ my palettes */
+
+  /** Keeps `colors` (the file's palette by default) as a palette of the user's own; returns its id. */
+  savePalette(name: string, colors: Color[] = this.palette.colors): string | null {
+    const unique = [...new Set(colors.map(opaque))];
+    if (!unique.length) {
+      this.notice({ type: 'emptyDrawing' });
+      return null;
+    }
+    const id = newId('palette');
+    this.myPalettes = [
+      ...this.myPalettes,
+      { id, name: name.trim() || this.labels.palette(this.myPalettes.length + 1), colors: unique },
+    ];
+    this.commit();
+    return id;
+  }
+
+  renamePalette(id: string, name: string): void {
+    const n = name.trim();
+    if (!n) return;
+    this.myPalettes = this.myPalettes.map((m) => (m.id === id ? { ...m, name: n.slice(0, 60) } : m));
+    this.commit();
+  }
+
+  /** Replaces one of the user's palettes with the file's palette. */
+  updatePalette(id: string): void {
+    const colors = [...new Set(this.palette.colors.map(opaque))];
+    if (!colors.length) return;
+    this.myPalettes = this.myPalettes.map((m) => (m.id === id ? { ...m, colors } : m));
+    this.commit();
+  }
+
+  deletePalette(id: string): void {
+    this.myPalettes = this.myPalettes.filter((m) => m.id !== id);
+    this.commit();
+  }
+
+  /** Copies one of the user's palettes into the file: later changes to either don't reach the other. */
+  useMyPalette(id: string): void {
+    const m = this.myPalettes.find((x) => x.id === id);
+    if (!m) return;
+    this.palette = { key: MY_PALETTE + id, colors: m.colors, custom: this.palette.custom };
+    this.commit();
+  }
+
   /** Forgets the custom palette, unless it's the one in use. */
   deleteCustomPalette(): void {
     if (this.palette.key === 'custom' || !this.palette.custom) return;
@@ -1832,6 +1897,7 @@ export class Editor {
       recent: this.recent,
       view: this.view,
       brushes: this.brushes.map((b) => ({ ...b, pixels: [...b.pixels] })),
+      myPalettes: this.myPalettes,
     };
   }
 
@@ -1860,6 +1926,17 @@ export class Editor {
         rulers: rulers === true,
       };
     }
+    if (Array.isArray(p.myPalettes))
+      this.myPalettes = p.myPalettes
+        .filter((m) => m && typeof m.id === 'string' && typeof m.name === 'string' && Array.isArray(m.colors))
+        .map((m) => ({
+          id: m.id,
+          name: m.name.slice(0, 60),
+          colors: m.colors
+            .filter((c) => typeof c === 'number')
+            .map(opaque)
+            .slice(0, 256),
+        }));
     if (Array.isArray(p.brushes))
       this.brushes = p.brushes
         .filter((b) => b && typeof b.id === 'string' && b.width > 0 && b.height > 0)

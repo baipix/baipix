@@ -39,6 +39,7 @@ const editorLabels = () => ({
   untitled: (n: number) => (n > 1 ? t('default.untitledN', { n }) : t('default.untitled')),
   pasted: t('default.pasted'),
   brush: (n: number) => t('default.brush', { n }),
+  palette: (n: number) => t('default.myPalette', { n }),
   group: (n: number) => t('default.group', { n }),
 });
 

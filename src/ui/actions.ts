@@ -141,6 +141,16 @@ export function createActions(editor: Editor) {
         });
     },
 
+    /** One of the user's own palettes from a .hex, .gpl or .txt file, named after the file. */
+    async newPaletteFromFile() {
+      const f = await pickFile(PALETTE_FILES);
+      if (!f) return;
+      const colors = parsePaletteFile(await f.text());
+      if (!colors.length) return toast(t('toast.noPaletteColors'));
+      editor.savePalette(f.name.replace(/\.[^.]+$/, ''), colors);
+      toast(t('toast.colorsImported', { count: colors.length }));
+    },
+
     /** `.hex` (one hex code per line, Lospec) or `.gpl` (GIMP, Aseprite, Krita). */
     async exportPalette(format: 'hex' | 'gpl' = 'hex') {
       const colors = editor.getState().palette.colors;

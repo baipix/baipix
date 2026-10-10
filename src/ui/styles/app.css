@@ -1724,7 +1724,7 @@ body.is-dragging-swatch * {
 .palette-row:hover {
   background: var(--hover);
 }
-.palette-row input {
+.palette-row input[type='checkbox'] {
   margin: 0;
   accent-color: var(--accent);
 }
@@ -2243,7 +2243,7 @@ body.is-dragging-swatch * {
 
 /* Pixel checkboxes: a notched square, solid blue with a dark pixel tick when checked. */
 .checkbox input,
-.palette-row input {
+.palette-row input[type='checkbox'] {
   appearance: none;
   flex: none;
   width: 12px;
@@ -2255,17 +2255,17 @@ body.is-dragging-swatch * {
   cursor: pointer;
 }
 .checkbox input:hover,
-.palette-row input:hover:not(:disabled) {
+.palette-row input[type='checkbox']:hover:not(:disabled) {
   border-color: var(--text);
 }
 .checkbox input:checked,
-.palette-row input:checked {
+.palette-row input[type='checkbox']:checked {
   border-color: var(--glow);
   background: var(--glow)
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%231a1a1a' d='M1 4h2v2H1zM2 5h2v2H2zM3 6h2v2H3zM5 5h2v2H5zM6 4h2v2H6zM7 3h2v2H7zM8 2h1v2H8z'/%3E%3C/svg%3E")
     center / 10px 10px no-repeat;
 }
-.palette-row input:disabled {
+.palette-row input[type='checkbox']:disabled {
   cursor: default;
   opacity: 0.5;
 }
@@ -2987,4 +2987,27 @@ body.is-dragging-swatch * {
 }
 .color-chips-swap:hover {
   color: var(--text);
+}
+
+/* My palettes, in Manage palettes: a title with the + New palette button, then a row each. */
+.palette-mine-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.palette-name-input {
+  /* As wide as the presets' names above it, so the strips line up. */
+  flex: none;
+  width: 128px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.palette-name-input:hover,
+.palette-name-input:focus {
+  background: var(--input);
+  outline: none;
 }
