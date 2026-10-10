@@ -14,20 +14,38 @@ import { closeDialog, toast, uiStore } from '../uiStore';
 import { Dialog } from './Dialog';
 import { UpscaledDialog } from './UpscaledDialog';
 import { CanvasSizeDialog } from './CanvasSizeDialog';
-import { TemplateCards } from '../components/TemplateCards';
-import { createFromTemplate } from '../templates';
+import { SizeList, type SizeChoice } from '../components/SizeList';
+import { Icon } from '../components/Icon';
+import { createFromTemplate, type Template } from '../templates';
 import { SHORTCUT_GROUPS } from './shortcuts';
 
-const SIZE_PRESETS = [8, 16, 24, 32, 48, 64, 128, 256];
+/** The sizes of the files changed last, different ones only, newest first. */
+function recentSizes(files: { width: number; height: number; updatedAt: number }[], count = 3) {
+  const sizes: { width: number; height: number }[] = [];
+  for (const f of [...files].sort((a, b) => b.updatedAt - a.updatedAt)) {
+    if (sizes.some((s) => s.width === f.width && s.height === f.height)) continue;
+    sizes.push({ width: f.width, height: f.height });
+    if (sizes.length === count) break;
+  }
+  return sizes;
+}
 
+/**
+ * A new file, kept small: its size on top (the last one used, ready for Enter), then the last
+ * sizes used and the templates as plain rows. A click picks one, a double-click starts with it.
+ */
 function NewFileDialog() {
   const t = useT();
   const editor = useEditor();
-  const doc = editor.getState().doc;
-  const [w, setW] = useState(String(doc.width));
-  const [h, setH] = useState(String(doc.height));
+  const files = useEditorState((s) => s.files);
+  const recent = recentSizes(files);
+  const start = recent[0] ?? { width: 32, height: 32 };
+  const [w, setW] = useState(String(start.width));
+  const [h, setH] = useState(String(start.height));
+  const [template, setTemplate] = useState<Template | null>(null);
   const [reference, setReference] = useState<File | null>(null);
   const actions = useActions();
+  const size = () => [clamp(Number(w) || 32, 1, MAX_SIZE), clamp(Number(h) || 32, 1, MAX_SIZE)] as const;
   /** A reference image gives the canvas its proportions: the height follows the width. */
   const pickReference = async () => {
     const file = await pickFile('image/*');
@@ -35,50 +53,47 @@ function NewFileDialog() {
     setReference(file);
     try {
       const img = await loadImage(file);
-      const width = clamp(Number(w) || 32, 1, MAX_SIZE);
+      const [width] = size();
       setH(String(clamp(Math.round((width * img.naturalHeight) / img.naturalWidth), 1, MAX_SIZE)));
+      setTemplate(null);
     } catch {
       /* unreadable: addReference says so after creating the file */
     }
   };
+  const create = (width: number, height: number, tpl: Template | null) => {
+    // The file replacing the blank starter takes its plain "Untitled" name.
+    const name = hasUntouchedStarter(editor) ? t('default.untitled') : undefined;
+    // A template, as long as its size wasn't changed: its palette and views come with it.
+    if (tpl && tpl.width === width && tpl.height === height) createFromTemplate(editor, tpl, name);
+    else editor.newFile(width, height, name);
+    leaveHome(editor);
+    if (reference) void actions.addReference(reference);
+  };
+  const pick = (choice: SizeChoice) => {
+    setW(String(choice.width));
+    setH(String(choice.height));
+    setTemplate(choice.template ?? null);
+  };
+  const typed = (set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    set(e.target.value);
+    setTemplate(null);
+  };
+  const selected = template ? template.id : `${Number(w)}×${Number(h)}`;
   return (
     <Dialog
       title={t('dialog.newFile')}
+      className="new-file-dialog"
       submitLabel={t('common.create')}
       onClose={closeDialog}
-      onSubmit={() => {
-        // The file replacing the blank starter takes its plain "Untitled" name.
-        const name = hasUntouchedStarter(editor) ? t('default.untitled') : undefined;
-        editor.newFile(clamp(Number(w) || 32, 1, MAX_SIZE), clamp(Number(h) || 32, 1, MAX_SIZE), name);
-        leaveHome(editor);
-        if (reference) void actions.addReference(reference);
-      }}
+      onSubmit={() => create(...size(), template)}
+      footer={
+        <button type="button" className="link-btn" onClick={() => void pickReference()}>
+          <Icon name="image" size={14} />
+          <span className="truncate">{reference ? reference.name : t('dialog.reference')}</span>
+        </button>
+      }
     >
-      <div className="subsection-title">{t('template.title')}</div>
-      <TemplateCards
-        onPick={(template) => {
-          const name = hasUntouchedStarter(editor) ? t('default.untitled') : undefined;
-          createFromTemplate(editor, template, name);
-          leaveHome(editor);
-          if (reference) void actions.addReference(reference);
-          closeDialog();
-        }}
-      />
-      <div className="subsection-title">{t('template.custom')}</div>
-      <div className="chips">
-        {SIZE_PRESETS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className="chip"
-            aria-pressed={Number(w) === s && Number(h) === s}
-            onClick={() => (setW(String(s)), setH(String(s)))}
-          >
-            {s} × {s}
-          </button>
-        ))}
-      </div>
-      <div className="two-columns">
+      <div className="size-fields">
         <label className="field">
           <span className="field-label">W</span>
           <input
@@ -86,11 +101,21 @@ function NewFileDialog() {
             min={1}
             max={MAX_SIZE}
             value={w}
-            onChange={(e) => setW(e.target.value)}
+            onChange={typed(setW)}
             aria-label={t('canvas.width')}
+            autoFocus
             required
           />
         </label>
+        <IconButton
+          icon="swap"
+          label={t('dialog.swapSize')}
+          onClick={() => {
+            setW(h);
+            setH(w);
+            setTemplate(null);
+          }}
+        />
         <label className="field">
           <span className="field-label">H</span>
           <input
@@ -98,24 +123,21 @@ function NewFileDialog() {
             min={1}
             max={MAX_SIZE}
             value={h}
-            onChange={(e) => setH(e.target.value)}
+            onChange={typed(setH)}
             aria-label={t('canvas.height')}
             required
           />
         </label>
       </div>
-      <div className="reference-pick">
-        <button type="button" className="btn" onClick={() => void pickReference()}>
-          {reference ? t('dialog.referenceChange') : t('dialog.reference')}
-        </button>
-        {reference && (
-          <>
-            <span className="muted truncate">{reference.name}</span>
-            <IconButton icon="close" label={t('reference.remove')} onClick={() => setReference(null)} />
-          </>
-        )}
-      </div>
-      <p className="muted">{t('dialog.newFileHint')}</p>
+      <SizeList
+        recent={recent}
+        selected={selected}
+        onPick={pick}
+        onCreate={(choice) => {
+          create(choice.width, choice.height, choice.template ?? null);
+          closeDialog();
+        }}
+      />
     </Dialog>
   );
 }
