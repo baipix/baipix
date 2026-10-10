@@ -17,7 +17,6 @@ const all = (selector: string) => () => [...document.querySelectorAll(selector)]
 const tools = (...ids: string[]) => all(ids.map((id) => `.toolbar [data-tool="${id}"]`).join(', '));
 const showDesign = (section?: string) => () =>
   uiStore.set((u) => ({
-    rightTab: 'design',
     collapsed: section ? u.collapsed.filter((x) => x !== section) : u.collapsed,
   }));
 
@@ -48,7 +47,12 @@ const STEPS: Step[] = [
       return [gap?.closest('.row') ?? gap].filter((x) => !!x) as Element[];
     },
   },
-  { title: 'tour.exportTitle', text: 'tour.export', target: all('#panel-tab-export') },
+  {
+    title: 'tour.exportTitle',
+    text: 'tour.export',
+    prepare: showDesign('export'),
+    target: all('.panel-right .export-section'),
+  },
 ];
 
 /** The tour was shown (finished or skipped): it isn't offered again. */

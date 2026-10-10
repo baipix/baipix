@@ -24,7 +24,6 @@ export const fr: Record<MessageKey, string> = {
 
   'panel.left': 'Fichiers et calques',
   'panel.right': 'Propriétés',
-  'panel.design': 'Design',
   'panel.export': 'Export',
   'panel.resizeLeft': 'Redimensionner le panneau gauche',
   'panel.resizeRight': 'Redimensionner le panneau droit',
@@ -101,7 +100,6 @@ export const fr: Record<MessageKey, string> = {
   'component.detach': 'Détacher l’instance',
   'component.dragHint': 'Glisse-le sur le canevas pour ajouter une instance',
   'section.preview': 'Aperçu',
-  'section.render': 'Rendu des pixels',
   'section.colors': 'Couleurs',
   'section.palette': 'Palette',
   'section.layer': 'Calque',
