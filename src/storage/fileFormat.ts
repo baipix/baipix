@@ -225,9 +225,10 @@ function readPalette(raw: unknown): { palette: DocPalette } | null {
   const custom = list(p.custom);
   const extra = custom?.length ? { custom } : {};
   if (p.key === 'drawing') return { palette: { key: 'drawing', colors: [], ...extra } };
-  if (p.key === 'custom') {
+  // 'custom', or one of the user's palettes copied in ('mine:' and its id): the file's own colors.
+  if (p.key === 'custom' || p.key.startsWith('mine:')) {
     const colors = list(p.colors) ?? [];
-    return { palette: { key: 'custom', colors, ...extra } };
+    return { palette: { key: p.key.slice(0, 60), colors, ...extra } };
   }
   if (!(p.key in PALETTE_PRESETS)) return null;
   return { palette: { key: p.key, colors: list(p.colors) ?? presetColors(p.key), ...extra } };

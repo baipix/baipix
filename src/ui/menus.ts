@@ -52,9 +52,9 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
   ];
 }
 
-/** Puts the Design tab's Canvas section in view, open, then runs `then` once it's rendered. */
+/** Opens the Canvas section of the right panel, then runs `then` once it's rendered. */
 function revealCanvas(then: () => void) {
-  uiStore.set((u) => ({ rightTab: 'design', collapsed: u.collapsed.filter((x) => x !== 'canvas') }));
+  uiStore.set((u) => ({ collapsed: u.collapsed.filter((x) => x !== 'canvas') }));
   requestAnimationFrame(then);
 }
 

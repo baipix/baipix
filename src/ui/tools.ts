@@ -29,9 +29,37 @@ export const SELECTS: ToolMeta[] = [
   { id: 'wand', icon: 'wand', label: 'tool.wand', shortcut: 'Y' },
 ];
 
+/** Tools that fill: the paint bucket, and the gradient. */
+export const FILLS: ToolMeta[] = [
+  { id: 'bucket', icon: 'bucket', label: 'tool.bucket', shortcut: 'G' },
+  { id: 'gradient', icon: 'gradient', label: 'tool.gradient', shortcut: 'D' },
+];
+
+/** Shade and lighten: the same tool, one way or the other along the palette. */
+export const SHADING: ToolMeta[] = [
+  { id: 'shade', icon: 'shade', label: 'tool.shade', shortcut: 'S' },
+  { id: 'lighten', icon: 'lighten', label: 'tool.lighten', shortcut: 'O' },
+];
+
+/** Tools that rework what's drawn without new colors. */
+export const REWORK: ToolMeta[] = [
+  { id: 'blur', icon: 'blur', label: 'tool.blur', shortcut: 'F' },
+  { id: 'jumble', icon: 'jumble', label: 'tool.jumble', shortcut: 'J' },
+  { id: 'liquify', icon: 'liquify', label: 'tool.liquify', shortcut: 'W' },
+];
+
+/** What each family's menu button is called, by its first tool. */
+export const FAMILY_LABELS = {
+  select: 'toolbar.selections',
+  bucket: 'toolbar.fills',
+  line: 'toolbar.shapes',
+  shade: 'toolbar.shading',
+  blur: 'toolbar.rework',
+} as const satisfies Partial<Record<ToolId, MessageKey>>;
+
 /**
- * Toolbar layout: groups are separated by a divider. A list inside a group (`SELECTS`, `SHAPES`)
- * renders as a single button with a menu.
+ * Toolbar layout: groups are separated by a divider. A list inside a group (a family of tools)
+ * renders as a single button with a menu, which shows the last tool used of the family.
  */
 export const TOOL_GROUPS: (ToolMeta | ToolMeta[])[][] = [
   [
@@ -43,17 +71,13 @@ export const TOOL_GROUPS: (ToolMeta | ToolMeta[])[][] = [
     { id: 'pencil', icon: 'pencil', label: 'tool.pencil', shortcut: 'B' },
     { id: 'lassoFill', icon: 'lassoFill', label: 'tool.lassoFill', shortcut: 'K' },
     { id: 'eraser', icon: 'eraser', label: 'tool.eraser', shortcut: 'E' },
-    { id: 'bucket', icon: 'bucket', label: 'tool.bucket', shortcut: 'G' },
-    { id: 'gradient', icon: 'gradient', label: 'tool.gradient', shortcut: 'D' },
+    FILLS,
   ],
   [SHAPES],
   [
-    { id: 'shade', icon: 'shade', label: 'tool.shade', shortcut: 'S' },
-    { id: 'lighten', icon: 'lighten', label: 'tool.lighten', shortcut: 'O' },
-    { id: 'blur', icon: 'blur', label: 'tool.blur', shortcut: 'F' },
+    SHADING,
+    REWORK,
     { id: 'spray', icon: 'spray', label: 'tool.spray', shortcut: 'A' },
-    { id: 'jumble', icon: 'jumble', label: 'tool.jumble', shortcut: 'J' },
-    { id: 'liquify', icon: 'liquify', label: 'tool.liquify', shortcut: 'W' },
     { id: 'picker', icon: 'picker', label: 'tool.picker', shortcut: 'I' },
   ],
 ];

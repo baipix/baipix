@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { ColorChips } from '../components/ColorChips';
+import { MY_PALETTE } from '../../engine/editor';
 import { ColorRow } from './ColorRow';
 import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
@@ -24,26 +25,25 @@ import { ExportPreview } from './ExportPreview';
 
 const PIXEL_SIZES = [1, 2, 4, 8, 16, 32];
 
-function RenderSection() {
+/** The exported pixel size, from 1× to 32×, across the panel (each button says what it does). */
+function PixelSizes() {
   const t = useT();
   const editor = useEditor();
   const render = useEditorState((s) => s.doc.render);
   return (
-    <Section id="render" title={t('section.render')}>
-      <div className="segmented" role="group" aria-label={t('render.pixelSizeHint')}>
-        {PIXEL_SIZES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            aria-pressed={render.pixelSize === s}
-            data-tip={t('render.scaleTip', { size: s })}
-            onClick={() => editor.setRender({ pixelSize: s })}
-          >
-            {s}×
-          </button>
-        ))}
-      </div>
-    </Section>
+    <div className="segmented" role="group" aria-label={t('render.pixelSizeHint')}>
+      {PIXEL_SIZES.map((s) => (
+        <button
+          key={s}
+          type="button"
+          aria-pressed={render.pixelSize === s}
+          data-tip={t('render.scaleTip', { size: s })}
+          onClick={() => editor.setRender({ pixelSize: s })}
+        >
+          {s}×
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -52,6 +52,10 @@ function PaletteSection() {
   const editor = useEditor();
   const actions = useActions();
   const palette = useEditorState((s) => s.palette);
+  const myPalettes = useEditorState((s) => s.myPalettes);
+  const mine = palette.key.startsWith(MY_PALETTE)
+    ? myPalettes.find((m) => MY_PALETTE + m.id === palette.key)
+    : undefined;
   const hidden = uiStore.use((s) => s.hiddenPalettes);
   const primary = useEditorState((s) => s.primary);
   const secondary = useEditorState((s) => s.secondary);
@@ -102,6 +106,15 @@ function PaletteSection() {
                       },
                     ]
                   : []),
+                // The user's own palettes, from every file: picking one copies it into this one.
+                ...(myPalettes.length ? (['-'] as const) : []),
+                ...myPalettes.map((m) => ({
+                  label: m.name,
+                  shortcut: String(m.colors.length),
+                  checked: palette.key === MY_PALETTE + m.id,
+                  swatches: m.colors.map(toCss),
+                  onSelect: () => editor.useMyPalette(m.id),
+                })),
                 '-',
                 ...Object.keys(PALETTE_PRESETS)
                   .filter((key) => key !== palette.key && !hidden.includes(key))
@@ -112,11 +125,11 @@ function PaletteSection() {
             }}
           >
             <span className="truncate">
-              {palette.key === 'custom'
-                ? t('palette.custom')
+              {mine
+                ? mine.name
                 : palette.key === 'drawing'
                   ? t('palette.drawing')
-                  : PALETTE_PRESETS[palette.key]?.name}
+                  : (PALETTE_PRESETS[palette.key]?.name ?? t('palette.custom'))}
             </span>
             <span className="caret">▾</span>
           </button>
@@ -533,7 +546,10 @@ function ExportSection() {
   const includeBackground = uiStore.use((s) => s.exportBackground);
   const editor = useEditor();
   return (
-    <Section id="export" title={t('section.exportFile')}>
+    // At the bottom of the panel, like Figma: the file's preview, its pixel size, format and buttons.
+    <Section id="export" title={t('panel.export')} className="export-section">
+      <ExportPreview />
+      <PixelSizes />
       <Row label={t('export.name')}>
         <label className="field">
           <input
@@ -613,60 +629,16 @@ function ExportSection() {
   );
 }
 
-const TABS = ['design', 'export'] as const;
-
-/** Design (what you touch while drawing) and Export (the output file) tabs. The choice is remembered. */
-function PanelTabs() {
-  const t = useT();
-  const tab = uiStore.use((s) => s.rightTab);
-  return (
-    <div className="panel-tabs" role="tablist" aria-label={t('panel.right')}>
-      {TABS.map((id) => (
-        <button
-          key={id}
-          type="button"
-          role="tab"
-          id={`panel-tab-${id}`}
-          aria-selected={tab === id}
-          aria-controls="panel-tab-body"
-          className="panel-tab"
-          onClick={() => uiStore.set({ rightTab: id })}
-        >
-          {t(id === 'design' ? 'panel.design' : 'panel.export')}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function RightPanel() {
   const t = useT();
-  const tab = uiStore.use((s) => s.rightTab);
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
-      <PanelTabs />
-      <div
-        id="panel-tab-body"
-        role="tabpanel"
-        aria-labelledby={`panel-tab-${tab}`}
-        className="panel-tab-body"
-      >
-        {tab === 'design' ? (
-          <>
-            <CanvasSection />
-            <PaletteSection />
-            <LayerSection />
-            <EffectsSection />
-            <DisplaySection />
-          </>
-        ) : (
-          <>
-            <ExportPreview />
-            <RenderSection />
-            <ExportSection />
-          </>
-        )}
-      </div>
+      <CanvasSection />
+      <PaletteSection />
+      <LayerSection />
+      <EffectsSection />
+      <DisplaySection />
+      <ExportSection />
     </aside>
   );
 }

@@ -39,6 +39,7 @@ const editorLabels = () => ({
   untitled: (n: number) => (n > 1 ? t('default.untitledN', { n }) : t('default.untitled')),
   pasted: t('default.pasted'),
   brush: (n: number) => t('default.brush', { n }),
+  palette: (n: number) => t('default.myPalette', { n }),
   group: (n: number) => t('default.group', { n }),
 });
 
@@ -75,10 +76,10 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           editor.setLabels(editorLabels());
           const widths = ui.panelWidths;
           uiStore.set({
-            exportFormat: ui.exportFormat === 'svg' ? 'svg' : 'png',
+            exportFormat:
+              ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' ? ui.exportFormat : 'png',
             exportActiveLayer: !!ui.exportActiveLayer,
             collapsed: Array.isArray(ui.collapsed) ? ui.collapsed.filter((x) => typeof x === 'string') : [],
-            rightTab: ui.rightTab === 'export' ? 'export' : 'design',
             exportBackground: ui.exportBackground !== false,
             hiddenPalettes: Array.isArray(ui.hiddenPalettes)
               ? ui.hiddenPalettes.filter((x) => typeof x === 'string')

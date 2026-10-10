@@ -121,7 +121,7 @@ body.is-resizing * {
 /* Export tab: live preview of the file, and its final size. */
 .export-preview-wrap {
   flex: none;
-  padding: 12px 16px 4px;
+  padding: 4px 0 8px;
 }
 .preview.export-preview {
   height: 160px;
@@ -134,6 +134,8 @@ body.is-resizing * {
 .segmented {
   display: flex;
   flex: 1;
+  /* In a row next to a label, it shrinks with the panel rather than overflowing it. */
+  min-width: 0;
   gap: 2px;
   margin-bottom: 4px;
   padding: 2px;
@@ -161,7 +163,7 @@ body.is-resizing * {
   box-shadow: 0 0 0 1px var(--line);
 }
 
-/* Design / Export tabs, right under the header. */
+/* Tabs under a header (the Adjustments panel). */
 .panel-tabs {
   display: flex;
   gap: 16px;
@@ -191,11 +193,6 @@ body.is-resizing * {
 .panel-tab:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
-}
-.panel-tab-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0 auto;
 }
 /* ---------- Menu bar ---------- */
 /* Menus on the left, the file in the middle (centered while there's room), the zoom on the right. */
@@ -829,7 +826,7 @@ body.is-resizing * {
   opacity: 0;
 }
 .item:hover .item-action,
-.item.is-hidden .item-action,
+.item.is-hidden .item-eye,
 .item.is-locked .item-lock,
 .item-action:focus-visible,
 .item-action[aria-expanded='true'] {
@@ -1724,7 +1721,7 @@ body.is-dragging-swatch * {
 .palette-row:hover {
   background: var(--hover);
 }
-.palette-row input {
+.palette-row input[type='checkbox'] {
   margin: 0;
   accent-color: var(--accent);
 }
@@ -2243,7 +2240,7 @@ body.is-dragging-swatch * {
 
 /* Pixel checkboxes: a notched square, solid blue with a dark pixel tick when checked. */
 .checkbox input,
-.palette-row input {
+.palette-row input[type='checkbox'] {
   appearance: none;
   flex: none;
   width: 12px;
@@ -2255,17 +2252,17 @@ body.is-dragging-swatch * {
   cursor: pointer;
 }
 .checkbox input:hover,
-.palette-row input:hover:not(:disabled) {
+.palette-row input[type='checkbox']:hover:not(:disabled) {
   border-color: var(--text);
 }
 .checkbox input:checked,
-.palette-row input:checked {
+.palette-row input[type='checkbox']:checked {
   border-color: var(--glow);
   background: var(--glow)
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%231a1a1a' d='M1 4h2v2H1zM2 5h2v2H2zM3 6h2v2H3zM5 5h2v2H5zM6 4h2v2H6zM7 3h2v2H7zM8 2h1v2H8z'/%3E%3C/svg%3E")
     center / 10px 10px no-repeat;
 }
-.palette-row input:disabled {
+.palette-row input[type='checkbox']:disabled {
   cursor: default;
   opacity: 0.5;
 }
@@ -3008,4 +3005,26 @@ body.is-dragging-swatch * {
 .swatch-add:disabled {
   opacity: 0.35;
   cursor: default;
+}
+/* My palettes, in Manage palettes: a title with the + New palette button, then a row each. */
+.palette-mine-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.palette-name-input {
+  /* As wide as the presets' names above it, so the strips line up. */
+  flex: none;
+  width: 128px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+.palette-name-input:hover,
+.palette-name-input:focus {
+  background: var(--input);
+  outline: none;
 }
