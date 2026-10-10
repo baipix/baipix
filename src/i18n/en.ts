@@ -36,6 +36,9 @@ export const en = {
   'tool.pencil': 'Pencil',
   'tool.lassoSelect': 'Lasso',
   'tool.wand': 'Magic wand',
+  'toolbar.fills': 'Fill tools',
+  'toolbar.shading': 'Shade and lighten',
+  'toolbar.rework': 'Rework tools',
   'toolbar.selections': 'Selection tools',
   'hint.lassoSelect':
     'Draw around what to select; the path closes when you let go. Shift adds to the selection, Alt takes from it.',
@@ -503,10 +506,10 @@ export const en = {
     'Line (L), Rectangle (R), Ellipse (C), and more in this button’s menu. Shift keeps them square or round.',
   'tour.colorsTitle': 'Rework colors',
   'tour.colors':
-    'Shade (S) and Lighten (O) follow the palette’s ramps, Blur (F) softens edges, Spray (A) scatters pixels like a can.',
+    'Shade (S) and Lighten (O) follow the palette’s ramps, Spray (A) scatters pixels like a can.',
   'tour.warpTitle': 'Warp without new colors',
   'tour.warp':
-    'Jumble (J) shuffles pixels for texture. Liquify (W) pushes, grows or shrinks a part of the drawing. Hold still to keep going.',
+    'Blur (F) softens edges, Jumble (J) shuffles pixels for texture, Liquify (W) pushes, grows or shrinks a part of the drawing. Hold still to keep going.',
   'tour.paletteTitle': 'Palette',
   'tour.palette':
     'Click a color for the primary one, right-click for more: use it as secondary, replace it everywhere… Pick another palette just above.',
