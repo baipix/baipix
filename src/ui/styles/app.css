@@ -658,9 +658,6 @@ body.is-resizing * {
   border-radius: 3px;
   box-shadow: inset 0 0 0 1px var(--swatch-edge);
 }
-.recent-colors {
-  margin-top: 8px;
-}
 .palette-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));

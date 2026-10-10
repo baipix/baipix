@@ -582,6 +582,8 @@ describe('Editor', () => {
       ['lighten', false],
     ] as const) {
       const e = new Editor();
+      // A file starts with the colors of its drawing: these tests need a preset.
+      e.setPalettePreset('sweetie16');
       e.setColor('primary', GREEN);
       drag(e, [[5, 5]]);
       const before = layer(e)[5 * 32 + 5];
@@ -595,6 +597,8 @@ describe('Editor', () => {
 
   it('adjusts colors with a live preview, then as one undo step', () => {
     const e = new Editor();
+    // A file starts with the colors of its drawing: these tests need a preset.
+    e.setPalettePreset('sweetie16');
     const RED_HUE = { hue: 120, saturation: 100, brightness: 100 };
     e.setColor('primary', RED);
     drag(e, [
@@ -631,6 +635,8 @@ describe('Editor', () => {
 
   it('previews the adjustment on the palette, and cancelling gives it back', () => {
     const e = new Editor();
+    // A file starts with the colors of its drawing: these tests need a preset.
+    e.setPalettePreset('sweetie16');
     const before = e.getState().palette.colors;
     e.beginAdjust(true);
     e.previewAdjust({ hue: 90, saturation: 100, brightness: 100 }, true);
@@ -806,6 +812,8 @@ describe('Editor', () => {
 
   it('moves a palette color to another position', () => {
     const e = new Editor();
+    // A file starts with the colors of its drawing: these tests need a preset.
+    e.setPalettePreset('sweetie16');
     const before = e.getState().palette.colors;
     e.movePaletteColor(0, 3);
     const after = e.getState().palette;

@@ -54,6 +54,7 @@ function Block({
 /** A component shown with a caption saying when to use it. */
 /** A bare editor for specimens that read the editor's state (the gradient bar), with a 3-stop gradient. */
 const gradientEditor = new Editor();
+gradientEditor.setPalettePreset('sweetie16');
 gradientEditor.setOption('gradientStops', [
   { at: 0, color: pack(26, 28, 44) },
   { at: 0.5, color: pack(239, 125, 87) },

@@ -1,6 +1,15 @@
 import type { Color } from '../engine/color';
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
-import { MAX_SIZE, newId, type Layer, type LayerGroup, type PixelDoc } from '../engine/document';
+import {
+  MAX_SIZE,
+  newId,
+  type DocPalette,
+  type Layer,
+  type LayerGroup,
+  type PixelDoc,
+} from '../engine/document';
+import { opaque } from '../engine/color';
+import { PALETTE_PRESETS, presetColors } from '../engine/palette';
 import { normalizeComponents } from '../engine/components';
 import { cleanEffects, type LayerEffect } from '../engine/effects';
 import { normalizeGroups } from '../engine/groups';
@@ -59,6 +68,11 @@ export interface BaipixFile {
   /** Last change, in ms since the epoch. */
   updatedAt?: number;
   layers: BaipixLayer[];
+  /**
+   * The file's palette: a preset's key with its colors, 'custom' with the file's own colors, or
+   * 'drawing' (the colors the drawing uses, no list). Missing in older files: 'drawing'.
+   */
+  palette?: { key: string; colors?: number[]; custom?: number[] };
   /** Groups of layers (missing: none). A group in another one points at it by index. */
   groups?: BaipixGroup[];
 }
@@ -127,6 +141,13 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
     ...(doc.axisY !== undefined && { axisY: doc.axisY }),
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.updatedAt !== undefined && { updatedAt: doc.updatedAt }),
+    ...(doc.palette && {
+      palette: {
+        key: doc.palette.key,
+        ...(doc.palette.key !== 'drawing' && { colors: doc.palette.colors.map((c) => c >>> 0) }),
+        ...(doc.palette.custom && { custom: doc.palette.custom.map((c) => c >>> 0) }),
+      },
+    }),
     layers: doc.layers.map((l) => ({
       name: l.name,
       visible: l.visible,
@@ -191,6 +212,25 @@ function readComponents(layers: Layer[], raw: Partial<BaipixLayer>[]): void {
     if (ref && whole(ref.of) && whole(ref.x) && whole(ref.y) && layers[ref.of] && ref.of !== i)
       layers[i].instance = { of: layers[ref.of].id, x: Math.round(ref.x), y: Math.round(ref.y) };
   });
+}
+
+/** A palette from a file: a known key, colors as numbers (256 at most). Null: the drawing's colors. */
+function readPalette(raw: unknown): { palette: DocPalette } | null {
+  const p = raw as { key?: unknown; colors?: unknown; custom?: unknown } | null;
+  if (!p || typeof p !== 'object' || typeof p.key !== 'string') return null;
+  const list = (a: unknown) =>
+    Array.isArray(a)
+      ? [...new Set(a.filter((c): c is number => typeof c === 'number').map(opaque))].slice(0, 256)
+      : null;
+  const custom = list(p.custom);
+  const extra = custom?.length ? { custom } : {};
+  if (p.key === 'drawing') return { palette: { key: 'drawing', colors: [], ...extra } };
+  if (p.key === 'custom') {
+    const colors = list(p.colors) ?? [];
+    return { palette: { key: 'custom', colors, ...extra } };
+  }
+  if (!(p.key in PALETTE_PRESETS)) return null;
+  return { palette: { key: p.key, colors: list(p.colors) ?? presetColors(p.key), ...extra } };
 }
 
 export class FileFormatError extends Error {}
@@ -259,6 +299,7 @@ export function deserializeDocument(data: unknown): PixelDoc {
     ...(readGuides(f.guides, width, height) ?? {}),
     ...(typeof f.updatedAt === 'number' && Number.isFinite(f.updatedAt) && { updatedAt: f.updatedAt }),
     ...(groups && { groups }),
+    ...(readPalette(f.palette) ?? {}),
   };
   normalizeGroups(doc);
   readComponents(layers, Array.isArray(f.layers) ? f.layers : []);
