@@ -17,6 +17,12 @@ export const bucket: Tool = {
       const y = (i / width) | 0;
       s.layer.pixels[i] = dither && ditherSecond(s.options.ditherPattern, x, y) ? c2 : c1;
     };
+    // Clicked in a selection: the whole selection fills, whatever its colors (a magic wand's, say).
+    if (s.selection && inSelection(s.selection, p.x, p.y)) {
+      for (let i = 0; i < s.base.length; i++)
+        if (inSelection(s.selection, i % width, (i / width) | 0)) paint(i);
+      return;
+    }
     for (const m of mirrorsOf(s, p.x, p.y)) {
       if (!inBounds(s, m.x, m.y) || !inSelection(s.selection, m.x, m.y)) continue;
       if (s.options.contiguous) {

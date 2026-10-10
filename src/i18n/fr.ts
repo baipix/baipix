@@ -347,8 +347,10 @@ export const fr: Record<MessageKey, string> = {
   'gradient.dither.none': 'Bandes, sans trame',
   'gradient.wholeLayer': 'Remplir tout le calque',
   'gradient.reset': 'Revenir aux couleurs principale et secondaire',
-  'hint.bucketContiguous': 'Remplit la zone de même couleur sous le curseur.',
-  'hint.bucketGlobal': 'Remplace cette couleur partout sur le calque.',
+  'hint.bucketContiguous':
+    'Remplit la zone de même couleur sous le curseur. Dans une sélection, la remplit en entier.',
+  'hint.bucketGlobal':
+    'Remplace cette couleur partout sur le calque. Dans une sélection, la remplit en entier.',
   'hint.shade': 'Assombrit {how}. Clic droit pour éclaircir.',
   'hint.lighten': 'Éclaircit {how}. Clic droit pour assombrir.',
   'hint.shadeRamp': 'avec la couleur suivante de la même gamme de la palette',

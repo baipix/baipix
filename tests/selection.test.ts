@@ -152,3 +152,42 @@ describe('shaped selections in the editor', () => {
     expect(inSelection(sel, 6, 6)).toBe(false);
   });
 });
+
+describe('painting a magic wand selection', () => {
+  /** Two red pixels apart, (1, 1) and (5, 1), selected with the wand (not contiguous). */
+  const setup = () => {
+    const e = new Editor();
+    e.newFile(W, W);
+    const p = e.getState().doc.layers[0].pixels;
+    p[W + 1] = RED;
+    p[W + 5] = RED;
+    e.setTool('wand');
+    e.setOption('wandContiguous', false);
+    e.beginStroke({ x: 1, y: 1 }, false, { shift: false });
+    e.endStroke();
+    const px = (x: number, y: number) => e.getState().doc.layers[0].pixels[y * W + x];
+    return { e, px };
+  };
+
+  it('the bucket fills the whole selection, every part of it', () => {
+    const { e, px } = setup();
+    e.setTool('bucket');
+    e.setColor('primary', BLUE);
+    e.beginStroke({ x: 1, y: 1 }, false, { shift: false });
+    e.endStroke();
+    expect([px(1, 1), px(5, 1), px(3, 1)]).toEqual([BLUE, BLUE, 0]);
+  });
+
+  it('a gradient covers the whole selection, only it', () => {
+    const { e, px } = setup();
+    e.setTool('gradient');
+    e.setColor('primary', BLUE);
+    e.setColor('secondary', pack(0, 255, 0));
+    e.beginStroke({ x: 1, y: 1 }, false, { shift: false });
+    e.moveStroke({ x: 5, y: 1 }, { shift: false });
+    e.endStroke();
+    expect(px(1, 1)).toBe(BLUE);
+    expect(px(5, 1)).toBe(pack(0, 255, 0));
+    expect([px(3, 1), px(1, 2)]).toEqual([0, 0]);
+  });
+});
