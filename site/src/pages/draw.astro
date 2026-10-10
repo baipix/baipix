@@ -249,13 +249,20 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
           </div>
         </figure>
         <figure class="frame">
-          <div class="pair narrow">
+          <div class="pair trio">
             <div>
               <PixelPlay
                 animation={anim.bucket}
                 label="The paint bucket filling a ring, spreading out from the click."
               />
               <p class="cap">Paint bucket</p>
+            </div>
+            <div>
+              <PixelPlay
+                animation={anim.gradient}
+                label="The gradient tool dragged down a window: a dusk sky in three palette colors, dithered from one to the next."
+              />
+              <p class="cap">Gradient</p>
             </div>
             <div>
               <PixelPlay animation={anim.spray} label="The spray scattering stars along a curve." />
@@ -312,7 +319,9 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       <div class="wide-figures">
         <figure class="frame">
           <div class="pix" set:html={ill.shapes} />
-          <figcaption class="cap">Line, rectangle, rounded rectangle, ellipse, triangle, star.</figcaption>
+          <figcaption class="cap">
+            Line, rectangle, rounded rectangle, ellipse, triangle, star, heart.
+          </figcaption>
         </figure>
         <figure class="frame outline-frame" data-outline data-steps={JSON.stringify(OUTLINE_STEPS)}>
           <div class="trace-ui">
@@ -1787,9 +1796,10 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     background: var(--text);
     color: var(--bg);
   }
-  .pair.narrow {
-    max-width: 420px;
-    margin-inline: auto;
+  /* Three tools side by side: the paint bucket, the gradient, the spray. */
+  .pair.trio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
   }
   .dither-cap {
     display: grid;

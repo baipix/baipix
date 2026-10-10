@@ -6,6 +6,7 @@ import { fromHex, toHex } from '../../src/engine/color';
 import { renderGeometry, toSvg } from '../../src/engine/export/svg';
 import type { Point } from '../../src/engine/math';
 import { outlinePixels } from '../../src/engine/outline';
+import { gradientColor, gradientT, sortedStops } from '../../src/engine/gradient';
 import { isDoubledCorner } from '../../src/engine/raster';
 import { galleryDoc } from './gallery';
 
@@ -25,7 +26,7 @@ export interface PixelAnimation {
   /** The moment shown still, when the visitor asked for reduced motion. */
   still: number;
   /** The tool's cursor, drawn over the picture, and where it is: time (ms), x, y in art pixels. */
-  tool?: 'pencil' | 'bucket' | 'spray';
+  tool?: 'pencil' | 'bucket' | 'spray' | 'gradient';
   cursor?: number[];
 }
 
@@ -361,6 +362,68 @@ function bucket(): PixelAnimation {
   }
   t.point(time + 400, 4.5, 4.5);
   return t.done(2000, 0.6);
+}
+
+const WINDOW = [
+  '..############..',
+  '.#............#.',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '.#............#.',
+  '..############..',
+];
+
+/**
+ * The gradient tool dragged down a window: a dusk sky in three palette colors, dithered from one
+ * to the next, redrawn as the drag goes, like in the editor.
+ */
+function gradient(): PixelAnimation {
+  const w = 16;
+  const h = 15;
+  const t = new Timeline(w, h);
+  t.tool = 'gradient';
+  const inside: Point[] = [];
+  WINDOW.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#') t.base(x, y + 1, S.ink);
+      else if (x > row.indexOf('#') && x < row.lastIndexOf('#')) inside.push({ x, y: y + 1 });
+    }),
+  );
+  const colors = [S.navy, S.plum, S.orange];
+  const stops = sortedStops(colors.map((c, i) => ({ at: i / 2, color: fromHex(c)! })));
+  const from = { x: 8, y: 2 };
+  t.point(150, 11, 14);
+  t.point(560, from.x, from.y);
+  // The end of the drag goes down step by step; each step redraws what changed.
+  const shown = new Map<number, string>();
+  let time = 700;
+  for (let to = 3; to <= 12; to++) {
+    t.point(time, from.x, to);
+    for (const p of inside) {
+      const c = gradientColor(
+        stops,
+        gradientT('linear', from, { x: from.x, y: to }, p.x, p.y),
+        'bayer',
+        p.x,
+        p.y,
+      );
+      const hex = toHex(c);
+      const k = p.y * w + p.x;
+      if (shown.get(k) === hex) continue;
+      shown.set(k, hex);
+      t.at(time, p.x, p.y, hex);
+    }
+    time += 110;
+  }
+  t.point(time + 400, from.x, 12);
+  return t.done(2200, 0.25);
 }
 
 /** Spray along a curve: dots land around the cursor, a few at a time, in one color like the tool. */
@@ -717,6 +780,7 @@ export const animations = {
   pencil: pencil(),
   bucket: bucket(),
   spray: spray(),
+  gradient: gradient(),
   symmetry: symmetry(),
   tiles: tiles(),
 };
