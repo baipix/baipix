@@ -15,6 +15,7 @@ import {
 } from '../../src/engine/palette';
 import {
   ellipseOutline,
+  heartOutline,
   line,
   polygonOutline,
   rectOutline,
@@ -89,16 +90,18 @@ function ditherBand() {
 
 /** The six shapes in a 3 × 2 grid, each in a 12 × 12 cell. */
 function shapes() {
-  const c = new Canvas(43, 29);
-  const x = (i: number) => (i % 3) * 14 + 1;
-  const y = (i: number) => Math.floor(i / 3) * 14 + 1;
+  // Four on top, three under them, centered: the seven shapes of the menu.
+  const c = new Canvas(57, 29);
+  const x = (i: number) => (i < 4 ? i * 14 : (i - 4) * 14 + 7) + 1;
+  const y = (i: number) => (i < 4 ? 0 : 14) + 1;
   const plot = (color: Color) => (px: number, py: number) => c.set(px, py, color);
   line(x(0), y(0) + 11, x(0) + 11, y(0), plot(C.plum));
   rectOutline(x(1), y(1), x(1) + 11, y(1) + 11, plot(C.blue));
   roundRectOutline(x(2), y(2), x(2) + 11, y(2) + 11, 3, plot(C.sky));
   ellipseOutline(x(3), y(3), x(3) + 11, y(3) + 11, plot(C.green));
   polygonOutline(trianglePoints(x(4), y(4), x(4) + 11, y(4) + 11), plot(C.orange));
-  polygonOutline(starPoints(x(5), y(5), x(5) + 11, y(5) + 11), plot(C.red));
+  polygonOutline(starPoints(x(5), y(5), x(5) + 11, y(5) + 11), plot(C.teal));
+  heartOutline(x(6), y(6), x(6) + 11, y(6) + 10, plot(C.red));
   return c.svg();
 }
 

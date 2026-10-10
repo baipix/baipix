@@ -6,6 +6,7 @@ import { fromHex, toHex } from '../../src/engine/color';
 import { renderGeometry, toSvg } from '../../src/engine/export/svg';
 import type { Point } from '../../src/engine/math';
 import { outlinePixels } from '../../src/engine/outline';
+import { gradientColor, gradientT, sortedStops } from '../../src/engine/gradient';
 import { isDoubledCorner } from '../../src/engine/raster';
 import { galleryDoc } from './gallery';
 
@@ -25,7 +26,7 @@ export interface PixelAnimation {
   /** The moment shown still, when the visitor asked for reduced motion. */
   still: number;
   /** The tool's cursor, drawn over the picture, and where it is: time (ms), x, y in art pixels. */
-  tool?: 'pencil' | 'bucket' | 'spray';
+  tool?: 'pencil' | 'bucket' | 'spray' | 'gradient';
   cursor?: number[];
 }
 
@@ -363,6 +364,68 @@ function bucket(): PixelAnimation {
   return t.done(2000, 0.6);
 }
 
+const WINDOW = [
+  '..############..',
+  '.#............#.',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '#..............#',
+  '.#............#.',
+  '..############..',
+];
+
+/**
+ * The gradient tool dragged down a window: a dusk sky in three palette colors, dithered from one
+ * to the next, redrawn as the drag goes, like in the editor.
+ */
+function gradient(): PixelAnimation {
+  const w = 16;
+  const h = 15;
+  const t = new Timeline(w, h);
+  t.tool = 'gradient';
+  const inside: Point[] = [];
+  WINDOW.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#') t.base(x, y + 1, S.ink);
+      else if (x > row.indexOf('#') && x < row.lastIndexOf('#')) inside.push({ x, y: y + 1 });
+    }),
+  );
+  const colors = [S.navy, S.plum, S.orange];
+  const stops = sortedStops(colors.map((c, i) => ({ at: i / 2, color: fromHex(c)! })));
+  const from = { x: 8, y: 2 };
+  t.point(150, 11, 14);
+  t.point(560, from.x, from.y);
+  // The end of the drag goes down step by step; each step redraws what changed.
+  const shown = new Map<number, string>();
+  let time = 700;
+  for (let to = 3; to <= 12; to++) {
+    t.point(time, from.x, to);
+    for (const p of inside) {
+      const c = gradientColor(
+        stops,
+        gradientT('linear', from, { x: from.x, y: to }, p.x, p.y),
+        'bayer',
+        p.x,
+        p.y,
+      );
+      const hex = toHex(c);
+      const k = p.y * w + p.x;
+      if (shown.get(k) === hex) continue;
+      shown.set(k, hex);
+      t.at(time, p.x, p.y, hex);
+    }
+    time += 110;
+  }
+  t.point(time + 400, from.x, 12);
+  return t.done(2200, 0.25);
+}
+
 /** Spray along a curve: dots land around the cursor, a few at a time, in one color like the tool. */
 function spray(): PixelAnimation {
   const w = 16;
@@ -661,6 +724,70 @@ const MUSHROOM = [
   '....cCCCCC....',
 ];
 
+// ---- Components: draw once, every copy follows -------------------------------------------------
+
+const POTION = [
+  '...KKK...',
+  '...KWK...',
+  '...KKK...',
+  '..K...K..',
+  '.K.....K.',
+  'K.......K',
+  'K.......K',
+  'K.......K',
+  'K.......K',
+  '.K.....K.',
+  '..KKKKK..',
+];
+/** Where the component and its three instances sit, a sprite and a gap apart. */
+export const POTION_SLOTS = [1, 13, 25, 37];
+
+/**
+ * A potion and three instances of it: the bucket fills the component, and the copies fill along,
+ * row by row, then a glint lands on all of them. What a component does, in one picture.
+ */
+function components(): PixelAnimation {
+  const w = 48;
+  const h = 13;
+  const t = new Timeline(w, h);
+  t.tool = 'bucket';
+  const top = 1;
+  for (const ox of POTION_SLOTS)
+    POTION.forEach((row, y) =>
+      [...row].forEach((ch, x) => {
+        // A cork on top, a light glass outline that reads on the dark frame.
+        if (ch === 'K') t.base(ox + x, top + y, y < 3 ? S.orange : S.silver);
+        if (ch === 'W') t.base(ox + x, top + y, S.yellow);
+      }),
+    );
+  // The inside of the bottle, by row from the bottom.
+  const rows: Point[][] = [];
+  for (let y = POTION.length - 1; y >= 3; y--) {
+    const row = POTION[y];
+    const left = row.indexOf('K');
+    const right = row.lastIndexOf('K');
+    const inside: Point[] = [];
+    for (let x = left + 1; x < right; x++) if (row[x] === '.') inside.push({ x, y });
+    if (inside.length) rows.push(inside);
+  }
+  const m = POTION_SLOTS[0];
+  t.point(150, 20, 12);
+  t.point(560, m + 4.5, top + 8.5);
+  let time = 700;
+  for (const row of rows) {
+    for (const ox of POTION_SLOTS) for (const p of row) t.at(time, ox + p.x, top + p.y, S.pink);
+    time += 130;
+  }
+  // A glint, drawn once with the pencil: every instance gets it.
+  t.point(time + 200, m + 3.5, top + 5.5);
+  for (const ox of POTION_SLOTS) {
+    t.at(time + 450, ox + 3, top + 5, S.white);
+    t.at(time + 600, ox + 3, top + 6, S.white);
+  }
+  t.point(time + 900, m + 6, top + 11);
+  return t.done(2400, 0.4);
+}
+
 /** When the outline panel changes, in ms: shared with the page, which plays the panel along. */
 export const OUTLINE_STEPS = { tab: 900, square: 2200, round: 3500, apply: 4700, end: 6600 };
 
@@ -717,6 +844,8 @@ export const animations = {
   pencil: pencil(),
   bucket: bucket(),
   spray: spray(),
+  gradient: gradient(),
+  components: components(),
   symmetry: symmetry(),
   tiles: tiles(),
 };

@@ -285,6 +285,11 @@ h2 {
   --tint-b: var(--pink);
   --accent: light-dark(#7a45c0, #c7a2ff);
 }
+[data-tone='components'] {
+  --tint-a: var(--lilac);
+  --tint-b: var(--mint);
+  --accent: light-dark(#6d3fd6, #b69cff);
+}
 [data-tone='export'] {
   --tint-a: var(--butter);
   --tint-b: var(--mint);
