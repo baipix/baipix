@@ -20,7 +20,7 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Palette-aware tools:** shade and lighten pick the next darker or lighter palette color in OKLab; blur can snap its result back to the palette; liquify and jumble rework a drawing without adding colors.
 - **Palettes:** Sweetie 16, PICO-8, Endesga 32, Game Boy… Paste any Lospec palette, build one from your drawing, or generate hue-shifted ramps.
 - **Layers like a design tool:** groups four levels deep, blend modes, handles to resize and rotate, layers you copy from one file to another.
-- **Components, like in Figma:** draw a sprite once, place instances of it anywhere, and they follow when you draw on it. Repeat one in a grid.
+- **Components:** draw a sprite once, place instances of it anywhere, and they follow when you draw on it. Repeat one in a grid.
 - **Layer effects:** outline, drop shadow and glow, drawn from the layer without changing its pixels.
 - **Symmetry** around axes you can drag anywhere, **tile preview** for seamless textures, rulers and guides, a reference image to trace over.
 - **Rendering for design work:** choose the exported pixel size and a gap between pixels (LED / dot-matrix look), previewed live on the canvas.
