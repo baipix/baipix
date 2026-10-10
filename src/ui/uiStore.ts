@@ -58,7 +58,6 @@ export interface UiState {
   /** Ids of the collapsed panel sections. */
   collapsed: string[];
   /** Tab of the right panel. */
-  rightTab: 'design' | 'export';
   /** Exports include the document's background (when it has one). */
   exportBackground: boolean;
   /** Preset palettes left out of the palette menu. */
@@ -89,7 +88,6 @@ export const uiStore = createStore<UiState>({
   exportFormat: 'png',
   exportActiveLayer: false,
   collapsed: [],
-  rightTab: 'design',
   exportBackground: true,
   hiddenPalettes: [],
   home: false,

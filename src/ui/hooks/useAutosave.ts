@@ -30,7 +30,6 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
             exportFormat: ui.exportFormat,
             exportActiveLayer: ui.exportActiveLayer,
             collapsed: ui.collapsed,
-            rightTab: ui.rightTab,
             exportBackground: ui.exportBackground,
             hiddenPalettes: ui.hiddenPalettes,
             preview: ui.preview,
