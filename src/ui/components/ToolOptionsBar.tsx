@@ -42,6 +42,7 @@ export function ToolOptionsBar() {
   const options = useEditorState((s) => s.options);
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const repeat = useEditorState((s) => s.repeat);
+  const extrusion = useEditorState((s) => s.extrude);
   const hasSelection = useEditorState((s) => s.selection !== null);
   const brushes = useEditorState((s) => s.brushes);
   const meta = toolMeta(tool);
@@ -220,6 +221,53 @@ export function ToolOptionsBar() {
       ))}
     </div>
   );
+
+  // An extrusion being set up takes the bar over too, the same way.
+  if (extrusion) {
+    return (
+      <div className="tool-options" role="toolbar" aria-label={t('extrude.title')}>
+        <span className="tool-options-name" data-tip={t('extrude.hint')} tabIndex={0}>
+          {t('extrude.title')}
+          <Icon name="info" size={14} />
+        </span>
+        <Row label={t('options.boxHeight')}>
+          <NumberField
+            value={extrusion.height}
+            min={0}
+            max={256}
+            label="↕"
+            suffix="px"
+            ariaLabel={t('options.boxHeight')}
+            scrubHint={t('common.dragToAdjust')}
+            onChange={(v) => editor.setExtrude({ ...extrusion, height: v })}
+          />
+        </Row>
+        <Checkbox
+          checked={extrusion.outline}
+          onChange={(v) => editor.setExtrude({ ...extrusion, outline: v })}
+          label={t('options.boxOutline')}
+        />
+        <Checkbox
+          checked={extrusion.light}
+          onChange={(v) => editor.setExtrude({ ...extrusion, light: v })}
+          label={t('options.boxLight')}
+        />
+        <div className="button-row">
+          <button type="button" className="btn" data-kbd="Esc" onClick={() => editor.endExtrude(false)}>
+            {t('common.cancel')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            data-kbd="Enter"
+            onClick={() => editor.endExtrude(true)}
+          >
+            {t('common.apply')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // A repeat grid being set up takes the bar over until it's applied or canceled.
   if (repeat) {

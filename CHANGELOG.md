@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Extrude (Image › Extrude…): the selection, or what's drawn on the layer, is the top of a volume. It goes up by the height and its sides fill under it, darker on the left and darker still on the right, like the isometric box, with the same Outline and Light edge options. Set up live in the options bar; Enter applies, Escape cancels. Any floor shape becomes a building. (#311)
 - Put an image on an isometric face (Image › Put on an isometric face): the selection, or what's drawn on the layer, laid onto the left side, the right side or the top of a box, kept crisp. The sides slide its columns down (or up) one pixel every two, losing nothing; the top turns it by 45° and flattens it, at twice its size so that no pixel is lost. The selection takes the face's shape, ready to move into place. (#302)
 - Isometric box: a Light edge option draws the top's two front edges one step lighter, the classic highlight of isometric pixel art, next to the outline. (#301)
 - An isometric ellipse: with the file's isometric grid on, Shift on the ellipse tool lays it on the ground, twice as wide as tall. It's drawn the pixel art way, its runs only getting shorter from the top toward the sides, with the two-pixel steps of the 2:1 slope. Outlined or filled. (#300)

@@ -129,6 +129,10 @@ export const fr: Record<MessageKey, string> = {
   'menu.flipH': 'Retourner horizontalement',
   'menu.flipV': 'Retourner verticalement',
   'menu.rotateLeft': 'Pivoter de 90° (antihoraire)',
+  'menu.extrude': 'Extruder…',
+  'extrude.title': 'Extruder',
+  'extrude.hint':
+    'La forme monte de la hauteur choisie et ses côtés se remplissent dessous : plus sombre à gauche, plus sombre encore à droite, comme le cube isométrique. Entrée valide, Échap annule.',
   'menu.isoFace': 'Poser sur une face isométrique',
   'menu.isoFaceLeft': 'Côté gauche',
   'menu.isoFaceRight': 'Côté droit',
