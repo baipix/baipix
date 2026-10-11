@@ -460,6 +460,12 @@ export const en = {
   'export.button': 'Export',
   'export.format': 'Format',
   'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
+  'export.tileset': 'Tileset (Godot, Tiled)',
+  'export.tileSize': 'Tile',
+  'export.tileDrop': 'Leave out empty and repeated tiles',
+  'export.tilesetHint':
+    'A .zip with the tiles on one PNG sheet, a Tiled tileset and a Tiled map that draws the drawing again. Godot takes the PNG as it is.',
+  'toast.emptyTileset': 'Nothing to cut into tiles: the drawing is empty.',
   'export.activeLayerOnly': 'Active layer only',
   'export.copySvg': 'Copy as SVG',
   'export.copyPng': 'Copy as PNG',
