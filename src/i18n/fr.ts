@@ -491,6 +491,8 @@ export const fr: Record<MessageKey, string> = {
   'template.gameboy': 'Écran Game Boy',
   'template.banner': 'Bannière',
   'template.portrait': 'Portrait',
+  'template.iso': 'Scène isométrique',
+  'template.isoGrid': 'grille isométrique',
   'template.recent': 'Récents',
   'template.mirrored': 'symétrie',
   'template.tiled': 'mosaïque',

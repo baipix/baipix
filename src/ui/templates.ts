@@ -11,6 +11,8 @@ export interface Template {
   /** Symmetry for characters, tile preview for seamless tiles. Off otherwise. */
   mirrorX?: boolean;
   tile?: boolean;
+  /** An isometric grid, this many pixels wide. */
+  isoGrid?: number;
 }
 
 export const TEMPLATES: Template[] = [
@@ -20,14 +22,16 @@ export const TEMPLATES: Template[] = [
   { id: 'portrait', label: 'template.portrait', width: 64, height: 64, palette: 'dawnbringer32' },
   { id: 'gameboy', label: 'template.gameboy', width: 160, height: 144, palette: 'gameboy' },
   { id: 'banner', label: 'template.banner', width: 128, height: 32, palette: 'resurrect64' },
+  { id: 'iso', label: 'template.iso', width: 128, height: 128, palette: 'resurrect64', isoGrid: 16 },
 ];
 
-/** Creates a file from a template: its size, its palette, its views (symmetry, tile preview). */
+/** Creates a file from a template: its size, its palette, its views (symmetry, tile preview, isometric grid). */
 export function createFromTemplate(editor: Editor, template: Template, name?: string): void {
   editor.newFile(template.width, template.height, name);
   editor.setPalettePreset(template.palette);
   editor.setView('mirrorX', !!template.mirrorX);
   editor.setView('tile', !!template.tile);
+  if (template.isoGrid) editor.setIsoGrid(template.isoGrid);
   // Set up, but still untouched: it goes away if left as it is.
   editor.markFresh();
 }

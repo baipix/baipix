@@ -86,7 +86,7 @@ export function followPointer(s: Stroke, p: Point, paint: (q: Point) => void): v
 
 /**
  * Shift-click: paints a straight line from `s.lineFrom` (the end of the last stroke) to `p`, snapped
- * to the line tool's angles with `snap`, then goes on from its end. Returns false without one.
+ * to the line tool's angles with `snap` or on an isometric grid, then goes on from its end. Returns false without one.
  */
 export function straightLine(s: Stroke, p: Point, snap: boolean, paint: (q: Point) => void): boolean {
   const from = s.lineFrom;
@@ -96,7 +96,8 @@ export function straightLine(s: Stroke, p: Point, snap: boolean, paint: (q: Poin
     paint({ x, y });
     end = { x, y };
   };
-  if (snap) snappedLine(from, p, plot);
+  // On an isometric grid, the line always keeps to its angles.
+  if (snap || s.doc.isoGrid) snappedLine(from, p, plot);
   else line(from.x, from.y, p.x, p.y, plot);
   s.last = end;
   return true;

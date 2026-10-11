@@ -11,6 +11,7 @@ import {
   newId,
   resizeDocument,
   type DocPalette,
+  isoCellSize,
   type Layer,
   type LayerGroup,
   type PixelDoc,
@@ -98,23 +99,16 @@ export interface ViewSettings {
   mirrorY: boolean;
   /** Rulers along the workspace edges, and the guides dragged out of them. */
   rulers: boolean;
-  /** A guide grid of 2:1 diamonds, the pixel art isometric angle. */
-  isoGrid: boolean;
-  /** How wide its diamonds are, in pixels (even; they're half as tall). */
-  isoCell: number;
 }
 
 /** View settings that are switched on and off. */
-type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers' | 'isoGrid';
+type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
 
 /** Tools where Shift-click draws a straight line from the last point painted. */
 const STRAIGHT_LINES: ToolId[] = ['pencil', 'eraser'];
 
 export const DEFAULT_TILE_OPACITY = 0.65;
 export const DEFAULT_ISO_CELL = 16;
-
-/** An isometric cell width the grid can use: even, so its lines meet on pixel corners. */
-export const isoCellSize = (n: number): number => clamp(Math.round(n / 2) * 2, 4, 256);
 
 /** A palette of the user's own, kept in the browser and usable in every file (copied into it). */
 export interface MyPalette {
@@ -218,6 +212,8 @@ export interface Preferences {
   brushes: StoredBrush[];
   /** The user's own palettes. Missing in older saves. */
   myPalettes?: MyPalette[];
+  /** The isometric grid's cell width last picked. Missing in older saves. */
+  isoCell?: number;
 }
 
 interface Session {
@@ -360,9 +356,9 @@ export class Editor {
     mirrorX: false,
     mirrorY: false,
     rulers: false,
-    isoGrid: false,
-    isoCell: DEFAULT_ISO_CELL,
   };
+  /** The isometric grid's cell width last picked, for the next file it's turned on in. */
+  private isoCell = DEFAULT_ISO_CELL;
   private clipboard: PixelBlock | null = null;
   /** Whole layers copied (the last copy wins over `clipboard`). */
   private layerClip: LayerFragment | null = null;
@@ -578,7 +574,10 @@ export class Editor {
     else delete snapshot.doc.palette;
     // The reference image and the guides aren't part of the history: undo and redo leave them,
     // except across a canvas resize, which moved them with the drawing.
-    const { reference, guides } = this.active.doc;
+    const { reference, guides, isoGrid } = this.active.doc;
+    // The isometric grid isn't either, resize or not.
+    if (isoGrid) snapshot.doc.isoGrid = isoGrid;
+    else delete snapshot.doc.isoGrid;
     if (!snapshot.resized) {
       snapshot.doc.reference = reference;
       if (!reference) delete snapshot.doc.reference;
@@ -919,6 +918,21 @@ export class Editor {
     this.touch();
     this.commit();
     return i;
+  }
+
+  /**
+   * Turns the file's isometric grid on with diamonds `cell` pixels wide (rounded, see
+   * `isoCellSize`), or off with null. The width is remembered for the next file.
+   */
+  setIsoGrid(cell: number | null): void {
+    if (cell === null) delete this.doc.isoGrid;
+    else this.doc.isoGrid = this.isoCell = isoCellSize(cell);
+    this.touch();
+    this.commit();
+  }
+
+  toggleIsoGrid(): void {
+    this.setIsoGrid(this.doc.isoGrid ? null : this.isoCell);
   }
 
   setRender(render: Partial<RenderSettings>): void {
@@ -1950,6 +1964,7 @@ export class Editor {
       view: this.view,
       brushes: this.brushes.map((b) => ({ ...b, pixels: [...b.pixels] })),
       myPalettes: this.myPalettes,
+      isoCell: this.isoCell,
     };
   }
 
@@ -1967,10 +1982,7 @@ export class Editor {
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;
     if (typeof p.secondary === 'number') this.secondary = p.secondary >>> 0;
     if (p.view) {
-      const { grid, tile, tileOpacity, mirrorX, mirrorY, rulers, isoGrid, isoCell } = {
-        ...this.view,
-        ...p.view,
-      };
+      const { grid, tile, tileOpacity, mirrorX, mirrorY, rulers } = { ...this.view, ...p.view };
       // Older saves also had showGap, and no tileOpacity.
       this.view = {
         grid,
@@ -1979,10 +1991,9 @@ export class Editor {
         mirrorX,
         mirrorY,
         rulers: rulers === true,
-        isoGrid: isoGrid === true,
-        isoCell: typeof isoCell === 'number' ? isoCellSize(isoCell) : DEFAULT_ISO_CELL,
       };
     }
+    if (typeof p.isoCell === 'number') this.isoCell = isoCellSize(p.isoCell);
     if (Array.isArray(p.myPalettes))
       this.myPalettes = p.myPalettes
         .filter((m) => m && typeof m.id === 'string' && typeof m.name === 'string' && Array.isArray(m.colors))

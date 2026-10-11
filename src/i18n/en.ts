@@ -485,6 +485,8 @@ export const en = {
   'template.gameboy': 'Game Boy screen',
   'template.banner': 'Banner',
   'template.portrait': 'Portrait',
+  'template.iso': 'Isometric scene',
+  'template.isoGrid': 'isometric grid',
   'template.recent': 'Recent',
   'template.mirrored': 'symmetry',
   'template.tiled': 'tiled',

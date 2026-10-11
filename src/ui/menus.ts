@@ -367,8 +367,8 @@ export const MENU_BAR: MenuBarMenu[] = [
         },
         {
           label: t('display.isoGrid'),
-          checked: s.view.isoGrid,
-          onSelect: () => editor.toggleView('isoGrid'),
+          checked: !!s.doc.isoGrid,
+          onSelect: () => editor.toggleIsoGrid(),
         },
         {
           label: t('menu.preview'),

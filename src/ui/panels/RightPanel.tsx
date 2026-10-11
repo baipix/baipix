@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { ColorChips } from '../components/ColorChips';
-import { isoCellSize, MY_PALETTE } from '../../engine/editor';
+import { MY_PALETTE } from '../../engine/editor';
 import { ColorRow } from './ColorRow';
 import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
@@ -501,6 +501,7 @@ function DisplaySection() {
   const t = useT();
   const editor = useEditor();
   const view = useEditorState((s) => s.view);
+  const isoGrid = useEditorState((s) => s.doc.isoGrid);
   return (
     <Section id="display" title={t('section.display')}>
       <Checkbox checked={view.grid} onChange={(v) => editor.setView('grid', v)} label={t('display.grid')} />
@@ -537,23 +538,20 @@ function DisplaySection() {
         label={t('display.rulers')}
       />
       {view.rulers && <p className="muted section-note">{t('display.rulersHint')}</p>}
-      <Checkbox
-        checked={view.isoGrid}
-        onChange={(v) => editor.setView('isoGrid', v)}
-        label={t('display.isoGrid')}
-      />
-      {view.isoGrid && (
+      {/* Saved with the file: an isometric drawing keeps its grid, and tools snap to it. */}
+      <Checkbox checked={!!isoGrid} onChange={() => editor.toggleIsoGrid()} label={t('display.isoGrid')} />
+      {isoGrid && (
         // The diamonds' width; they're half as tall, the 2:1 of pixel art.
         <Row label={t('display.isoCell')}>
           <NumberField
-            value={view.isoCell}
+            value={isoGrid}
             min={4}
             max={256}
             label="↔"
             suffix="px"
             ariaLabel={t('display.isoCell')}
             scrubHint={t('common.dragToAdjust')}
-            onChange={(v) => editor.setView('isoCell', isoCellSize(v))}
+            onChange={(v) => editor.setIsoGrid(v)}
           />
         </Row>
       )}
