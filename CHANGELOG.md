@@ -19,7 +19,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
-- Put on an isometric face: what landed past the canvas's edges was lost. It's now kept outside the canvas, as after a move, and without a selection the drawing already outside the canvas is laid on the face too. (#PR)
+- Put on an isometric face: what landed past the canvas's edges was lost. It's now kept outside the canvas, as after a move, and without a selection the drawing already outside the canvas is laid on the face too. (#305)
 
 ## [0.6.0] - 2026-10-11
 
