@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Put an image on an isometric face (Image › Put on an isometric face): the selection, or what's drawn on the layer, laid onto the left side, the right side or the top of a box, kept crisp. The sides slide its columns down (or up) one pixel every two, losing nothing; the top turns it by 45° and flattens it, at twice its size so that no pixel is lost. The selection takes the face's shape, ready to move into place. (#PR)
+- Put an image on an isometric face (Image › Put on an isometric face): the selection, or what's drawn on the layer, laid onto the left side, the right side or the top of a box, kept crisp. The sides slide its columns down (or up) one pixel every two, losing nothing; the top turns it by 45° and flattens it, at twice its size so that no pixel is lost. The selection takes the face's shape, ready to move into place. (#302)
 - Isometric box: a Light edge option draws the top's two front edges one step lighter, the classic highlight of isometric pixel art, next to the outline. (#301)
 - An isometric ellipse: with the file's isometric grid on, Shift on the ellipse tool lays it on the ground, twice as wide as tall. It's drawn the pixel art way, its runs only getting shorter from the top toward the sides, with the two-pixel steps of the 2:1 slope. Outlined or filled. (#300)
 - Export as a tileset (Format: Tileset, in Export): the drawing cut into tiles of any size (16 × 16 by default), as a .zip with the tiles on one PNG sheet at 1×, a Tiled tileset (.tsj) and a Tiled map (.tmj) that draws the drawing again. Empty and repeated tiles can be left out of the sheet; the map still rebuilds the drawing. Godot takes the PNG as it is. (#299)
