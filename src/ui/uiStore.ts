@@ -53,8 +53,12 @@ export interface UiState {
   adjustTab: AdjustTab;
   panelWidths: { left: number; right: number };
   uiHidden: boolean;
-  exportFormat: 'png' | 'svg' | 'aseprite';
+  exportFormat: 'png' | 'svg' | 'aseprite' | 'tileset';
   exportActiveLayer: boolean;
+  /** Tileset export: the size of the tiles, and whether empty and repeated tiles are left out. */
+  exportTileWidth: number;
+  exportTileHeight: number;
+  exportTileDrop: boolean;
   /** Ids of the collapsed panel sections. */
   collapsed: string[];
   /** Tab of the right panel. */
@@ -87,6 +91,9 @@ export const uiStore = createStore<UiState>({
   uiHidden: false,
   exportFormat: 'png',
   exportActiveLayer: false,
+  exportTileWidth: 16,
+  exportTileHeight: 16,
+  exportTileDrop: true,
   collapsed: [],
   exportBackground: true,
   hiddenPalettes: [],

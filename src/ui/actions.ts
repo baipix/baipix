@@ -6,6 +6,7 @@ import type { PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
 import { renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
+import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -13,13 +14,14 @@ import { saveFile, safeFileName } from '../io/download';
 import { imageToBlock, loadImage, readPixels } from '../io/image';
 import { pickFile } from '../io/pickFile';
 import { referenceFromFile } from '../io/reference';
+import { zip } from '../io/zip';
 import { canvasToBlob, renderToCanvas } from '../io/png';
 import { documentFromJson, documentToJson, FILE_EXTENSION } from '../storage/fileFormat';
 import { layerClipFromHtml, layerClipHtml } from '../storage/layerClip';
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
-export type ExportFormat = 'png' | 'svg' | 'aseprite';
+export type ExportFormat = 'png' | 'svg' | 'aseprite' | 'tileset';
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
 
@@ -100,6 +102,7 @@ export function createActions(editor: Editor) {
 
   const actions = {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
+      if (format === 'tileset') return actions.exportTileset(onlyActiveLayer);
       const filename = `${baseName()}.${format}`;
       // Aseprite: the layers as they are, to keep working on them there.
       if (format === 'aseprite') {
@@ -118,6 +121,36 @@ export function createActions(editor: Editor) {
       const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
       const blob = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
       await report(filename, saveFile(filename, blob, 'image/png'));
+    },
+
+    /**
+     * The drawing cut into tiles, for Godot and Tiled: a .zip with the sheet (PNG, at 1×), a Tiled
+     * tileset (.tsj) and a Tiled map (.tmj) that draws the drawing again from it.
+     */
+    async exportTileset(onlyActiveLayer = false) {
+      const d = doc();
+      const name = baseName();
+      const { exportTileWidth, exportTileHeight, exportTileDrop } = uiStore.get();
+      const pixels = editor.flatten(
+        onlyActiveLayer ? { onlyLayer: d.layers[d.activeLayer] } : { includeBackground: false },
+      );
+      const tiles = cutTiles(pixels, d.width, d.height, {
+        tileWidth: exportTileWidth,
+        tileHeight: exportTileHeight,
+        dropEmpty: exportTileDrop,
+        dropRepeats: exportTileDrop,
+      });
+      if (!tiles.tiles.length) return toast(t('toast.emptyTileset'));
+      const { sheet, sheetWidth: w, sheetHeight: h } = tiles;
+      const png = await canvasToBlob(renderToCanvas(sheet, w, h, renderGeometry(w, h, 1, 0), 0));
+      const text = (s: string) => new TextEncoder().encode(s);
+      const bytes = zip([
+        { name: `${name}.png`, data: new Uint8Array(await png.arrayBuffer()) },
+        { name: `${name}.tsj`, data: text(tiledTileset(tiles, name, `${name}.png`)) },
+        { name: `${name}.tmj`, data: text(tiledMap(tiles, `${name}.tsj`)) },
+      ]);
+      const filename = `${name}.zip`;
+      await report(filename, saveFile(filename, new Blob([bytes as BlobPart]), 'application/zip'));
     },
 
     async copySvg(onlyActiveLayer = false) {

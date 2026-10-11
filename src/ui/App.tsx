@@ -59,6 +59,10 @@ function readPreview(p: Partial<PreviewWindow>): PreviewWindow {
   };
 }
 
+/** A tile side from a save: 1 to 512 pixels, 16 when missing. */
+const tileSide = (n: unknown): number =>
+  typeof n === 'number' && Number.isFinite(n) ? Math.min(512, Math.max(1, Math.round(n))) : 16;
+
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */
 function useRestore(editor: Editor, storage: StorageAdapter): boolean {
   const [ready, setReady] = useState(false);
@@ -77,8 +81,13 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           const widths = ui.panelWidths;
           uiStore.set({
             exportFormat:
-              ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' ? ui.exportFormat : 'png',
+              ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' || ui.exportFormat === 'tileset'
+                ? ui.exportFormat
+                : 'png',
             exportActiveLayer: !!ui.exportActiveLayer,
+            exportTileWidth: tileSide(ui.exportTileWidth),
+            exportTileHeight: tileSide(ui.exportTileHeight),
+            exportTileDrop: ui.exportTileDrop !== false,
             collapsed: Array.isArray(ui.collapsed) ? ui.collapsed.filter((x) => typeof x === 'string') : [],
             exportBackground: ui.exportBackground !== false,
             hiddenPalettes: Array.isArray(ui.hiddenPalettes)

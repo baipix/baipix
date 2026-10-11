@@ -19,7 +19,8 @@ import { Icon } from '../components/Icon';
 import { NumberField } from '../components/NumberField';
 import { PaletteGrid } from '../components/PaletteGrid';
 import { Row, Section } from '../components/Section';
-import { openAdjust, openDialog, toast, uiStore } from '../uiStore';
+import { openAdjust, openDialog, toast, uiStore, type UiState } from '../uiStore';
+import type { ExportFormat } from '../actions';
 import { copyText } from '../../io/clipboard';
 import { ExportPreview } from './ExportPreview';
 
@@ -559,6 +560,42 @@ function DisplaySection() {
   );
 }
 
+/** Tileset export: the tiles' size (square by default, like most tilesets) and what's left out. */
+function TilesetOptions() {
+  const t = useT();
+  const w = uiStore.use((s) => s.exportTileWidth);
+  const h = uiStore.use((s) => s.exportTileHeight);
+  const drop = uiStore.use((s) => s.exportTileDrop);
+  const side = (key: 'exportTileWidth' | 'exportTileHeight', value: number, label: string) => (
+    <NumberField
+      value={value}
+      min={1}
+      max={512}
+      label={label}
+      suffix="px"
+      ariaLabel={`${t('export.tileSize')} ${label}`}
+      scrubHint={t('common.dragToAdjust')}
+      onChange={(v) => uiStore.set({ [key]: v } as Partial<UiState>)}
+    />
+  );
+  return (
+    <>
+      <Row label={t('export.tileSize')}>
+        <div className="two-columns">
+          {side('exportTileWidth', w, 'W')}
+          {side('exportTileHeight', h, 'H')}
+        </div>
+      </Row>
+      <Checkbox
+        checked={drop}
+        onChange={(v) => uiStore.set({ exportTileDrop: v })}
+        label={t('export.tileDrop')}
+      />
+      <p className="hint">{t('export.tilesetHint')}</p>
+    </>
+  );
+}
+
 function ExportSection() {
   const t = useT();
   const actions = useActions();
@@ -572,7 +609,8 @@ function ExportSection() {
     // At the bottom of the panel, like Figma: the file's preview, its pixel size, format and buttons.
     <Section id="export" title={t('panel.export')} className="export-section">
       <ExportPreview />
-      <PixelSizes />
+      {/* Tiles are always at 1×: a game engine scales them itself. */}
+      {format !== 'tileset' && <PixelSizes />}
       <Row label={t('export.name')}>
         <label className="field">
           <input
@@ -590,19 +628,20 @@ function ExportSection() {
               }
             }}
           />
-          <span className="field-suffix">.{format}</span>
+          <span className="field-suffix">.{format === 'tileset' ? 'zip' : format}</span>
         </label>
       </Row>
       <Row label={t('export.format')}>
         <label className="field">
           <select
             value={format}
-            onChange={(e) => uiStore.set({ exportFormat: e.target.value as 'png' | 'svg' | 'aseprite' })}
+            onChange={(e) => uiStore.set({ exportFormat: e.target.value as ExportFormat })}
             aria-label={t('export.format')}
           >
             <option value="png">PNG</option>
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
+            <option value="tileset">{t('export.tileset')}</option>
           </select>
         </label>
       </Row>
@@ -615,7 +654,9 @@ function ExportSection() {
         />
       )}
       {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
-      {hasBackground(doc) && (!onlyLayer || format === 'aseprite') && (
+      {format === 'tileset' && <TilesetOptions />}
+      {/* Tiles stay transparent: the background is the game's. */}
+      {hasBackground(doc) && format !== 'tileset' && (!onlyLayer || format === 'aseprite') && (
         <Checkbox
           checked={includeBackground}
           onChange={(v) => uiStore.set({ exportBackground: v })}
