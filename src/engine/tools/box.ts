@@ -24,7 +24,7 @@ export function paintBox(s: Stroke, top: Point): void {
  * half cell across from the grid's origin, every quarter cell down, alternately), its sides a whole number of diamond
  * edges, a quarter cell in 2:1 steps.
  */
-function snapBox(box: { top: Point; width: number; depth: number }, cell: number, ox: number) {
+export function snapBox(box: { top: Point; width: number; depth: number }, cell: number, ox: number) {
   const across = cell / 2;
   const down = cell / 4;
   const x = box.top.x - ox;
@@ -54,7 +54,8 @@ function drawBox(s: Stroke, p: Point, mods: Modifiers): void {
     ? snapBox(drag, s.doc.isoGrid, isoGridOrigin(s.doc.width))
     : drag;
   s.options = { ...s.options, boxWidth: width, boxDepth: depth };
-  s.scratch.top = top;
+  // How the editor draws it again when an option changes (see `Editor.redrawVolume`).
+  s.scratch.repaint = () => paintBox(s, top);
   paintBox(s, top);
 }
 

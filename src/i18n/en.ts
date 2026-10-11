@@ -58,6 +58,8 @@ export const en = {
   'tool.star': 'Star',
   'tool.heart': 'Heart',
   'tool.box': 'Isometric box',
+  'tool.cylinder': 'Isometric cylinder',
+  'tool.pyramid': 'Isometric pyramid',
   'tool.shade': 'Shade',
   'tool.lighten': 'Lighten',
   'tool.blur': 'Blur',
@@ -340,6 +342,10 @@ export const en = {
     'Shift lays it on the ground of the isometric grid: twice as wide as tall, in clean steps.',
   'hint.box':
     'Drag from the top corner of the box to the bottom one: the top is the current color, the sides darker. Shift: as deep as wide. Width, depth and height redraw the last box.',
+  'hint.cylinder':
+    'Drag across its top, an ellipse lying flat, twice as wide as tall. Height, Outline and Light edge redraw the last cylinder.',
+  'hint.pyramid':
+    'Drag from the top corner of its base to the bottom one (Shift: square). Its apex is Height above the middle. The options redraw the last pyramid.',
   'options.boxWidth': 'Width',
   'options.boxDepth': 'Depth',
   'options.boxHeight': 'Height',
