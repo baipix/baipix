@@ -340,14 +340,14 @@ export const en = {
   'hint.line': 'Shift to lock to 0°, 45°, 90°, or 2:1 for isometric lines.',
   'hint.shape': 'Shift for a regular shape.',
   'hint.plane':
-    'Drag across the box the shape fits in: on a wall, its top and bottom go along the wall at 2:1. On the ground, drag the rectangle from its top corner to its bottom one.',
+    'On a wall, drag across the box the shape fits in: its top and bottom go along the wall at 2:1 (Shift: as tall as wide). On the ground, drag from the top corner of its diamond to the bottom one (Shift: regular; the ellipse: across).',
   'plane.label': 'Plane',
   'plane.flat': 'Flat',
   'plane.left': 'Left wall',
   'plane.right': 'Right wall',
   'plane.ground': 'Ground',
-  'hint.isoEllipse':
-    'Shift lays it on the ground of the isometric grid: twice as wide as tall, in clean steps.',
+  'hint.isoShape':
+    'Shift lays it on the ground, regular: a square tile, a circle, a regular star… dragged from the top corner of its diamond to the bottom one (the ellipse: across). Plane puts it on a wall instead.',
   'hint.box':
     'Drag from the top corner of the box to the bottom one: the top is the current color, the sides darker. Shift: as deep as wide. Width, depth and height redraw the last box.',
   'hint.cylinder':

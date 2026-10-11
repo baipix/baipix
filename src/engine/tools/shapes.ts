@@ -1,6 +1,5 @@
 import type { Point } from '../math';
 import {
-  cleanEllipse,
   constrainSquare,
   ellipseFilled,
   ellipseOutline,
@@ -35,22 +34,18 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
     else line(a.x, a.y, p.x, p.y, plot);
     return;
   }
-  // On an isometric grid, a rectangle or an ellipse can go on a wall or on the ground.
-  const plane = s.options.plane;
-  if (s.doc.isoGrid && plane !== 'flat' && (kind === 'rect' || kind === 'ellipse')) {
-    planeShape(kind, plane, a, p, s.options.filled, (x, y, outline) =>
-      outline ? stamp(s, x, y, color) : stamp(s, x, y, color, color, false, 1),
-    );
-    return;
-  }
-  // On an isometric grid, Shift lays the ellipse on the ground: twice as wide as tall, drawn clean.
-  if (kind === 'ellipse' && mods.shift && s.doc.isoGrid) {
-    const half = Math.max(Math.abs(p.y - a.y) + 1, Math.round((Math.abs(p.x - a.x) + 1) / 2));
-    const bx = a.x + (p.x < a.x ? -1 : 1) * (2 * half - 1);
-    const by = a.y + (p.y < a.y ? -1 : 1) * (half - 1);
-    const filled = s.options.filled;
-    cleanEllipse(a.x, a.y, bx, by, filled, (x, y) =>
-      filled ? stamp(s, x, y, color, color, false, 1) : stamp(s, x, y, color),
+  // On an isometric grid, a shape can go on a wall or on the ground; Shift lays it on the ground,
+  // regular (a square tile, a circle…), or makes it regular on its wall.
+  const plane = s.options.plane !== 'flat' ? s.options.plane : mods.shift ? 'ground' : null;
+  if (s.doc.isoGrid && plane) {
+    planeShape(
+      kind,
+      plane,
+      a,
+      p,
+      s.options.filled,
+      (x, y, outline) => (outline ? stamp(s, x, y, color) : stamp(s, x, y, color, color, false, 1)),
+      { regular: mods.shift, radius: s.options.radius },
     );
     return;
   }

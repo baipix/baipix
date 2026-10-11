@@ -359,16 +359,11 @@ export function ToolOptionsBar() {
     case 'triangle':
     case 'star':
     case 'heart':
-      info =
-        isoGrid && options.plane !== 'flat' && (tool === 'rect' || tool === 'ellipse')
-          ? t('hint.plane')
-          : tool === 'ellipse' && isoGrid
-            ? t('hint.isoEllipse')
-            : t('hint.shape');
+      info = !isoGrid ? t('hint.shape') : options.plane !== 'flat' ? t('hint.plane') : t('hint.isoShape');
       body = (
         <>
           {/* On an isometric grid: draw it flat, on a wall, or on the ground. */}
-          {isoGrid && (tool === 'rect' || tool === 'ellipse') && (
+          {isoGrid && (
             <select
               className="select-plain"
               aria-label={t('plane.label')}
