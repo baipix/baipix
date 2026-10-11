@@ -573,19 +573,18 @@ function TilesetOptions() {
       max={512}
       label={label}
       suffix="px"
-      ariaLabel={`${t('export.tileSize')} ${label}`}
+      ariaLabel={t(key === 'exportTileWidth' ? 'export.tileWidth' : 'export.tileHeight')}
       scrubHint={t('common.dragToAdjust')}
       onChange={(v) => uiStore.set({ [key]: v } as Partial<UiState>)}
     />
   );
   return (
     <>
-      <Row label={t('export.tileSize')}>
-        <div className="two-columns">
-          {side('exportTileWidth', w, 'W')}
-          {side('exportTileHeight', h, 'H')}
-        </div>
-      </Row>
+      {/* The whole width, like the canvas's size: in a labeled row, the numbers didn't fit. */}
+      <div className="two-columns">
+        {side('exportTileWidth', w, 'W')}
+        {side('exportTileHeight', h, 'H')}
+      </div>
       <Checkbox
         checked={drop}
         onChange={(v) => uiStore.set({ exportTileDrop: v })}
