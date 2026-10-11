@@ -18,7 +18,7 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Selections:** rectangle, lasso and magic wand; Shift adds, Alt takes away, and every tool keeps to the selected pixels.
 - **Shapes:** line, rectangle, rounded rectangle, ellipse, triangle, star and heart, outlined or filled.
 - **Palette-aware tools:** shade and lighten pick the next darker or lighter palette color in OKLab; blur can snap its result back to the palette; liquify and jumble rework a drawing without adding colors.
-- **Palettes:** Sweetie 16, PICO-8, Endesga 32, Game Boy… Paste any Lospec palette, build one from your drawing, or generate hue-shifted ramps.
+- **Palettes:** each file keeps its own: a preset (Sweetie 16, PICO-8, Endesga 32, Game Boy…), or the colors of the drawing, kept up to date as you draw. Keep your own palettes to use in every file, paste any Lospec palette, or generate hue-shifted ramps.
 - **Layers like a design tool:** groups four levels deep, blend modes, handles to resize and rotate, layers you copy from one file to another.
 - **Components:** draw a sprite once, place instances of it anywhere, and they follow when you draw on it. Repeat one in a grid.
 - **Layer effects:** outline, drop shadow and glow, drawn from the layer without changing its pixels.

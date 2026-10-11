@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-11
+
+Palettes and interface: each file keeps its own palette, your own palettes in every file, the two colors as chips like Photoshop, a shorter toolbar, Export at the bottom of the right panel, Cmd+Z for the palette, and an SVG export that keeps the layers.
+
 ### Added
 
 - My palettes: keep your own palettes in the browser and use them in every file. In Manage palettes, + New palette makes one from the file's palette or from a .hex or .gpl file; each can be renamed, replaced with the file's palette or deleted. They're listed in the palette menu, after the file's own; picking one copies it into the file, its name in the header. (#279)
@@ -29,6 +33,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- The home page, the Draw page and the README say what 0.6 brings to palettes: each file keeps its own, Drawing colors follow the drawing, and your own palettes are there in every file. (#286)
 - On the Draw page, each tool's row shows the editor's own icon for it instead of its shortcut; the shortcuts stay together at the bottom of the page. (#261)
 - The home page, the Draw page and the README catch up with 0.5: the gradient, the lasso and the magic wand, the heart, components, layer effects, groups four levels deep, export to Aseprite. The Draw page gets a Components section and a gradient animation, the home page a wide Components card closing its feature list, both with a potion whose copies fill along with it. (#259)
 - The screenshots of the editor on the home page and in the README show the current interface, and `npm run screenshots` takes them again in dark and light whenever it changes. (#260)
@@ -231,7 +236,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.5.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.6.0...main
+[0.6.0]: https://github.com/baipix/baipix/releases/tag/v0.6.0
 [0.5.0]: https://github.com/baipix/baipix/releases/tag/v0.5.0
 [0.4.0]: https://github.com/baipix/baipix/releases/tag/v0.4.0
 [0.3.1]: https://github.com/baipix/baipix/releases/tag/v0.3.1
