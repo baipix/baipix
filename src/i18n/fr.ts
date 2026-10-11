@@ -530,7 +530,7 @@ export const fr: Record<MessageKey, string> = {
   'tour.gap': 'Espace les pixels pour un effet LED ou matrice de points, sur le canevas et dans les exports.',
   'tour.exportTitle': 'Export',
   'tour.export':
-    'PNG de 1× à 32×, ou SVG avec un tracé par couleur : copie-le et colle-le directement dans Figma.',
+    'PNG de 1× à 32×, ou SVG qui garde tes calques, un tracé par couleur : copie-le et colle-le directement dans Figma.',
   'tour.next': 'Suivant',
   'tour.done': 'Terminer',
   'tour.skip': 'Passer la visite',

@@ -522,7 +522,7 @@ export const en = {
   'tour.gap': 'Space the pixels apart for an LED or dot-matrix look, on the canvas and in exports.',
   'tour.exportTitle': 'Export',
   'tour.export':
-    'PNG from 1× to 32×, or SVG with one path per color: copy it and paste it straight into Figma.',
+    'PNG from 1× to 32×, or SVG that keeps your layers, one path per color: copy it and paste it straight into Figma.',
   'tour.next': 'Next',
   'tour.done': 'Done',
   'tour.skip': 'Skip the tour',
