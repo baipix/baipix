@@ -1,4 +1,4 @@
-import type { PixelDoc } from '../engine/document';
+import { fileIdOf, type PixelDoc } from '../engine/document';
 import { clamp } from '../engine/math';
 
 export const ZOOM_LEVELS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96];
@@ -26,6 +26,9 @@ class Viewport {
   private windowH = 0;
   dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
   private docId: string | null = null;
+  /** The shown board's file and place in it: the camera follows the file, not the board. */
+  private place: { file: string; x: number; y: number } | null = null;
+  /** Each file's camera: the zoom, and where the file's (0, 0) was, in CSS px. */
   private saved = new Map<string, View>();
   /** Width hidden by the floating side panels at each edge, measured by the canvas view. */
   covered: () => { left: number; right: number } = () => ({ left: 0, right: 0 });
@@ -218,14 +221,37 @@ class Viewport {
     this.zoomTo(Math.max(1, Math.round(this.zoom)), cx, cy);
   }
 
-  /** Remembers the camera per document. */
+  /**
+   * Shows a board, the camera remembered per file. `originX/Y` stay the shown board's (0, 0), so
+   * everything drawn and clicked keeps working in its pixels; going to another board of the same
+   * file, or moving the board, shifts them by the board's move so the file stays still on screen.
+   */
   showDocument(doc: PixelDoc): void {
-    if (this.docId === doc.id) return;
-    if (this.docId) this.saved.set(this.docId, { zoom: this.zoom, panX: this.panX, panY: this.panY });
+    const file = fileIdOf(doc);
+    const x = doc.board?.x ?? 0;
+    const y = doc.board?.y ?? 0;
+    const was = this.place;
+    if (this.docId === doc.id && was && was.x === x && was.y === y) return;
+    const ez = this.effectiveZoom;
+    if (was?.file === file) {
+      this.docId = doc.id;
+      this.place = { file, x, y };
+      this.panBy((x - was.x) * ez, (y - was.y) * ez);
+      return;
+    }
+    if (was)
+      this.saved.set(was.file, {
+        zoom: this.zoom,
+        panX: this.panX - was.x * ez,
+        panY: this.panY - was.y * ez,
+      });
     this.docId = doc.id;
-    const view = this.saved.get(doc.id);
-    if (view) this.set(view);
-    else this.fit(doc);
+    this.place = { file, x, y };
+    const view = this.saved.get(file);
+    if (!view) return this.fit(doc);
+    this.zoom = view.zoom;
+    const z = this.effectiveZoom;
+    this.set({ zoom: view.zoom, panX: view.panX + x * z, panY: view.panY + y * z });
   }
 }
 
