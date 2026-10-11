@@ -481,6 +481,7 @@ export const en = {
   'display.mirrorY': 'Top-bottom symmetry',
   'display.isoGrid': 'Isometric grid',
   'display.isoCell': 'Cell',
+  'display.isoVertical': 'Vertical lines',
 
   'export.button': 'Export',
   'export.format': 'Format',

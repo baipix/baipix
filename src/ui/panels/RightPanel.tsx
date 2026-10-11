@@ -503,6 +503,7 @@ function DisplaySection() {
   const editor = useEditor();
   const view = useEditorState((s) => s.view);
   const isoGrid = useEditorState((s) => s.doc.isoGrid);
+  const isoGridVertical = useEditorState((s) => s.doc.isoGridVertical);
   return (
     <Section id="display" title={t('section.display')}>
       <Checkbox checked={view.grid} onChange={(v) => editor.setView('grid', v)} label={t('display.grid')} />
@@ -555,6 +556,13 @@ function DisplaySection() {
             onChange={(v) => editor.setIsoGrid(v)}
           />
         </Row>
+      )}
+      {isoGrid && (
+        <Checkbox
+          checked={!!isoGridVertical}
+          onChange={(v) => editor.setIsoGridVertical(v)}
+          label={t('display.isoVertical')}
+        />
       )}
     </Section>
   );

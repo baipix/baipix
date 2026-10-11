@@ -595,10 +595,12 @@ export class Editor {
     else delete snapshot.doc.palette;
     // The reference image and the guides aren't part of the history: undo and redo leave them,
     // except across a canvas resize, which moved them with the drawing.
-    const { reference, guides, isoGrid } = this.active.doc;
+    const { reference, guides, isoGrid, isoGridVertical } = this.active.doc;
     // The isometric grid isn't either, resize or not.
     if (isoGrid) snapshot.doc.isoGrid = isoGrid;
     else delete snapshot.doc.isoGrid;
+    if (isoGridVertical) snapshot.doc.isoGridVertical = true;
+    else delete snapshot.doc.isoGridVertical;
     if (!snapshot.resized) {
       snapshot.doc.reference = reference;
       if (!reference) delete snapshot.doc.reference;
@@ -949,6 +951,14 @@ export class Editor {
   setIsoGrid(cell: number | null): void {
     if (cell === null) delete this.doc.isoGrid;
     else this.doc.isoGrid = this.isoCell = isoCellSize(cell);
+    this.touch();
+    this.commit();
+  }
+
+  /** Adds upright lines to the isometric grid, through its diamonds' corners, or takes them away. */
+  setIsoGridVertical(on: boolean): void {
+    if (on) this.doc.isoGridVertical = true;
+    else delete this.doc.isoGridVertical;
     this.touch();
     this.commit();
   }

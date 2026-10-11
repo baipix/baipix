@@ -68,6 +68,8 @@ export interface BaipixFile {
   guides?: { x: number[]; y: number[] };
   /** The isometric grid's cell width, while it's on (missing: off). */
   isoGrid?: number;
+  /** Upright lines in the isometric grid (missing: none). */
+  isoGridVertical?: boolean;
   /** Last change, in ms since the epoch. */
   updatedAt?: number;
   layers: BaipixLayer[];
@@ -144,6 +146,7 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
     ...(doc.axisY !== undefined && { axisY: doc.axisY }),
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.isoGrid && { isoGrid: doc.isoGrid }),
+    ...(doc.isoGridVertical && { isoGridVertical: true }),
     ...(doc.updatedAt !== undefined && { updatedAt: doc.updatedAt }),
     ...(doc.palette && {
       palette: {
@@ -303,6 +306,7 @@ export function deserializeDocument(data: unknown): PixelDoc {
     ...(typeof f.axisY === 'number' && { axisY: clamp(Math.round(f.axisY * 2) / 2, 0, height) }),
     ...(readGuides(f.guides, width, height) ?? {}),
     ...(typeof f.isoGrid === 'number' && Number.isFinite(f.isoGrid) && { isoGrid: isoCellSize(f.isoGrid) }),
+    ...(f.isoGridVertical === true && { isoGridVertical: true }),
     ...(typeof f.updatedAt === 'number' && Number.isFinite(f.updatedAt) && { updatedAt: f.updatedAt }),
     ...(groups && { groups }),
     ...(readPalette(f.palette) ?? {}),

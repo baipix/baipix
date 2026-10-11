@@ -124,6 +124,8 @@ export interface PixelDoc {
    * `isoCellSize`). Like the guides, it's not part of the undo history.
    */
   isoGrid?: number;
+  /** The isometric grid also has upright lines through its diamonds' corners, to build heights. */
+  isoGridVertical?: boolean;
   /** Used to name new layers ("Layer 3"). */
   layerCounter: number;
   /** The file's palette. Missing: the colors of the drawing (see `DocPalette`). */

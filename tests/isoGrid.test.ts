@@ -112,3 +112,20 @@ describe('the Isometric scene template', () => {
     expect(e.getState().doc).toMatchObject({ width: 128, height: 128, isoGrid: 16 });
   });
 });
+
+describe('vertical lines in the isometric grid', () => {
+  it('are saved with the file and stay across undo', () => {
+    const e = new Editor();
+    e.setIsoGrid(16);
+    e.setIsoGridVertical(true);
+    expect(documentFromJson(documentToJson(e.getState().doc)).isoGridVertical).toBe(true);
+    e.setColor('primary', RED);
+    e.setTool('pencil');
+    e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+    e.endStroke();
+    e.undo();
+    expect(e.getState().doc.isoGridVertical).toBe(true);
+    e.setIsoGridVertical(false);
+    expect(documentFromJson(documentToJson(e.getState().doc)).isoGridVertical).toBeUndefined();
+  });
+});

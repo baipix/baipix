@@ -487,6 +487,7 @@ export const fr: Record<MessageKey, string> = {
   'display.mirrorY': 'Symétrie haut-bas',
   'display.isoGrid': 'Grille isométrique',
   'display.isoCell': 'Case',
+  'display.isoVertical': 'Lignes verticales',
 
   'export.button': 'Exporter',
   'export.format': 'Format',
