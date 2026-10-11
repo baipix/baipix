@@ -36,6 +36,37 @@ export function constrainAngle(start: Point, end: Point): Point {
   return { x: start.x + Math.sign(dx) * d, y: start.y + Math.sign(dy) * d };
 }
 
+/** The directions a line snaps to with Shift, in degrees: 0°, the two isometric ones (2:1 and 1:2), 45° and 90°. */
+const SNAPS = [0, Math.atan(1 / 2), Math.PI / 4, Math.atan(2), Math.PI / 2];
+
+/**
+ * A line snapped to the nearest of 0°, 2:1, 45°, 1:2 and 90° from `start` towards `end`. The
+ * isometric ones are drawn in clean steps of exactly two pixels, each pair one row (or column) on
+ * from the last: the 2:1 line of isometric pixel art, with no doubled or lone pixel.
+ */
+export function snappedLine(start: Point, end: Point, plot: PlotFn): void {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  const sx = dx < 0 ? -1 : 1;
+  const sy = dy < 0 ? -1 : 1;
+  const angle = Math.atan2(ay, ax);
+  const snap = SNAPS.reduce((best, a) => (Math.abs(a - angle) < Math.abs(best - angle) ? a : best));
+  if (snap === SNAPS[1] || snap === SNAPS[3]) {
+    // Steps of two along the long side: n of them, plus the pair at the start.
+    const wide = snap === SNAPS[1];
+    const n = Math.round((wide ? 2 * ax + ay : ax + 2 * ay) / 5);
+    for (let k = 0; k <= n; k++)
+      for (let j = 0; j < 2; j++)
+        if (wide) plot(start.x + sx * (2 * k + j), start.y + sy * k);
+        else plot(start.x + sx * k, start.y + sy * (2 * k + j));
+    return;
+  }
+  const b = constrainAngle(start, end);
+  line(start.x, start.y, b.x, b.y, plot);
+}
+
 /** Makes the box defined by two points square. */
 export function constrainSquare(start: Point, end: Point): Point {
   const d = Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y));

@@ -325,7 +325,7 @@ export const fr: Record<MessageKey, string> = {
   'hint.lassoFill':
     'Dessine une forme à main levée : quand tu relâches, elle se ferme et se remplit de la couleur. Clic droit pour la couleur secondaire.',
   'hint.eraser': 'Efface vers la transparence.',
-  'hint.line': 'Maj pour bloquer à 0°, 45° ou 90°.',
+  'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
   'hint.shape': 'Maj pour une forme régulière.',
   'hint.gradient':
     'Glisse du début du dégradé jusqu’à sa fin (Shift : par 45°). Il remplit la zone de même couleur sous le premier clic, ou la sélection. Ses couleurs viennent de la palette, tramées entre elles. Change les options juste après : le dernier dégradé suit.',

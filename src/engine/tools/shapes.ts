@@ -1,6 +1,5 @@
 import type { Point } from '../math';
 import {
-  constrainAngle,
   constrainSquare,
   ellipseFilled,
   ellipseOutline,
@@ -13,6 +12,7 @@ import {
   rectOutline,
   roundRectFilled,
   roundRectOutline,
+  snappedLine,
   starPoints,
   trianglePoints,
   type PlotFn,
@@ -28,8 +28,9 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
   const [color] = strokeColors(s);
   const a = s.start;
   if (kind === 'line') {
-    const b = mods.shift ? constrainAngle(a, p) : p;
-    line(a.x, a.y, b.x, b.y, (x, y) => stamp(s, x, y, color));
+    const plot: PlotFn = (x, y) => stamp(s, x, y, color);
+    if (mods.shift) snappedLine(a, p, plot);
+    else line(a.x, a.y, p.x, p.y, plot);
     return;
   }
   const b = mods.shift ? constrainSquare(a, p) : p;
