@@ -17,6 +17,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Isometric lines: with Shift, the line tool also snaps to 2:1 (two pixels across for one up) and 1:2, besides 0°, 45° and 90°. They're drawn in clean steps of exactly two pixels, with no doubled or lone pixel. (#288)
 - An isometric grid (Display, or the View menu): 2:1 diamonds, the pixel art isometric angle, with lines through the pixel corners at every zoom. Pick the width of the diamonds in pixels (16 by default); they're half as tall. (#287)
 
+### Fixed
+
+- Isometric box: a color that isn't in the palette got its sides from the closest palette ramp, whatever its hue (a blue box with green sides, once the palette held only greens). The sides now come down the palette's ramp only for a palette color, and are otherwise the color itself made darker. (#PR)
+
 ## [0.6.0] - 2026-10-11
 
 Palettes and interface: each file keeps its own palette, your own palettes in every file, the two colors as chips like Photoshop, a shorter toolbar, Export at the bottom of the right panel, Cmd+Z for the palette, and an SVG export that keeps the layers.

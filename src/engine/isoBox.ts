@@ -93,16 +93,14 @@ export function isoBox(
   });
 }
 
-/** One step darker: the palette's next color down its ramp, or the closest, or a darker mix. */
-function darker(c: Color, palette: PaletteIndex): Color {
-  const next = palette.shade(c, -1, 'ramp') ?? palette.shade(c, -1, 'palette');
-  return next ?? shiftLightness(c, -1, 2, true);
-}
-
-/** One step lighter, the same way. */
-function lighter(c: Color, palette: PaletteIndex): Color {
-  const next = palette.shade(c, 1, 'ramp') ?? palette.shade(c, 1, 'palette');
-  return next ?? shiftLightness(c, 1, 2, true);
+/**
+ * One step darker (`dir` -1) or lighter (1): the next color along the palette's ramp when the color
+ * is in the palette, otherwise the color itself made darker or lighter. A color from elsewhere
+ * would otherwise borrow the closest palette ramp, whatever its hue: a blue box with green sides.
+ */
+function step(c: Color, palette: PaletteIndex, dir: 1 | -1): Color {
+  const inPalette = palette.size > 0 && palette.nearest(c) === c;
+  return (inPalette && palette.shade(c, dir, 'ramp')) || shiftLightness(c, dir, 2, true);
 }
 
 /**
@@ -110,7 +108,7 @@ function lighter(c: Color, palette: PaletteIndex): Color {
  * three, and the light edge one step lighter.
  */
 export function boxColors(color: Color, palette: PaletteIndex): Record<BoxFace, Color> {
-  const left = darker(color, palette);
-  const right = darker(left, palette);
-  return { top: color, left, right, edge: darker(right, palette), light: lighter(color, palette) };
+  const left = step(color, palette, -1);
+  const right = step(left, palette, -1);
+  return { top: color, left, right, edge: step(right, palette, -1), light: step(color, palette, 1) };
 }
