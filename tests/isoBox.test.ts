@@ -3,12 +3,12 @@ import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
 import { boxFromDrag, isoBox, type BoxFace } from '../src/engine/isoBox';
 
-const MARK: Record<BoxFace, string> = { top: 'T', left: 'L', right: 'R', edge: 'o' };
+const MARK: Record<BoxFace, string> = { top: 'T', left: 'L', right: 'R', edge: 'o', light: '+' };
 
 /** The box as rows of text, from its leftmost column. */
-function art(width: number, depth: number, height: number, outline = false): string[] {
+function art(width: number, depth: number, height: number, outline = false, light = false): string[] {
   const cells = new Map<string, BoxFace>();
-  isoBox({ x: 0, y: 0 }, { width, depth, height }, outline, (x, y, f) => cells.set(`${x},${y}`, f));
+  isoBox({ x: 0, y: 0 }, { width, depth, height }, outline, (x, y, f) => cells.set(`${x},${y}`, f), light);
   const xs = [...cells.keys()].map((k) => +k.split(',')[0]);
   const ys = [...cells.keys()].map((k) => +k.split(',')[1]);
   const rows: string[] = [];
@@ -57,6 +57,19 @@ describe('isometric box', () => {
       '..ooLRoo..',
       '....oo....',
     ]);
+  });
+
+  it('lights the top’s front edges, over the sides, under the outline', () => {
+    expect(art(2, 2, 2, false, true)).toEqual([
+      '....TT....',
+      '..TTTTTT..',
+      '++TTTTTT++',
+      'LL++TT++RR',
+      'LLLL++RRRR',
+      '..LLLRRR..',
+      '....LR....',
+    ]);
+    expect(art(2, 2, 2, true, true)[3]).toBe('oL++TT++Ro');
   });
 
   it('takes its width and depth from a drag between the corners of its top', () => {

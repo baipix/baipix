@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Isometric box: a Light edge option draws the top's two front edges one step lighter, the classic highlight of isometric pixel art, next to the outline. (#301)
 - An isometric ellipse: with the file's isometric grid on, Shift on the ellipse tool lays it on the ground, twice as wide as tall. It's drawn the pixel art way, its runs only getting shorter from the top toward the sides, with the two-pixel steps of the 2:1 slope. Outlined or filled. (#300)
 - Export as a tileset (Format: Tileset, in Export): the drawing cut into tiles of any size (16 × 16 by default), as a .zip with the tiles on one PNG sheet at 1×, a Tiled tileset (.tsj) and a Tiled map (.tmj) that draws the drawing again. Empty and repeated tiles can be left out of the sheet; the map still rebuilds the drawing. Godot takes the PNG as it is. (#299)
 - Isometric tiles: with the isometric grid on, the tile preview repeats the drawing staggered, half a tile across and down, as isometric tiles fit together, and the canvas's corners show the neighbors. Strokes that go past the diamond's edges come back in on the other side, so its corners stay empty. An Isometric tile template (32 × 16) starts that way. The isometric grid now starts from the top middle of the canvas, so its diamonds line up with the tile's. (#298)

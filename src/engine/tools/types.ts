@@ -98,6 +98,8 @@ export interface ToolOptions {
   boxHeight: number;
   /** Isometric box: an outline in a darker color around it. */
   boxOutline: boolean;
+  /** Isometric box: the top's front edges one step lighter, the classic highlight. */
+  boxLight: boolean;
 }
 
 export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
@@ -136,6 +138,7 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   boxDepth: 4,
   boxHeight: 8,
   boxOutline: false,
+  boxLight: false,
 };
 
 export interface Modifiers {

@@ -360,6 +360,7 @@ export function ToolOptionsBar() {
             onChange={set('boxOutline')}
             label={t('options.boxOutline')}
           />
+          <Checkbox checked={options.boxLight} onChange={set('boxLight')} label={t('options.boxLight')} />
         </>
       );
       break;

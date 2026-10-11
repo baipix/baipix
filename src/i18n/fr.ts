@@ -337,6 +337,7 @@ export const fr: Record<MessageKey, string> = {
   'options.boxDepth': 'Profondeur',
   'options.boxHeight': 'Hauteur',
   'options.boxOutline': 'Contour',
+  'options.boxLight': 'Arête claire',
   'hint.gradient':
     'Glisse du début du dégradé jusqu’à sa fin (Shift : par 45°). Il remplit la zone de même couleur sous le premier clic, ou la sélection. Ses couleurs viennent de la palette, tramées entre elles. Change les options juste après : le dernier dégradé suit.',
   'gradient.stops': 'Arrêts du dégradé',
