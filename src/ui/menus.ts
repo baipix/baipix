@@ -192,6 +192,14 @@ export const MENU_BAR: MenuBarMenu[] = [
       { label: t('menu.flipV'), shortcut: 'Shift+V', onSelect: () => editor.flip(false) },
       { label: t('menu.rotate'), shortcut: 'Shift+R', onSelect: () => editor.rotate() },
       { label: t('menu.rotateLeft'), shortcut: 'Alt+Shift+R', onSelect: () => editor.rotate(false) },
+      {
+        label: t('menu.isoFace'),
+        items: [
+          { label: t('menu.isoFaceLeft'), onSelect: () => editor.putOnIsoFace('left') },
+          { label: t('menu.isoFaceRight'), onSelect: () => editor.putOnIsoFace('right') },
+          { label: t('menu.isoFaceTop'), onSelect: () => editor.putOnIsoFace('top') },
+        ],
+      },
       '-',
       { label: t('menu.adjustColors'), shortcut: 'Ctrl+U', onSelect: () => openAdjust('all') },
     ],

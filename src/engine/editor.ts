@@ -86,6 +86,7 @@ import {
 import { paintGradient, stopsOf } from './tools/gradient';
 import { paintBox } from './tools/box';
 import { tilesIsometric } from './isoTile';
+import { isoFaceMapping, type IsoFace } from './isoProject';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
@@ -2304,6 +2305,40 @@ export class Editor {
       if (hadSelection) this.active.selection = rotated;
       // Rotating the layer turns it within the canvas: what was outside doesn't follow.
       else delete layer.outside;
+    });
+  }
+
+  /**
+   * Lays the selection (or what's drawn on the layer) onto a face of an isometric box, kept crisp
+   * (see `isoFaceMapping`), from its top left corner. The selection becomes the face's shape, so
+   * it can be moved into place.
+   */
+  putOnIsoFace(face: IsoFace): void {
+    if (this.activeLocked()) return;
+    const { width: W, height: H } = this.doc;
+    const layer = activeLayer(this.doc);
+    const sel = this.active.selection ? clipSelection(this.active.selection, W, H) : null;
+    const rect = sel ?? pixelBounds(layer.pixels, W, H);
+    if (!rect) {
+      this.notice({ type: 'emptyDrawing' });
+      return;
+    }
+    this.edit((doc) => {
+      const pixels = activeLayer(doc).pixels;
+      const block = sel ? maskBlock(extractBlock(pixels, W, H, sel), sel) : extractBlock(pixels, W, H, rect);
+      const { width, height, source } = isoFaceMapping(face, rect.w, rect.h);
+      fillSelection(pixels, W, H, sel ?? rect, 0);
+      const mask = new Uint8Array(width * height);
+      source.forEach((from, i) => {
+        if (from < 0 || (sel?.mask && !sel.mask[from])) return;
+        mask[i] = 1;
+        const x = rect.x + (i % width);
+        const y = rect.y + Math.floor(i / width);
+        const c = block.pixels[from];
+        if (c >>> 24 && x < W && y < H) pixels[y * W + x] = c;
+      });
+      if (sel)
+        this.active.selection = clipSelection({ x: rect.x, y: rect.y, w: width, h: height, mask }, W, H);
     });
   }
 
