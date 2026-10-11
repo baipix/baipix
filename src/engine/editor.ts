@@ -85,6 +85,7 @@ import {
 } from './tools';
 import { paintGradient, stopsOf } from './tools/gradient';
 import { paintBox } from './tools/box';
+import { tilesIsometric } from './isoTile';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
@@ -2774,7 +2775,7 @@ export class Editor {
       palette: this.paletteIndex,
       mirrorX: this.view.mirrorX,
       mirrorY: this.view.mirrorY,
-      wrap: this.view.tile,
+      wrap: this.view.tile && (tilesIsometric(doc) ? 'iso' : 'rect'),
       customBrush: this.strokeBrush(),
       selection: this.active.selection,
       visited: new Uint8Array(doc.width * doc.height),

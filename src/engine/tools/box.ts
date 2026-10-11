@@ -1,3 +1,4 @@
+import { isoGridOrigin } from '../document';
 import { boxColors, boxFromDrag, isoBox } from '../isoBox';
 import type { Point } from '../math';
 import { stamp, strokeColors } from './paint';
@@ -16,14 +17,15 @@ export function paintBox(s: Stroke, top: Point): void {
 
 /**
  * With the isometric grid on, a box sits on it: its top corner on a corner of the diamonds (every
- * half cell across, every quarter cell down, alternately), its sides a whole number of diamond
+ * half cell across from the grid's origin, every quarter cell down, alternately), its sides a whole number of diamond
  * edges, a quarter cell in 2:1 steps.
  */
-function snapBox(box: { top: Point; width: number; depth: number }, cell: number) {
+function snapBox(box: { top: Point; width: number; depth: number }, cell: number, ox: number) {
   const across = cell / 2;
   const down = cell / 4;
-  const { x, y } = box.top;
-  let best = { x, y };
+  const x = box.top.x - ox;
+  const { y } = box.top;
+  let best = box.top;
   let distance = Infinity;
   const m0 = Math.round(x / across);
   const n0 = Math.round(y / down);
@@ -31,7 +33,7 @@ function snapBox(box: { top: Point; width: number; depth: number }, cell: number
     for (let n = n0 - 1; n <= n0 + 1; n++) {
       if ((m + n) % 2) continue;
       const d = Math.hypot(m * across - x, n * down - y);
-      if (d < distance) [distance, best] = [d, { x: m * across, y: n * down }];
+      if (d < distance) [distance, best] = [d, { x: ox + m * across, y: n * down }];
     }
   const edges = (steps: number) => Math.round(steps / down) * down;
   return { top: best, width: edges(box.width), depth: edges(box.depth) };
@@ -44,7 +46,9 @@ function snapBox(box: { top: Point; width: number; depth: number }, cell: number
  */
 function drawBox(s: Stroke, p: Point, mods: Modifiers): void {
   const drag = boxFromDrag(s.start, p, mods.shift);
-  const { top, width, depth } = s.doc.isoGrid ? snapBox(drag, s.doc.isoGrid) : drag;
+  const { top, width, depth } = s.doc.isoGrid
+    ? snapBox(drag, s.doc.isoGrid, isoGridOrigin(s.doc.width))
+    : drag;
   s.options = { ...s.options, boxWidth: width, boxDepth: depth };
   s.scratch.top = top;
   paintBox(s, top);

@@ -170,8 +170,11 @@ export interface Stroke {
   palette: PaletteIndex;
   mirrorX: boolean;
   mirrorY: boolean;
-  /** Tile preview is on: painting wraps around the canvas edges. */
-  wrap: boolean;
+  /**
+   * Tile preview is on: painting wraps around the canvas edges, side by side (`rect`) or, with the
+   * isometric grid, staggered (`iso`: past the diamond's edges, it lands in the diamond).
+   */
+  wrap: false | 'rect' | 'iso';
   /** The custom brush the Pencil paints with, if any. */
   customBrush: PixelBlock | null;
   selection: Selection | null;

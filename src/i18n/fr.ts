@@ -492,6 +492,7 @@ export const fr: Record<MessageKey, string> = {
   'template.banner': 'Bannière',
   'template.portrait': 'Portrait',
   'template.iso': 'Scène isométrique',
+  'template.isoTile': 'Tuile isométrique',
   'template.isoGrid': 'grille isométrique',
   'template.recent': 'Récents',
   'template.mirrored': 'symétrie',
