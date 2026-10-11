@@ -20,6 +20,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Fixed
 
 - Isometric box: a color that isn't in the palette got its sides from the closest palette ramp, whatever its hue (a blue box with green sides, once the palette held only greens). The sides now come down the palette's ramp only for a palette color, and are otherwise the color itself made darker. (#304)
+- In Export, the tileset's tile width and height fields were too narrow for their numbers (16 showed as 1). They now take the panel's whole width, like the canvas size. (#303)
 
 ## [0.6.0] - 2026-10-11
 
