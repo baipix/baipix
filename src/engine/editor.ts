@@ -377,7 +377,8 @@ export class Editor {
     const own = this.doc.palette;
     for (const s of this.sessions) {
       if (s === this.active || fileIdOf(s.doc) !== fileIdOf(this.doc) || !this.doc.board) continue;
-      if (own) s.doc.palette = { ...own, colors: [...own.colors], ...(own.custom && { custom: [...own.custom] }) };
+      if (own)
+        s.doc.palette = { ...own, colors: [...own.colors], ...(own.custom && { custom: [...own.custom] }) };
       else delete s.doc.palette;
     }
   }
