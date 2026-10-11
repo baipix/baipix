@@ -279,6 +279,7 @@ export const fr: Record<MessageKey, string> = {
   'menu.background': 'Couleur de fond…',
   'menu.layerUp': 'Monter le calque',
   'menu.layerDown': 'Descendre le calque',
+  'menu.sortByDepth': 'Trier par profondeur',
   'menu.hideLayer': 'Masquer le calque',
   'menu.showLayer': 'Afficher le calque',
   'menu.lockLayer': 'Verrouiller le calque',
@@ -609,6 +610,7 @@ export const fr: Record<MessageKey, string> = {
   'shortcuts.mirror': 'Symétries',
 
   'toast.saved': '{name} enregistré.',
+  'toast.alreadySorted': 'Les calques sont déjà triés par profondeur : le dessin le plus bas devant.',
   'toast.downloadCancelled': 'Téléchargement annulé.',
   'toast.downloadBusy': 'Une demande de téléchargement est déjà ouverte.',
   'toast.exportShrunk': 'Image trop grande : pixels réduits à {size} px.',

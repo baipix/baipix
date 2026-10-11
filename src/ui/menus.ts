@@ -277,6 +277,13 @@ export const MENU_BAR: MenuBarMenu[] = [
           disabled: disabled || !editor.canMoveLayer(-1),
           onSelect: () => editor.moveLayer(-1),
         },
+        {
+          label: t('menu.sortByDepth'),
+          disabled: disabled || doc.layers.length < 2,
+          onSelect: () => {
+            if (!editor.sortByDepth()) toast(t('toast.alreadySorted'));
+          },
+        },
         '-',
         {
           label: t('menu.align'),

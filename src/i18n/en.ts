@@ -278,6 +278,7 @@ export const en = {
   'menu.background': 'Background color…',
   'menu.layerUp': 'Move layer up',
   'menu.layerDown': 'Move layer down',
+  'menu.sortByDepth': 'Sort by depth',
   'menu.hideLayer': 'Hide layer',
   'menu.showLayer': 'Show layer',
   'menu.lockLayer': 'Lock layer',
@@ -601,6 +602,7 @@ export const en = {
   'shortcuts.mirror': 'Symmetry',
 
   'toast.saved': '{name} saved.',
+  'toast.alreadySorted': 'The layers are already in depth order: the lowest drawing in front.',
   'toast.downloadCancelled': 'Download cancelled.',
   'toast.downloadBusy': 'A download request is already open.',
   'toast.exportShrunk': 'Image too large: pixels reduced to {size} px.',

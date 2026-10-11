@@ -1461,6 +1461,44 @@ export class Editor {
     return i > 0 && this.doc.layers[i - 1].group === this.doc.layers[i].group && !this.active.pickedGroup;
   }
 
+  /**
+   * Orders layers by depth for an isometric scene: the lower a layer's drawing reaches on screen,
+   * the nearer the front. Sorts the selected layers when several are, every layer otherwise; each
+   * group's layers stay in their group, and empty layers stay where they are. Returns how many
+   * layers changed place (0: already in order, nothing done).
+   */
+  sortByDepth(): number {
+    const doc = this.doc;
+    const { width: W, height: H } = doc;
+    const picked = this.state.selectedLayers;
+    const scope = picked.length > 1 ? new Set(picked) : null;
+    const bottom = (l: Layer) => {
+      const c = layerContent(l.pixels, W, H, l.outside);
+      return c ? c.rect.y + c.rect.h : null;
+    };
+    // The slots of each group's layers to sort, bottom to top: they're sorted among themselves.
+    const slots = new Map<string, number[]>();
+    doc.layers.forEach((l, i) => {
+      if ((scope && !scope.has(l.id)) || bottom(l) === null) return;
+      const key = l.group ?? '';
+      slots.set(key, [...(slots.get(key) ?? []), i]);
+    });
+    const order = doc.layers.slice();
+    for (const indices of slots.values()) {
+      // Stable: layers reaching as low keep their order.
+      const sorted = indices.map((i) => doc.layers[i]).sort((a, b) => bottom(a)! - bottom(b)!);
+      indices.forEach((i, k) => (order[i] = sorted[k]));
+    }
+    const moved = order.filter((l, i) => l !== doc.layers[i]).length;
+    if (!moved) return 0;
+    const active = doc.layers[doc.activeLayer].id;
+    this.edit((d) => {
+      d.layers = order;
+      d.activeLayer = order.findIndex((l) => l.id === active);
+    });
+    return moved;
+  }
+
   mergeDown(): void {
     const i = this.doc.activeLayer;
     if (!this.canMergeDown()) return;
