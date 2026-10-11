@@ -323,7 +323,7 @@ export const en = {
   'hint.lassoFill':
     'Draw a shape freehand: when you let go it closes and fills with the color. Right-click for the secondary color.',
   'hint.eraser': 'Erases to transparency.',
-  'hint.line': 'Shift to lock to 0°, 45° or 90°.',
+  'hint.line': 'Shift to lock to 0°, 45°, 90°, or 2:1 for isometric lines.',
   'hint.shape': 'Shift for a regular shape.',
   'hint.gradient':
     'Drag from where the gradient starts to where it ends (Shift: by 45°). It fills the area of the same color under the first click, or the selection. Its colors come from the palette, dithered in between. Change the options right after: the last gradient follows.',

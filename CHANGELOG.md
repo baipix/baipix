@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Isometric lines: with Shift, the line tool also snaps to 2:1 (two pixels across for one up) and 1:2, besides 0°, 45° and 90°. They're drawn in clean steps of exactly two pixels, with no doubled or lone pixel. (#PR)
+
 ## [0.6.0] - 2026-10-11
 
 Palettes and interface: each file keeps its own palette, your own palettes in every file, the two colors as chips like Photoshop, a shorter toolbar, Export at the bottom of the right panel, Cmd+Z for the palette, and an SVG export that keeps the layers.
