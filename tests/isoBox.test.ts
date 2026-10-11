@@ -114,4 +114,23 @@ describe('the box tool', () => {
     e.undo();
     expect(e.getState().doc.layers[0].pixels.every((c) => c === 0)).toBe(true);
   });
+
+  it('darkens a color that isn’t in the palette from itself, not from the closest palette ramp', () => {
+    const GREENS = [pack(20, 90, 40), pack(40, 140, 60), pack(80, 200, 100)];
+    const BLUE = pack(40, 90, 220);
+    const e = new Editor();
+    e.newFile(32, 32);
+    e.setPaletteColors(GREENS);
+    e.setColor('primary', BLUE);
+    e.setTool('box');
+    e.beginStroke({ x: 16, y: 2 }, false, { shift: false });
+    e.moveStroke({ x: 16, y: 10 }, { shift: false });
+    e.endStroke();
+    const px = e.getState().doc.layers[0].pixels;
+    for (const c of [px[10 * 32 + 10], px[10 * 32 + 22]]) {
+      const [r, g, b] = [c & 255, (c >> 8) & 255, (c >> 16) & 255];
+      expect(b).toBeGreaterThan(g);
+      expect(b).toBeGreaterThan(r);
+    }
+  });
 });
