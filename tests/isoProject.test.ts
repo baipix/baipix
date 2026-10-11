@@ -57,4 +57,23 @@ describe('putting an image on an isometric face', () => {
     expect(at(4, 2)).toBe(RED);
     expect(at(4, 4)).toBe(0);
   });
+
+  it('keeps what lands past the canvas outside it, as after a move', () => {
+    const RED = pack(255, 0, 0);
+    const e = new Editor();
+    e.newFile(16, 16);
+    e.setColor('primary', RED);
+    e.setTool('select');
+    e.beginStroke({ x: 0, y: 12 }, false, { shift: false });
+    e.moveStroke({ x: 7, y: 15 }, { shift: false });
+    e.endStroke();
+    e.fill();
+    e.putOnIsoFace('left');
+    // Columns slide 1, 2 and 3 rows down two by two: 2 + 4 + 6 pixels go past the bottom edge.
+    const outside = e.getState().doc.layers[0].outside!;
+    expect(outside).toMatchObject({ y: 16 });
+    expect(outside.pixels.filter((c) => c === RED)).toHaveLength(12);
+    e.undo();
+    expect(e.getState().doc.layers[0].outside).toBeUndefined();
+  });
 });
