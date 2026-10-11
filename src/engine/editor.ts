@@ -84,9 +84,10 @@ import {
   type ToolOptions,
 } from './tools';
 import { paintGradient, stopsOf } from './tools/gradient';
-import { paintBox } from './tools/box';
 import { tilesIsometric } from './isoTile';
 import { isoFaceMapping, type IsoFace } from './isoProject';
+import { ISO_PLANES } from './isoPlane';
+import { DEFAULT_EXTRUDE, extrude, type ExtrudeOptions } from './extrude';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
@@ -105,6 +106,9 @@ export interface ViewSettings {
 
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
+
+/** The isometric volumes: their options (height, outline, light edge) redraw the last one drawn. */
+const VOLUMES: ToolId[] = ['box', 'cylinder', 'pyramid'];
 
 /** Tools where Shift-click draws a straight line from the last point painted. */
 const STRAIGHT_LINES: ToolId[] = ['pencil', 'eraser'];
@@ -167,6 +171,8 @@ export interface EditorState {
   layerFramed: boolean;
   /** A repeat grid being set up (see `beginRepeat`), or null. */
   repeat: RepeatGrid | null;
+  /** An extrusion being set up (see `beginExtrude`), or null. */
+  extrude: ExtrudeOptions | null;
   canUndo: boolean;
   canRedo: boolean;
   revision: number;
@@ -375,6 +381,17 @@ export class Editor {
   } | null = null;
   /** The last repeat grid kept, to start the next one from. */
   private lastRepeat: RepeatGrid = DEFAULT_REPEAT;
+  /** An extrusion being set up: the shape pulled up, and how the layer was. */
+  private extrudeSession: {
+    layer: Layer;
+    base: Uint32Array;
+    baseOutside: Outside | undefined;
+    region: Uint8Array;
+    selection: Selection | null;
+    options: ExtrudeOptions;
+  } | null = null;
+  /** The last extrusion kept, to start the next one from. */
+  private lastExtrude: ExtrudeOptions = DEFAULT_EXTRUDE;
   /**
    * The last gradient drawn, kept editable: while its layer still shows it, changing the gradient's
    * options redraws it in place (same undo step), like a gradient in Figma.
@@ -391,7 +408,7 @@ export class Editor {
    * The last isometric box drawn, kept editable like the gradient: while its layer still shows it,
    * changing the box's options redraws it in place (same undo step). Its stroke holds what it needs.
    */
-  private lastBox: { stroke: Stroke; top: Point; result: Uint32Array } | null = null;
+  private lastVolume: { stroke: Stroke; repaint: () => void; result: Uint32Array } | null = null;
   /** Where the last pencil or eraser stroke ended, for Shift-click straight lines. */
   private lastPainted: { doc: PixelDoc; layer: Layer; at: Point } | null = null;
   /** The id of the last layers copied here, even if pixels were copied since. */
@@ -529,6 +546,7 @@ export class Editor {
       referenceSelected: !!s.referencePicked && !!s.doc.reference,
       layerFramed: !s.unframed,
       repeat: this.repeatSession?.grid ?? null,
+      extrude: this.extrudeSession?.options ?? null,
       canUndo: s.history.canUndo,
       canRedo: s.history.canRedo,
       revision: this.revision,
@@ -556,8 +574,9 @@ export class Editor {
   }
 
   private checkpoint(): void {
-    // Anything else done during a repeat grid keeps the grid first: two steps, never mixed.
+    // Anything else done during a repeat grid or an extrusion keeps it first: two steps, never mixed.
     if (this.repeatSession) this.endRepeat(true);
+    if (this.extrudeSession) this.endExtrude(true);
     this.active.history.push(takeSnapshot(this.doc, this.active.selection));
     this.touch();
   }
@@ -594,6 +613,7 @@ export class Editor {
 
   undo(): void {
     if (this.repeatSession) return this.endRepeat(false);
+    if (this.extrudeSession) return this.endExtrude(false);
     if (this.stroke || this.adjusting || this.scaling) return;
     const current = takeSnapshot(this.doc, this.active.selection);
     const prev = this.active.history.undo(current);
@@ -1451,6 +1471,44 @@ export class Editor {
     return i > 0 && this.doc.layers[i - 1].group === this.doc.layers[i].group && !this.active.pickedGroup;
   }
 
+  /**
+   * Orders layers by depth for an isometric scene: the lower a layer's drawing reaches on screen,
+   * the nearer the front. Sorts the selected layers when several are, every layer otherwise; each
+   * group's layers stay in their group, and empty layers stay where they are. Returns how many
+   * layers changed place (0: already in order, nothing done).
+   */
+  sortByDepth(): number {
+    const doc = this.doc;
+    const { width: W, height: H } = doc;
+    const picked = this.state.selectedLayers;
+    const scope = picked.length > 1 ? new Set(picked) : null;
+    const bottom = (l: Layer) => {
+      const c = layerContent(l.pixels, W, H, l.outside);
+      return c ? c.rect.y + c.rect.h : null;
+    };
+    // The slots of each group's layers to sort, bottom to top: they're sorted among themselves.
+    const slots = new Map<string, number[]>();
+    doc.layers.forEach((l, i) => {
+      if ((scope && !scope.has(l.id)) || bottom(l) === null) return;
+      const key = l.group ?? '';
+      slots.set(key, [...(slots.get(key) ?? []), i]);
+    });
+    const order = doc.layers.slice();
+    for (const indices of slots.values()) {
+      // Stable: layers reaching as low keep their order.
+      const sorted = indices.map((i) => doc.layers[i]).sort((a, b) => bottom(a)! - bottom(b)!);
+      indices.forEach((i, k) => (order[i] = sorted[k]));
+    }
+    const moved = order.filter((l, i) => l !== doc.layers[i]).length;
+    if (!moved) return 0;
+    const active = doc.layers[doc.activeLayer].id;
+    this.edit((d) => {
+      d.layers = order;
+      d.activeLayer = order.findIndex((l) => l.id === active);
+    });
+    return moved;
+  }
+
   mergeDown(): void {
     const i = this.doc.activeLayer;
     if (!this.canMergeDown()) return;
@@ -1894,20 +1952,20 @@ export class Editor {
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
     this.options = { ...this.options, [key]: value };
     if (key.startsWith('gradient')) this.redrawGradient();
-    if (key.startsWith('box')) this.redrawBox();
+    if (key.startsWith('box')) this.redrawVolume();
     this.commit();
   }
 
-  /** Redraws the last box with the current options, in place (no undo step of its own). */
-  private redrawBox(): void {
-    const b = this.lastBox;
-    if (!b || this.tool !== 'box' || !this.doc.layers.includes(b.stroke.layer)) return;
-    const layer = b.stroke.layer;
-    if (layer.pixels.length !== b.result.length || changed(b.result, layer.pixels)) return;
-    b.stroke.options = this.options;
-    paintBox(b.stroke, b.top);
+  /** Redraws the last box, cylinder or pyramid with the current options, in place (no undo step of its own). */
+  private redrawVolume(): void {
+    const v = this.lastVolume;
+    if (!v || !VOLUMES.includes(this.tool) || !this.doc.layers.includes(v.stroke.layer)) return;
+    const layer = v.stroke.layer;
+    if (layer.pixels.length !== v.result.length || changed(v.result, layer.pixels)) return;
+    v.stroke.options = this.options;
+    v.repaint();
     syncInstances(this.doc, layer.id);
-    b.result = layer.pixels.slice();
+    v.result = layer.pixels.slice();
     this.pixelsChanged();
   }
 
@@ -1989,6 +2047,7 @@ export class Editor {
         gradientStops: cleanStops(o.gradientStops),
         gradientShape: GRADIENT_SHAPES.includes(o.gradientShape) ? o.gradientShape : 'linear',
         gradientDither: GRADIENT_DITHERS.includes(o.gradientDither) ? o.gradientDither : 'bayer',
+        plane: ISO_PLANES.includes(o.plane) ? o.plane : 'flat',
       };
     }
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;
@@ -2191,6 +2250,79 @@ export class Editor {
     r.source.layer.pixels.set(r.base);
     this.active.picked = r.picked;
     syncInstances(this.doc);
+    this.active.history.discardLast();
+    this.commit(false);
+  }
+
+  /* ------------------------------------------------------------------ extrusion */
+
+  /**
+   * Starts pulling a flat shape up into an isometric volume (see `extrude`): the pixel selection,
+   * or what's drawn on the active layer. Set up live with `setExtrude`, then kept or dropped with
+   * `endExtrude`. Returns false when there's nothing to extrude.
+   */
+  beginExtrude(): boolean {
+    if (this.extrudeSession) this.endExtrude(false);
+    if (this.repeatSession) this.endRepeat(true);
+    if (this.activeLocked()) return false;
+    const { width: W, height: H } = this.doc;
+    const layer = activeLayer(this.doc);
+    const sel = this.active.selection;
+    const region = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (layer.pixels[y * W + x] >>> 24 && inSelection(sel, x, y)) region[y * W + x] = 1;
+    if (!region.includes(1)) {
+      this.notice({ type: 'emptyDrawing' });
+      return false;
+    }
+    this.cancelStroke();
+    this.checkpoint();
+    this.extrudeSession = {
+      layer,
+      base: layer.pixels.slice(),
+      baseOutside: layer.outside,
+      region,
+      selection: sel,
+      options: this.lastExtrude,
+    };
+    this.setExtrude(this.lastExtrude);
+    return true;
+  }
+
+  /** Pulls the shape up again with new settings: live, from how the layer was. */
+  setExtrude(options: ExtrudeOptions): void {
+    const x = this.extrudeSession;
+    if (!x) return;
+    const { width: W, height: H } = this.doc;
+    x.options = { ...options, height: Math.max(0, Math.min(256, Math.round(options.height))) };
+    x.layer.pixels.set(x.base);
+    x.layer.outside = x.baseOutside;
+    const { covered, outside } = extrude(x.layer.pixels, W, H, x.region, x.options, this.paletteIndex);
+    const kept = addOutside(x.baseOutside, outside, W, H);
+    if (kept) x.layer.outside = kept;
+    else delete x.layer.outside;
+    // The volume is selected, ready to move into place.
+    if (x.selection) this.active.selection = fromCanvasMask(covered, W, H);
+    syncInstances(this.doc, x.layer.id);
+    this.commit(false);
+  }
+
+  /** Keeps the extrusion (one undo step), or drops it and puts the layer back. */
+  endExtrude(keep: boolean): void {
+    const x = this.extrudeSession;
+    if (!x) return;
+    this.extrudeSession = null;
+    if (keep) {
+      this.lastExtrude = x.options;
+      this.commit();
+      return;
+    }
+    x.layer.pixels.set(x.base);
+    if (x.baseOutside) x.layer.outside = x.baseOutside;
+    else delete x.layer.outside;
+    this.active.selection = x.selection;
+    syncInstances(this.doc, x.layer.id);
     this.active.history.discardLast();
     this.commit(false);
   }
@@ -3082,10 +3214,12 @@ export class Editor {
     // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
     if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
     if (STRAIGHT_LINES.includes(id)) this.lastPainted = { doc: s.doc, layer: s.layer, at: s.last };
-    if (id === 'box') {
-      // The options bar shows the size the drag gave it, and changing it redraws this box.
-      this.options = { ...this.options, boxWidth: s.options.boxWidth, boxDepth: s.options.boxDepth };
-      this.lastBox = { stroke: s, top: s.scratch.top as Point, result: s.layer.pixels.slice() };
+    if (VOLUMES.includes(id)) {
+      // The options bar shows the size the drag gave a box, and changing an option redraws it.
+      if (id === 'box')
+        this.options = { ...this.options, boxWidth: s.options.boxWidth, boxDepth: s.options.boxDepth };
+      const repaint = s.scratch.repaint as () => void;
+      this.lastVolume = { stroke: s, repaint, result: s.layer.pixels.slice() };
     }
     if (id === 'gradient')
       this.lastGradient = {

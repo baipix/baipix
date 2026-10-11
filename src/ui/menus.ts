@@ -192,6 +192,7 @@ export const MENU_BAR: MenuBarMenu[] = [
       { label: t('menu.flipV'), shortcut: 'Shift+V', onSelect: () => editor.flip(false) },
       { label: t('menu.rotate'), shortcut: 'Shift+R', onSelect: () => editor.rotate() },
       { label: t('menu.rotateLeft'), shortcut: 'Alt+Shift+R', onSelect: () => editor.rotate(false) },
+      { label: t('menu.extrude'), onSelect: () => editor.beginExtrude() },
       {
         label: t('menu.isoFace'),
         items: [
@@ -275,6 +276,13 @@ export const MENU_BAR: MenuBarMenu[] = [
           shortcut: 'Alt+↓',
           disabled: disabled || !editor.canMoveLayer(-1),
           onSelect: () => editor.moveLayer(-1),
+        },
+        {
+          label: t('menu.sortByDepth'),
+          disabled: disabled || doc.layers.length < 2,
+          onSelect: () => {
+            if (!editor.sortByDepth()) toast(t('toast.alreadySorted'));
+          },
         },
         '-',
         {

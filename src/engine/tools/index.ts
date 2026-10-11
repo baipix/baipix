@@ -12,6 +12,7 @@ import { jumbleTool } from './jumble';
 import { liquifyTool } from './liquify';
 import { sprayTool } from './spray';
 import { boxTool } from './box';
+import { cylinderTool, pyramidTool } from './volumes';
 import { ellipseTool, heartTool, lineTool, rectTool, roundRectTool, starTool, triangleTool } from './shapes';
 import type { Tool, ToolId } from './types';
 
@@ -35,6 +36,8 @@ export const TOOLS: Record<ToolId, Tool> = {
   star: starTool,
   heart: heartTool,
   box: boxTool,
+  cylinder: cylinderTool,
+  pyramid: pyramidTool,
   shade,
   lighten,
   blur,
