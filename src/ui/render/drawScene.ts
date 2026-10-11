@@ -332,7 +332,8 @@ export function drawScene(
       for (let j = 8; j < H; j += 8) row(j);
     }
   }
-  if (doc.isoGrid) drawIsoGrid(ctx, doc.isoGrid, W, H, X, Y, s, camera.dpr, theme.isoGrid);
+  if (doc.isoGrid)
+    drawIsoGrid(ctx, doc.isoGrid, !!doc.isoGridVertical, W, H, X, Y, s, camera.dpr, theme.isoGrid);
   ctx.strokeStyle = theme.frame;
   ctx.lineWidth = 1;
   ctx.strokeRect(X - 0.5, Y - 0.5, cw + 1, ch + 1);
@@ -614,6 +615,7 @@ const RULER_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
 function drawIsoGrid(
   ctx: CanvasRenderingContext2D,
   cell: number,
+  vertical: boolean,
   W: number,
   H: number,
   X: number,
@@ -644,6 +646,12 @@ function drawIsoGrid(
   };
   lines(1);
   lines(-1);
+  // Upright lines through the corners, every half cell across, to build heights.
+  if (vertical)
+    for (let x = ox - Math.floor(ox / step) * step; x <= W; x += step) {
+      ctx.moveTo(X + x * s, Y);
+      ctx.lineTo(X + x * s, Y + H * s);
+    }
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(1, Math.round(dpr));
   ctx.stroke();
