@@ -320,10 +320,12 @@ export const en = {
   'shade.palette': 'Whole palette',
   'shade.free': 'Free',
 
-  'hint.pencil': 'Alt to pick a color. Dithering alternates the left-click and right-click colors.',
+  'hint.pencil':
+    'Alt to pick a color. Shift-click draws a straight line from the last point, Cmd/Ctrl+Shift-click at 0°, 45°, 90° or 2:1. Dithering alternates the left-click and right-click colors.',
   'hint.lassoFill':
     'Draw a shape freehand: when you let go it closes and fills with the color. Right-click for the secondary color.',
-  'hint.eraser': 'Erases to transparency.',
+  'hint.eraser':
+    'Erases to transparency. Shift-click erases a straight line from the last point, Cmd/Ctrl+Shift-click at 0°, 45°, 90° or 2:1.',
   'hint.line': 'Shift to lock to 0°, 45°, 90°, or 2:1 for isometric lines.',
   'hint.shape': 'Shift for a regular shape.',
   'hint.box':

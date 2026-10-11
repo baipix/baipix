@@ -2,7 +2,7 @@ import { ditherSecond } from '../dither';
 import type { Color } from '../color';
 import type { Point } from '../math';
 import { isDoubledCorner } from '../raster';
-import { followPointer, mirrorsOf, pixelIndex, setPixel, stamp, strokeColors } from './paint';
+import { followPointer, mirrorsOf, pixelIndex, setPixel, stamp, straightLine, strokeColors } from './paint';
 import type { Stroke, Tool } from './types';
 
 /** Paints at `p`; with `fill` (or the lassoFill option), also records the path to fill at the end. */
@@ -88,7 +88,9 @@ export const pencil: Tool = {
   id: 'pencil',
   editsPixels: true,
   paintsColor: true,
-  onDown: (s, p) => paint(s, p),
+  onDown: (s, p, mods) => {
+    if (!straightLine(s, p, !!mods.snap, (q) => paint(s, q))) paint(s, p);
+  },
   onMove: (s, p) => followPointer(s, p, (q) => paint(s, q)),
   onUp: (s) => fillPath(s),
 };
