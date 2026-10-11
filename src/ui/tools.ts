@@ -20,6 +20,8 @@ export const SHAPES: ToolMeta[] = [
   { id: 'star', icon: 'star', label: 'tool.star', shortcut: '' },
   { id: 'heart', icon: 'heart', label: 'tool.heart', shortcut: '' },
   { id: 'box', icon: 'box', label: 'tool.box', shortcut: '' },
+  { id: 'cylinder', icon: 'cylinder', label: 'tool.cylinder', shortcut: '' },
+  { id: 'pyramid', icon: 'pyramid', label: 'tool.pyramid', shortcut: '' },
 ];
 export const SHAPE_IDS: ToolId[] = SHAPES.map((s) => s.id);
 

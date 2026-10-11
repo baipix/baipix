@@ -59,6 +59,8 @@ export const fr: Record<MessageKey, string> = {
   'tool.star': 'Étoile',
   'tool.heart': 'Cœur',
   'tool.box': 'Cube isométrique',
+  'tool.cylinder': 'Cylindre isométrique',
+  'tool.pyramid': 'Pyramide isométrique',
   'tool.shade': 'Ombrer',
   'tool.lighten': 'Éclaircir',
   'tool.blur': 'Flou',
@@ -129,6 +131,10 @@ export const fr: Record<MessageKey, string> = {
   'menu.flipH': 'Retourner horizontalement',
   'menu.flipV': 'Retourner verticalement',
   'menu.rotateLeft': 'Pivoter de 90° (antihoraire)',
+  'menu.extrude': 'Extruder…',
+  'extrude.title': 'Extruder',
+  'extrude.hint':
+    'La forme monte de la hauteur choisie et ses côtés se remplissent dessous : plus sombre à gauche, plus sombre encore à droite, comme le cube isométrique. Entrée valide, Échap annule.',
   'menu.isoFace': 'Poser sur une face isométrique',
   'menu.isoFaceLeft': 'Côté gauche',
   'menu.isoFaceRight': 'Côté droit',
@@ -344,6 +350,10 @@ export const fr: Record<MessageKey, string> = {
     'Maj la pose au sol de la grille isométrique : deux fois plus large que haute, en marches propres.',
   'hint.box':
     'Fais glisser du coin du haut du cube à celui du bas : le dessus prend la couleur en cours, les côtés plus sombres. Maj : aussi profond que large. Largeur, profondeur et hauteur redessinent le dernier cube.',
+  'hint.cylinder':
+    'Fais glisser en travers de son dessus, une ellipse couchée deux fois plus large que haute. Hauteur, Contour et Arête claire redessinent le dernier cylindre.',
+  'hint.pyramid':
+    'Fais glisser du coin du haut de sa base à celui du bas (Maj : carrée). Son sommet est à Hauteur au-dessus du milieu. Les options redessinent la dernière pyramide.',
   'options.boxWidth': 'Largeur',
   'options.boxDepth': 'Profondeur',
   'options.boxHeight': 'Hauteur',

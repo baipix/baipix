@@ -28,6 +28,8 @@ export type ToolId =
   | 'star'
   | 'heart'
   | 'box'
+  | 'cylinder'
+  | 'pyramid'
   | 'shade'
   | 'lighten'
   | 'blur'
