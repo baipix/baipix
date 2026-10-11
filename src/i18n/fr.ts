@@ -474,10 +474,11 @@ export const fr: Record<MessageKey, string> = {
   'export.format': 'Format',
   'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
   'export.tileset': 'Tileset (Godot, Tiled)',
-  'export.tileSize': 'Tuile',
+  'export.tileWidth': 'Largeur des tuiles',
+  'export.tileHeight': 'Hauteur des tuiles',
   'export.tileDrop': 'Laisser de côté les tuiles vides et répétées',
   'export.tilesetHint':
-    'Un .zip avec les tuiles sur une planche PNG, un tileset Tiled et une carte Tiled qui redessine le dessin. Godot prend le PNG tel quel.',
+    'Des tuiles de L × H pixels. Un .zip avec les tuiles sur une planche PNG, un tileset Tiled et une carte Tiled qui redessine le dessin. Godot prend le PNG tel quel.',
   'toast.emptyTileset': 'Rien à découper en tuiles : le dessin est vide.',
   'export.activeLayerOnly': 'Calque actif uniquement',
   'export.copySvg': 'Copier en SVG',
