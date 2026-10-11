@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- With the isometric grid on, Shift lays any shape on the ground, regular: a square tile (exactly a box's top), a circle, a regular triangle, star, heart or rounded square, dragged from the top corner of its diamond to the bottom one (the ellipse, across). The Plane option comes to every shape but the line: on a wall, Shift makes it as tall as wide. Without the grid, Shift keeps its usual meaning. (#PR)
 - Vertical lines in the isometric grid (Display, under Cell): upright lines through the diamonds' corners, to build heights; a box's upright edges fall on them. Saved with the file, like the grid. (#315)
 - Layer › Sort by depth: for an isometric scene with an object per layer, the layers whose drawing reaches lowest on screen go in front. It sorts the selected layers when several are, all of them otherwise, each group's layers within their group; empty layers stay where they are. One undo step. (#314)
 - Draw on an isometric plane: with the file's isometric grid on, the rectangle and the ellipse get a Plane option (Flat, Left wall, Right wall, Ground). On a wall, the shape fits in the dragged box, its top and bottom going along the wall in 2:1 steps, for windows, doors and signs. On the ground, the rectangle is a floor tile like the box's top, and the ellipse lies flat. Outlined or filled. (#312)

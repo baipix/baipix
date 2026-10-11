@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
+import { isoBox } from '../src/engine/isoBox';
 import { planeShape, type IsoPlane } from '../src/engine/isoPlane';
 
 type Wall = Exclude<IsoPlane, 'flat'>;
@@ -86,5 +87,43 @@ describe('drawing on an isometric plane', () => {
     e.setIsoGrid(16);
     // On the left wall, the top edge has gone down by then: (4, 0) stays empty.
     expect(draw()).toBe(false);
+  });
+});
+
+describe('Shift on a shape, with the isometric grid on', () => {
+  const RED = pack(255, 0, 0);
+  const shape = (tool: 'rect' | 'star' | 'heart', grid: boolean, shift: boolean) => {
+    const e = new Editor();
+    e.newFile(64, 64);
+    if (grid) e.setIsoGrid(16);
+    e.setColor('primary', RED);
+    e.setTool(tool);
+    e.setOption('filled', true);
+    e.beginStroke({ x: 32, y: 8 }, false, { shift });
+    e.moveStroke({ x: 32, y: 24 }, { shift });
+    e.endStroke();
+    const px = e.getState().doc.layers[0].pixels;
+    return new Set([...px.keys()].filter((i) => px[i]).map((i) => `${i % 64},${Math.floor(i / 64)}`));
+  };
+
+  it('lays a square tile on the ground: exactly the box’s top', () => {
+    const box = new Set<string>();
+    isoBox({ x: 32, y: 8 }, { width: 8, depth: 8, height: 0 }, false, (x, y) => box.add(`${x},${y}`));
+    expect(shape('rect', true, true)).toEqual(box);
+  });
+
+  it('lays the other shapes down inside the same diamond', () => {
+    const box = new Set<string>();
+    isoBox({ x: 32, y: 8 }, { width: 8, depth: 8, height: 0 }, false, (x, y) => box.add(`${x},${y}`));
+    for (const tool of ['star', 'heart'] as const) {
+      const cells = shape(tool, true, true);
+      expect(cells.size).toBeGreaterThan(10);
+      for (const c of cells) expect(box.has(c)).toBe(true);
+    }
+  });
+
+  it('keeps its usual meaning without the grid: a square', () => {
+    const cells = shape('rect', false, true);
+    expect(cells.size).toBe(17 * 17);
   });
 });
