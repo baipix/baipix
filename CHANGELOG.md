@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Draw on an isometric plane: with the file's isometric grid on, the rectangle and the ellipse get a Plane option (Flat, Left wall, Right wall, Ground). On a wall, the shape fits in the dragged box, its top and bottom going along the wall in 2:1 steps, for windows, doors and signs. On the ground, the rectangle is a floor tile like the box's top, and the ellipse lies flat. Outlined or filled. (#PR)
+- Draw on an isometric plane: with the file's isometric grid on, the rectangle and the ellipse get a Plane option (Flat, Left wall, Right wall, Ground). On a wall, the shape fits in the dragged box, its top and bottom going along the wall in 2:1 steps, for windows, doors and signs. On the ground, the rectangle is a floor tile like the box's top, and the ellipse lies flat. Outlined or filled. (#312)
 - Put an image on an isometric face (Image › Put on an isometric face): the selection, or what's drawn on the layer, laid onto the left side, the right side or the top of a box, kept crisp. The sides slide its columns down (or up) one pixel every two, losing nothing; the top turns it by 45° and flattens it, at twice its size so that no pixel is lost. The selection takes the face's shape, ready to move into place. (#302)
 - Isometric box: a Light edge option draws the top's two front edges one step lighter, the classic highlight of isometric pixel art, next to the outline. (#301)
 - An isometric ellipse: with the file's isometric grid on, Shift on the ellipse tool lays it on the ground, twice as wide as tall. It's drawn the pixel art way, its runs only getting shorter from the top toward the sides, with the two-pixel steps of the 2:1 slope. Outlined or filled. (#300)
