@@ -322,10 +322,11 @@ export const fr: Record<MessageKey, string> = {
   'shade.free': 'Libre',
 
   'hint.pencil':
-    'Alt pour prélever une couleur. Le tramage alterne les couleurs du clic gauche et du clic droit.',
+    'Alt pour prélever une couleur. Maj-clic trace une ligne droite depuis le dernier point, Cmd/Ctrl+Maj-clic à 0°, 45°, 90° ou en 2:1. Le tramage alterne les couleurs du clic gauche et du clic droit.',
   'hint.lassoFill':
     'Dessine une forme à main levée : quand tu relâches, elle se ferme et se remplit de la couleur. Clic droit pour la couleur secondaire.',
-  'hint.eraser': 'Efface vers la transparence.',
+  'hint.eraser':
+    'Efface vers la transparence. Maj-clic efface en ligne droite depuis le dernier point, Cmd/Ctrl+Maj-clic à 0°, 45°, 90° ou en 2:1.',
   'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
   'hint.shape': 'Maj pour une forme régulière.',
   'hint.box':

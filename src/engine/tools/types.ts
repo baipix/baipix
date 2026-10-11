@@ -146,6 +146,8 @@ export interface Modifiers {
   duplicate?: boolean;
   /** Move tool: Shift held, what's clicked joins the selected layers, or leaves them. */
   add?: boolean;
+  /** Pencil and eraser: Cmd/Ctrl held with Shift, the straight line snaps to the line tool's angles. */
+  snap?: boolean;
 }
 
 /** Everything a tool needs during one pointer gesture. Created by the editor on pointer down. */
@@ -158,6 +160,8 @@ export interface Stroke {
   baseOutside: Outside | undefined;
   start: Point;
   last: Point;
+  /** Shift-click with the pencil or the eraser: the last point painted, where a straight line starts. */
+  lineFrom?: Point;
   /** Right button / secondary color. */
   secondary: boolean;
   options: ToolOptions;

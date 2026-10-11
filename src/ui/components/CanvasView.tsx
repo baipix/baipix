@@ -696,7 +696,13 @@ export function CanvasView() {
       const started = editor.beginStroke(
         p,
         e.button === 2,
-        { shift: e.shiftKey, keepLayer: e.metaKey || e.ctrlKey, duplicate: e.altKey, add: e.shiftKey },
+        {
+          shift: e.shiftKey,
+          keepLayer: e.metaKey || e.ctrlKey,
+          duplicate: e.altKey,
+          add: e.shiftKey,
+          snap: e.shiftKey && (e.metaKey || e.ctrlKey),
+        },
         override,
       );
       // The spray and the jumble keep going while the pointer holds still, like a real can.

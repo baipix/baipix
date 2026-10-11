@@ -4,7 +4,7 @@ import { blendOver } from '../composite';
 import { ditherSecond } from '../dither';
 import type { Point } from '../math';
 import { mirrorAxes } from '../document';
-import { brush, line, mirrored } from '../raster';
+import { brush, line, mirrored, snappedLine } from '../raster';
 import type { Stroke } from './types';
 
 export const inBounds = (s: Stroke, x: number, y: number): boolean =>
@@ -82,6 +82,24 @@ export function followPointer(s: Stroke, p: Point, paint: (q: Point) => void): v
     paint({ x, y });
   });
   s.last = p;
+}
+
+/**
+ * Shift-click: paints a straight line from `s.lineFrom` (the end of the last stroke) to `p`, snapped
+ * to the line tool's angles with `snap`, then goes on from its end. Returns false without one.
+ */
+export function straightLine(s: Stroke, p: Point, snap: boolean, paint: (q: Point) => void): boolean {
+  const from = s.lineFrom;
+  if (!from) return false;
+  let end = from;
+  const plot = (x: number, y: number) => {
+    paint({ x, y });
+    end = { x, y };
+  };
+  if (snap) snappedLine(from, p, plot);
+  else line(from.x, from.y, p.x, p.y, plot);
+  s.last = end;
+  return true;
 }
 
 /** Runs `visit` once per pixel per stroke over the brush footprint (with symmetry). */

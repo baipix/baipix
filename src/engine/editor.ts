@@ -107,6 +107,9 @@ export interface ViewSettings {
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers' | 'isoGrid';
 
+/** Tools where Shift-click draws a straight line from the last point painted. */
+const STRAIGHT_LINES: ToolId[] = ['pencil', 'eraser'];
+
 export const DEFAULT_TILE_OPACITY = 0.65;
 export const DEFAULT_ISO_CELL = 16;
 
@@ -391,6 +394,8 @@ export class Editor {
    * changing the box's options redraws it in place (same undo step). Its stroke holds what it needs.
    */
   private lastBox: { stroke: Stroke; top: Point; result: Uint32Array } | null = null;
+  /** Where the last pencil or eraser stroke ended, for Shift-click straight lines. */
+  private lastPainted: { doc: PixelDoc; layer: Layer; at: Point } | null = null;
   /** The id of the last layers copied here, even if pixels were copied since. */
   private layerClipId: string | null = null;
   private stroke: Stroke | null = null;
@@ -2838,6 +2843,15 @@ export class Editor {
     }
     this.stroke = this.createStroke(p, secondary);
     this.strokeTool = id;
+    // Shift-click: a straight line from where the last pencil or eraser stroke on this layer ended.
+    const last = this.lastPainted;
+    if (
+      mods.shift &&
+      STRAIGHT_LINES.includes(id) &&
+      last?.doc === this.doc &&
+      last.layer === this.stroke.layer
+    )
+      this.stroke.lineFrom = last.at;
     tool.onDown(this.stroke, p, mods);
     this.pixelsChanged();
     return true;
@@ -2997,6 +3011,7 @@ export class Editor {
     }
     // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
     if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
+    if (STRAIGHT_LINES.includes(id)) this.lastPainted = { doc: s.doc, layer: s.layer, at: s.last };
     if (id === 'box') {
       // The options bar shows the size the drag gave it, and changing it redraws this box.
       this.options = { ...this.options, boxWidth: s.options.boxWidth, boxDepth: s.options.boxDepth };
