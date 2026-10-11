@@ -366,6 +366,20 @@ export class Editor {
       colors: p.key === 'drawing' ? [] : p.colors,
       ...(p.custom && { custom: p.custom }),
     };
+    this.sharePalette();
+  }
+
+  /**
+   * The boards of a file share its palette: the active board's goes to the others. With Drawing
+   * colors, each board shows the colors it uses itself.
+   */
+  private sharePalette(): void {
+    const own = this.doc.palette;
+    for (const s of this.sessions) {
+      if (s === this.active || fileIdOf(s.doc) !== fileIdOf(this.doc) || !this.doc.board) continue;
+      if (own) s.doc.palette = { ...own, colors: [...own.colors], ...(own.custom && { custom: [...own.custom] }) };
+      else delete s.doc.palette;
+    }
   }
 
   private colorsOfDrawing(): Color[] {
@@ -639,6 +653,8 @@ export class Editor {
     }
     this.active.doc = snapshot.doc;
     this.active.selection = snapshot.selection;
+    // A step that changed the palette changes it for the file's other boards too.
+    if (snapshot.palette) this.sharePalette();
   }
 
   undo(): void {

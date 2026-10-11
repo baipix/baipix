@@ -114,4 +114,19 @@ describe('boards', () => {
     expect(e.getState().boards).toHaveLength(4);
     expect(e.getState().doc.id).toBe(copy.id);
   });
+
+  it('shares the palette between a file’s boards, undo included', () => {
+    const e = twoBoards();
+    e.setPalettePreset('pico8');
+    const [first, second] = e.getState().boards;
+    e.switchBoard(first.id);
+    expect(e.getState().palette.key).toBe('pico8');
+    e.addToPalette(RED);
+    e.switchBoard(second.id);
+    expect(e.getState().palette.colors).toContain(RED);
+    e.switchBoard(first.id);
+    e.undo();
+    e.switchBoard(second.id);
+    expect(e.getState().palette.colors).not.toContain(RED);
+  });
 });
