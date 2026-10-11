@@ -97,12 +97,20 @@ export interface ViewSettings {
   mirrorY: boolean;
   /** Rulers along the workspace edges, and the guides dragged out of them. */
   rulers: boolean;
+  /** A guide grid of 2:1 diamonds, the pixel art isometric angle. */
+  isoGrid: boolean;
+  /** How wide its diamonds are, in pixels (even; they're half as tall). */
+  isoCell: number;
 }
 
 /** View settings that are switched on and off. */
-type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
+type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers' | 'isoGrid';
 
 export const DEFAULT_TILE_OPACITY = 0.65;
+export const DEFAULT_ISO_CELL = 16;
+
+/** An isometric cell width the grid can use: even, so its lines meet on pixel corners. */
+export const isoCellSize = (n: number): number => clamp(Math.round(n / 2) * 2, 4, 256);
 
 /** A palette of the user's own, kept in the browser and usable in every file (copied into it). */
 export interface MyPalette {
@@ -348,6 +356,8 @@ export class Editor {
     mirrorX: false,
     mirrorY: false,
     rulers: false,
+    isoGrid: false,
+    isoCell: DEFAULT_ISO_CELL,
   };
   private clipboard: PixelBlock | null = null;
   /** Whole layers copied (the last copy wins over `clipboard`). */
@@ -1932,7 +1942,10 @@ export class Editor {
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;
     if (typeof p.secondary === 'number') this.secondary = p.secondary >>> 0;
     if (p.view) {
-      const { grid, tile, tileOpacity, mirrorX, mirrorY, rulers } = { ...this.view, ...p.view };
+      const { grid, tile, tileOpacity, mirrorX, mirrorY, rulers, isoGrid, isoCell } = {
+        ...this.view,
+        ...p.view,
+      };
       // Older saves also had showGap, and no tileOpacity.
       this.view = {
         grid,
@@ -1941,6 +1954,8 @@ export class Editor {
         mirrorX,
         mirrorY,
         rulers: rulers === true,
+        isoGrid: isoGrid === true,
+        isoCell: typeof isoCell === 'number' ? isoCellSize(isoCell) : DEFAULT_ISO_CELL,
       };
     }
     if (Array.isArray(p.myPalettes))

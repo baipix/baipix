@@ -322,6 +322,7 @@ export function drawScene(
       for (let j = 8; j < H; j += 8) row(j);
     }
   }
+  if (view.isoGrid) drawIsoGrid(ctx, view.isoCell, W, H, X, Y, s, camera.dpr, theme.isoGrid);
   ctx.strokeStyle = theme.frame;
   ctx.lineWidth = 1;
   ctx.strokeRect(X - 0.5, Y - 0.5, cw + 1, ch + 1);
@@ -594,6 +595,44 @@ function drawLoupe(
 export const RULER = 18;
 /** Ruler steps, in art pixels: the first one far enough apart for its labels. */
 const RULER_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
+
+/**
+ * The isometric grid: lines 2 pixels across for 1 up, both ways, through the pixel corners, so
+ * they cross every `cell` pixels across and `cell / 2` down from the top left corner. Left out
+ * when zoomed so far out that the diamonds would be a blur.
+ */
+function drawIsoGrid(
+  ctx: CanvasRenderingContext2D,
+  cell: number,
+  W: number,
+  H: number,
+  X: number,
+  Y: number,
+  s: number,
+  dpr: number,
+  color: string,
+): void {
+  const step = cell / 2;
+  if (step * s < 6) return;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(X, Y, W * s, H * s);
+  ctx.clip();
+  ctx.beginPath();
+  // Going down to the right (y = x / 2 + c), then up to the right (y = c - x / 2).
+  for (let c = -Math.ceil(W / 2 / step) * step; c < H; c += step) {
+    ctx.moveTo(X, Y + c * s);
+    ctx.lineTo(X + W * s, Y + (c + W / 2) * s);
+  }
+  for (let c = step; c < H + W / 2; c += step) {
+    ctx.moveTo(X, Y + c * s);
+    ctx.lineTo(X + W * s, Y + (c - W / 2) * s);
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1, Math.round(dpr));
+  ctx.stroke();
+  ctx.restore();
+}
 
 /** Where a guide on pixel edge `at` is on screen, in device pixels (in the gap's middle, if any). */
 export const guidePosition = (at: number, origin: number, camera: Camera): number =>

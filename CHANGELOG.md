@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- An isometric grid (Display, or the View menu): 2:1 diamonds, the pixel art isometric angle, with lines through the pixel corners at every zoom. Pick the width of the diamonds in pixels (16 by default); they're half as tall. (#PR)
+
 ## [0.6.0] - 2026-10-11
 
 Palettes and interface: each file keeps its own palette, your own palettes in every file, the two colors as chips like Photoshop, a shorter toolbar, Export at the bottom of the right panel, Cmd+Z for the palette, and an SVG export that keeps the layers.

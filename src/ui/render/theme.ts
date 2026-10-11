@@ -15,6 +15,8 @@ export interface Theme {
   muted: string;
   axis: string;
   guide: string;
+  /** The isometric grid's lines. */
+  isoGrid: string;
   /** Rulers: their background, edge, the band over the drawing, and the text. */
   panel: string;
   line: string;
@@ -51,6 +53,7 @@ export function readTheme(el: Element = document.documentElement): Theme {
     muted: v('--muted'),
     axis: v('--axis'),
     guide: v('--guide'),
+    isoGrid: v('--iso-grid'),
     panel: v('--menubar'),
     line: v('--line'),
     selected: v('--selected'),
