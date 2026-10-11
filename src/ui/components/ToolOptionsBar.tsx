@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useActions } from '../ActionsContext';
 import { ISO_PLANES, type IsoPlane } from '../../engine/isoPlane';
 import type { ToolOptions } from '../../engine/tools';
 import { useT } from '../../i18n';
@@ -42,6 +43,7 @@ export function ToolOptionsBar() {
   const tool = useEditorState((s) => s.tool);
   const options = useEditorState((s) => s.options);
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
+  const actions = useActions();
   const repeat = useEditorState((s) => s.repeat);
   const extrusion = useEditorState((s) => s.extrude);
   const hasSelection = useEditorState((s) => s.selection !== null);
@@ -709,6 +711,26 @@ export function ToolOptionsBar() {
     case 'picker':
       info = t('hint.picker');
       body = null;
+      break;
+    case 'board':
+      info = t('hint.board');
+      body = (
+        <div className="button-row">
+          <button type="button" className="btn" onClick={() => editor.addBoardBeside()}>
+            {t('board.new')}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => editor.duplicateBoard(editor.getState().doc.id)}
+          >
+            {t('board.duplicate')}
+          </button>
+          <button type="button" className="btn" onClick={() => actions.deleteBoard()}>
+            {t('board.delete')}
+          </button>
+        </div>
+      );
       break;
     case 'select':
     case 'lassoSelect':

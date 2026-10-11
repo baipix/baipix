@@ -12,6 +12,7 @@ import { jumbleTool } from './jumble';
 import { liquifyTool } from './liquify';
 import { sprayTool } from './spray';
 import { boxTool } from './box';
+import { board } from './board';
 import { cylinderTool, pyramidTool } from './volumes';
 import { ellipseTool, heartTool, lineTool, rectTool, roundRectTool, starTool, triangleTool } from './shapes';
 import type { Tool, ToolId } from './types';
@@ -23,6 +24,7 @@ export const TOOLS: Record<ToolId, Tool> = {
   lassoSelect,
   wand,
   hand,
+  board,
   pencil,
   lassoFill: lassoFillTool,
   eraser,

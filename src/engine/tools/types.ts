@@ -30,6 +30,7 @@ export type ToolId =
   | 'box'
   | 'cylinder'
   | 'pyramid'
+  | 'board'
   | 'shade'
   | 'lighten'
   | 'blur'

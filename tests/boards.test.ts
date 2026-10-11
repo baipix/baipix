@@ -98,4 +98,20 @@ describe('boards', () => {
     );
     expect(back!.documents.map((d) => d.board?.x)).toEqual([0, 24]);
   });
+
+  it('adds a board beside the active one, duplicates it, and brings back a deleted one', () => {
+    const e = twoBoards();
+    e.addBoardBeside();
+    const added = e.getState().boards[2];
+    expect(added).toMatchObject({ x: 24 + 8 + 16, y: 0, width: 8, height: 8 });
+    e.duplicateBoard(added.id);
+    const copy = e.getState().boards[3];
+    expect(copy).toMatchObject({ x: added.x + 8 + 16, width: 8 });
+    expect(copy.name).toBe(`${added.name} copy`);
+    e.deleteBoard(copy.id);
+    expect(e.getState().boards).toHaveLength(3);
+    e.restoreDeleted();
+    expect(e.getState().boards).toHaveLength(4);
+    expect(e.getState().doc.id).toBe(copy.id);
+  });
 });

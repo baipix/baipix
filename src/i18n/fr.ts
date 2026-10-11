@@ -60,6 +60,7 @@ export const fr: Record<MessageKey, string> = {
   'tool.star': 'Étoile',
   'tool.heart': 'Cœur',
   'tool.box': 'Cube isométrique',
+  'tool.board': 'Plan de travail',
   'tool.cylinder': 'Cylindre isométrique',
   'tool.pyramid': 'Pyramide isométrique',
   'tool.shade': 'Ombrer',
@@ -341,6 +342,13 @@ export const fr: Record<MessageKey, string> = {
     'Efface vers la transparence. Maj-clic efface en ligne droite depuis le dernier point, Cmd/Ctrl+Maj-clic à 0°, 45°, 90° ou en 2:1.',
   'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
   'hint.shape': 'Maj pour une forme régulière.',
+  'hint.board':
+    'Dessine un rectangle à côté des plans pour en ajouter un. Fais glisser un plan par son nom pour le déplacer ; clique sur un plan pour travailler dessus. Chaque plan a sa taille et ses calques.',
+  'board.new': 'Nouveau plan',
+  'board.duplicate': 'Dupliquer le plan',
+  'board.delete': 'Supprimer le plan',
+  'board.deleted': '{name} supprimé.',
+  'board.lastOne': 'Un fichier garde au moins un plan.',
   'hint.plane':
     'Sur un mur, fais glisser en travers de la boîte où tient la forme : son haut et son bas suivent le mur en 2:1 (Maj : aussi haute que large). Au sol, tire du coin du haut de son losange à celui du bas (Maj : régulière ; l’ellipse : en travers).',
   'plane.label': 'Plan',

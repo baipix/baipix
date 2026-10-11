@@ -59,6 +59,7 @@ export const en = {
   'tool.star': 'Star',
   'tool.heart': 'Heart',
   'tool.box': 'Isometric box',
+  'tool.board': 'Board',
   'tool.cylinder': 'Isometric cylinder',
   'tool.pyramid': 'Isometric pyramid',
   'tool.shade': 'Shade',
@@ -340,6 +341,13 @@ export const en = {
     'Erases to transparency. Shift-click erases a straight line from the last point, Cmd/Ctrl+Shift-click at 0°, 45°, 90° or 2:1.',
   'hint.line': 'Shift to lock to 0°, 45°, 90°, or 2:1 for isometric lines.',
   'hint.shape': 'Shift for a regular shape.',
+  'hint.board':
+    'Draw a rectangle beside the boards to add one. Drag a board by its name to move it; click a board to work on it. Each board has its own size and layers.',
+  'board.new': 'New board',
+  'board.duplicate': 'Duplicate board',
+  'board.delete': 'Delete board',
+  'board.deleted': '{name} deleted.',
+  'board.lastOne': 'A file keeps at least one board.',
   'hint.plane':
     'On a wall, drag across the box the shape fits in: its top and bottom go along the wall at 2:1 (Shift: as tall as wide). On the ground, drag from the top corner of its diamond to the bottom one (Shift: regular; the ellipse: across).',
   'plane.label': 'Plane',

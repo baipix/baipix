@@ -100,6 +100,8 @@ export interface Scene {
   label: string;
   /** The file's other boards, around the active one: their place relative to it, in art pixels. */
   boards?: SceneBoard[];
+  /** A board being drawn with the board tool, relative to the active board, in art pixels. */
+  boardDraft?: Rect | null;
 }
 
 /** A board of the file other than the active one, shown as it is, with its name above. */
@@ -271,6 +273,22 @@ export function drawScene(
     ctx.fillStyle = theme.muted;
     ctx.textBaseline = 'bottom';
     ctx.fillText(b.label, bx, by - Math.round(LABEL.gap * dpr));
+  }
+  // A board being drawn: its outline, and its size where its name will go.
+  const draft = scene.boardDraft;
+  if (draft) {
+    const dx = X + draft.x * s;
+    const dy = Y + draft.y * s;
+    ctx.save();
+    ctx.strokeStyle = theme.highlight;
+    ctx.lineWidth = lw;
+    ctx.setLineDash([4 * dpr, 3 * dpr]);
+    ctx.strokeRect(dx - lw / 2, dy - lw / 2, draft.w * s + lw, draft.h * s + lw);
+    ctx.restore();
+    ctx.font = labelFont(dpr);
+    ctx.fillStyle = theme.highlight;
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`${draft.w} × ${draft.h}`, dx, dy - Math.round(LABEL.gap * dpr));
   }
 
   // Tile preview: copies all around, as far as the view goes, drawn like the real canvas
