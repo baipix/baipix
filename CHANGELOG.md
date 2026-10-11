@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Vertical lines in the isometric grid (Display, under Cell): upright lines through the diamonds' corners, to build heights; a box's upright edges fall on them. Saved with the file, like the grid. (#PR)
+- Vertical lines in the isometric grid (Display, under Cell): upright lines through the diamonds' corners, to build heights; a box's upright edges fall on them. Saved with the file, like the grid. (#315)
 - Put an image on an isometric face (Image › Put on an isometric face): the selection, or what's drawn on the layer, laid onto the left side, the right side or the top of a box, kept crisp. The sides slide its columns down (or up) one pixel every two, losing nothing; the top turns it by 45° and flattens it, at twice its size so that no pixel is lost. The selection takes the face's shape, ready to move into place. (#302)
 - Isometric box: a Light edge option draws the top's two front edges one step lighter, the classic highlight of isometric pixel art, next to the outline. (#301)
 - An isometric ellipse: with the file's isometric grid on, Shift on the ellipse tool lays it on the ground, twice as wide as tall. It's drawn the pixel art way, its runs only getting shorter from the top toward the sides, with the two-pixel steps of the 2:1 slope. Outlined or filled. (#300)
