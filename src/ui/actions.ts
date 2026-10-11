@@ -5,7 +5,7 @@ import type { Editor } from '../engine/editor';
 import type { PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
-import { renderGeometry, toSvg } from '../engine/export/svg';
+import { renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -40,6 +40,14 @@ export function createActions(editor: Editor) {
     if (geometry.pixelSize !== d.render.pixelSize)
       toast(t('toast.exportShrunk', { size: geometry.pixelSize }));
     return { d, pixels, geometry, background };
+  }
+
+  /** The drawing as SVG: its layers and groups kept apart, or the active layer alone. */
+  function svgOf(onlyActiveLayer: boolean): string {
+    const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
+    return onlyActiveLayer
+      ? toSvg(pixels, d.width, d.height, geometry, background)
+      : toLayeredSvg(d, geometry, background);
   }
 
   /** Replaces the palette with a .hex, .gpl or .txt file (picked, or dropped on the canvas). */
@@ -103,21 +111,17 @@ export function createActions(editor: Editor) {
         await report(filename, saveFile(filename, new Blob([bytes as BlobPart])));
         return;
       }
-      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
       if (format === 'svg') {
-        await report(
-          filename,
-          saveFile(filename, toSvg(pixels, d.width, d.height, geometry, background), 'image/svg+xml'),
-        );
+        await report(filename, saveFile(filename, svgOf(onlyActiveLayer), 'image/svg+xml'));
         return;
       }
+      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
       const blob = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
       await report(filename, saveFile(filename, blob, 'image/png'));
     },
 
     async copySvg(onlyActiveLayer = false) {
-      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
-      const svg = toSvg(pixels, d.width, d.height, geometry, background);
+      const svg = svgOf(onlyActiveLayer);
       if (await copyText(svg)) toast(t('toast.svgCopied'));
       else
         openDialog({
