@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ISO_PLANES, type IsoPlane } from '../../engine/isoPlane';
 import type { ToolOptions } from '../../engine/tools';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -310,9 +311,29 @@ export function ToolOptionsBar() {
     case 'triangle':
     case 'star':
     case 'heart':
-      info = tool === 'ellipse' && isoGrid ? t('hint.isoEllipse') : t('hint.shape');
+      info =
+        isoGrid && options.plane !== 'flat' && (tool === 'rect' || tool === 'ellipse')
+          ? t('hint.plane')
+          : tool === 'ellipse' && isoGrid
+            ? t('hint.isoEllipse')
+            : t('hint.shape');
       body = (
         <>
+          {/* On an isometric grid: draw it flat, on a wall, or on the ground. */}
+          {isoGrid && (tool === 'rect' || tool === 'ellipse') && (
+            <select
+              className="select-plain"
+              aria-label={t('plane.label')}
+              value={options.plane}
+              onChange={(e) => editor.setOption('plane', e.target.value as IsoPlane)}
+            >
+              {ISO_PLANES.map((p) => (
+                <option key={p} value={p}>
+                  {t(`plane.${p}`)}
+                </option>
+              ))}
+            </select>
+          )}
           {size}
           {tool === 'roundRect' && (
             <Row label={t('options.radius')}>
