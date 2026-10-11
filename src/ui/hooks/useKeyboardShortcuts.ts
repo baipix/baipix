@@ -96,10 +96,14 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         return;
       }
 
-      // A repeat grid being set up: Enter keeps it, Escape drops it.
+      // A repeat grid or an extrusion being set up: Enter keeps it, Escape drops it.
       if (editor.getState().repeat && (e.key === 'Enter' || e.key === 'Escape')) {
         e.preventDefault();
         return editor.endRepeat(e.key === 'Enter');
+      }
+      if (editor.getState().extrude && (e.key === 'Enter' || e.key === 'Escape')) {
+        e.preventDefault();
+        return editor.endExtrude(e.key === 'Enter');
       }
       if (e.key === 'Escape') {
         if (uiStore.get().picker) uiStore.set({ picker: null });

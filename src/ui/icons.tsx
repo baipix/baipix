@@ -234,6 +234,36 @@ const Box = drawn([
   '....####....',
   '............',
 ]);
+// Isometric cylinder: an ellipse on top, its sides going down to a rounded bottom.
+const Cylinder = drawn([
+  '...######...',
+  '.##......##.',
+  '#..........#',
+  '#.##....##.#',
+  '#...####...#',
+  '#..........#',
+  '#..........#',
+  '#..........#',
+  '#..........#',
+  '.##......##.',
+  '...######...',
+  '............',
+]);
+// Isometric pyramid: its apex, its front ridge, and its diamond base's front edges.
+const Pyramid = drawn([
+  '.....##.....',
+  '....#..#....',
+  '...#.##.#...',
+  '...#.##.#...',
+  '..#..##..#..',
+  '..#..##..#..',
+  '.#...##...#.',
+  '.#...##...#.',
+  '#....##....#',
+  '.##..##..##.',
+  '...######...',
+  '............',
+]);
 const Gradient = drawn([
   '############',
   '#####.#.#..#',
@@ -287,6 +317,8 @@ export const ICONS = {
   star: Star,
   heart: Heart,
   box: Box,
+  cylinder: Cylinder,
+  pyramid: Pyramid,
   shade: Moon,
   lighten: Sun,
   spray: SprayCan,
