@@ -4,6 +4,7 @@ import { blendOver } from '../composite';
 import { ditherSecond } from '../dither';
 import type { Point } from '../math';
 import { mirrorAxes } from '../document';
+import { inTile } from '../isoTile';
 import { brush, line, mirrored, snappedLine } from '../raster';
 import type { Stroke } from './types';
 
@@ -15,11 +16,13 @@ const mod = (a: number, n: number) => ((a % n) + n) % n;
 /**
  * Where a painted pixel lands: its index on the canvas, or -1 when it falls outside (or outside
  * the selection). In tile preview, strokes wrap around: past an edge they continue on the
- * opposite side, so seamless textures are easy to draw.
+ * opposite side, so seamless textures are easy to draw. Isometric tiles wrap across the diamond's
+ * edges instead.
  */
 export function pixelIndex(s: Stroke, x: number, y: number): number {
   const { width, height } = s.doc;
-  if (s.wrap) {
+  if (s.wrap === 'iso') ({ x, y } = inTile(x, y, width, height));
+  else if (s.wrap) {
     x = mod(x, width);
     y = mod(y, height);
   } else if (x < 0 || y < 0 || x >= width || y >= height) return -1;

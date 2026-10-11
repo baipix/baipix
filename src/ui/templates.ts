@@ -22,6 +22,15 @@ export const TEMPLATES: Template[] = [
   { id: 'portrait', label: 'template.portrait', width: 64, height: 64, palette: 'dawnbringer32' },
   { id: 'gameboy', label: 'template.gameboy', width: 160, height: 144, palette: 'gameboy' },
   { id: 'banner', label: 'template.banner', width: 128, height: 32, palette: 'resurrect64' },
+  {
+    id: 'isoTile',
+    label: 'template.isoTile',
+    width: 32,
+    height: 16,
+    palette: 'endesga32',
+    tile: true,
+    isoGrid: 32,
+  },
   { id: 'iso', label: 'template.iso', width: 128, height: 128, palette: 'resurrect64', isoGrid: 16 },
 ];
 

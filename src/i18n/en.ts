@@ -486,6 +486,7 @@ export const en = {
   'template.banner': 'Banner',
   'template.portrait': 'Portrait',
   'template.iso': 'Isometric scene',
+  'template.isoTile': 'Isometric tile',
   'template.isoGrid': 'isometric grid',
   'template.recent': 'Recent',
   'template.mirrored': 'symmetry',

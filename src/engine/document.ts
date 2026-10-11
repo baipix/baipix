@@ -179,6 +179,12 @@ export const cloneLayer = (layer: Layer, keepId = true): Layer => ({
  */
 export const isoCellSize = (n: number): number => Math.min(256, Math.max(4, Math.round(n / 4) * 4));
 
+/**
+ * Where the isometric grid starts across: the top middle of the canvas, so on an isometric tile
+ * (a 2:1 canvas) its diamonds line up with the tile's.
+ */
+export const isoGridOrigin = (width: number): number => Math.floor(width / 2);
+
 export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
   return {
     ...doc,

@@ -1,7 +1,8 @@
 import type { Selection } from '../../engine/selection';
 import { alpha, toCss, type Color } from '../../engine/color';
-import { hasBackground, mirrorAxes, type PixelDoc } from '../../engine/document';
+import { hasBackground, isoGridOrigin, mirrorAxes, type PixelDoc } from '../../engine/document';
 import type { ViewSettings } from '../../engine/editor';
+import { diamondRows, tilesIsometric } from '../../engine/isoTile';
 import type { Point, Rect } from '../../engine/math';
 import { brush, mirrored } from '../../engine/raster';
 import type { PixelBlock } from '../../engine/region';
@@ -229,6 +230,7 @@ export function drawScene(
   const cw = W * s;
   const ch = H * s;
   const lw = Math.max(1, Math.round(dpr));
+  const isoTiles = view.tile && tilesIsometric(doc);
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.imageSmoothingEnabled = false;
@@ -250,6 +252,12 @@ export function drawScene(
       ctx.scale(s, s);
       ctx.fillStyle = copies;
       ctx.fillRect(-X / s, -Y / s, width / s, height / s);
+      // Isometric tiles: a second row of copies half a tile across and down, staggered, filling
+      // the corners each diamond leaves.
+      if (isoTiles) {
+        ctx.translate(W / 2, H / 2);
+        ctx.fillRect(-X / s - W / 2, -Y / s - H / 2, width / s, height / s);
+      }
     }
     ctx.restore();
     // The copies are dimmed so the editable one stands out, as much as the tile opacity says.
@@ -266,7 +274,9 @@ export function drawScene(
   ctx.save();
   ctx.translate(X, Y);
   ctx.fillStyle = checker;
-  ctx.fillRect(0, 0, cw, ch);
+  // Isometric tiles: the canvas's corners show the neighbors, only its diamond is its own.
+  if (isoTiles) ctx.fill(diamondPath(W, H, s));
+  else ctx.fillRect(0, 0, cw, ch);
   ctx.restore();
   const ref = scene.reference;
   if (ref) {
@@ -598,7 +608,7 @@ const RULER_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
 
 /**
  * The isometric grid: lines 2 pixels across for 1 up, both ways, through the pixel corners, so
- * they cross every `cell` pixels across and `cell / 2` down from the top left corner. Left out
+ * they cross every `cell / 2` pixels across and `cell / 4` down, from the top middle of the canvas. Left out
  * when zoomed so far out that the diamonds would be a blur.
  */
 function drawIsoGrid(
@@ -619,19 +629,34 @@ function drawIsoGrid(
   ctx.rect(X, Y, W * s, H * s);
   ctx.clip();
   ctx.beginPath();
-  // Going down to the right (y = x / 2 + c), then up to the right (y = c - x / 2).
-  for (let c = -Math.ceil(W / 2 / step) * step; c < H; c += step) {
-    ctx.moveTo(X, Y + c * s);
-    ctx.lineTo(X + W * s, Y + (c + W / 2) * s);
-  }
-  for (let c = step; c < H + W / 2; c += step) {
-    ctx.moveTo(X, Y + c * s);
-    ctx.lineTo(X + W * s, Y + (c - W / 2) * s);
-  }
+  // Through the top middle of the canvas (see `isoGridOrigin`): going down to the right
+  // (y = (x - ox) / 2 + c), and up to the right (y = c - (x - ox) / 2), every `step` down.
+  const ox = isoGridOrigin(W);
+  const lines = (dir: 1 | -1) => {
+    const y0 = (c: number) => c - (dir * ox) / 2;
+    const y1 = (c: number) => c + (dir * (W - ox)) / 2;
+    const from = Math.floor(-Math.max(y0(0), y1(0)) / step);
+    const to = Math.ceil((H - Math.min(y0(0), y1(0))) / step);
+    for (let k = from; k <= to; k++) {
+      ctx.moveTo(X, Y + y0(k * step) * s);
+      ctx.lineTo(X + W * s, Y + y1(k * step) * s);
+    }
+  };
+  lines(1);
+  lines(-1);
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(1, Math.round(dpr));
   ctx.stroke();
   ctx.restore();
+}
+
+/** The diamond of an isometric tile, pixel by pixel, at `s` device pixels per pixel. */
+function diamondPath(W: number, H: number, s: number): Path2D {
+  const path = new Path2D();
+  diamondRows(W, H).forEach(([first, last], y) => {
+    if (first <= last) path.rect(first * s, y * s, (last - first + 1) * s, s);
+  });
+  return path;
 }
 
 /** Where a guide on pixel edge `at` is on screen, in device pixels (in the gap's middle, if any). */
