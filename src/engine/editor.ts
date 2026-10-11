@@ -84,7 +84,6 @@ import {
   type ToolOptions,
 } from './tools';
 import { paintGradient, stopsOf } from './tools/gradient';
-import { paintBox } from './tools/box';
 import { tilesIsometric } from './isoTile';
 import { isoFaceMapping, type IsoFace } from './isoProject';
 import { DEFAULT_EXTRUDE, extrude, type ExtrudeOptions } from './extrude';
@@ -106,6 +105,9 @@ export interface ViewSettings {
 
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
+
+/** The isometric volumes: their options (height, outline, light edge) redraw the last one drawn. */
+const VOLUMES: ToolId[] = ['box', 'cylinder', 'pyramid'];
 
 /** Tools where Shift-click draws a straight line from the last point painted. */
 const STRAIGHT_LINES: ToolId[] = ['pencil', 'eraser'];
@@ -405,7 +407,7 @@ export class Editor {
    * The last isometric box drawn, kept editable like the gradient: while its layer still shows it,
    * changing the box's options redraws it in place (same undo step). Its stroke holds what it needs.
    */
-  private lastBox: { stroke: Stroke; top: Point; result: Uint32Array } | null = null;
+  private lastVolume: { stroke: Stroke; repaint: () => void; result: Uint32Array } | null = null;
   /** Where the last pencil or eraser stroke ended, for Shift-click straight lines. */
   private lastPainted: { doc: PixelDoc; layer: Layer; at: Point } | null = null;
   /** The id of the last layers copied here, even if pixels were copied since. */
@@ -1901,20 +1903,20 @@ export class Editor {
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
     this.options = { ...this.options, [key]: value };
     if (key.startsWith('gradient')) this.redrawGradient();
-    if (key.startsWith('box')) this.redrawBox();
+    if (key.startsWith('box')) this.redrawVolume();
     this.commit();
   }
 
-  /** Redraws the last box with the current options, in place (no undo step of its own). */
-  private redrawBox(): void {
-    const b = this.lastBox;
-    if (!b || this.tool !== 'box' || !this.doc.layers.includes(b.stroke.layer)) return;
-    const layer = b.stroke.layer;
-    if (layer.pixels.length !== b.result.length || changed(b.result, layer.pixels)) return;
-    b.stroke.options = this.options;
-    paintBox(b.stroke, b.top);
+  /** Redraws the last box, cylinder or pyramid with the current options, in place (no undo step of its own). */
+  private redrawVolume(): void {
+    const v = this.lastVolume;
+    if (!v || !VOLUMES.includes(this.tool) || !this.doc.layers.includes(v.stroke.layer)) return;
+    const layer = v.stroke.layer;
+    if (layer.pixels.length !== v.result.length || changed(v.result, layer.pixels)) return;
+    v.stroke.options = this.options;
+    v.repaint();
     syncInstances(this.doc, layer.id);
-    b.result = layer.pixels.slice();
+    v.result = layer.pixels.slice();
     this.pixelsChanged();
   }
 
@@ -3162,10 +3164,12 @@ export class Editor {
     // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
     if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
     if (STRAIGHT_LINES.includes(id)) this.lastPainted = { doc: s.doc, layer: s.layer, at: s.last };
-    if (id === 'box') {
-      // The options bar shows the size the drag gave it, and changing it redraws this box.
-      this.options = { ...this.options, boxWidth: s.options.boxWidth, boxDepth: s.options.boxDepth };
-      this.lastBox = { stroke: s, top: s.scratch.top as Point, result: s.layer.pixels.slice() };
+    if (VOLUMES.includes(id)) {
+      // The options bar shows the size the drag gave a box, and changing an option redraws it.
+      if (id === 'box')
+        this.options = { ...this.options, boxWidth: s.options.boxWidth, boxDepth: s.options.boxDepth };
+      const repaint = s.scratch.repaint as () => void;
+      this.lastVolume = { stroke: s, repaint, result: s.layer.pixels.slice() };
     }
     if (id === 'gradient')
       this.lastGradient = {

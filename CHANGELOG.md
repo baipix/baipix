@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- An isometric cylinder and pyramid, in the shapes menu next to the box. The cylinder: drag across its top, an ellipse lying flat, and it goes down by the height, shaded like the box. The pyramid: drag its diamond base like the box's top, its apex the height above the middle; its faces are lit from the top left, and a low one shows all four, like a roof. Height, Outline and Light edge redraw the last one drawn, like the box. (#PR)
 - Extrude (Image › Extrude…): the selection, or what's drawn on the layer, is the top of a volume. It goes up by the height and its sides fill under it, darker on the left and darker still on the right, like the isometric box, with the same Outline and Light edge options. Set up live in the options bar; Enter applies, Escape cancels. Any floor shape becomes a building. (#311)
 - Put an image on an isometric face (Image › Put on an isometric face): the selection, or what's drawn on the layer, laid onto the left side, the right side or the top of a box, kept crisp. The sides slide its columns down (or up) one pixel every two, losing nothing; the top turns it by 45° and flattens it, at twice its size so that no pixel is lost. The selection takes the face's shape, ready to move into place. (#302)
 - Isometric box: a Light edge option draws the top's two front edges one step lighter, the classic highlight of isometric pixel art, next to the outline. (#301)

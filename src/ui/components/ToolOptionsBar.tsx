@@ -381,7 +381,9 @@ export function ToolOptionsBar() {
         </>
       );
       break;
-    case 'box': {
+    case 'box':
+    case 'cylinder':
+    case 'pyramid': {
       // Width and depth are in pixels across, two per step of the 2:1 edges.
       const field = (key: 'boxWidth' | 'boxDepth' | 'boxHeight', glyph: string, steps: boolean) => (
         <Row label={t(`options.${key}`)}>
@@ -397,11 +399,12 @@ export function ToolOptionsBar() {
           />
         </Row>
       );
-      info = t('hint.box');
+      info = t(tool === 'box' ? 'hint.box' : tool === 'cylinder' ? 'hint.cylinder' : 'hint.pyramid');
       body = (
         <>
-          {field('boxWidth', '↘', true)}
-          {field('boxDepth', '↙', true)}
+          {/* The box's width and depth, set by the drag; the others take their size from the drag alone. */}
+          {tool === 'box' && field('boxWidth', '↘', true)}
+          {tool === 'box' && field('boxDepth', '↙', true)}
           {field('boxHeight', '↕', false)}
           <Checkbox
             checked={options.boxOutline}
