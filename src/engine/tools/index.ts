@@ -11,6 +11,7 @@ import { lighten, shade } from './shade';
 import { jumbleTool } from './jumble';
 import { liquifyTool } from './liquify';
 import { sprayTool } from './spray';
+import { boxTool } from './box';
 import { ellipseTool, heartTool, lineTool, rectTool, roundRectTool, starTool, triangleTool } from './shapes';
 import type { Tool, ToolId } from './types';
 
@@ -33,6 +34,7 @@ export const TOOLS: Record<ToolId, Tool> = {
   triangle: triangleTool,
   star: starTool,
   heart: heartTool,
+  box: boxTool,
   shade,
   lighten,
   blur,

@@ -83,6 +83,7 @@ import {
   type ToolOptions,
 } from './tools';
 import { paintGradient, stopsOf } from './tools/gradient';
+import { paintBox } from './tools/box';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
@@ -385,6 +386,11 @@ export class Editor {
     b: Point;
     result: Uint32Array;
   } | null = null;
+  /**
+   * The last isometric box drawn, kept editable like the gradient: while its layer still shows it,
+   * changing the box's options redraws it in place (same undo step). Its stroke holds what it needs.
+   */
+  private lastBox: { stroke: Stroke; top: Point; result: Uint32Array } | null = null;
   /** The id of the last layers copied here, even if pixels were copied since. */
   private layerClipId: string | null = null;
   private stroke: Stroke | null = null;
@@ -1857,7 +1863,21 @@ export class Editor {
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
     this.options = { ...this.options, [key]: value };
     if (key.startsWith('gradient')) this.redrawGradient();
+    if (key.startsWith('box')) this.redrawBox();
     this.commit();
+  }
+
+  /** Redraws the last box with the current options, in place (no undo step of its own). */
+  private redrawBox(): void {
+    const b = this.lastBox;
+    if (!b || this.tool !== 'box' || !this.doc.layers.includes(b.stroke.layer)) return;
+    const layer = b.stroke.layer;
+    if (layer.pixels.length !== b.result.length || changed(b.result, layer.pixels)) return;
+    b.stroke.options = this.options;
+    paintBox(b.stroke, b.top);
+    syncInstances(this.doc, layer.id);
+    b.result = layer.pixels.slice();
+    this.pixelsChanged();
   }
 
   /** The last gradient, still on its layer as drawn, or null. */
@@ -2977,6 +2997,11 @@ export class Editor {
     }
     // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
     if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
+    if (id === 'box') {
+      // The options bar shows the size the drag gave it, and changing it redraws this box.
+      this.options = { ...this.options, boxWidth: s.options.boxWidth, boxDepth: s.options.boxDepth };
+      this.lastBox = { stroke: s, top: s.scratch.top as Point, result: s.layer.pixels.slice() };
+    }
     if (id === 'gradient')
       this.lastGradient = {
         layer: s.layer,

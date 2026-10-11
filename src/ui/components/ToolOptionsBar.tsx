@@ -332,6 +332,37 @@ export function ToolOptionsBar() {
         </>
       );
       break;
+    case 'box': {
+      // Width and depth are in pixels across, two per step of the 2:1 edges.
+      const field = (key: 'boxWidth' | 'boxDepth' | 'boxHeight', glyph: string, steps: boolean) => (
+        <Row label={t(`options.${key}`)}>
+          <NumberField
+            value={steps ? options[key] * 2 : options[key]}
+            min={0}
+            max={steps ? 256 : 128}
+            label={glyph}
+            suffix="px"
+            ariaLabel={t(`options.${key}`)}
+            scrubHint={t('common.dragToAdjust')}
+            onChange={(v) => editor.setOption(key, steps ? Math.round(v / 2) : v)}
+          />
+        </Row>
+      );
+      info = t('hint.box');
+      body = (
+        <>
+          {field('boxWidth', '↘', true)}
+          {field('boxDepth', '↙', true)}
+          {field('boxHeight', '↕', false)}
+          <Checkbox
+            checked={options.boxOutline}
+            onChange={set('boxOutline')}
+            label={t('options.boxOutline')}
+          />
+        </>
+      );
+      break;
+    }
     case 'bucket':
       info = options.contiguous ? t('hint.bucketContiguous') : t('hint.bucketGlobal');
       body = (
