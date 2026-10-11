@@ -366,6 +366,11 @@ export const MENU_BAR: MenuBarMenu[] = [
           onSelect: () => editor.toggleView('rulers'),
         },
         {
+          label: t('display.isoGrid'),
+          checked: s.view.isoGrid,
+          onSelect: () => editor.toggleView('isoGrid'),
+        },
+        {
           label: t('menu.preview'),
           shortcut: 'Shift+P',
           checked: uiStore.get().preview.open,

@@ -445,6 +445,8 @@ export const en = {
   'display.rulersHint':
     'Drag from a ruler to add a guide. With the Move tool, drag a guide to move it, or back onto its ruler to remove it.',
   'display.mirrorY': 'Top-bottom symmetry',
+  'display.isoGrid': 'Isometric grid',
+  'display.isoCell': 'Cell',
 
   'export.button': 'Export',
   'export.format': 'Format',
