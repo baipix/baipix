@@ -57,6 +57,7 @@ export const en = {
   'tool.triangle': 'Triangle',
   'tool.star': 'Star',
   'tool.heart': 'Heart',
+  'tool.box': 'Isometric box',
   'tool.shade': 'Shade',
   'tool.lighten': 'Lighten',
   'tool.blur': 'Blur',
@@ -325,6 +326,12 @@ export const en = {
   'hint.eraser': 'Erases to transparency.',
   'hint.line': 'Shift to lock to 0°, 45°, 90°, or 2:1 for isometric lines.',
   'hint.shape': 'Shift for a regular shape.',
+  'hint.box':
+    'Drag from the top corner of the box to the bottom one: the top is the current color, the sides darker. Shift: as deep as wide. Width, depth and height redraw the last box.',
+  'options.boxWidth': 'Width',
+  'options.boxDepth': 'Depth',
+  'options.boxHeight': 'Height',
+  'options.boxOutline': 'Outline',
   'hint.gradient':
     'Drag from where the gradient starts to where it ends (Shift: by 45°). It fills the area of the same color under the first click, or the selection. Its colors come from the palette, dithered in between. Change the options right after: the last gradient follows.',
   'gradient.stops': 'Gradient stops',

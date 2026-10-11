@@ -219,6 +219,21 @@ const Repeat = drawn([
 ]);
 
 // Gradient: a square whose fill thins out in dithering, left to right.
+// Isometric box: its top a 2:1 diamond, its two sides hanging under it.
+const Box = drawn([
+  '....####....',
+  '..##....##..',
+  '##........##',
+  '#.##....##.#',
+  '#...####...#',
+  '#....##....#',
+  '#....##....#',
+  '#....##....#',
+  '##...##...##',
+  '..##.##.##..',
+  '....####....',
+  '............',
+]);
 const Gradient = drawn([
   '############',
   '#####.#.#..#',
@@ -271,6 +286,7 @@ export const ICONS = {
   triangle: Triangle,
   star: Star,
   heart: Heart,
+  box: Box,
   shade: Moon,
   lighten: Sun,
   spray: SprayCan,

@@ -58,6 +58,7 @@ export const fr: Record<MessageKey, string> = {
   'tool.triangle': 'Triangle',
   'tool.star': 'Étoile',
   'tool.heart': 'Cœur',
+  'tool.box': 'Cube isométrique',
   'tool.shade': 'Ombrer',
   'tool.lighten': 'Éclaircir',
   'tool.blur': 'Flou',
@@ -327,6 +328,12 @@ export const fr: Record<MessageKey, string> = {
   'hint.eraser': 'Efface vers la transparence.',
   'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
   'hint.shape': 'Maj pour une forme régulière.',
+  'hint.box':
+    'Fais glisser du coin du haut du cube à celui du bas : le dessus prend la couleur en cours, les côtés plus sombres. Maj : aussi profond que large. Largeur, profondeur et hauteur redessinent le dernier cube.',
+  'options.boxWidth': 'Largeur',
+  'options.boxDepth': 'Profondeur',
+  'options.boxHeight': 'Hauteur',
+  'options.boxOutline': 'Contour',
   'hint.gradient':
     'Glisse du début du dégradé jusqu’à sa fin (Shift : par 45°). Il remplit la zone de même couleur sous le premier clic, ou la sélection. Ses couleurs viennent de la palette, tramées entre elles. Change les options juste après : le dernier dégradé suit.',
   'gradient.stops': 'Arrêts du dégradé',

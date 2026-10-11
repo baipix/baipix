@@ -26,6 +26,7 @@ export type ToolId =
   | 'triangle'
   | 'star'
   | 'heart'
+  | 'box'
   | 'shade'
   | 'lighten'
   | 'blur'
@@ -91,6 +92,12 @@ export interface ToolOptions {
   gradientLayer: boolean;
   /** Magic wand: the area of the color clicked (true), or that color everywhere. */
   wandContiguous: boolean;
+  /** Isometric box: its width and depth in 2:1 steps (set by the drag), and its height in pixels. */
+  boxWidth: number;
+  boxDepth: number;
+  boxHeight: number;
+  /** Isometric box: an outline in a darker color around it. */
+  boxOutline: boolean;
 }
 
 export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
@@ -125,6 +132,10 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   gradientStops: null,
   gradientLayer: false,
   wandContiguous: true,
+  boxWidth: 4,
+  boxDepth: 4,
+  boxHeight: 8,
+  boxOutline: false,
 };
 
 export interface Modifiers {
