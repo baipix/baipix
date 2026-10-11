@@ -59,6 +59,8 @@ export interface UiState {
   exportTileWidth: number;
   exportTileHeight: number;
   exportTileDrop: boolean;
+  /** Export every board of the file at once, in a .zip. */
+  exportAllBoards: boolean;
   /** Ids of the collapsed panel sections. */
   collapsed: string[];
   /** Tab of the right panel. */
@@ -94,6 +96,7 @@ export const uiStore = createStore<UiState>({
   exportTileWidth: 16,
   exportTileHeight: 16,
   exportTileDrop: true,
+  exportAllBoards: false,
   collapsed: [],
   exportBackground: true,
   hiddenPalettes: [],

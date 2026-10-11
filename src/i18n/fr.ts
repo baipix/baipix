@@ -501,6 +501,7 @@ export const fr: Record<MessageKey, string> = {
   'export.button': 'Exporter',
   'export.format': 'Format',
   'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
+  'export.allBoards': 'Les {count} plans, dans un .zip',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Largeur des tuiles',
   'export.tileHeight': 'Hauteur des tuiles',

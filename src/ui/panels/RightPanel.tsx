@@ -611,6 +611,9 @@ function ExportSection() {
   const format = uiStore.use((s) => s.exportFormat);
   const onlyLayer = uiStore.use((s) => s.exportActiveLayer);
   const includeBackground = uiStore.use((s) => s.exportBackground);
+  const boardCount = useEditorState((s) => s.boards.length);
+  const allBoards = uiStore.use((s) => s.exportAllBoards);
+  const everyBoard = allBoards && boardCount > 1;
   const editor = useEditor();
   return (
     // At the bottom of the panel, like Figma: the file's preview, its pixel size, format and buttons.
@@ -635,7 +638,7 @@ function ExportSection() {
               }
             }}
           />
-          <span className="field-suffix">.{format === 'tileset' ? 'zip' : format}</span>
+          <span className="field-suffix">.{format === 'tileset' || everyBoard ? 'zip' : format}</span>
         </label>
       </Row>
       <Row label={t('export.format')}>
@@ -652,8 +655,16 @@ function ExportSection() {
           </select>
         </label>
       </Row>
+      {/* A file of several boards: every board at once, one file each in a .zip. */}
+      {boardCount > 1 && format !== 'tileset' && (
+        <Checkbox
+          checked={allBoards}
+          onChange={(v) => uiStore.set({ exportAllBoards: v })}
+          label={t('export.allBoards', { count: boardCount })}
+        />
+      )}
       {/* Aseprite keeps every layer, as layers: that's what it's for. */}
-      {format !== 'aseprite' && (
+      {format !== 'aseprite' && !everyBoard && (
         <Checkbox
           checked={onlyLayer}
           onChange={(v) => uiStore.set({ exportActiveLayer: v })}
@@ -673,7 +684,11 @@ function ExportSection() {
       <button
         type="button"
         className="btn btn-primary btn-wide"
-        onClick={() => void actions.exportImage(format, onlyLayer && format !== 'aseprite')}
+        onClick={() =>
+          void (everyBoard && format !== 'tileset'
+            ? actions.exportAllBoards(format)
+            : actions.exportImage(format, onlyLayer && format !== 'aseprite'))
+        }
       >
         {t('export.button')}
       </button>

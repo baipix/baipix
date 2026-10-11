@@ -1,6 +1,6 @@
 import { alpha, type Color } from '../engine/color';
 import { flatten } from '../engine/composite';
-import { createDocument, fileNameOf, hasBackground, MAX_SIZE } from '../engine/document';
+import { createDocument, fileNameOf, hasBackground, MAX_SIZE, type PixelDoc } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import type { PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
@@ -121,6 +121,43 @@ export function createActions(editor: Editor) {
       const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
       const blob = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
       await report(filename, saveFile(filename, blob, 'image/png'));
+    },
+
+    /**
+     * Every board of the file in one .zip, each in `format` (PNG, SVG or Aseprite) and named after
+     * it, as each would be exported on its own: its pixel size, the background if asked for.
+     */
+    async exportAllBoards(format: Exclude<ExportFormat, 'tileset'>) {
+      const boards = editor.fileBoards();
+      const used = new Set<string>();
+      const nameOf = (d: PixelDoc) => {
+        const base = safeFileName(d.name) || 'board';
+        let name = base;
+        for (let n = 2; used.has(name); n++) name = `${base} ${n}`;
+        used.add(name);
+        return `${name}.${format}`;
+      };
+      const withBackground = (d: PixelDoc) => uiStore.get().exportBackground && hasBackground(d);
+      const files = [];
+      for (const d of boards) {
+        const geometry = renderGeometry(d.width, d.height, d.render.pixelSize, d.render.gap);
+        const background: Color = withBackground(d) ? d.background : 0;
+        let data: Uint8Array;
+        if (format === 'aseprite')
+          data = await toAseprite(d, {
+            palette: d.palette?.colors ?? [],
+            background: withBackground(d) ? d.background : undefined,
+          });
+        else if (format === 'svg') data = new TextEncoder().encode(toLayeredSvg(d, geometry, background));
+        else {
+          const pixels = flatten(d, { includeBackground: false });
+          const png = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
+          data = new Uint8Array(await png.arrayBuffer());
+        }
+        files.push({ name: nameOf(d), data });
+      }
+      const filename = `${safeFileName(fileNameOf(doc()))}.zip`;
+      await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
     },
 
     /**
