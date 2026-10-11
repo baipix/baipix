@@ -153,6 +153,59 @@ function fillConvex(outline: (plot: PlotFn) => void, plot: PlotFn): void {
   });
 }
 
+/**
+ * An ellipse drawn the pixel art way: along each quarter, the runs of pixels only get shorter from
+ * the top (or bottom) toward the sides, then turn into a straight side. Each row's half width is
+ * worked out from the true ellipse, then its runs are put back in order, longest first, so the
+ * rounding never leaves a short run between two long ones, and evened out. At 2:1 it's the
+ * isometric circle.
+ * `filled` paints the inside too.
+ */
+export function cleanEllipse(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  filled: boolean,
+  plot: PlotFn,
+): void {
+  const left = Math.min(x0, x1);
+  const top = Math.min(y0, y1);
+  const w = Math.abs(x1 - x0) + 1;
+  const h = Math.abs(y1 - y0) + 1;
+  // Columns and rows from the middle out: a quarter, mirrored.
+  const A = Math.ceil(w / 2);
+  const B = Math.ceil(h / 2);
+  const extent: number[] = [];
+  for (let j = 0; j < B; j++) {
+    const dy = h / 2 - (j + 0.5);
+    const half = (w / 2) * Math.sqrt(Math.max(0, 1 - (dy / (h / 2)) ** 2));
+    extent.push(Math.min(A, Math.max(1, Math.round(half + (w % 2) / 2))));
+  }
+  extent[B - 1] = A;
+  const runs = extent.map((e, j) => (j ? e - extent[j - 1] : e));
+  const sorted = [runs[0], ...runs.slice(1).sort((a, b) => b - a)];
+  // Smoothed too: a run two or more longer than the next gives it a pixel (3, 1 becomes 2, 2),
+  // which brings out the two-pixel steps of the 2:1 slope. The top row and the straight sides stay.
+  for (let pass = 0; pass < B; pass++)
+    for (let j = 1; j + 1 < B; j++)
+      if (sorted[j + 1] > 0 && sorted[j] - sorted[j + 1] >= 2) {
+        sorted[j]--;
+        sorted[j + 1]++;
+      }
+  let e = 0;
+  sorted.forEach((r, j) => (extent[j] = e += r));
+  // Quarter column `qx` and row `j` (from the top) to the four pixels they stand for.
+  const xs = (qx: number) => [left + Math.floor((w - 1) / 2) - qx, left + Math.floor(w / 2) + qx];
+  const ys = (j: number) => [top + j, top + h - 1 - j];
+  for (let j = 0; j < B; j++) {
+    const end = extent[j] - 1;
+    const start = filled ? 0 : Math.min(end, j ? extent[j - 1] : 0);
+    for (let qx = start; qx <= end; qx++)
+      for (const x of new Set(xs(qx))) for (const y of new Set(ys(j))) plot(x, y);
+  }
+}
+
 export function ellipseFilled(x0: number, y0: number, x1: number, y1: number, plot: PlotFn): void {
   fillConvex((p) => ellipseOutline(x0, y0, x1, y1, p), plot);
 }

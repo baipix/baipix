@@ -1,5 +1,6 @@
 import type { Point } from '../math';
 import {
+  cleanEllipse,
   constrainSquare,
   ellipseFilled,
   ellipseOutline,
@@ -31,6 +32,17 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
     const plot: PlotFn = (x, y) => stamp(s, x, y, color);
     if (mods.shift) snappedLine(a, p, plot);
     else line(a.x, a.y, p.x, p.y, plot);
+    return;
+  }
+  // On an isometric grid, Shift lays the ellipse on the ground: twice as wide as tall, drawn clean.
+  if (kind === 'ellipse' && mods.shift && s.doc.isoGrid) {
+    const half = Math.max(Math.abs(p.y - a.y) + 1, Math.round((Math.abs(p.x - a.x) + 1) / 2));
+    const bx = a.x + (p.x < a.x ? -1 : 1) * (2 * half - 1);
+    const by = a.y + (p.y < a.y ? -1 : 1) * (half - 1);
+    const filled = s.options.filled;
+    cleanEllipse(a.x, a.y, bx, by, filled, (x, y) =>
+      filled ? stamp(s, x, y, color, color, false, 1) : stamp(s, x, y, color),
+    );
     return;
   }
   const b = mods.shift ? constrainSquare(a, p) : p;

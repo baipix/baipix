@@ -40,6 +40,7 @@ export function ToolOptionsBar() {
   const editor = useEditor();
   const tool = useEditorState((s) => s.tool);
   const options = useEditorState((s) => s.options);
+  const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const repeat = useEditorState((s) => s.repeat);
   const hasSelection = useEditorState((s) => s.selection !== null);
   const brushes = useEditorState((s) => s.brushes);
@@ -309,7 +310,7 @@ export function ToolOptionsBar() {
     case 'triangle':
     case 'star':
     case 'heart':
-      info = t('hint.shape');
+      info = tool === 'ellipse' && isoGrid ? t('hint.isoEllipse') : t('hint.shape');
       body = (
         <>
           {size}

@@ -329,6 +329,8 @@ export const fr: Record<MessageKey, string> = {
     'Efface vers la transparence. Maj-clic efface en ligne droite depuis le dernier point, Cmd/Ctrl+Maj-clic à 0°, 45°, 90° ou en 2:1.',
   'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
   'hint.shape': 'Maj pour une forme régulière.',
+  'hint.isoEllipse':
+    'Maj la pose au sol de la grille isométrique : deux fois plus large que haute, en marches propres.',
   'hint.box':
     'Fais glisser du coin du haut du cube à celui du bas : le dessus prend la couleur en cours, les côtés plus sombres. Maj : aussi profond que large. Largeur, profondeur et hauteur redessinent le dernier cube.',
   'options.boxWidth': 'Largeur',
