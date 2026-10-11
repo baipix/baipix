@@ -87,6 +87,7 @@ import { paintGradient, stopsOf } from './tools/gradient';
 import { paintBox } from './tools/box';
 import { tilesIsometric } from './isoTile';
 import { isoFaceMapping, type IsoFace } from './isoProject';
+import { DEFAULT_EXTRUDE, extrude, type ExtrudeOptions } from './extrude';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
@@ -167,6 +168,8 @@ export interface EditorState {
   layerFramed: boolean;
   /** A repeat grid being set up (see `beginRepeat`), or null. */
   repeat: RepeatGrid | null;
+  /** An extrusion being set up (see `beginExtrude`), or null. */
+  extrude: ExtrudeOptions | null;
   canUndo: boolean;
   canRedo: boolean;
   revision: number;
@@ -375,6 +378,17 @@ export class Editor {
   } | null = null;
   /** The last repeat grid kept, to start the next one from. */
   private lastRepeat: RepeatGrid = DEFAULT_REPEAT;
+  /** An extrusion being set up: the shape pulled up, and how the layer was. */
+  private extrudeSession: {
+    layer: Layer;
+    base: Uint32Array;
+    baseOutside: Outside | undefined;
+    region: Uint8Array;
+    selection: Selection | null;
+    options: ExtrudeOptions;
+  } | null = null;
+  /** The last extrusion kept, to start the next one from. */
+  private lastExtrude: ExtrudeOptions = DEFAULT_EXTRUDE;
   /**
    * The last gradient drawn, kept editable: while its layer still shows it, changing the gradient's
    * options redraws it in place (same undo step), like a gradient in Figma.
@@ -529,6 +543,7 @@ export class Editor {
       referenceSelected: !!s.referencePicked && !!s.doc.reference,
       layerFramed: !s.unframed,
       repeat: this.repeatSession?.grid ?? null,
+      extrude: this.extrudeSession?.options ?? null,
       canUndo: s.history.canUndo,
       canRedo: s.history.canRedo,
       revision: this.revision,
@@ -556,8 +571,9 @@ export class Editor {
   }
 
   private checkpoint(): void {
-    // Anything else done during a repeat grid keeps the grid first: two steps, never mixed.
+    // Anything else done during a repeat grid or an extrusion keeps it first: two steps, never mixed.
     if (this.repeatSession) this.endRepeat(true);
+    if (this.extrudeSession) this.endExtrude(true);
     this.active.history.push(takeSnapshot(this.doc, this.active.selection));
     this.touch();
   }
@@ -592,6 +608,7 @@ export class Editor {
 
   undo(): void {
     if (this.repeatSession) return this.endRepeat(false);
+    if (this.extrudeSession) return this.endExtrude(false);
     if (this.stroke || this.adjusting || this.scaling) return;
     const current = takeSnapshot(this.doc, this.active.selection);
     const prev = this.active.history.undo(current);
@@ -2181,6 +2198,79 @@ export class Editor {
     r.source.layer.pixels.set(r.base);
     this.active.picked = r.picked;
     syncInstances(this.doc);
+    this.active.history.discardLast();
+    this.commit(false);
+  }
+
+  /* ------------------------------------------------------------------ extrusion */
+
+  /**
+   * Starts pulling a flat shape up into an isometric volume (see `extrude`): the pixel selection,
+   * or what's drawn on the active layer. Set up live with `setExtrude`, then kept or dropped with
+   * `endExtrude`. Returns false when there's nothing to extrude.
+   */
+  beginExtrude(): boolean {
+    if (this.extrudeSession) this.endExtrude(false);
+    if (this.repeatSession) this.endRepeat(true);
+    if (this.activeLocked()) return false;
+    const { width: W, height: H } = this.doc;
+    const layer = activeLayer(this.doc);
+    const sel = this.active.selection;
+    const region = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (layer.pixels[y * W + x] >>> 24 && inSelection(sel, x, y)) region[y * W + x] = 1;
+    if (!region.includes(1)) {
+      this.notice({ type: 'emptyDrawing' });
+      return false;
+    }
+    this.cancelStroke();
+    this.checkpoint();
+    this.extrudeSession = {
+      layer,
+      base: layer.pixels.slice(),
+      baseOutside: layer.outside,
+      region,
+      selection: sel,
+      options: this.lastExtrude,
+    };
+    this.setExtrude(this.lastExtrude);
+    return true;
+  }
+
+  /** Pulls the shape up again with new settings: live, from how the layer was. */
+  setExtrude(options: ExtrudeOptions): void {
+    const x = this.extrudeSession;
+    if (!x) return;
+    const { width: W, height: H } = this.doc;
+    x.options = { ...options, height: Math.max(0, Math.min(256, Math.round(options.height))) };
+    x.layer.pixels.set(x.base);
+    x.layer.outside = x.baseOutside;
+    const { covered, outside } = extrude(x.layer.pixels, W, H, x.region, x.options, this.paletteIndex);
+    const kept = addOutside(x.baseOutside, outside, W, H);
+    if (kept) x.layer.outside = kept;
+    else delete x.layer.outside;
+    // The volume is selected, ready to move into place.
+    if (x.selection) this.active.selection = fromCanvasMask(covered, W, H);
+    syncInstances(this.doc, x.layer.id);
+    this.commit(false);
+  }
+
+  /** Keeps the extrusion (one undo step), or drops it and puts the layer back. */
+  endExtrude(keep: boolean): void {
+    const x = this.extrudeSession;
+    if (!x) return;
+    this.extrudeSession = null;
+    if (keep) {
+      this.lastExtrude = x.options;
+      this.commit();
+      return;
+    }
+    x.layer.pixels.set(x.base);
+    if (x.baseOutside) x.layer.outside = x.baseOutside;
+    else delete x.layer.outside;
+    this.active.selection = x.selection;
+    syncInstances(this.doc, x.layer.id);
     this.active.history.discardLast();
     this.commit(false);
   }

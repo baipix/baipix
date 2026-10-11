@@ -128,6 +128,10 @@ export const en = {
   'menu.flipH': 'Flip horizontally',
   'menu.flipV': 'Flip vertically',
   'menu.rotateLeft': 'Rotate 90° counterclockwise',
+  'menu.extrude': 'Extrude…',
+  'extrude.title': 'Extrude',
+  'extrude.hint':
+    'The shape goes up by the height, and its sides fill under it: darker on the left, darker still on the right, like the isometric box. Enter applies, Escape cancels.',
   'menu.isoFace': 'Put on an isometric face',
   'menu.isoFaceLeft': 'Left side',
   'menu.isoFaceRight': 'Right side',
