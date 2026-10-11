@@ -452,6 +452,8 @@ export const fr: Record<MessageKey, string> = {
   'display.rulersHint':
     'Glisse depuis une règle pour ajouter un repère. Avec l’outil Déplacer, glisse un repère pour le bouger, ou ramène-le sur sa règle pour le retirer.',
   'display.mirrorY': 'Symétrie haut-bas',
+  'display.isoGrid': 'Grille isométrique',
+  'display.isoCell': 'Case',
 
   'export.button': 'Exporter',
   'export.format': 'Format',

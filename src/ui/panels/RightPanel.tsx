@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { ColorChips } from '../components/ColorChips';
-import { MY_PALETTE } from '../../engine/editor';
+import { isoCellSize, MY_PALETTE } from '../../engine/editor';
 import { ColorRow } from './ColorRow';
 import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
@@ -537,6 +537,26 @@ function DisplaySection() {
         label={t('display.rulers')}
       />
       {view.rulers && <p className="muted section-note">{t('display.rulersHint')}</p>}
+      <Checkbox
+        checked={view.isoGrid}
+        onChange={(v) => editor.setView('isoGrid', v)}
+        label={t('display.isoGrid')}
+      />
+      {view.isoGrid && (
+        // The diamonds' width; they're half as tall, the 2:1 of pixel art.
+        <Row label={t('display.isoCell')}>
+          <NumberField
+            value={view.isoCell}
+            min={4}
+            max={256}
+            label="↔"
+            suffix="px"
+            ariaLabel={t('display.isoCell')}
+            scrubHint={t('common.dragToAdjust')}
+            onChange={(v) => editor.setView('isoCell', isoCellSize(v))}
+          />
+        </Row>
+      )}
     </Section>
   );
 }
