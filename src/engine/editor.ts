@@ -86,6 +86,7 @@ import {
 import { paintGradient, stopsOf } from './tools/gradient';
 import { tilesIsometric } from './isoTile';
 import { isoFaceMapping, type IsoFace } from './isoProject';
+import { ISO_PLANES } from './isoPlane';
 import { DEFAULT_EXTRUDE, extrude, type ExtrudeOptions } from './extrude';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
@@ -1998,6 +1999,7 @@ export class Editor {
         gradientStops: cleanStops(o.gradientStops),
         gradientShape: GRADIENT_SHAPES.includes(o.gradientShape) ? o.gradientShape : 'linear',
         gradientDither: GRADIENT_DITHERS.includes(o.gradientDither) ? o.gradientDither : 'bayer',
+        plane: ISO_PLANES.includes(o.plane) ? o.plane : 'flat',
       };
     }
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;

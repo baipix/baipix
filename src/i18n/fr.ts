@@ -339,6 +339,13 @@ export const fr: Record<MessageKey, string> = {
     'Efface vers la transparence. Maj-clic efface en ligne droite depuis le dernier point, Cmd/Ctrl+Maj-clic à 0°, 45°, 90° ou en 2:1.',
   'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
   'hint.shape': 'Maj pour une forme régulière.',
+  'hint.plane':
+    'Fais glisser en travers de la boîte où tient la forme : sur un mur, son haut et son bas suivent le mur en 2:1. Au sol, tire le rectangle de son coin du haut à celui du bas.',
+  'plane.label': 'Plan',
+  'plane.flat': 'À plat',
+  'plane.left': 'Mur gauche',
+  'plane.right': 'Mur droit',
+  'plane.ground': 'Sol',
   'hint.isoEllipse':
     'Maj la pose au sol de la grille isométrique : deux fois plus large que haute, en marches propres.',
   'hint.box':

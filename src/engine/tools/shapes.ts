@@ -18,6 +18,7 @@ import {
   trianglePoints,
   type PlotFn,
 } from '../raster';
+import { planeShape } from '../isoPlane';
 import { stamp, strokeColors } from './paint';
 import type { Modifiers, Stroke, Tool, ToolId } from './types';
 
@@ -32,6 +33,14 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
     const plot: PlotFn = (x, y) => stamp(s, x, y, color);
     if (mods.shift) snappedLine(a, p, plot);
     else line(a.x, a.y, p.x, p.y, plot);
+    return;
+  }
+  // On an isometric grid, a rectangle or an ellipse can go on a wall or on the ground.
+  const plane = s.options.plane;
+  if (s.doc.isoGrid && plane !== 'flat' && (kind === 'rect' || kind === 'ellipse')) {
+    planeShape(kind, plane, a, p, s.options.filled, (x, y, outline) =>
+      outline ? stamp(s, x, y, color) : stamp(s, x, y, color, color, false, 1),
+    );
     return;
   }
   // On an isometric grid, Shift lays the ellipse on the ground: twice as wide as tall, drawn clean.

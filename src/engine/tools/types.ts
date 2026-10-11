@@ -1,4 +1,5 @@
 import type { Selection } from '../selection';
+import type { IsoPlane } from '../isoPlane';
 import type { Color } from '../color';
 import type { Layer, PixelDoc } from '../document';
 import type { Outside } from '../outside';
@@ -98,6 +99,8 @@ export interface ToolOptions {
   boxWidth: number;
   boxDepth: number;
   boxHeight: number;
+  /** Rectangle and ellipse, on an isometric grid: flat, on the left or right wall, or on the ground. */
+  plane: IsoPlane;
   /** Isometric box: an outline in a darker color around it. */
   boxOutline: boolean;
   /** Isometric box: the top's front edges one step lighter, the classic highlight. */
@@ -140,6 +143,7 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   boxDepth: 4,
   boxHeight: 8,
   boxOutline: false,
+  plane: 'flat',
   boxLight: false,
 };
 
