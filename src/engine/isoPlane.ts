@@ -21,6 +21,26 @@ export const ISO_PLANES: IsoPlane[] = ['flat', 'left', 'right', 'ground'];
 /** The shapes that can go on a plane: all but the line, which has its own iso angles. */
 export type PlaneKind = 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart';
 
+/**
+ * Smooths the top and bottom of a shape that is one run per column, slid onto a wall. Where its
+ * own curve slopes against the wall's 2:1, the two two-pixel steps fall a column apart and the
+ * edge alternates pixel by pixel; a column out of line with both its neighbors joins them.
+ */
+function evenOut(cells: Set<string>, x0: number, w: number): void {
+  const top: number[] = [];
+  const bottom: number[] = [];
+  for (let i = 0; i < w; i++) {
+    const ys = [...cells].filter((c) => +c.split(',')[0] === x0 + i).map((c) => +c.split(',')[1]);
+    top.push(Math.min(...ys));
+    bottom.push(Math.max(...ys));
+  }
+  for (const edge of [top, bottom])
+    for (let i = 1; i + 1 < w; i++)
+      if (edge[i - 1] === edge[i + 1] && edge[i] !== edge[i - 1]) edge[i] = edge[i - 1];
+  cells.clear();
+  for (let i = 0; i < w; i++) for (let y = top[i]; y <= bottom[i]; y++) cells.add(`${x0 + i},${y}`);
+}
+
 /** The shape filled flat in a `w` × `h` box from (0, 0), as the other shape tools draw it. */
 function flatShape(kind: PlaneKind, w: number, h: number, radius: number, plot: PlotFn): void {
   const [x1, y1] = [w - 1, h - 1];
@@ -96,6 +116,7 @@ export function planeShape(
     flatShape(kind, w, h, radius, (lx, ly) =>
       add(x0 + lx, y0 + ly + Math.floor((plane === 'left' ? lx : w - 1 - lx) / 2)),
     );
+    if (kind === 'ellipse' || kind === 'roundRect') evenOut(cells, x0, w);
   }
   // The outline is the shape's edge, so a slid or laid-down shape stays in one piece.
   for (const c of cells) {
