@@ -54,9 +54,11 @@ export function SizeList({
       )}
       <div className="size-group">{t('template.title')}</div>
       {TEMPLATES.map((tpl) => {
-        const extras = [tpl.mirrorX && t('template.mirrored'), tpl.tile && t('template.tiled')].filter(
-          Boolean,
-        );
+        const extras = [
+          tpl.mirrorX && t('template.mirrored'),
+          tpl.tile && t('template.tiled'),
+          tpl.isoGrid && t('template.isoGrid'),
+        ].filter(Boolean);
         return row(
           tpl.id,
           { width: tpl.width, height: tpl.height, template: tpl },

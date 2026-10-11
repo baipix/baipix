@@ -119,6 +119,11 @@ export interface PixelDoc {
    * Like the reference, they're not part of the undo history.
    */
   guides?: Guides;
+  /**
+   * The isometric grid, while it's on: how wide its 2:1 diamonds are, in pixels (see
+   * `isoCellSize`). Like the guides, it's not part of the undo history.
+   */
+  isoGrid?: number;
   /** Used to name new layers ("Layer 3"). */
   layerCounter: number;
   /** The file's palette. Missing: the colors of the drawing (see `DocPalette`). */
@@ -167,6 +172,12 @@ export const cloneLayer = (layer: Layer, keepId = true): Layer => ({
   ...(layer.instance && { instance: { ...layer.instance } }),
   ...(layer.effects && { effects: layer.effects.map((e) => ({ ...e })) }),
 });
+
+/**
+ * An isometric grid cell width: a multiple of 4 from 4 to 256, so its diamonds' corners (every
+ * half cell across, every quarter cell down) fall on pixel corners.
+ */
+export const isoCellSize = (n: number): number => Math.min(256, Math.max(4, Math.round(n / 4) * 4));
 
 export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
   return {

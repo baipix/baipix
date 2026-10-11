@@ -322,7 +322,7 @@ export function drawScene(
       for (let j = 8; j < H; j += 8) row(j);
     }
   }
-  if (view.isoGrid) drawIsoGrid(ctx, view.isoCell, W, H, X, Y, s, camera.dpr, theme.isoGrid);
+  if (doc.isoGrid) drawIsoGrid(ctx, doc.isoGrid, W, H, X, Y, s, camera.dpr, theme.isoGrid);
   ctx.strokeStyle = theme.frame;
   ctx.lineWidth = 1;
   ctx.strokeRect(X - 0.5, Y - 0.5, cw + 1, ch + 1);
