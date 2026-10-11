@@ -62,7 +62,7 @@ import {
   syncInstances,
 } from './components';
 import { History, takeSnapshot, type Snapshot } from './history';
-import { flipOutside, layerContent, reframe, type Outside } from './outside';
+import { addOutside, flipOutside, layerContent, reframe, type Outside } from './outside';
 import { clamp, clipRect, type Point, type Rect } from './math';
 import { PaletteIndex, hueShiftedRamp, presetColors, sortByLightness } from './palette';
 import {
@@ -2318,25 +2318,38 @@ export class Editor {
     const { width: W, height: H } = this.doc;
     const layer = activeLayer(this.doc);
     const sel = this.active.selection ? clipSelection(this.active.selection, W, H) : null;
-    const rect = sel ?? pixelBounds(layer.pixels, W, H);
+    // Without a selection, all of the layer's drawing, what's outside the canvas included.
+    const whole = sel ? null : layerContent(layer.pixels, W, H, layer.outside);
+    const rect = sel ?? whole?.rect;
     if (!rect) {
       this.notice({ type: 'emptyDrawing' });
       return;
     }
     this.edit((doc) => {
-      const pixels = activeLayer(doc).pixels;
-      const block = sel ? maskBlock(extractBlock(pixels, W, H, sel), sel) : extractBlock(pixels, W, H, rect);
-      const { width, height, source } = isoFaceMapping(face, rect.w, rect.h);
-      fillSelection(pixels, W, H, sel ?? rect, 0);
+      const target = activeLayer(doc);
+      const pixels = target.pixels;
+      const source = sel ? maskBlock(extractBlock(pixels, W, H, sel), sel).pixels : whole!.pixels;
+      const { width, height, source: from } = isoFaceMapping(face, rect.w, rect.h);
+      if (sel) fillSelection(pixels, W, H, sel, 0);
+      else {
+        pixels.fill(0);
+        delete target.outside;
+      }
+      // What lands past the canvas's edges is kept outside it, as after a move.
+      const outside: number[] = [];
       const mask = new Uint8Array(width * height);
-      source.forEach((from, i) => {
-        if (from < 0 || (sel?.mask && !sel.mask[from])) return;
+      from.forEach((index, i) => {
+        if (index < 0 || (sel?.mask && !sel.mask[index])) return;
         mask[i] = 1;
         const x = rect.x + (i % width);
         const y = rect.y + Math.floor(i / width);
-        const c = block.pixels[from];
-        if (c >>> 24 && x < W && y < H) pixels[y * W + x] = c;
+        const c = source[index];
+        if (!(c >>> 24)) return;
+        if (x >= 0 && y >= 0 && x < W && y < H) pixels[y * W + x] = c;
+        else outside.push(x, y, c);
       });
+      const kept = addOutside(target.outside, outside, W, H);
+      if (kept) target.outside = kept;
       if (sel)
         this.active.selection = clipSelection({ x: rect.x, y: rect.y, w: width, h: height, mask }, W, H);
     });

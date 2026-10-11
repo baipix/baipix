@@ -77,6 +77,49 @@ export function reframe(
   return { pixels: inside, outside: { x: minX, y: minY, w, h, pixels: kept } };
 }
 
+/**
+ * The outside part with more pixels laid over it, given as flat [x, y, color] triples in canvas
+ * pixels (all outside the canvas). Pixels past `OUTSIDE_MARGIN` are dropped, like anywhere else.
+ */
+export function addOutside(
+  outside: Outside | undefined,
+  extra: number[],
+  width: number,
+  height: number,
+): Outside | undefined {
+  const kept: number[] = [];
+  for (let k = 0; k < extra.length; k += 3) {
+    const [x, y] = [extra[k], extra[k + 1]];
+    const far =
+      x < -OUTSIDE_MARGIN ||
+      y < -OUTSIDE_MARGIN ||
+      x >= width + OUTSIDE_MARGIN ||
+      y >= height + OUTSIDE_MARGIN;
+    if (!far) kept.push(x, y, extra[k + 2]);
+  }
+  if (!kept.length) return outside;
+  let [minX, minY, maxX, maxY] = outside
+    ? [outside.x, outside.y, outside.x + outside.w - 1, outside.y + outside.h - 1]
+    : [Infinity, Infinity, -Infinity, -Infinity];
+  for (let k = 0; k < kept.length; k += 3) {
+    minX = Math.min(minX, kept[k]);
+    maxX = Math.max(maxX, kept[k]);
+    minY = Math.min(minY, kept[k + 1]);
+    maxY = Math.max(maxY, kept[k + 1]);
+  }
+  const w = maxX - minX + 1;
+  const h = maxY - minY + 1;
+  const pixels = new Uint32Array(w * h);
+  if (outside)
+    for (let j = 0; j < outside.h; j++)
+      pixels.set(
+        outside.pixels.subarray(j * outside.w, (j + 1) * outside.w),
+        (outside.y - minY + j) * w + (outside.x - minX),
+      );
+  for (let k = 0; k < kept.length; k += 3) pixels[(kept[k + 1] - minY) * w + (kept[k] - minX)] = kept[k + 2];
+  return { x: minX, y: minY, w, h, pixels };
+}
+
 /** Mirrors the outside part along with a whole layer flipped across the canvas. */
 export function flipOutside(o: Outside, width: number, height: number, horizontal: boolean): Outside {
   const pixels = new Uint32Array(o.w * o.h);
