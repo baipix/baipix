@@ -2,8 +2,11 @@ import type { Color } from './color';
 import type { Point } from './math';
 import { shiftLightness, type PaletteIndex } from './palette';
 
-/** The faces of an isometric box, lit from the top left; `edge` is its outline, if it has one. */
-export type BoxFace = 'top' | 'left' | 'right' | 'edge';
+/**
+ * The faces of an isometric box, lit from the top left; `edge` is its outline and `light` the
+ * top's front edges, if it has them.
+ */
+export type BoxFace = 'top' | 'left' | 'right' | 'edge' | 'light';
 
 /**
  * The size of an isometric box, in steps of its 2:1 edges (two pixels across, one down) and in
@@ -39,13 +42,15 @@ export function boxFromDrag(
 /**
  * Plots an isometric box whose top corner is the pair of pixels left of and at `top`. Its top is
  * a diamond with edges of exactly two pixels per step; under it hang the left and right faces,
- * `height` pixels tall. With `outline`, the pixels on its outer edge are `edge` instead.
+ * `height` pixels tall. With `outline`, the pixels on its outer edge are `edge` instead; with
+ * `light`, the top's pixels along its two front edges (over the sides) are `light`.
  */
 export function isoBox(
   top: Point,
   { width: w, depth: d, height: h }: BoxSize,
   outline: boolean,
   plot: (x: number, y: number, face: BoxFace) => void,
+  light = false,
 ): void {
   const cx = top.x;
   // The top face, row by row: its left edge goes down-left for `depth` steps then down-right,
@@ -82,7 +87,8 @@ export function isoBox(
       for (let k = from; k <= to; k++) {
         const edge =
           outline && (!inside(x - 1, k) || !inside(x + 1, k) || !inside(x, k - 1) || !inside(x, k + 1));
-        plot(x, top.y + k, edge ? 'edge' : face);
+        const front = light && face === 'top' && k === to && h > 0;
+        plot(x, top.y + k, edge ? 'edge' : front ? 'light' : face);
       }
   });
 }
@@ -93,9 +99,18 @@ function darker(c: Color, palette: PaletteIndex): Color {
   return next ?? shiftLightness(c, -1, 2, true);
 }
 
-/** The colors of the faces: the top in `color`, the left one step darker, the right two, the edge three. */
+/** One step lighter, the same way. */
+function lighter(c: Color, palette: PaletteIndex): Color {
+  const next = palette.shade(c, 1, 'ramp') ?? palette.shade(c, 1, 'palette');
+  return next ?? shiftLightness(c, 1, 2, true);
+}
+
+/**
+ * The colors of the faces: the top in `color`, the left one step darker, the right two, the edge
+ * three, and the light edge one step lighter.
+ */
 export function boxColors(color: Color, palette: PaletteIndex): Record<BoxFace, Color> {
   const left = darker(color, palette);
   const right = darker(left, palette);
-  return { top: color, left, right, edge: darker(right, palette) };
+  return { top: color, left, right, edge: darker(right, palette), light: lighter(color, palette) };
 }

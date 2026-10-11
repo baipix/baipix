@@ -336,6 +336,7 @@ export const en = {
   'options.boxDepth': 'Depth',
   'options.boxHeight': 'Height',
   'options.boxOutline': 'Outline',
+  'options.boxLight': 'Light edge',
   'hint.gradient':
     'Drag from where the gradient starts to where it ends (Shift: by 45°). It fills the area of the same color under the first click, or the selection. Its colors come from the palette, dithered in between. Change the options right after: the last gradient follows.',
   'gradient.stops': 'Gradient stops',
