@@ -126,6 +126,11 @@ export interface PixelDoc {
   isoGrid?: number;
   /** The isometric grid also has upright lines through its diamonds' corners, to build heights. */
   isoGridVertical?: boolean;
+  /**
+   * When the file has several boards: the file it belongs to, and where it sits in the file, in
+   * pixels. Missing: the document is a file of its own, its only board at (0, 0).
+   */
+  board?: BoardPlace;
   /** Used to name new layers ("Layer 3"). */
   layerCounter: number;
   /** The file's palette. Missing: the colors of the drawing (see `DocPalette`). */
@@ -187,6 +192,26 @@ export const isoCellSize = (n: number): number => Math.min(256, Math.max(4, Math
  */
 export const isoGridOrigin = (width: number): number => Math.floor(width / 2);
 
+/**
+ * A board's place in a file of several boards, like a frame in Figma: each board is a document of
+ * its own (size, layers, history), laid out side by side with the file's other boards.
+ */
+export interface BoardPlace {
+  /** The file's id, shared by its boards (the first board's id when it was a file of its own). */
+  file: string;
+  /** The file's name; each board keeps its own name in `name`. */
+  fileName: string;
+  /** Its top left corner in the file, in pixels. */
+  x: number;
+  y: number;
+}
+
+/** The file a document belongs to: its board's file, or itself. */
+export const fileIdOf = (doc: PixelDoc): string => doc.board?.file ?? doc.id;
+
+/** The name of the file a document belongs to. */
+export const fileNameOf = (doc: PixelDoc): string => doc.board?.fileName ?? doc.name;
+
 export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
   return {
     ...doc,
@@ -194,6 +219,7 @@ export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
     render: { ...doc.render },
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.groups && { groups: doc.groups.map((g) => ({ ...g })) }),
+    ...(doc.board && { board: { ...doc.board } }),
     layers: keepIds ? doc.layers.map((l) => cloneLayer(l)) : cloneLayersWithNewIds(doc.layers),
   };
 }

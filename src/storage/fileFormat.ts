@@ -4,6 +4,7 @@ import {
   isoCellSize,
   MAX_SIZE,
   newId,
+  type BoardPlace,
   type DocPalette,
   type Layer,
   type LayerGroup,
@@ -70,6 +71,8 @@ export interface BaipixFile {
   isoGrid?: number;
   /** Upright lines in the isometric grid (missing: none). */
   isoGridVertical?: boolean;
+  /** A board of a file with several: its file and its place in it (missing: a file of its own). */
+  board?: BoardPlace;
   /** Last change, in ms since the epoch. */
   updatedAt?: number;
   layers: BaipixLayer[];
@@ -147,6 +150,7 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.isoGrid && { isoGrid: doc.isoGrid }),
     ...(doc.isoGridVertical && { isoGridVertical: true }),
+    ...(doc.board && { board: { ...doc.board } }),
     ...(doc.updatedAt !== undefined && { updatedAt: doc.updatedAt }),
     ...(doc.palette && {
       palette: {
@@ -307,6 +311,7 @@ export function deserializeDocument(data: unknown): PixelDoc {
     ...(readGuides(f.guides, width, height) ?? {}),
     ...(typeof f.isoGrid === 'number' && Number.isFinite(f.isoGrid) && { isoGrid: isoCellSize(f.isoGrid) }),
     ...(f.isoGridVertical === true && { isoGridVertical: true }),
+    ...(readBoard(f.board) ?? {}),
     ...(typeof f.updatedAt === 'number' && Number.isFinite(f.updatedAt) && { updatedAt: f.updatedAt }),
     ...(groups && { groups }),
     ...(readPalette(f.palette) ?? {}),
@@ -321,14 +326,69 @@ export function deserializeDocument(data: unknown): PixelDoc {
   return doc;
 }
 
+/** A board's place from a file: its file id and name, and whole-pixel coordinates. */
+function readBoard(b: unknown): { board: BoardPlace } | null {
+  const v = b as Partial<BoardPlace> | null;
+  if (!v || typeof v !== 'object' || typeof v.file !== 'string' || typeof v.fileName !== 'string')
+    return null;
+  const at = (n: unknown) =>
+    typeof n === 'number' && Number.isFinite(n) ? clamp(Math.round(n), -1e6, 1e6) : 0;
+  return { board: { file: v.file, fileName: v.fileName.slice(0, 120), x: at(v.x), y: at(v.y) } };
+}
+
+/**
+ * A file of several boards, as a .baipix file: its name and its boards, each a board as a single
+ * board file would be with its place in the file. Files of one board keep the plain format (version
+ * 1), which older versions of Baipix still open.
+ */
+interface BaipixBoards {
+  format: typeof FILE_FORMAT;
+  version: 2;
+  name: string;
+  boards: BaipixFile[];
+}
+
 export const documentToJson = (doc: PixelDoc): string => JSON.stringify(serializeDocument(doc));
 
-export function documentFromJson(text: string): PixelDoc {
-  let data: unknown;
+/** A file as a .baipix file: its only board as before, or all its boards (see `BaipixBoards`). */
+export function fileToJson(boards: PixelDoc[]): string {
+  if (boards.length === 1 && !boards[0].board) return documentToJson(boards[0]);
+  const data: BaipixBoards = {
+    format: FILE_FORMAT,
+    version: 2,
+    name: boards[0].board?.fileName ?? boards[0].name,
+    boards: boards.map((doc) => serializeDocument(doc)),
+  };
+  return JSON.stringify(data);
+}
+
+const parseJson = (text: string): unknown => {
   try {
-    data = JSON.parse(text);
+    return JSON.parse(text);
   } catch {
     throw new FileFormatError('Invalid JSON');
   }
-  return deserializeDocument(data);
+};
+
+export function documentFromJson(text: string): PixelDoc {
+  return deserializeDocument(parseJson(text));
+}
+
+/**
+ * The boards of a .baipix file: one for a plain file, all of them for a file of boards. Opened
+ * files get new ids, so a file opened twice doesn't mix with itself.
+ */
+export function fileFromJson(text: string): PixelDoc[] {
+  const data = parseJson(text) as Partial<BaipixBoards> | null;
+  if (!data || typeof data !== 'object' || data.format !== FILE_FORMAT || data.version !== 2)
+    return [deserializeDocument(data)];
+  if (!Array.isArray(data.boards) || !data.boards.length) throw new FileFormatError('No boards');
+  const file = newId('doc');
+  const fileName = (typeof data.name === 'string' && data.name.trim()) || 'Untitled';
+  return data.boards.map((b) => {
+    const doc = deserializeDocument({ ...b, version: 1 });
+    doc.id = newId('doc');
+    doc.board = { file, fileName: fileName.slice(0, 120), x: doc.board?.x ?? 0, y: doc.board?.y ?? 0 };
+    return doc;
+  });
 }

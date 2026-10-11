@@ -625,7 +625,7 @@ function ExportSection() {
             defaultValue={doc.name}
             aria-label={t('export.name')}
             spellCheck={false}
-            onBlur={(e) => editor.renameFile(doc.id, e.currentTarget.value)}
+            onBlur={(e) => editor.renameBoard(doc.id, e.currentTarget.value)}
             onKeyDown={(e) => {
               e.stopPropagation();
               if (e.key === 'Enter') e.currentTarget.blur();

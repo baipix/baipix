@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { fileNameOf } from '../../engine/document';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -15,8 +16,10 @@ function FileTitle() {
   const editor = useEditor();
   const actions = useActions();
   const doc = useEditorState((s) => s.doc);
-  // Renames mutate the document in place, so select the name itself to re-render on change.
-  const docName = useEditorState((s) => s.doc.name);
+  // The file's name (the name of its only board, or of the file holding several). Renames mutate
+  // the document in place, so select the name itself to re-render on change.
+  const docName = useEditorState((s) => fileNameOf(s.doc));
+  const fileId = useEditorState((s) => s.activeId);
   const [name, setName] = useState(docName);
   useEffect(() => setName(docName), [docName, doc.id]);
   return (
@@ -30,7 +33,7 @@ function FileTitle() {
         onBlur={(e) => {
           // Back to the start of a long name, which stays scrolled to its end after typing.
           e.currentTarget.scrollLeft = 0;
-          if (name.trim()) editor.renameFile(doc.id, name);
+          if (name.trim()) editor.renameFile(fileId, name);
           else setName(docName);
         }}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === 'Escape') && (e.target as HTMLInputElement).blur()}

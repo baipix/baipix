@@ -977,7 +977,7 @@ export function CanvasView() {
             top: viewport.originY / viewport.dpr - LABEL.gap,
           }}
           onBlur={(e) => {
-            editor.renameFile(docId, e.currentTarget.value);
+            editor.renameBoard(docId, e.currentTarget.value);
             setRenaming(false);
           }}
           onKeyDown={(e) => {
