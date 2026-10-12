@@ -109,6 +109,9 @@ export interface ViewSettings {
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
 
+/** The space left between a board and one added or copied beside it, in pixels. */
+const BOARD_SPACING = 16;
+
 /** The isometric volumes: their options (height, outline, light edge) redraw the last one drawn. */
 const VOLUMES: ToolId[] = ['box', 'cylinder', 'pyramid'];
 
@@ -962,11 +965,39 @@ export class Editor {
     if (boards.length < 2) return false;
     this.cancelStroke();
     const i = boards.indexOf(s);
+    const index = this.sessions.indexOf(s);
     this.sessions = this.sessions.filter((x) => x !== s);
     if (s === this.active) this.activate(boards[i === 0 ? 1 : i - 1]);
-    // The file keeps its id while its first board goes: the others still carry it.
+    // The file keeps its id while its first board goes: the others still carry it. Undo brings
+    // the board back, with its history.
+    this.deleted = { kind: 'file', sessions: [s], index };
     this.commit();
     return true;
+  }
+
+  /** Copies a board, layers and all, next to it on the right, and makes the copy active. */
+  duplicateBoard(id: string): void {
+    const s = this.sessions.find((x) => x.doc.id === id);
+    if (!s) return;
+    this.cancelStroke();
+    const doc = s.doc;
+    doc.board ??= { file: doc.id, fileName: doc.name, x: 0, y: 0 };
+    const copy = cloneDocument(doc, false);
+    copy.name = this.labels.copyOf(doc.name);
+    copy.board = { ...doc.board, x: doc.board.x + doc.width + BOARD_SPACING };
+    copy.updatedAt = Date.now();
+    const session: Session = { doc: copy, history: new History(), selection: null };
+    this.sessions.splice(this.sessions.indexOf(s) + 1, 0, session);
+    this.fresh.delete(doc.id);
+    this.activate(session);
+    this.commit();
+  }
+
+  /** Adds a board the size of the active one, beside it on the right. */
+  addBoardBeside(): void {
+    const { doc } = this;
+    const at = doc.board ?? { x: 0, y: 0 };
+    this.addBoard(at.x + doc.width + BOARD_SPACING, at.y, doc.width, doc.height);
   }
 
   /**

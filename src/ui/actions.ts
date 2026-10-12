@@ -365,6 +365,13 @@ export function createActions(editor: Editor) {
       });
     },
 
+    /** Deletes the active board, with an Undo toast; a file keeps at least one. */
+    deleteBoard() {
+      const { doc } = editor.getState();
+      if (!editor.deleteBoard(doc.id)) return toast(t('board.lastOne'));
+      toast(t('board.deleted', { name: doc.name }), undoDelete());
+    },
+
     /** Deletes the selected layers (or the active one), with an Undo toast. */
     deleteLayers() {
       const group = editor.getState().selectedGroup;
