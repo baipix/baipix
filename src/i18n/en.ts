@@ -495,6 +495,7 @@ export const en = {
   'export.button': 'Export',
   'export.format': 'Format',
   'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
+  'export.allBoards': 'All {count} boards, in a .zip',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Tile width',
   'export.tileHeight': 'Tile height',
