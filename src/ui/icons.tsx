@@ -264,6 +264,21 @@ const Pyramid = drawn([
   '...######...',
   '............',
 ]);
+// Board: a frame, its corners crossing like Figma's, a name tab on top.
+const Board = drawn([
+  '..#......#..',
+  '..#......#..',
+  '############',
+  '..#......#..',
+  '..#......#..',
+  '..#......#..',
+  '..#......#..',
+  '..#......#..',
+  '..#......#..',
+  '############',
+  '..#......#..',
+  '..#......#..',
+]);
 const Gradient = drawn([
   '############',
   '#####.#.#..#',
@@ -317,6 +332,7 @@ export const ICONS = {
   star: Star,
   heart: Heart,
   box: Box,
+  board: Board,
   cylinder: Cylinder,
   pyramid: Pyramid,
   shade: Moon,

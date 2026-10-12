@@ -106,6 +106,14 @@ export const MENU_BAR: MenuBarMenu[] = [
         { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
         { label: t('menu.reference'), onSelect: () => void actions.addReference() },
         '-',
+        { label: t('board.new'), onSelect: () => editor.addBoardBeside() },
+        { label: t('board.duplicate'), onSelect: () => editor.duplicateBoard(editor.getState().doc.id) },
+        {
+          label: t('board.delete'),
+          disabled: editor.getState().boards.length < 2,
+          onSelect: () => actions.deleteBoard(),
+        },
+        '-',
         { label: t('menu.duplicateFile'), onSelect: () => editor.duplicateFile(current.id) },
         {
           label: t('menu.renameFile'),

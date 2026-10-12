@@ -11,6 +11,8 @@ import {
   newId,
   resizeDocument,
   type DocPalette,
+  fileIdOf,
+  fileNameOf,
   isoCellSize,
   type Layer,
   type LayerGroup,
@@ -107,6 +109,9 @@ export interface ViewSettings {
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
 
+/** The space left between a board and one added or copied beside it, in pixels. */
+const BOARD_SPACING = 16;
+
 /** The isometric volumes: their options (height, outline, light edge) redraw the last one drawn. */
 const VOLUMES: ToolId[] = ['box', 'cylinder', 'pyramid'];
 
@@ -136,15 +141,31 @@ export interface PaletteState {
 export interface FileInfo {
   id: string;
   name: string;
+  /** The size of the board it opens on. */
   width: number;
   height: number;
   /** Last change, in ms since the epoch. */
   updatedAt: number;
+  /** How many boards it has. */
+  boards: number;
+}
+
+/** A board of the active file, as the canvas lays them out. */
+export interface BoardInfo {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 /** Immutable snapshot consumed by the UI. A new object is created on every change. */
 export interface EditorState {
   files: FileInfo[];
+  /** The active file's boards, the active one among them (`doc`). */
+  boards: BoardInfo[];
+  /** The active file's id (see `fileIdOf`); `doc.id` is its active board's. */
   activeId: string;
   /** The active document. Its pixel buffers are mutable; rely on `revision` to detect changes. */
   doc: PixelDoc;
@@ -190,6 +211,8 @@ export interface EditorLabels {
   group: (n: number) => string;
   /** Name of the user's n-th own palette. */
   palette: (n: number) => string;
+  /** Name of a file's n-th board. */
+  board: (n: number) => string;
 }
 
 export type Notice =
@@ -241,7 +264,7 @@ interface Session {
 
 /** What the last delete removed, so it can be brought back (the toast's Undo button). */
 type Deleted =
-  | { kind: 'file'; session: Session; index: number }
+  | { kind: 'file'; sessions: Session[]; index: number }
   | { kind: 'layer'; session: Session; layer: Layer; index: number }
   | {
       kind: 'layers';
@@ -264,6 +287,7 @@ const DEFAULT_LABELS: EditorLabels = {
   pasted: 'Pasted',
   brush: (n) => `Brush ${n}`,
   palette: (n) => `My palette ${n}`,
+  board: (n) => `Board ${n}`,
 };
 
 /** Freehand tools the stabilizer smooths (shapes, selections and fills don't need it). */
@@ -342,6 +366,21 @@ export class Editor {
       colors: p.key === 'drawing' ? [] : p.colors,
       ...(p.custom && { custom: p.custom }),
     };
+    this.sharePalette();
+  }
+
+  /**
+   * The boards of a file share its palette: the active board's goes to the others. With Drawing
+   * colors, each board shows the colors it uses itself.
+   */
+  private sharePalette(): void {
+    const own = this.doc.palette;
+    for (const s of this.sessions) {
+      if (s === this.active || fileIdOf(s.doc) !== fileIdOf(this.doc) || !this.doc.board) continue;
+      if (own)
+        s.doc.palette = { ...own, colors: [...own.colors], ...(own.custom && { custom: [...own.custom] }) };
+      else delete s.doc.palette;
+    }
   }
 
   private colorsOfDrawing(): Color[] {
@@ -442,6 +481,8 @@ export class Editor {
   /** An effect's setting being dragged: one undo step for the whole drag. */
   private effectChange = false;
   private deleted: Deleted | null = null;
+  /** Each file's board last used, to open it there again. */
+  private lastBoard = new Map<string, string>();
   private recent: Color[] = [];
   /** The Move tool moving a group (or several selected layers) together. */
   private groupMove: {
@@ -522,14 +563,18 @@ export class Editor {
     s.picked = picked.includes(active) ? picked : [active];
     if (s.pickedGroup && !findGroup(s.doc, s.pickedGroup)) delete s.pickedGroup;
     this.state = {
-      files: this.sessions.map(({ doc }) => ({
-        id: doc.id,
-        name: doc.name,
-        width: doc.width,
-        height: doc.height,
-        updatedAt: doc.updatedAt ?? 0,
-      })),
-      activeId: s.doc.id,
+      files: this.fileList(),
+      boards: this.sessions
+        .filter((x) => fileIdOf(x.doc) === fileIdOf(s.doc))
+        .map(({ doc }) => ({
+          id: doc.id,
+          name: doc.name,
+          x: doc.board?.x ?? 0,
+          y: doc.board?.y ?? 0,
+          width: doc.width,
+          height: doc.height,
+        })),
+      activeId: fileIdOf(s.doc),
       doc: s.doc,
       selection: s.selection,
       tool: this.tool,
@@ -609,6 +654,8 @@ export class Editor {
     }
     this.active.doc = snapshot.doc;
     this.active.selection = snapshot.selection;
+    // A step that changed the palette changes it for the file's other boards too.
+    if (snapshot.palette) this.sharePalette();
   }
 
   undo(): void {
@@ -660,7 +707,7 @@ export class Editor {
   private addSession(doc: PixelDoc): Session {
     const session: Session = { doc, history: new History(), selection: null };
     this.sessions.push(session);
-    this.active = session;
+    this.activate(session);
     return session;
   }
 
@@ -710,6 +757,25 @@ export class Editor {
     this.commit();
   }
 
+  /** Adds a file of several boards (an opened .baipix file), opened on its first board. */
+  addDocuments(docs: PixelDoc[]): void {
+    if (!docs.length) return;
+    if (docs.length === 1) return this.addDocument(docs[0]);
+    this.cancelStroke();
+    const now = Date.now();
+    const sessions = docs.map(
+      (doc) => ((doc.updatedAt = now), { doc, history: new History(), selection: null }),
+    );
+    this.sessions.push(...sessions);
+    this.activate(sessions[0]);
+    this.commit();
+  }
+
+  /** The active file's boards, in order: what a .baipix file of it holds. */
+  fileBoards(): PixelDoc[] {
+    return this.boardsOf(fileIdOf(this.doc)).map((s) => s.doc);
+  }
+
   /** Replaces every file, e.g. when restoring a saved workspace. */
   loadDocuments(docs: PixelDoc[], activeId?: string): void {
     if (!docs.length) return;
@@ -718,7 +784,13 @@ export class Editor {
     docs.forEach((doc) => (doc.updatedAt ??= now));
     this.sessions = docs.map((doc) => ({ doc, history: new History(), selection: null }));
     this.deleted = null;
-    this.active = this.sessions.find((s) => s.doc.id === activeId) ?? this.sessions[0];
+    this.lastBoard.clear();
+    // `activeId` is a file's id, or a board's in older saves.
+    this.activate(
+      this.sessions.find((s) => s.doc.id === activeId) ??
+        this.sessions.find((s) => fileIdOf(s.doc) === activeId) ??
+        this.sessions[0],
+    );
     this.commit(false);
   }
 
@@ -726,17 +798,173 @@ export class Editor {
     return this.sessions.map((s) => s.doc);
   }
 
+  /** The sessions of a file's boards, in order. */
+  private boardsOf(fileId: string): Session[] {
+    return this.sessions.filter((s) => fileIdOf(s.doc) === fileId);
+  }
+
+  /** The files, each once, in the order of their first board. */
+  private fileList(): FileInfo[] {
+    const files = new Map<string, Session[]>();
+    for (const s of this.sessions) {
+      const id = fileIdOf(s.doc);
+      files.set(id, [...(files.get(id) ?? []), s]);
+    }
+    return [...files].map(([id, boards]) => {
+      const open = boards.find((b) => b === this.active) ?? this.boardFor(id) ?? boards[0];
+      return {
+        id,
+        name: fileNameOf(open.doc),
+        width: open.doc.width,
+        height: open.doc.height,
+        updatedAt: Math.max(...boards.map((b) => b.doc.updatedAt ?? 0)),
+        boards: boards.length,
+      };
+    });
+  }
+
+  /** The board a file opens on: the last one used, or its first. */
+  private boardFor(fileId: string): Session | undefined {
+    const last = this.lastBoard.get(fileId);
+    const boards = this.boardsOf(fileId);
+    return boards.find((s) => s.doc.id === last) ?? boards[0];
+  }
+
+  /** Makes a session active, remembering it as its file's last board. */
+  private activate(target: Session): void {
+    this.active = target;
+    this.lastBoard.set(fileIdOf(target.doc), target.doc.id);
+  }
+
+  /**
+   * Opens a file (`id` from `files`) on the board last used in it. A board's id also works: a file
+   * of one board has its board's id, and older callers pass a document's id.
+   */
   switchFile(id: string): void {
-    const target = this.sessions.find((s) => s.doc.id === id);
+    this.open(this.boardFor(id) ?? this.sessions.find((s) => s.doc.id === id));
+  }
+
+  /** Goes to one of the boards (`id` from `boards`, a document's id). */
+  switchBoard(id: string): void {
+    this.open(this.sessions.find((s) => s.doc.id === id));
+  }
+
+  private open(target: Session | undefined): void {
     if (!target || target === this.active) return;
     this.cancelStroke();
     this.cancelAdjust();
-    this.active = target;
+    this.activate(target);
     this.dropFresh();
     this.commit();
   }
 
+  /** Renames a file (`id` from `files`): its only board, or the file holding several. */
   renameFile(id: string, name: string): void {
+    const boards = this.boardsOf(id);
+    const clean = name.trim().slice(0, 120);
+    if (!boards.length || !clean) return;
+    const now = Date.now();
+    for (const { doc } of boards) {
+      if (doc.board) doc.board.fileName = clean;
+      else doc.name = clean;
+      doc.updatedAt = now;
+      this.fresh.delete(doc.id);
+    }
+    this.commit();
+  }
+
+  duplicateFile(id: string): void {
+    const boards = this.boardsOf(id);
+    if (!boards.length) return;
+    this.cancelStroke();
+    const file = newId('doc');
+    const copies = boards.map(({ doc }) => {
+      const copy = cloneDocument(doc, false);
+      if (copy.board) copy.board = { ...copy.board, file, fileName: this.labels.copyOf(copy.board.fileName) };
+      else copy.name = this.labels.copyOf(copy.name);
+      copy.updatedAt = Date.now();
+      return { doc: copy, history: new History(), selection: null } as Session;
+    });
+    const at = this.sessions.indexOf(boards[boards.length - 1]) + 1;
+    this.sessions.splice(at, 0, ...copies);
+    this.activate(copies[boards.indexOf(this.boardFor(id)!)] ?? copies[0]);
+    this.commit();
+  }
+
+  /**
+   * Deletes a file and all its boards. Returns false when nothing was deleted. The file can be
+   * brought back with `restoreDeleted`. The editor always holds a file: deleting the last one leaves
+   * a blank one in its place.
+   */
+  deleteFile(id: string): boolean {
+    const boards = this.boardsOf(id);
+    if (!boards.length) return false;
+    this.cancelStroke();
+    if (boards.length === this.sessions.length) {
+      const { width, height } = boards[0].doc;
+      this.sessions.push({
+        doc: createDocument(this.labels.untitled(1), width, height, this.labels.layer(1)),
+        history: new History(),
+        selection: null,
+      });
+    }
+    const index = this.sessions.indexOf(boards[0]);
+    this.sessions = this.sessions.filter((s) => !boards.includes(s));
+    if (boards.includes(this.active)) this.activate(this.sessions[Math.max(0, index - 1)]);
+    this.deleted = { kind: 'file', sessions: boards, index };
+    this.commit();
+    return true;
+  }
+
+  /** Removes a file for good, without offering to bring it back (the home screen's blank file). */
+  discardFile(id: string): void {
+    const boards = this.boardsOf(id);
+    if (!boards.length || boards.length === this.sessions.length) return;
+    this.cancelStroke();
+    const index = this.sessions.indexOf(boards[0]);
+    this.sessions = this.sessions.filter((s) => !boards.includes(s));
+    if (boards.includes(this.active)) this.activate(this.sessions[Math.max(0, index - 1)]);
+    this.commit();
+  }
+
+  /* ------------------------------------------------------------------ boards */
+
+  /**
+   * Adds a board to the active file at (`x`, `y`) in the file, `width` × `height` pixels, and makes
+   * it active. A file of its own becomes a file of boards, the first one at (0, 0). The new board
+   * starts with the file's palette, pixel size and isometric grid.
+   */
+  addBoard(x: number, y: number, width: number, height: number, name?: string): void {
+    this.cancelStroke();
+    const doc = this.doc;
+    doc.board ??= { file: doc.id, fileName: doc.name, x: 0, y: 0 };
+    const boards = this.boardsOf(doc.board.file);
+    const w = clamp(Math.round(width), 1, MAX_SIZE);
+    const h = clamp(Math.round(height), 1, MAX_SIZE);
+    const board = createDocument(name ?? this.labels.board(boards.length + 1), w, h, this.labels.layer(1));
+    board.board = { ...doc.board, x: Math.round(x), y: Math.round(y) };
+    board.render = { ...doc.render };
+    if (doc.palette) board.palette = { ...doc.palette, colors: [...doc.palette.colors] };
+    if (doc.isoGrid) board.isoGrid = doc.isoGrid;
+    board.updatedAt = Date.now();
+    const session: Session = { doc: board, history: new History(), selection: null };
+    this.sessions.splice(this.sessions.indexOf(boards[boards.length - 1]) + 1, 0, session);
+    this.fresh.delete(doc.id);
+    this.activate(session);
+    this.commit();
+  }
+
+  /** Moves a board of the active file to (`x`, `y`) in the file. */
+  moveBoard(id: string, x: number, y: number): void {
+    const s = this.boardsOf(fileIdOf(this.doc)).find((b) => b.doc.id === id);
+    if (!s?.doc.board) return;
+    s.doc.board = { ...s.doc.board, x: Math.round(x), y: Math.round(y) };
+    s.doc.updatedAt = Date.now();
+    this.commit();
+  }
+
+  /** Renames a board (the file's only one names the file too, as before boards). */
+  renameBoard(id: string, name: string): void {
     const s = this.sessions.find((x) => x.doc.id === id);
     const clean = name.trim().slice(0, 120);
     if (!s || !clean || clean === s.doc.name) return;
@@ -746,50 +974,47 @@ export class Editor {
     this.commit();
   }
 
-  duplicateFile(id: string): void {
-    const i = this.sessions.findIndex((x) => x.doc.id === id);
-    if (i < 0) return;
+  /** Deletes a board of a file that has others. Returns false when it's the file's only one. */
+  deleteBoard(id: string): boolean {
+    const s = this.sessions.find((x) => x.doc.id === id);
+    if (!s) return false;
+    const boards = this.boardsOf(fileIdOf(s.doc));
+    if (boards.length < 2) return false;
     this.cancelStroke();
-    const copy = cloneDocument(this.sessions[i].doc, false);
-    copy.name = this.labels.copyOf(copy.name);
-    copy.updatedAt = Date.now();
-    const session: Session = { doc: copy, history: new History(), selection: null };
-    this.sessions.splice(i + 1, 0, session);
-    this.active = session;
-    this.commit();
-  }
-
-  /**
-   * Returns false when nothing was deleted. The file can be brought back with `restoreDeleted`.
-   * The editor always holds a file: deleting the last one leaves a blank one in its place.
-   */
-  deleteFile(id: string): boolean {
-    const i = this.sessions.findIndex((x) => x.doc.id === id);
-    if (i < 0) return false;
-    this.cancelStroke();
-    if (this.sessions.length === 1) {
-      const { width, height } = this.sessions[0].doc;
-      this.sessions.push({
-        doc: createDocument(this.labels.untitled(1), width, height, this.labels.layer(1)),
-        history: new History(),
-        selection: null,
-      });
-    }
-    const [removed] = this.sessions.splice(i, 1);
-    if (removed === this.active) this.active = this.sessions[Math.max(0, i - 1)];
-    this.deleted = { kind: 'file', session: removed, index: i };
+    const i = boards.indexOf(s);
+    const index = this.sessions.indexOf(s);
+    this.sessions = this.sessions.filter((x) => x !== s);
+    if (s === this.active) this.activate(boards[i === 0 ? 1 : i - 1]);
+    // The file keeps its id while its first board goes: the others still carry it. Undo brings
+    // the board back, with its history.
+    this.deleted = { kind: 'file', sessions: [s], index };
     this.commit();
     return true;
   }
 
-  /** Removes a file for good, without offering to bring it back (the home screen's blank file). */
-  discardFile(id: string): void {
-    const i = this.sessions.findIndex((x) => x.doc.id === id);
-    if (i < 0 || this.sessions.length < 2) return;
+  /** Copies a board, layers and all, next to it on the right, and makes the copy active. */
+  duplicateBoard(id: string): void {
+    const s = this.sessions.find((x) => x.doc.id === id);
+    if (!s) return;
     this.cancelStroke();
-    const [removed] = this.sessions.splice(i, 1);
-    if (removed === this.active) this.active = this.sessions[Math.max(0, i - 1)];
+    const doc = s.doc;
+    doc.board ??= { file: doc.id, fileName: doc.name, x: 0, y: 0 };
+    const copy = cloneDocument(doc, false);
+    copy.name = this.labels.copyOf(doc.name);
+    copy.board = { ...doc.board, x: doc.board.x + doc.width + BOARD_SPACING };
+    copy.updatedAt = Date.now();
+    const session: Session = { doc: copy, history: new History(), selection: null };
+    this.sessions.splice(this.sessions.indexOf(s) + 1, 0, session);
+    this.fresh.delete(doc.id);
+    this.activate(session);
     this.commit();
+  }
+
+  /** Adds a board the size of the active one, beside it on the right. */
+  addBoardBeside(): void {
+    const { doc } = this;
+    const at = doc.board ?? { x: 0, y: 0 };
+    this.addBoard(at.x + doc.width + BOARD_SPACING, at.y, doc.width, doc.height);
   }
 
   /**
@@ -802,8 +1027,10 @@ export class Editor {
     this.deleted = null;
     this.cancelStroke();
     if (d.kind === 'file') {
-      this.sessions.splice(Math.min(d.index, this.sessions.length), 0, d.session);
-      this.active = d.session;
+      this.sessions.splice(Math.min(d.index, this.sessions.length), 0, ...d.sessions);
+      this.activate(
+        d.sessions.find((x) => x.doc.id === this.lastBoard.get(fileIdOf(x.doc))) ?? d.sessions[0],
+      );
       this.commit();
       return true;
     }

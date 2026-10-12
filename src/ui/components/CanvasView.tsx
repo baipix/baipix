@@ -18,6 +18,7 @@ import {
   LABEL,
   labelRect,
   type BrushPreview,
+  type SceneBoard,
   type SceneReference,
   drawRulers,
   guidePosition,
@@ -104,6 +105,10 @@ export function CanvasView() {
     const motionMedia = matchMedia('(prefers-reduced-motion: reduce)');
     let reduceMotion = motionMedia.matches;
     let panStart: { x: number; y: number; panX: number; panY: number } | null = null;
+    /** A board moved by its name: where the drag started and where the board was, in file pixels. */
+    let boardDrag: { id: string; start: Point; from: Point; moved: boolean } | null = null;
+    /** A board being drawn with the board tool, corner to corner in file pixels. */
+    let boardDraft: { a: Point; b: Point } | null = null;
     let pinch: Pinch | null = null;
     const pointers = new Map<number, { x: number; y: number; touch: boolean }>();
     // Alt held: drawing tools pick colors, so the loupe shows (even before the pointer moves).
@@ -269,6 +274,49 @@ export function CanvasView() {
       compositeDirty = false;
     };
 
+    // The file's other boards, each flattened once per change (they only change while active).
+    const boardImages = new Map<string, { key: string; canvas: HTMLCanvasElement }>();
+    const boardImage = (doc: PixelDoc): HTMLCanvasElement => {
+      const key = `${doc.updatedAt ?? 0}:${doc.width}x${doc.height}:${doc.layers.length}`;
+      const known = boardImages.get(doc.id);
+      if (known?.key === key) return known.canvas;
+      const c = known?.canvas ?? document.createElement('canvas');
+      c.width = doc.width;
+      c.height = doc.height;
+      const image = new ImageData(doc.width, doc.height);
+      new Uint32Array(image.data.buffer).set(flatten(doc));
+      c.getContext('2d')!.putImageData(image, 0, 0);
+      boardImages.set(doc.id, { key, canvas: c });
+      return c;
+    };
+    /** The other boards, relative to the active one. */
+    const otherBoards = (): SceneBoard[] => {
+      const { boards, doc } = editor.getState();
+      if (boards.length < 2) return [];
+      const here = boards.find((b) => b.id === doc.id)!;
+      const docs = editor.getDocuments();
+      return boards
+        .filter((b) => b.id !== doc.id)
+        .map((b) => ({
+          id: b.id,
+          x: b.x - here.x,
+          y: b.y - here.y,
+          width: b.width,
+          height: b.height,
+          image: boardImage(docs.find((d) => d.id === b.id)!),
+          label: b.name,
+        }));
+    };
+    /** The other board under an art point relative to the active board (its name included), if any. */
+    const boardAt = (p: Point): SceneBoard | null => {
+      const labelRows = Math.ceil(((LABEL.size + LABEL.gap + 4) * viewport.dpr) / viewport.scale);
+      return (
+        otherBoards().find(
+          (b) => p.x >= b.x && p.x < b.x + b.width && p.y >= b.y - labelRows && p.y < b.y + b.height,
+        ) ?? null
+      );
+    };
+
     const sceneReference = (doc: PixelDoc): SceneReference | null => {
       const r = doc.reference;
       if (!r?.visible) return null;
@@ -350,6 +398,8 @@ export function CanvasView() {
           sizeNote: scaleNote,
           loupe,
           label: renamingRef.current ? '' : live.doc.name,
+          boards: otherBoards(),
+          boardDraft: boardDraft && relative(draftRect(boardDraft)),
         },
         camera(),
         theme,
@@ -381,6 +431,49 @@ export function CanvasView() {
       originX: viewport.originX,
       originY: viewport.originY,
     });
+    /** The active board's place in its file (0, 0 for a file of one board). */
+    const activePlace = (): Point => {
+      const { boards, doc } = editor.getState();
+      const here = boards.find((b) => b.id === doc.id);
+      return { x: here?.x ?? 0, y: here?.y ?? 0 };
+    };
+    /** A point on the canvas in the file's pixels: the camera keeps them still, whichever board is active. */
+    const filePoint = (l: { x: number; y: number }): Point => {
+      const p = viewport.toPixel(l.x, l.y);
+      const at = activePlace();
+      return { x: p.x + at.x, y: p.y + at.y };
+    };
+    /** The rectangle a board drawn corner to corner covers, both corners included. */
+    const draftRect = ({ a, b }: { a: Point; b: Point }): Rect => ({
+      x: Math.min(a.x, b.x),
+      y: Math.min(a.y, b.y),
+      w: Math.abs(b.x - a.x) + 1,
+      h: Math.abs(b.y - a.y) + 1,
+    });
+    /** A rectangle in file pixels, relative to the active board. */
+    const relative = (r: Rect): Rect => {
+      const at = activePlace();
+      return { ...r, x: r.x - at.x, y: r.y - at.y };
+    };
+    /** The board whose name is under the pointer, the active one included. */
+    const boardLabelAt = (l: { x: number; y: number }) => {
+      const { boards } = editor.getState();
+      const at = activePlace();
+      const cam = camera();
+      const x = l.x * viewport.dpr;
+      const y = l.y * viewport.dpr;
+      return (
+        boards.find((b) => {
+          const r = labelRect(ctx, b.name, {
+            ...cam,
+            originX: cam.originX + (b.x - at.x) * cam.scale,
+            originY: cam.originY + (b.y - at.y) * cam.scale,
+          });
+          return x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+        }) ?? null
+      );
+    };
+
     const onLabel = (l: { x: number; y: number }) => {
       const r = labelRect(ctx, editor.getState().doc.name, camera());
       const x = l.x * viewport.dpr;
@@ -669,9 +762,31 @@ export function CanvasView() {
         axisDrag = axis;
         return;
       }
+      // With several boards (or the board tool), a board's name moves it; a click goes to it.
+      const st = editor.getState();
+      if (e.button === 0 && (st.boards.length > 1 || st.tool === 'board')) {
+        const named = boardLabelAt(l);
+        if (named) {
+          boardDrag = { id: named.id, start: filePoint(l), from: { x: named.x, y: named.y }, moved: false };
+          return;
+        }
+      }
       // The frame name is renamed by double-click, so clicking it never draws.
       if (onLabel(l)) return;
       const p = viewport.toPixel(l.x, l.y);
+      // Another board of the file: a click makes it the active one, and draws nothing.
+      const { doc } = editor.getState();
+      const outside = p.x < 0 || p.y < 0 || p.x >= doc.width || p.y >= doc.height;
+      const board = outside && e.button === 0 ? boardAt(p) : null;
+      if (board) {
+        editor.switchBoard(board.id);
+        return;
+      }
+      // The board tool beside every board: draws a new one, corner to corner.
+      if (st.tool === 'board') {
+        if (outside && e.button === 0) boardDraft = { a: filePoint(l), b: filePoint(l) };
+        return;
+      }
       updateHover(p);
       if (e.button === 0 && beginRefDrag(l, e.metaKey || e.ctrlKey)) return;
       if (e.button === 0) {
@@ -738,6 +853,18 @@ export function CanvasView() {
       }
       if (guideDrag) {
         guideDrag.at = edgeAt(guideDrag.axis, local(e));
+        request();
+        return;
+      }
+      if (boardDrag) {
+        const p = filePoint(local(e));
+        const [dx, dy] = [p.x - boardDrag.start.x, p.y - boardDrag.start.y];
+        if (dx || dy) boardDrag.moved = true;
+        if (boardDrag.moved) editor.moveBoard(boardDrag.id, boardDrag.from.x + dx, boardDrag.from.y + dy);
+        return;
+      }
+      if (boardDraft) {
+        boardDraft.b = filePoint(local(e));
         request();
         return;
       }
@@ -809,6 +936,19 @@ export function CanvasView() {
         canvas.style.cursor = '';
         return;
       }
+      if (boardDrag) {
+        const { id, moved } = boardDrag;
+        boardDrag = null;
+        if (!moved) editor.switchBoard(id);
+        return;
+      }
+      if (boardDraft) {
+        const r = draftRect(boardDraft);
+        boardDraft = null;
+        if (r.w > 1 && r.h > 1) editor.addBoard(r.x, r.y, r.w, r.h);
+        request();
+        return;
+      }
       if (guideDrag) {
         // Dropped back on its ruler: no guide (a new one is dropped, an existing one removed).
         const { axis, index, at } = guideDrag;
@@ -846,6 +986,8 @@ export function CanvasView() {
       panStart = null;
       pinch = null;
       axisDrag = null;
+      boardDrag = null;
+      boardDraft = null;
       guideDrag = null;
       if (refDrag) editor.updateReference(refDrag.rect);
       refDrag = null;
@@ -977,7 +1119,7 @@ export function CanvasView() {
             top: viewport.originY / viewport.dpr - LABEL.gap,
           }}
           onBlur={(e) => {
-            editor.renameFile(docId, e.currentTarget.value);
+            editor.renameBoard(docId, e.currentTarget.value);
             setRenaming(false);
           }}
           onKeyDown={(e) => {

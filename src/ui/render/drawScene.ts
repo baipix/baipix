@@ -98,6 +98,23 @@ export interface Scene {
   /** Eyedropper loupe around the hovered pixel, with the text shown under it (the hex code). */
   loupe: { at: Point; color: Color | null; text: string } | null;
   label: string;
+  /** The file's other boards, around the active one: their place relative to it, in art pixels. */
+  boards?: SceneBoard[];
+  /** A board being drawn with the board tool, relative to the active board, in art pixels. */
+  boardDraft?: Rect | null;
+}
+
+/** A board of the file other than the active one, shown as it is, with its name above. */
+export interface SceneBoard {
+  id: string;
+  /** Its top left corner relative to the active board's, in art pixels. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Its flattened image, background included. */
+  image: CanvasImageSource;
+  label: string;
 }
 
 /** Pixels shown across the loupe (odd, so the picked pixel is in the middle), and their size. */
@@ -238,6 +255,41 @@ export function drawScene(
   ctx.fillRect(0, 0, width, height);
 
   const checker = checkerPattern(ctx, Math.max(4, Math.round(8 * dpr)), theme.checkA, theme.checkB);
+
+  // The file's other boards, as they are: a click on one makes it the active board.
+  for (const b of scene.boards ?? []) {
+    const bx = X + b.x * s;
+    const by = Y + b.y * s;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.fillStyle = checker;
+    ctx.fillRect(0, 0, b.width * s, b.height * s);
+    ctx.restore();
+    ctx.drawImage(b.image, bx, by, b.width * s, b.height * s);
+    ctx.strokeStyle = theme.frame;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx - 0.5, by - 0.5, b.width * s + 1, b.height * s + 1);
+    ctx.font = labelFont(dpr);
+    ctx.fillStyle = theme.muted;
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(b.label, bx, by - Math.round(LABEL.gap * dpr));
+  }
+  // A board being drawn: its outline, and its size where its name will go.
+  const draft = scene.boardDraft;
+  if (draft) {
+    const dx = X + draft.x * s;
+    const dy = Y + draft.y * s;
+    ctx.save();
+    ctx.strokeStyle = theme.highlight;
+    ctx.lineWidth = lw;
+    ctx.setLineDash([4 * dpr, 3 * dpr]);
+    ctx.strokeRect(dx - lw / 2, dy - lw / 2, draft.w * s + lw, draft.h * s + lw);
+    ctx.restore();
+    ctx.font = labelFont(dpr);
+    ctx.fillStyle = theme.highlight;
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`${draft.w} × ${draft.h}`, dx, dy - Math.round(LABEL.gap * dpr));
+  }
 
   // Tile preview: copies all around, as far as the view goes, drawn like the real canvas
   // (checkerboard included) so seams are easy to spot, then dimmed to keep the editable copy in

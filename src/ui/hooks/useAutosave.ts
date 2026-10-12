@@ -17,8 +17,9 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
       const all = editor.getDocuments();
       const kept = all.filter((d) => !editor.isFresh(d.id));
       const documents = kept.length ? kept : all;
-      const activeId = documents.some((d) => d.id === s.activeId)
-        ? s.activeId
+      // The active board, to open again on it.
+      const activeId = documents.some((d) => d.id === s.doc.id)
+        ? s.doc.id
         : [...documents].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0].id;
       storage
         .save({
