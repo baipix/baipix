@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- A file's boards share its palette: a change on one board, undo included, is a change for all of them. With Drawing colors, each board shows the colors it uses. (#323)
 - Export every board at once: in a file of several boards, Export gets an All boards option, which gives a .zip with one file per board, named after it, in PNG, SVG or Aseprite, each at its own pixel size. (#322)
 - Boards, like frames in Figma: a file can hold several boards side by side, each with its own size, layers and undo history. With the Board tool (N), draw a rectangle beside them to add one; drag a board by its name to move it; click a board to work on it, and the Layers panel and the export follow. New, Duplicate and Delete board are in the File menu and the tool's options bar. A file of several boards is saved as one .baipix file; files of one board don't change. (#321)
 - With the isometric grid on, Shift lays any shape on the ground, regular: a square tile (exactly a box's top), a circle, a regular triangle, star, heart or rounded square, dragged from the top corner of its diamond to the bottom one (the ellipse, across). The Plane option comes to every shape but the line: on a wall, Shift makes it as tall as wide. Without the grid, Shift keeps its usual meaning. (#317)
