@@ -18,6 +18,7 @@ import {
   LABEL,
   labelRect,
   type BrushPreview,
+  type SceneBoard,
   type SceneReference,
   drawRulers,
   guidePosition,
@@ -269,6 +270,49 @@ export function CanvasView() {
       compositeDirty = false;
     };
 
+    // The file's other boards, each flattened once per change (they only change while active).
+    const boardImages = new Map<string, { key: string; canvas: HTMLCanvasElement }>();
+    const boardImage = (doc: PixelDoc): HTMLCanvasElement => {
+      const key = `${doc.updatedAt ?? 0}:${doc.width}x${doc.height}:${doc.layers.length}`;
+      const known = boardImages.get(doc.id);
+      if (known?.key === key) return known.canvas;
+      const c = known?.canvas ?? document.createElement('canvas');
+      c.width = doc.width;
+      c.height = doc.height;
+      const image = new ImageData(doc.width, doc.height);
+      new Uint32Array(image.data.buffer).set(flatten(doc));
+      c.getContext('2d')!.putImageData(image, 0, 0);
+      boardImages.set(doc.id, { key, canvas: c });
+      return c;
+    };
+    /** The other boards, relative to the active one. */
+    const otherBoards = (): SceneBoard[] => {
+      const { boards, doc } = editor.getState();
+      if (boards.length < 2) return [];
+      const here = boards.find((b) => b.id === doc.id)!;
+      const docs = editor.getDocuments();
+      return boards
+        .filter((b) => b.id !== doc.id)
+        .map((b) => ({
+          id: b.id,
+          x: b.x - here.x,
+          y: b.y - here.y,
+          width: b.width,
+          height: b.height,
+          image: boardImage(docs.find((d) => d.id === b.id)!),
+          label: b.name,
+        }));
+    };
+    /** The other board under an art point relative to the active board (its name included), if any. */
+    const boardAt = (p: Point): SceneBoard | null => {
+      const labelRows = Math.ceil(((LABEL.size + LABEL.gap + 4) * viewport.dpr) / viewport.scale);
+      return (
+        otherBoards().find(
+          (b) => p.x >= b.x && p.x < b.x + b.width && p.y >= b.y - labelRows && p.y < b.y + b.height,
+        ) ?? null
+      );
+    };
+
     const sceneReference = (doc: PixelDoc): SceneReference | null => {
       const r = doc.reference;
       if (!r?.visible) return null;
@@ -350,6 +394,7 @@ export function CanvasView() {
           sizeNote: scaleNote,
           loupe,
           label: renamingRef.current ? '' : live.doc.name,
+          boards: otherBoards(),
         },
         camera(),
         theme,
@@ -672,6 +717,14 @@ export function CanvasView() {
       // The frame name is renamed by double-click, so clicking it never draws.
       if (onLabel(l)) return;
       const p = viewport.toPixel(l.x, l.y);
+      // Another board of the file: a click makes it the active one, and draws nothing.
+      const { doc } = editor.getState();
+      const outside = p.x < 0 || p.y < 0 || p.x >= doc.width || p.y >= doc.height;
+      const board = outside && e.button === 0 ? boardAt(p) : null;
+      if (board) {
+        editor.switchBoard(board.id);
+        return;
+      }
       updateHover(p);
       if (e.button === 0 && beginRefDrag(l, e.metaKey || e.ctrlKey)) return;
       if (e.button === 0) {
