@@ -28,6 +28,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- An ellipse on a wall had a top and a bottom that alternated pixel by pixel where its curve slopes against the wall's 2:1. They're now even. (#318)
 - Put on an isometric face: what landed past the canvas's edges was lost. It's now kept outside the canvas, as after a move, and without a selection the drawing already outside the canvas is laid on the face too. (#305)
 - Isometric box: a color that isn't in the palette got its sides from the closest palette ramp, whatever its hue (a blue box with green sides, once the palette held only greens). The sides now come down the palette's ramp only for a palette color, and are otherwise the color itself made darker. (#304)
 - In Export, the tileset's tile width and height fields were too narrow for their numbers (16 showed as 1). They now take the panel's whole width, like the canvas size. (#303)

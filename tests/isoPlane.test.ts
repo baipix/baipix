@@ -69,6 +69,24 @@ describe('drawing on an isometric plane', () => {
     expect(seen.size).toBe(cells.length);
   });
 
+  it('gives an ellipse on a wall an even top and bottom, with no pixel out of line', () => {
+    for (const plane of ['left', 'right'] as const)
+      for (const b of [
+        { x: 31, y: 39 },
+        { x: 23, y: 25 },
+        { x: 17, y: 30 },
+      ]) {
+        const cells = [...art('ellipse', plane, b, true).keys()].map((k) => k.split(',').map(Number));
+        const xs = [...new Set(cells.map(([x]) => x))].sort((p, q) => p - q);
+        const ys = (x: number) => cells.filter(([cx]) => cx === x).map(([, y]) => y);
+        for (const edge of [(x: number) => Math.min(...ys(x)), (x: number) => Math.max(...ys(x))])
+          for (let i = 1; i + 1 < xs.length; i++) {
+            const [p, c, n] = [edge(xs[i - 1]), edge(xs[i]), edge(xs[i + 1])];
+            expect(p === n && c !== p).toBe(false);
+          }
+      }
+  });
+
   it('only applies on an isometric grid', () => {
     const e = new Editor();
     e.newFile(16, 16);
