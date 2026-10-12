@@ -41,6 +41,7 @@ const editorLabels = () => ({
   brush: (n: number) => t('default.brush', { n }),
   palette: (n: number) => t('default.myPalette', { n }),
   group: (n: number) => t('default.group', { n }),
+  board: (n: number) => t('default.board', { n }),
 });
 
 /** The saved preview window, checked field by field (older saves don't have it). */

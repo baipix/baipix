@@ -1,6 +1,6 @@
 import { alpha, type Color } from '../engine/color';
 import { flatten } from '../engine/composite';
-import { hasBackground, MAX_SIZE, createDocument } from '../engine/document';
+import { createDocument, fileNameOf, hasBackground, MAX_SIZE } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import type { PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
@@ -16,7 +16,7 @@ import { pickFile } from '../io/pickFile';
 import { referenceFromFile } from '../io/reference';
 import { zip } from '../io/zip';
 import { canvasToBlob, renderToCanvas } from '../io/png';
-import { documentFromJson, documentToJson, FILE_EXTENSION } from '../storage/fileFormat';
+import { FILE_EXTENSION, fileFromJson, fileToJson } from '../storage/fileFormat';
 import { layerClipFromHtml, layerClipHtml } from '../storage/layerClip';
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
@@ -85,7 +85,7 @@ export function createActions(editor: Editor) {
     const revision = s.revision;
     return () => {
       if (editor.getState().revision === revision) return editor.undo();
-      editor.switchFile(docId);
+      editor.switchBoard(docId);
       const i = editor.getState().doc.layers.findIndex((l) => l.id === layerId);
       if (i < 0) return;
       editor.setActiveLayer(i);
@@ -199,15 +199,16 @@ export function createActions(editor: Editor) {
     importPalette,
 
     async saveDocument() {
-      const filename = `${baseName()}${FILE_EXTENSION}`;
-      await report(filename, saveFile(filename, documentToJson(doc()), 'application/json'));
+      // The whole file, all its boards.
+      const filename = `${safeFileName(fileNameOf(doc()))}${FILE_EXTENSION}`;
+      await report(filename, saveFile(filename, fileToJson(editor.fileBoards()), 'application/json'));
     },
 
     async openDocument() {
       const file = await pickFile(`${FILE_EXTENSION},application/json`);
       if (!file) return;
       try {
-        editor.addDocument(documentFromJson(await file.text()));
+        editor.addDocuments(fileFromJson(await file.text()));
         toast(t('toast.opened', { name: file.name }));
       } catch {
         toast(t('toast.notBaipix'));
@@ -224,7 +225,7 @@ export function createActions(editor: Editor) {
       }
       if (f.name.endsWith(FILE_EXTENSION)) {
         try {
-          editor.addDocument(documentFromJson(await f.text()));
+          editor.addDocuments(fileFromJson(await f.text()));
         } catch {
           toast(t('toast.notBaipix'));
         }
@@ -261,7 +262,7 @@ export function createActions(editor: Editor) {
           message,
           asReferenceAction(f, () => {
             editor.discardFile(next.id);
-            editor.switchFile(previous);
+            editor.switchBoard(previous);
           }),
         );
       };
@@ -386,7 +387,7 @@ export function createActions(editor: Editor) {
       toast(t('toast.referenceRemoved'), {
         label: t('common.undo'),
         run: () => {
-          editor.switchFile(docId);
+          editor.switchBoard(docId);
           editor.setReference(reference);
         },
       });
@@ -415,7 +416,7 @@ export function createActions(editor: Editor) {
       const before = editor.getState().files.length;
       if (f.name.endsWith(FILE_EXTENSION) || f.type === 'application/json') {
         try {
-          editor.addDocument(documentFromJson(await f.text()));
+          editor.addDocuments(fileFromJson(await f.text()));
           toast(t('toast.opened', { name: f.name }));
         } catch {
           toast(t('toast.notBaipix'));

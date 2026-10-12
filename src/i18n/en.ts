@@ -17,6 +17,7 @@ export const en = {
   'default.copyOf': '{name} copy',
   'default.pasted': 'Pasted',
   'default.group': 'Group {n}',
+  'default.board': 'Board {n}',
   'default.myPalette': 'My palette {n}',
   'default.brush': 'Brush {n}',
   'default.pastedImage': 'Pasted image',

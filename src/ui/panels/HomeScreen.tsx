@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { fileIdOf } from '../../engine/document';
 import { flatten } from '../../engine/composite';
 import type { PixelDoc } from '../../engine/document';
 import { getLocale, useT } from '../../i18n';
@@ -149,7 +150,8 @@ export function HomeScreen() {
             <h2>{t('home.recent')}</h2>
             <div className="home-grid">
               {shown.map((f) => {
-                const doc = docs.find((d) => d.id === f.id);
+                // The file's first board as its thumbnail.
+                const doc = docs.find((d) => fileIdOf(d) === f.id);
                 if (!doc) return null;
                 return (
                   <div

@@ -18,6 +18,7 @@ export const fr: Record<MessageKey, string> = {
   'default.copyOf': '{name} copie',
   'default.pasted': 'Collage',
   'default.group': 'Groupe {n}',
+  'default.board': 'Plan {n}',
   'default.myPalette': 'Ma palette {n}',
   'default.brush': 'Pinceau {n}',
   'default.pastedImage': 'Image collée',
