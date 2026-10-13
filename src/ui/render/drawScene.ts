@@ -104,6 +104,18 @@ export interface Scene {
   boardDraft?: Rect | null;
   /** The boards selected as boards, relative to the active one: a blue frame, handles if one. */
   selectedBoards?: Rect[];
+  /** What layers being moved push off the board, drawn where it is so they follow the pointer. */
+  floating?: SceneFloating[];
+}
+
+/** Pixels outside the active board, at their place relative to it, in art pixels. */
+export interface SceneFloating {
+  image: CanvasImageSource;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  opacity: number;
 }
 
 /** A board of the file other than the active one, shown as it is, with its name above. */
@@ -383,6 +395,11 @@ export function drawScene(
     ctx.restore();
   }
   ctx.drawImage(scene.composite, X, Y, cw, ch);
+  for (const f of scene.floating ?? []) {
+    ctx.globalAlpha = f.opacity;
+    ctx.drawImage(f.image, X + f.x * s, Y + f.y * s, f.width * s, f.height * s);
+    ctx.globalAlpha = 1;
+  }
 
   // Render gap: paint strips between pixels with the background (or the checkerboard).
   const gap = camera.gap;
