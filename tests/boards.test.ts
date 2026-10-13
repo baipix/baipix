@@ -206,4 +206,34 @@ describe('boards', () => {
     e.align('left');
     expect(e.getState().boards.map((b) => b.x)).toEqual([0, 0]);
   });
+
+  it('moves a layer onto another board, where it was in the file, the first board keeping a layer', () => {
+    const e = twoBoards();
+    const [icons, small] = e.getState().boards;
+    e.switchBoard(icons.id);
+    const layer = e.getState().doc.layers[0];
+    // One pixel, at (15, 1) in Icons. Small sits 24 pixels to the right of Icons.
+    layer.pixels.fill(0);
+    layer.pixels[1 * 16 + 15] = RED;
+    expect(e.moveLayerToBoard(layer.id, small.id)).toBe(true);
+    const s = e.getState();
+    expect(s.doc.id).toBe(small.id);
+    const moved = s.doc.layers.at(-1)!;
+    expect(moved.id).toBe(layer.id);
+    // (15, 1) in Icons is (-9, 1) in Small: outside it, kept outside.
+    expect(moved.outside).toMatchObject({ x: -9, y: 1 });
+    e.switchBoard(icons.id);
+    expect(e.getState().doc.layers).toHaveLength(1);
+    expect(e.getState().doc.layers[0].id).not.toBe(layer.id);
+  });
+
+  it('keeps components on their board', () => {
+    const e = twoBoards();
+    const [icons, small] = e.getState().boards;
+    e.switchBoard(icons.id);
+    e.createComponent();
+    const layer = e.getState().doc.layers[e.getState().doc.activeLayer];
+    expect(e.moveLayerToBoard(layer.id, small.id)).toBe(false);
+    expect(e.getState().doc.id).toBe(icons.id);
+  });
 });
