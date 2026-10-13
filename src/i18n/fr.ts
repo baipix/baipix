@@ -556,8 +556,7 @@ export const fr: Record<MessageKey, string> = {
   'upscaled.result': '{w} × {h} px → {rw} × {rh} px',
   'resize.title': 'Taille du plan',
   'resize.open': 'Taille du plan…',
-  'resize.hint':
-    'Tire les poignées du cadre pour changer la taille du plan, ou le dessin pour le déplacer.',
+  'resize.hint': 'Tire les poignées du cadre pour changer la taille du plan, ou le dessin pour le déplacer.',
   'resize.anchor': 'Position',
   'resize.result': '{w} × {h} px → {rw} × {rh} px',
   'anchor.topLeft': 'En haut à gauche',

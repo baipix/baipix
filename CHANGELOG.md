@@ -30,7 +30,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
-- The right panel's Canvas section is now called Board, like the board tool, and so are Board size… and the width and height fields: a file of one board is a board too. (#PR)
+- The right panel's Canvas section is now called Board, like the board tool, and so are Board size… and the width and height fields: a file of one board is a board too. (#342)
 
 ### Fixed
 
