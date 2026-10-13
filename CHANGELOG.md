@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Select a board like a layer: click its name, or click it with the board tool (Shift adds to the selection, Escape lets go). It gets a blue frame and handles; dragging a side or a corner grows or crops the board on that side, the drawing staying where it is, in one undo step. (#PR)
+- Select a board like a layer: click its name, or click it with the board tool (Shift adds to the selection, Escape lets go). It gets a blue frame and handles; dragging a side or a corner grows or crops the board on that side, the drawing staying where it is, in one undo step. (#343)
 - The board tool is on A, like Figma, and the spray moves to P. (#341)
 - Help › Report a bug… and Help › Suggest an idea… open a new GitHub issue already filled in like the repository's templates; a bug report comes with the Baipix version and the browser written in. (#340)
 - A file's boards share its palette: a change on one board, undo included, is a change for all of them. With Drawing colors, each board shows the colors it uses. (#323)
@@ -35,7 +35,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
-- A board moved or renamed no longer goes back to its old place or name when a drawing step is undone. The size in the title bar follows a canvas resize right away. (#PR)
+- A board moved or renamed no longer goes back to its old place or name when a drawing step is undone. The size in the title bar follows a canvas resize right away. (#343)
 - An ellipse on a wall had a top and a bottom that alternated pixel by pixel where its curve slopes against the wall's 2:1. They're now even. (#318)
 - Put on an isometric face: what landed past the canvas's edges was lost. It's now kept outside the canvas, as after a move, and without a selection the drawing already outside the canvas is laid on the face too. (#305)
 - Isometric box: a color that isn't in the palette got its sides from the closest palette ramp, whatever its hue (a blue box with green sides, once the palette held only greens). The sides now come down the palette's ramp only for a palette color, and are otherwise the color itself made darker. (#304)
