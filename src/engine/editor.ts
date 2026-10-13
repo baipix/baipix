@@ -165,6 +165,8 @@ export interface EditorState {
   files: FileInfo[];
   /** The active file's boards, the active one among them (`doc`). */
   boards: BoardInfo[];
+  /** The boards selected as boards (blue frame), to resize, delete or align them. */
+  selectedBoards: string[];
   /** The active file's id (see `fileIdOf`); `doc.id` is its active board's. */
   activeId: string;
   /** The active document. Its pixel buffers are mutable; rely on `revision` to detect changes. */
@@ -483,6 +485,8 @@ export class Editor {
   private deleted: Deleted | null = null;
   /** Each file's board last used, to open it there again. */
   private lastBoard = new Map<string, string>();
+  /** The boards selected as boards (see `selectBoards`). */
+  private boardSelection: string[] = [];
   private recent: Color[] = [];
   /** The Move tool moving a group (or several selected layers) together. */
   private groupMove: {
@@ -574,6 +578,9 @@ export class Editor {
           width: doc.width,
           height: doc.height,
         })),
+      selectedBoards: this.boardSelection.filter((id) =>
+        this.boardsOf(fileIdOf(s.doc)).some((b) => b.doc.id === id),
+      ),
       activeId: fileIdOf(s.doc),
       doc: s.doc,
       selection: s.selection,
@@ -652,6 +659,13 @@ export class Editor {
       snapshot.doc.guides = guides;
       if (!guides) delete snapshot.doc.guides;
     }
+    // Names and the board's place aren't part of the history either: a board moved or renamed stays
+    // so. A resize by the board's sides moved it with its size, so undoing it puts it back.
+    const { name, board } = this.active.doc;
+    snapshot.doc.name = name;
+    const place = snapshot.resized && snapshot.doc.board ? snapshot.doc.board : board;
+    if (board && place) snapshot.doc.board = { ...board, x: place.x, y: place.y };
+    else delete snapshot.doc.board;
     this.active.doc = snapshot.doc;
     this.active.selection = snapshot.selection;
     // A step that changed the palette changes it for the file's other boards too.
@@ -954,6 +968,24 @@ export class Editor {
     this.commit();
   }
 
+  /**
+   * Selects boards as boards, like layers: a blue frame, handles to resize the active one, Delete
+   * and Align for them all. `add` toggles them in the selection (Shift-click). The last one
+   * selected becomes the active board.
+   */
+  selectBoards(ids: string[], add = false): void {
+    const next = add
+      ? [
+          ...this.boardSelection.filter((id) => !ids.includes(id)),
+          ...ids.filter((id) => !this.boardSelection.includes(id)),
+        ]
+      : ids;
+    this.boardSelection = next;
+    const last = next.at(-1);
+    if (last && last !== this.doc.id) this.switchBoard(last);
+    else this.commit(false);
+  }
+
   /** Moves a board of the active file to (`x`, `y`) in the file. */
   moveBoard(id: string, x: number, y: number): void {
     const s = this.boardsOf(fileIdOf(this.doc)).find((b) => b.doc.id === id);
@@ -1073,6 +1105,26 @@ export class Editor {
     this.edit((doc) => {
       this.active.history.top()!.resized = true;
       resizeDocument(doc, w, h, o.x, o.y);
+      this.active.selection = null;
+    });
+  }
+
+  /**
+   * Resizes the active board to `rect`, in the file's pixels: a side pulled out grows it on that
+   * side, a side pushed in crops it, and the drawing stays where it is in the file. One undo step,
+   * which puts the board back where it was too.
+   */
+  resizeBoardTo(rect: Rect): void {
+    const doc = this.doc;
+    const at = doc.board ?? { x: 0, y: 0 };
+    const w = clamp(Math.round(rect.w), 1, MAX_SIZE);
+    const h = clamp(Math.round(rect.h), 1, MAX_SIZE);
+    const [x, y] = [Math.round(rect.x), Math.round(rect.y)];
+    if (w === doc.width && h === doc.height && x === at.x && y === at.y) return;
+    this.edit((d) => {
+      this.active.history.top()!.resized = true;
+      resizeDocument(d, w, h, at.x - x, at.y - y);
+      if (d.board) d.board = { ...d.board, x, y };
       this.active.selection = null;
     });
   }
@@ -3219,6 +3271,8 @@ export class Editor {
    */
   beginStroke(p: Point, secondary: boolean, mods: Modifiers, toolOverride?: ToolId): boolean {
     this.cancelStroke();
+    // Working on the pixels lets go of the boards selected as boards.
+    this.boardSelection = [];
     if (this.adjusting) return false;
     const id = toolOverride ?? this.tool;
     const tool = TOOLS[id];

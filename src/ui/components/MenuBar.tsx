@@ -20,6 +20,9 @@ function FileTitle() {
   // the document in place, so select the name itself to re-render on change.
   const docName = useEditorState((s) => fileNameOf(s.doc));
   const fileId = useEditorState((s) => s.activeId);
+  // Resizes change the document in place: select the numbers to follow them.
+  const width = useEditorState((s) => s.doc.width);
+  const height = useEditorState((s) => s.doc.height);
   const [name, setName] = useState(docName);
   useEffect(() => setName(docName), [docName, doc.id]);
   return (
@@ -45,7 +48,7 @@ function FileTitle() {
         aria-haspopup="menu"
         onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
       />
-      <span className="muted">{t('file.size', { w: doc.width, h: doc.height })}</span>
+      <span className="muted">{t('file.size', { w: width, h: height })}</span>
     </div>
   );
 }

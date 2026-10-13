@@ -102,6 +102,8 @@ export interface Scene {
   boards?: SceneBoard[];
   /** A board being drawn with the board tool, relative to the active board, in art pixels. */
   boardDraft?: Rect | null;
+  /** The boards selected as boards, relative to the active one: a blue frame, handles if one. */
+  selectedBoards?: Rect[];
 }
 
 /** A board of the file other than the active one, shown as it is, with its name above. */
@@ -273,6 +275,36 @@ export function drawScene(
     ctx.fillStyle = theme.muted;
     ctx.textBaseline = 'bottom';
     ctx.fillText(b.label, bx, by - Math.round(LABEL.gap * dpr));
+  }
+  // Boards selected as boards: a blue frame like a layer's, handles on a single one.
+  const picked = scene.selectedBoards ?? [];
+  for (const r of picked) {
+    const bx = X + r.x * s;
+    const by = Y + r.y * s;
+    const [bw, bh] = [r.w * s, r.h * s];
+    ctx.strokeStyle = theme.highlight;
+    ctx.lineWidth = lw * 2;
+    ctx.strokeRect(bx - lw, by - lw, bw + lw * 2, bh + lw * 2);
+    if (picked.length !== 1) continue;
+    const k = Math.round(7 * dpr);
+    ctx.fillStyle = theme.handle;
+    ctx.strokeStyle = theme.highlight;
+    ctx.lineWidth = lw;
+    for (const [hx, hy] of [
+      [0, 0],
+      [0.5, 0],
+      [1, 0],
+      [1, 0.5],
+      [1, 1],
+      [0.5, 1],
+      [0, 1],
+      [0, 0.5],
+    ]) {
+      const cx = Math.round(bx + hx * bw - k / 2);
+      const cy = Math.round(by + hy * bh - k / 2);
+      ctx.fillRect(cx, cy, k, k);
+      ctx.strokeRect(cx + 0.5, cy + 0.5, k - 1, k - 1);
+    }
   }
   // A board being drawn: its outline, and its size where its name will go.
   const draft = scene.boardDraft;

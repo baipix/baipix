@@ -129,4 +129,46 @@ describe('boards', () => {
     e.switchBoard(second.id);
     expect(e.getState().palette.colors).not.toContain(RED);
   });
+
+  it('selects boards, the last one becoming active, and lets go of them when drawing', () => {
+    const e = twoBoards();
+    const [first, second] = e.getState().boards;
+    e.selectBoards([first.id]);
+    expect(e.getState()).toMatchObject({ selectedBoards: [first.id] });
+    expect(e.getState().doc.id).toBe(first.id);
+    e.selectBoards([second.id], true);
+    expect(e.getState().selectedBoards).toEqual([first.id, second.id]);
+    expect(e.getState().doc.id).toBe(second.id);
+    e.setTool('pencil');
+    e.beginStroke({ x: 1, y: 1 }, false, { shift: false });
+    e.endStroke();
+    expect(e.getState().selectedBoards).toEqual([]);
+  });
+
+  it('resizes a board by its left side, the drawing staying put in the file, in one undo step', () => {
+    const e = twoBoards();
+    const small = e.getState().boards[1];
+    e.switchBoard(small.id);
+    e.getState().doc.layers[0].pixels[0] = RED;
+    // Pull the left side 4 pixels further left: 4 wider, 4 pixels to the left in the file.
+    e.resizeBoardTo({ x: small.x - 4, y: small.y, w: small.width + 4, h: small.height });
+    const grown = e.getState().boards[1];
+    expect(grown).toMatchObject({ x: small.x - 4, width: small.width + 4 });
+    expect(e.getState().doc.layers[0].pixels[4]).toBe(RED);
+    e.undo();
+    expect(e.getState().boards[1]).toMatchObject({ x: small.x, width: small.width });
+  });
+
+  it('keeps a board where it was moved, and its new name, when a drawing step is undone', () => {
+    const e = twoBoards();
+    const small = e.getState().boards[1];
+    e.switchBoard(small.id);
+    e.setTool('pencil');
+    e.beginStroke({ x: 1, y: 1 }, false, { shift: false });
+    e.endStroke();
+    e.moveBoard(small.id, 60, 30);
+    e.renameBoard(small.id, 'Moved');
+    e.undo();
+    expect(e.getState().boards[1]).toMatchObject({ name: 'Moved', x: 60, y: 30 });
+  });
 });
