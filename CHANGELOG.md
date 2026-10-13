@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Select layers with a marquee: with the Move tool, drag from an empty spot to select every layer the rectangle touches (a layer in a group takes its group), Shift to add to the selection. They move together, and Delete removes them together, even all of them: an empty layer is left to draw on. (#355)
 - A layer dragged with the Move tool follows the pointer outside its board, instead of vanishing past the edge. (#354)
 - With the Move tool, a click on an empty spot lets go of the selected layers, like a click on the empty canvas in Figma; the active layer stays, unframed. (#353)
 - Drag a layer onto another board: with the Move tool, a layer let go over another board goes onto it, right where it was dropped, with its name, opacity, blend mode and effects. Components and their copies stay on their board for now. (#348)
