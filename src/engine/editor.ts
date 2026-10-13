@@ -3330,6 +3330,16 @@ export class Editor {
     return this.stroke !== null || this.groupMove !== null;
   }
 
+  /**
+   * The layers the Move tool is moving whole right now, if any: what they push off the board is
+   * shown with them, so they follow the pointer outside it.
+   */
+  movingLayers(): Layer[] {
+    if (this.groupMove) return this.groupMove.items.map((i) => i.layer);
+    const s = this.stroke;
+    return s && this.strokeTool === 'move' && !s.selection && !s.layer.instance ? [s.layer] : [];
+  }
+
   private createStroke(p: Point, secondary: boolean): Stroke {
     const doc = this.doc;
     const layer = activeLayer(doc);

@@ -22,6 +22,7 @@ import {
   labelRect,
   type BrushPreview,
   type SceneBoard,
+  type SceneFloating,
   type SceneReference,
   drawRulers,
   guidePosition,
@@ -294,6 +295,28 @@ export function CanvasView() {
       boardImages.set(doc.id, { key, canvas: c });
       return c;
     };
+    /** What the layers being moved push off the board, one image per layer, cached by its pixels. */
+    let floatingImages = new Map<Uint32Array, HTMLCanvasElement>();
+    const floating = (): SceneFloating[] => {
+      const { doc } = editor.getState();
+      const layers = editor.movingLayers().filter((l) => l.outside && isShown(doc, l));
+      const known = floatingImages;
+      floatingImages = new Map();
+      return layers.map((l) => {
+        const o = l.outside!;
+        let c = known.get(o.pixels);
+        if (!c) {
+          c = document.createElement('canvas');
+          c.width = o.w;
+          c.height = o.h;
+          const image = new ImageData(o.w, o.h);
+          new Uint32Array(image.data.buffer).set(o.pixels);
+          c.getContext('2d')!.putImageData(image, 0, 0);
+        }
+        floatingImages.set(o.pixels, c);
+        return { image: c, x: o.x, y: o.y, width: o.w, height: o.h, opacity: l.opacity };
+      });
+    };
     /** The other boards, relative to the active one. */
     const otherBoards = (): SceneBoard[] => {
       const { boards, doc } = editor.getState();
@@ -408,6 +431,7 @@ export function CanvasView() {
             ? relative(boardResize.rect)
             : boardDraft && relative(draftRect(boardDraft)),
           selectedBoards: selectedBoardRects(),
+          floating: floating(),
         },
         camera(),
         theme,
