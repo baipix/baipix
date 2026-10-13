@@ -340,6 +340,7 @@ function readBoard(b: unknown): { board: BoardPlace } | null {
       x: at(v.x),
       y: at(v.y),
       ...(v.empty === true && { empty: true }),
+      ...(v.free === true && { free: true }),
     },
   };
 }
@@ -402,6 +403,7 @@ export function fileFromJson(text: string): PixelDoc[] {
       x: doc.board?.x ?? 0,
       y: doc.board?.y ?? 0,
       ...(doc.board?.empty && { empty: true }),
+      ...(doc.board?.free && { free: true }),
     };
     return doc;
   });

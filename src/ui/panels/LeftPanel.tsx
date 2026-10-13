@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { findMaster, isLinkedInstance, masters, spritePixels } from '../../engine/components';
-import type { LayerGroup, PixelDoc } from '../../engine/document';
+import { isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
 import {
   groupChain,
   groupDepth,
@@ -204,6 +204,8 @@ function LayersSection() {
   const selectedGroup = useEditorState((s) => s.selectedGroup);
   const boards = useEditorState((s) => s.boards);
   const selectedBoards = useEditorState((s) => s.selectedBoards);
+  // The file's layers outside its boards, if it has any.
+  const free = editor.freeZone();
   const multi = !referenceSelected && selected.length > 1;
   const n = doc.layers.length;
   // A component needs something drawn on a plain layer (not an instance, not one already).
@@ -637,7 +639,7 @@ function LayersSection() {
       title={t('section.layers')}
       className="grow"
       aside={
-        boards.length > 0 && (
+        isBoard(doc) && (
           <>
             {!reference && (
               <IconButton
@@ -658,9 +660,37 @@ function LayersSection() {
         )
       }
     >
-      {/* A file of several boards: each board's row, the active one open with its layers under it. */}
-      {boards.length > 1
-        ? boards.map((b) => (
+      {/* A file of several boards (or with layers outside them): the layers outside the boards at the
+          top level, then each board's row, the active one open with its layers under it. */}
+      {boards.length > 1 || free ? (
+        <>
+          {free &&
+            (free === doc
+              ? list
+              : free.layers
+                  .map((layer, index) => ({ layer, index }))
+                  .reverse()
+                  .map(({ layer, index }) => (
+                    <div
+                      key={layer.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`item free-item${isShown(free, layer) ? '' : ' is-hidden'}`}
+                      onClick={() => {
+                        editor.switchBoard(free.id);
+                        editor.selectLayer(index, 'single');
+                      }}
+                    >
+                      <Thumbnail
+                        pixels={() => layer.pixels}
+                        width={free.width}
+                        height={free.height}
+                        version={revision}
+                      />
+                      <span className="item-name">{layer.name}</span>
+                    </div>
+                  )))}
+          {boards.map((b) => (
             <div key={b.id} className="board-block">
               <div
                 role="button"
@@ -684,8 +714,11 @@ function LayersSection() {
               </div>
               {b.id === doc.id && <div className="board-layers">{list}</div>}
             </div>
-          ))
-        : boards.length > 0 && list}
+          ))}
+        </>
+      ) : (
+        isBoard(doc) && list
+      )}
     </Section>
   );
 }

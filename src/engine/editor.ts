@@ -13,7 +13,9 @@ import {
   type DocPalette,
   fileIdOf,
   fileNameOf,
+  isBoard,
   isEmptyBoard,
+  isFreeZone,
   isoCellSize,
   type Layer,
   type LayerGroup,
@@ -468,6 +470,12 @@ export class Editor {
    * like in a design tool. `kept`: the layers selected before, with Shift.
    */
   private marquee: { start: Point; end: Point; kept: string[] } | null = null;
+  /**
+   * Layers moved across boards, by the id their two steps share: where from and to, whether the
+   * free layers they went to were made for them (`created`), and where a board taken away by an
+   * undo or the move goes back (`at`).
+   */
+  private links = new Map<string, { from: Session; to: Session; created: boolean; at?: number }>();
   /** Color adjustment in progress: the original pixels of the layers being adjusted. */
   /** Resizing by the handles: the content being resized and how to put it back. */
   private scaling: {
@@ -580,7 +588,7 @@ export class Editor {
     this.state = {
       files: this.fileList(),
       boards: this.sessions
-        .filter((x) => fileIdOf(x.doc) === fileIdOf(s.doc) && !isEmptyBoard(x.doc))
+        .filter((x) => fileIdOf(x.doc) === fileIdOf(s.doc) && isBoard(x.doc))
         .map(({ doc }) => ({
           id: doc.id,
           name: doc.name,
@@ -687,31 +695,67 @@ export class Editor {
     if (this.repeatSession) return this.endRepeat(false);
     if (this.extrudeSession) return this.endExtrude(false);
     if (this.stroke || this.adjusting || this.scaling) return;
-    const current = takeSnapshot(this.doc, this.active.selection);
-    const prev = this.active.history.undo(current);
-    if (prev) {
-      // A step that changed the palette swaps it back and forth with the pixels.
-      if (prev.palette) current.palette = this.savedPalette();
-      if (prev.resized) current.resized = true;
-      this.forgetDeletedLayer();
-      this.restore(prev);
-      this.touch();
+    const id = this.active.history.top()?.linked;
+    const link = id ? this.links.get(id) : undefined;
+    // A layer moved across boards: both sides are undone, and it's back on the board it left.
+    if (id && link) {
+      for (const side of [this.active, this.active === link.to ? link.from : link.to]) {
+        this.activate(side);
+        // New free layers: their first step is the layer coming in, undone by taking them away.
+        if (side === link.to && link.created) {
+          link.at = this.sessions.indexOf(side);
+          this.sessions = this.sessions.filter((x) => x !== side);
+        } else if (!this.sessions.includes(side)) {
+          // The free layers it left, gone with it: back as they were.
+          if (link.at !== undefined) this.sessions.splice(link.at, 0, side);
+        } else if (side.history.top()?.linked === id) this.travel('undo');
+      }
+      this.activate(link.from);
       this.commit();
+      return;
     }
+    if (this.travel('undo')) this.commit();
   }
 
   redo(): void {
     if (this.stroke || this.adjusting || this.scaling) return;
-    const current = takeSnapshot(this.doc, this.active.selection);
-    const next = this.active.history.redo(current);
-    if (next) {
-      if (next.palette) current.palette = this.savedPalette();
-      if (next.resized) current.resized = true;
-      this.forgetDeletedLayer();
-      this.restore(next);
-      this.touch();
+    // Back on free layers that went with their last layer: the move is redone from its other side.
+    const id =
+      this.active.history.nextRedo()?.linked ??
+      [...this.links].find(
+        ([k, l]) => l.from === this.active && l.at !== undefined && l.to.history.nextRedo()?.linked === k,
+      )?.[0];
+    const link = id ? this.links.get(id) : undefined;
+    if (id && link) {
+      for (const side of [this.active, this.active === link.to ? link.from : link.to]) {
+        this.activate(side);
+        if (side === link.to && link.created) {
+          if (!this.sessions.includes(side)) this.sessions.splice(link.at ?? this.sessions.length, 0, side);
+        } else if (side === link.from && link.at !== undefined && side.history.nextRedo()?.linked !== id) {
+          // The free layers it leaves go again with their last layer.
+          this.sessions = this.sessions.filter((x) => x !== side);
+        } else if (side.history.nextRedo()?.linked === id) this.travel('redo');
+      }
+      this.activate(link.to);
       this.commit();
+      return;
     }
+    if (this.travel('redo')) this.commit();
+  }
+
+  /** One step back or forth in the active board's history. Returns false when there's none. */
+  private travel(way: 'undo' | 'redo'): boolean {
+    const current = takeSnapshot(this.doc, this.active.selection);
+    const step = this.active.history[way](current);
+    if (!step) return false;
+    // A step that changed the palette swaps it back and forth with the pixels.
+    if (step.palette) current.palette = this.savedPalette();
+    if (step.resized) current.resized = true;
+    if (step.linked) current.linked = step.linked;
+    this.forgetDeletedLayer();
+    this.restore(step);
+    this.touch();
+    return true;
   }
 
   /** Undo and redo swap whole snapshots, which may bring the deleted layer back on their own. */
@@ -843,16 +887,16 @@ export class Editor {
         width: open.doc.width,
         height: open.doc.height,
         updatedAt: Math.max(...boards.map((b) => b.doc.updatedAt ?? 0)),
-        boards: boards.filter((b) => !isEmptyBoard(b.doc)).length,
+        boards: boards.filter((b) => isBoard(b.doc)).length,
       };
     });
   }
 
-  /** The board a file opens on: the last one used, or its first. */
+  /** The board a file opens on: the last one used, or its first (a board before its free layers). */
   private boardFor(fileId: string): Session | undefined {
     const last = this.lastBoard.get(fileId);
     const boards = this.boardsOf(fileId);
-    return boards.find((s) => s.doc.id === last) ?? boards[0];
+    return boards.find((s) => s.doc.id === last) ?? boards.find((s) => isBoard(s.doc)) ?? boards[0];
   }
 
   /** Makes a session active, remembering it as its file's last board. */
@@ -964,12 +1008,13 @@ export class Editor {
     const doc = this.doc;
     doc.board ??= { file: doc.id, fileName: doc.name, x: 0, y: 0 };
     const boards = this.boardsOf(doc.board.file);
-    const shown = boards.filter((b) => !isEmptyBoard(b.doc)).length;
+    const shown = boards.filter((b) => isBoard(b.doc)).length;
     const w = clamp(Math.round(width), 1, MAX_SIZE);
     const h = clamp(Math.round(height), 1, MAX_SIZE);
     const board = createDocument(name ?? this.labels.board(shown + 1), w, h, this.labels.layer(1));
     board.board = { ...doc.board, x: Math.round(x), y: Math.round(y) };
     delete board.board.empty;
+    delete board.board.free;
     board.render = { ...doc.render };
     if (doc.palette) board.palette = { ...doc.palette, colors: [...doc.palette.colors] };
     if (doc.isoGrid) board.isoGrid = doc.isoGrid;
@@ -1064,25 +1109,49 @@ export class Editor {
     const dx = (src.board?.x ?? 0) - (dst.board?.x ?? 0);
     const dy = (src.board?.y ?? 0) - (dst.board?.y ?? 0);
     const moved = reframe(layer.pixels, src.width, src.height, layer.outside, dx, dy, dst.width, dst.height);
-    // Off the board it leaves: the board keeps a layer, even if it's an empty one.
-    this.edit((doc) => {
-      const i = doc.layers.findIndex((l) => l.id === layerId);
-      doc.layers.splice(i, 1);
-      if (!doc.layers.length) doc.layers.push(createLayer(this.labels.layer(1), doc.width, doc.height));
-      doc.activeLayer = Math.min(doc.activeLayer, doc.layers.length - 1);
-    });
+    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
+    // go when their last one does.
+    // Both sides are one step: undone (and redone) together.
+    const id = newId('move');
+    const link = { from, to, created: !dst.layers.length } as {
+      from: Session;
+      to: Session;
+      created: boolean;
+      at?: number;
+    };
+    this.links.set(id, link);
+    const emptied = isFreeZone(src) && src.layers.length === 1;
+    if (!emptied) {
+      this.edit((doc) => {
+        const i = doc.layers.findIndex((l) => l.id === layerId);
+        doc.layers.splice(i, 1);
+        if (!doc.layers.length) doc.layers.push(createLayer(this.labels.layer(1), doc.width, doc.height));
+        doc.activeLayer = Math.min(doc.activeLayer, doc.layers.length - 1);
+      });
+      from.history.top()!.linked = id;
+      this.fitFree();
+    }
     // Onto the other one, on top, as it was (name, opacity, blend mode, effects), out of any group.
     this.activate(to);
-    this.edit((doc) => {
+    const put = (doc: PixelDoc) => {
       const copy: Layer = { ...layer, pixels: moved.pixels };
       delete copy.group;
       if (moved.outside) copy.outside = moved.outside;
       else delete copy.outside;
       doc.layers.push(copy);
       doc.activeLayer = doc.layers.length - 1;
-    });
+    };
+    // New free layers start with it: undoing it takes them away rather than going back to nothing.
+    this.edit(put);
+    to.history.top()!.linked = id;
+    this.fitFree();
+    if (emptied) {
+      link.at = this.sessions.indexOf(from);
+      this.sessions = this.sessions.filter((x) => x !== from);
+    }
     this.active.picked = [layer.id];
-    this.notice({ type: 'layerToBoard', board: dst.name });
+    this.active.unframed = false;
+    if (!isFreeZone(dst)) this.notice({ type: 'layerToBoard', board: dst.name });
     this.commit();
     return true;
   }
@@ -1119,31 +1188,105 @@ export class Editor {
    */
   deleteBoards(ids: string[]): number {
     const boards = this.boardsOf(fileIdOf(this.doc));
-    const going = boards.filter((b) => ids.includes(b.doc.id) && !isEmptyBoard(b.doc));
+    const going = boards.filter((b) => ids.includes(b.doc.id) && isBoard(b.doc));
     if (!going.length) return 0;
     this.cancelStroke();
     const index = this.sessions.indexOf(going[0]);
-    // Every board going: a blank one, not shown, keeps the file (its name, palette and settings)
-    // until a board is made.
-    let placeholder: Session | undefined;
-    if (going.length === boards.length) {
-      const first = boards[0].doc;
-      const doc = createDocument(first.name, first.width, first.height, this.labels.layer(1));
-      doc.board = { file: fileIdOf(first), fileName: fileNameOf(first), x: 0, y: 0, empty: true };
-      doc.render = { ...first.render };
-      if (first.palette) doc.palette = { ...first.palette, colors: [...first.palette.colors] };
-      if (first.isoGrid) doc.isoGrid = first.isoGrid;
-      doc.updatedAt = Date.now();
-      placeholder = { doc, history: new History(), selection: null };
-      this.sessions.splice(index, 0, placeholder);
-    }
+    // Every board going, and no layer outside them: a blank one, not shown, keeps the file (its
+    // name, palette and settings) until a board is made.
+    const left = boards.filter((b) => !going.includes(b));
+    const placeholder = left.length ? undefined : this.blankBoard(boards[0].doc, index);
     this.sessions = this.sessions.filter((x) => !going.includes(x));
     // The file keeps its id while its first board goes: the others still carry it.
-    if (going.includes(this.active)) this.activate(placeholder ?? boards.find((b) => !going.includes(b))!);
+    if (going.includes(this.active))
+      this.activate(placeholder ?? left.find((b) => isBoard(b.doc)) ?? left[0]);
     this.boardSelection = [];
     this.deleted = { kind: 'file', sessions: going, index, placeholder };
     this.commit();
     return going.length;
+  }
+
+  /** Puts a blank board, not shown, at `index` for a file left with nothing (see `BoardPlace.empty`). */
+  private blankBoard(like: PixelDoc, index: number): Session {
+    const doc = createDocument(like.name, like.width, like.height, this.labels.layer(1));
+    doc.board = { file: fileIdOf(like), fileName: fileNameOf(like), x: 0, y: 0, empty: true };
+    doc.render = { ...like.render };
+    if (like.palette) doc.palette = { ...like.palette, colors: [...like.palette.colors] };
+    if (like.isoGrid) doc.isoGrid = like.isoGrid;
+    doc.updatedAt = Date.now();
+    const session: Session = { doc, history: new History(), selection: null };
+    this.sessions.splice(index, 0, session);
+    return session;
+  }
+
+  /** The active file's layers outside its boards, as a document placed in the file, if it has any. */
+  freeZone(): PixelDoc | null {
+    return this.freeOf(fileIdOf(this.doc))?.doc ?? null;
+  }
+
+  private freeOf(fileId: string): Session | undefined {
+    return this.boardsOf(fileId).find((s) => isFreeZone(s.doc));
+  }
+
+  /**
+   * Fits the active free layers to what they hold, in the step being made: what was pushed past
+   * their edge comes back in, and the empty edges go. Their place moves so nothing moves on screen.
+   */
+  private fitFree(): void {
+    const s = this.active;
+    const doc = s.doc;
+    if (!isFreeZone(doc) || !doc.board) return;
+    let box: Rect | null = null;
+    for (const l of doc.layers) {
+      const r = layerContent(l.pixels, doc.width, doc.height, l.outside)?.rect;
+      if (!r) continue;
+      if (!box) box = { ...r };
+      else {
+        const x = Math.min(box.x, r.x);
+        const y = Math.min(box.y, r.y);
+        box = {
+          x,
+          y,
+          w: Math.max(box.x + box.w, r.x + r.w) - x,
+          h: Math.max(box.y + box.h, r.y + r.h) - y,
+        };
+      }
+    }
+    if (!box || (box.x === 0 && box.y === 0 && box.w === doc.width && box.h === doc.height)) return;
+    const top = s.history.top();
+    if (top) top.resized = true;
+    resizeDocument(doc, Math.min(box.w, MAX_SIZE), Math.min(box.h, MAX_SIZE), -box.x, -box.y);
+    doc.board = { ...doc.board, x: doc.board.x + box.x, y: doc.board.y + box.y };
+    s.selection = null;
+  }
+
+  /**
+   * Takes a layer off its board and leaves it where it is on the canvas, outside every board, like
+   * an object beside the frames in Figma: a Move tool drag let go beside the boards.
+   */
+  moveLayerOut(layerId: string): boolean {
+    const from = this.active;
+    const src = from.doc;
+    const layer = src.layers.find((l) => l.id === layerId);
+    if (!layer || isFreeZone(src)) return false;
+    const box = layerContent(layer.pixels, src.width, src.height, layer.outside)?.rect;
+    if (!box) return false;
+    // A file of one board becomes a file of boards, its board at (0, 0).
+    src.board ??= { file: src.id, fileName: src.name, x: 0, y: 0 };
+    if (!this.freeOf(src.board.file)) {
+      const doc = createDocument(fileNameOf(src), box.w, box.h);
+      doc.layers = [];
+      doc.board = { ...src.board, x: src.board.x + box.x, y: src.board.y + box.y, free: true };
+      delete doc.board.empty;
+      doc.backgroundVisible = false;
+      doc.render = { ...src.render };
+      if (src.palette) doc.palette = { ...src.palette, colors: [...src.palette.colors] };
+      if (src.isoGrid) doc.isoGrid = src.isoGrid;
+      const boards = this.boardsOf(src.board.file);
+      const at = this.sessions.indexOf(boards[boards.length - 1]) + 1;
+      this.sessions.splice(at, 0, { doc, history: new History(), selection: null });
+    }
+    return this.moveLayerToBoard(layerId, this.freeOf(src.board.file)!.doc.id);
   }
 
   /**
@@ -1579,6 +1722,7 @@ export class Editor {
    */
   deleteLayers(): number {
     const picked = this.pickedLayers();
+    if (isFreeZone(this.doc) && picked.length >= this.doc.layers.length) return this.dropFree();
     if (picked.length < 2) return this.deleteLayer() ? 1 : 0;
     this.edit((doc) => {
       const entries = picked.map((layer) => ({ layer, index: doc.layers.indexOf(layer) }));
@@ -1594,6 +1738,24 @@ export class Editor {
       this.active.picked = [doc.layers[doc.activeLayer].id];
     });
     return picked.length;
+  }
+
+  /**
+   * Every layer outside the boards deleted: they go, the file opening on a board (or blank, if it
+   * has none). `restoreDeleted` brings them back.
+   */
+  private dropFree(): number {
+    const s = this.active;
+    const index = this.sessions.indexOf(s);
+    const count = s.doc.layers.length;
+    this.cancelStroke();
+    this.sessions = this.sessions.filter((x) => x !== s);
+    const fileId = fileIdOf(s.doc);
+    const placeholder = this.boardsOf(fileId).length ? undefined : this.blankBoard(s.doc, index);
+    this.activate(placeholder ?? this.boardFor(fileId)!);
+    this.deleted = { kind: 'file', sessions: [s], index, placeholder };
+    this.commit();
+    return count;
   }
 
   /** Returns false when nothing was deleted. The layer can be brought back with `restoreDeleted`. */
@@ -3167,6 +3329,7 @@ export class Editor {
   endScale(): void {
     if (!this.scaling) return;
     this.scaling = null;
+    this.fitFree();
     this.commit();
   }
 
@@ -3246,6 +3409,7 @@ export class Editor {
       if (!this.beginGroupMove({ x: 0, y: 0 })) return;
       this.applyGroupMove(dx, dy);
       this.groupMove = null;
+      this.fitFree();
       this.commit();
       return;
     }
@@ -3255,6 +3419,7 @@ export class Editor {
     const s = this.createStroke({ x: 0, y: 0 }, false);
     beginMove(s);
     applyMove(s, dx, dy);
+    this.fitFree();
     this.commit();
   }
 
@@ -3465,6 +3630,8 @@ export class Editor {
     // Working on the pixels lets go of the boards selected as boards.
     this.boardSelection = [];
     if (this.adjusting || isEmptyBoard(this.doc)) return false;
+    // Outside the boards, layers are only moved: the tools draw on a board.
+    if (isFreeZone(this.doc) && (toolOverride ?? this.tool) !== 'move') return false;
     const id = toolOverride ?? this.tool;
     const tool = TOOLS[id];
     // Drawing, or moving pixels, goes back to the active layer.
@@ -3676,6 +3843,7 @@ export class Editor {
     }
     if (this.groupMove) {
       this.groupMove = null;
+      this.fitFree();
       this.commit();
       return;
     }
@@ -3715,6 +3883,7 @@ export class Editor {
       if (s.options.dither) this.remember(c1, c2);
       else this.remember(c1);
     }
+    if (id === 'move') this.fitFree();
     this.commit(tool.editsPixels);
   }
 

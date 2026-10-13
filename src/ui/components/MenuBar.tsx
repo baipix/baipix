@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { fileNameOf } from '../../engine/document';
+import { fileNameOf, isBoard } from '../../engine/document';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -23,7 +23,7 @@ function FileTitle() {
   // Resizes change the document in place: select the numbers to follow them.
   const width = useEditorState((s) => s.doc.width);
   const height = useEditorState((s) => s.doc.height);
-  const noBoard = useEditorState((s) => !s.boards.length);
+  const noBoard = useEditorState((s) => !isBoard(s.doc));
   const [name, setName] = useState(docName);
   useEffect(() => setName(docName), [docName, doc.id]);
   return (
