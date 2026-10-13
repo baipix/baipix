@@ -23,6 +23,7 @@ function FileTitle() {
   // Resizes change the document in place: select the numbers to follow them.
   const width = useEditorState((s) => s.doc.width);
   const height = useEditorState((s) => s.doc.height);
+  const noBoard = useEditorState((s) => !s.boards.length);
   const [name, setName] = useState(docName);
   useEffect(() => setName(docName), [docName, doc.id]);
   return (
@@ -48,7 +49,7 @@ function FileTitle() {
         aria-haspopup="menu"
         onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
       />
-      <span className="muted">{t('file.size', { w: width, h: height })}</span>
+      {!noBoard && <span className="muted">{t('file.size', { w: width, h: height })}</span>}
     </div>
   );
 }

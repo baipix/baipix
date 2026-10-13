@@ -139,10 +139,14 @@ export const MENU_BAR: MenuBarMenu[] = [
         { label: t('menu.reference'), onSelect: () => void actions.addReference() },
         '-',
         { label: t('board.new'), onSelect: () => editor.addBoardBeside() },
-        { label: t('board.duplicate'), onSelect: () => editor.duplicateBoard(editor.getState().doc.id) },
+        {
+          label: t('board.duplicate'),
+          disabled: !editor.getState().boards.length,
+          onSelect: () => editor.duplicateBoard(editor.getState().doc.id),
+        },
         {
           label: t('board.delete'),
-          disabled: editor.getState().boards.length < 2,
+          disabled: !editor.getState().boards.length,
           onSelect: () => actions.deleteBoard(),
         },
         '-',

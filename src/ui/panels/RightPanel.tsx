@@ -717,14 +717,16 @@ function ExportSection() {
 
 export function RightPanel() {
   const t = useT();
+  // A file with no board: only what isn't a board's, its colors and the display.
+  const noBoard = useEditorState((s) => !s.boards.length);
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
-      <CanvasSection />
+      {!noBoard && <CanvasSection />}
       <PaletteSection />
-      <LayerSection />
-      <EffectsSection />
+      {!noBoard && <LayerSection />}
+      {!noBoard && <EffectsSection />}
       <DisplaySection />
-      <ExportSection />
+      {!noBoard && <ExportSection />}
     </aside>
   );
 }

@@ -204,10 +204,18 @@ export interface BoardPlace {
   /** Its top left corner in the file, in pixels. */
   x: number;
   y: number;
+  /**
+   * A file with no board left: this blank board holds its place (its name, its palette), isn't
+   * shown, and goes when a board is made.
+   */
+  empty?: boolean;
 }
 
 /** The file a document belongs to: its board's file, or itself. */
 export const fileIdOf = (doc: PixelDoc): string => doc.board?.file ?? doc.id;
+
+/** Whether a document is the blank board of a file with no board (see `BoardPlace.empty`). */
+export const isEmptyBoard = (doc: PixelDoc): boolean => !!doc.board?.empty;
 
 /** The name of the file a document belongs to. */
 export const fileNameOf = (doc: PixelDoc): string => doc.board?.fileName ?? doc.name;

@@ -13,6 +13,7 @@ import {
   type DocPalette,
   fileIdOf,
   fileNameOf,
+  isEmptyBoard,
   isoCellSize,
   type Layer,
   type LayerGroup,
@@ -268,7 +269,8 @@ interface Session {
 
 /** What the last delete removed, so it can be brought back (the toast's Undo button). */
 type Deleted =
-  | { kind: 'file'; sessions: Session[]; index: number }
+  /** `placeholder`: the blank board put in when every board of a file went (see `BoardPlace.empty`). */
+  | { kind: 'file'; sessions: Session[]; index: number; placeholder?: Session }
   | { kind: 'layer'; session: Session; layer: Layer; index: number }
   | {
       kind: 'layers';
@@ -578,7 +580,7 @@ export class Editor {
     this.state = {
       files: this.fileList(),
       boards: this.sessions
-        .filter((x) => fileIdOf(x.doc) === fileIdOf(s.doc))
+        .filter((x) => fileIdOf(x.doc) === fileIdOf(s.doc) && !isEmptyBoard(x.doc))
         .map(({ doc }) => ({
           id: doc.id,
           name: doc.name,
@@ -841,7 +843,7 @@ export class Editor {
         width: open.doc.width,
         height: open.doc.height,
         updatedAt: Math.max(...boards.map((b) => b.doc.updatedAt ?? 0)),
-        boards: boards.length,
+        boards: boards.filter((b) => !isEmptyBoard(b.doc)).length,
       };
     });
   }
@@ -962,16 +964,20 @@ export class Editor {
     const doc = this.doc;
     doc.board ??= { file: doc.id, fileName: doc.name, x: 0, y: 0 };
     const boards = this.boardsOf(doc.board.file);
+    const shown = boards.filter((b) => !isEmptyBoard(b.doc)).length;
     const w = clamp(Math.round(width), 1, MAX_SIZE);
     const h = clamp(Math.round(height), 1, MAX_SIZE);
-    const board = createDocument(name ?? this.labels.board(boards.length + 1), w, h, this.labels.layer(1));
+    const board = createDocument(name ?? this.labels.board(shown + 1), w, h, this.labels.layer(1));
     board.board = { ...doc.board, x: Math.round(x), y: Math.round(y) };
+    delete board.board.empty;
     board.render = { ...doc.render };
     if (doc.palette) board.palette = { ...doc.palette, colors: [...doc.palette.colors] };
     if (doc.isoGrid) board.isoGrid = doc.isoGrid;
     board.updatedAt = Date.now();
     const session: Session = { doc: board, history: new History(), selection: null };
     this.sessions.splice(this.sessions.indexOf(boards[boards.length - 1]) + 1, 0, session);
+    // The first board of a file with none takes the blank board's place.
+    if (isEmptyBoard(doc)) this.sessions = this.sessions.filter((x) => x.doc !== doc);
     this.fresh.delete(doc.id);
     this.activate(session);
     this.commit();
@@ -1113,16 +1119,29 @@ export class Editor {
    */
   deleteBoards(ids: string[]): number {
     const boards = this.boardsOf(fileIdOf(this.doc));
-    let going = boards.filter((b) => ids.includes(b.doc.id));
-    if (going.length === boards.length) going = going.slice(1);
+    const going = boards.filter((b) => ids.includes(b.doc.id) && !isEmptyBoard(b.doc));
     if (!going.length) return 0;
     this.cancelStroke();
     const index = this.sessions.indexOf(going[0]);
+    // Every board going: a blank one, not shown, keeps the file (its name, palette and settings)
+    // until a board is made.
+    let placeholder: Session | undefined;
+    if (going.length === boards.length) {
+      const first = boards[0].doc;
+      const doc = createDocument(first.name, first.width, first.height, this.labels.layer(1));
+      doc.board = { file: fileIdOf(first), fileName: fileNameOf(first), x: 0, y: 0, empty: true };
+      doc.render = { ...first.render };
+      if (first.palette) doc.palette = { ...first.palette, colors: [...first.palette.colors] };
+      if (first.isoGrid) doc.isoGrid = first.isoGrid;
+      doc.updatedAt = Date.now();
+      placeholder = { doc, history: new History(), selection: null };
+      this.sessions.splice(index, 0, placeholder);
+    }
     this.sessions = this.sessions.filter((x) => !going.includes(x));
     // The file keeps its id while its first board goes: the others still carry it.
-    if (going.includes(this.active)) this.activate(boards.find((b) => !going.includes(b))!);
+    if (going.includes(this.active)) this.activate(placeholder ?? boards.find((b) => !going.includes(b))!);
     this.boardSelection = [];
-    this.deleted = { kind: 'file', sessions: going, index };
+    this.deleted = { kind: 'file', sessions: going, index, placeholder };
     this.commit();
     return going.length;
   }
@@ -1153,6 +1172,7 @@ export class Editor {
   /** Adds a board the size of the active one, beside it on the right. */
   addBoardBeside(): void {
     const { doc } = this;
+    if (isEmptyBoard(doc)) return this.addBoard(0, 0, doc.width, doc.height);
     const at = doc.board ?? { x: 0, y: 0 };
     this.addBoard(at.x + doc.width + BOARD_SPACING, at.y, doc.width, doc.height);
   }
@@ -1167,6 +1187,9 @@ export class Editor {
     this.deleted = null;
     this.cancelStroke();
     if (d.kind === 'file') {
+      // Boards coming back to a file left with no board: its blank board goes.
+      const blank = d.placeholder;
+      if (blank && isEmptyBoard(blank.doc)) this.sessions = this.sessions.filter((x) => x !== blank);
       this.sessions.splice(Math.min(d.index, this.sessions.length), 0, ...d.sessions);
       this.activate(
         d.sessions.find((x) => x.doc.id === this.lastBoard.get(fileIdOf(x.doc))) ?? d.sessions[0],
@@ -3441,7 +3464,7 @@ export class Editor {
     this.cancelStroke();
     // Working on the pixels lets go of the boards selected as boards.
     this.boardSelection = [];
-    if (this.adjusting) return false;
+    if (this.adjusting || isEmptyBoard(this.doc)) return false;
     const id = toolOverride ?? this.tool;
     const tool = TOOLS[id];
     // Drawing, or moving pixels, goes back to the active layer.

@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- A file can have no board: delete them all and the canvas says so, with a Create a board button (the board tool draws one too). Undo brings them back. (#356)
 - Select layers with a marquee: with the Move tool, drag from an empty spot to select every layer the rectangle touches (a layer in a group takes its group), Shift to add to the selection. They move together, and Delete removes them together, even all of them: an empty layer is left to draw on. (#355)
 - A layer dragged with the Move tool follows the pointer outside its board, instead of vanishing past the edge. (#354)
 - With the Move tool, a click on an empty spot lets go of the selected layers, like a click on the empty canvas in Figma; the active layer stays, unframed. (#353)
@@ -13,7 +14,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Boards in the Layers panel: in a file of several boards, each board has its row, the active one open with its layers and groups under it, like Figma. A click on a row selects the board (Shift adds it) and opens it; a double-click renames it. (#347)
 - Align boards: with several boards selected (Shift-click), the Align commands (Layer menu, their Alt shortcuts, or the buttons in the board tool's bar) line them up against the box they fill together. Delete board removes them all. (#346)
 - Alt-drag (Option-drag) a board, by its name or with the board tool by its body, to drop a copy of it where you let go, layers and all. With the board tool, a board can also be moved by dragging it anywhere. (#345)
-- Delete (or Backspace) removes the selected boards, with an Undo toast that brings them all back. A file keeps at least one board. (#344)
+- Delete (or Backspace) removes the selected boards, with an Undo toast that brings them all back. (#344)
 - Select a board like a layer: click its name, or click it with the board tool (Shift adds to the selection, Escape lets go). It gets a blue frame and handles; dragging a side or a corner grows or crops the board on that side, the drawing staying where it is, in one undo step. (#343)
 - The board tool is on A, like Figma, and the spray moves to P. (#341)
 - Help › Report a bug… and Help › Suggest an idea… open a new GitHub issue already filled in like the repository's templates; a bug report comes with the Baipix version and the browser written in. (#340)

@@ -405,7 +405,7 @@ export function createActions(editor: Editor) {
     /** Deletes the active board, with an Undo toast; a file keeps at least one. */
     deleteBoard() {
       const { doc } = editor.getState();
-      if (!editor.deleteBoard(doc.id)) return toast(t('board.lastOne'));
+      if (!editor.deleteBoard(doc.id)) return;
       toast(t('board.deleted', { name: doc.name }), undoDelete());
     },
 
@@ -414,7 +414,7 @@ export function createActions(editor: Editor) {
       const { selectedBoards, boards } = editor.getState();
       const names = boards.filter((b) => selectedBoards.includes(b.id)).map((b) => b.name);
       const count = editor.deleteBoards(selectedBoards);
-      if (!count) return toast(t('board.lastOne'));
+      if (!count) return;
       toast(
         count === 1 ? t('board.deleted', { name: names[0] }) : t('board.deletedMany', { count }),
         undoDelete(),

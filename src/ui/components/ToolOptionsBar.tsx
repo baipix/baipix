@@ -45,6 +45,7 @@ export function ToolOptionsBar() {
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const actions = useActions();
   const selectedBoards = useEditorState((s) => s.selectedBoards.length);
+  const noBoard = useEditorState((s) => !s.boards.length);
   const repeat = useEditorState((s) => s.repeat);
   const extrusion = useEditorState((s) => s.extrude);
   const hasSelection = useEditorState((s) => s.selection !== null);
@@ -725,6 +726,7 @@ export function ToolOptionsBar() {
           <button
             type="button"
             className="btn"
+            disabled={noBoard}
             onClick={() => editor.duplicateBoard(editor.getState().doc.id)}
           >
             {t('board.duplicate')}
@@ -732,6 +734,7 @@ export function ToolOptionsBar() {
           <button
             type="button"
             className="btn"
+            disabled={noBoard}
             onClick={() => (selectedBoards ? actions.deleteSelectedBoards() : actions.deleteBoard())}
           >
             {t('board.delete')}
