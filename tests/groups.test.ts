@@ -288,6 +288,16 @@ describe('Editor groups', () => {
     expect(selected(e)).toEqual(['a']);
   });
 
+  it('a click beside every layer lets go of the layers selected', () => {
+    const e = editor();
+    e.setTool('move');
+    click(e, 0);
+    click(e, 2, { add: true });
+    click(e, 6, {}, undefined, 6);
+    expect(selected(e)).toEqual(['c']);
+    expect(e.getState().layerFramed).toBe(false);
+  });
+
   it('duplicates every selected layer at once, in one undo step', () => {
     const e = editor();
     pick(e, 'a', 'c');
