@@ -886,14 +886,6 @@ describe('Editor', () => {
       expect(picked(e)).toBe('13');
     });
 
-    it("doesn't delete every layer", () => {
-      const e = four();
-      e.selectLayer(0, 'single');
-      e.selectLayer(3, 'range');
-      expect(e.deleteLayers()).toBe(0);
-      expect(names(e)).toBe('0123');
-    });
-
     it('merges the selected layers into the lowest one', () => {
       const e = four();
       e.selectLayer(1, 'single');

@@ -106,6 +106,8 @@ export interface Scene {
   selectedBoards?: Rect[];
   /** What layers being moved push off the board, drawn where it is so they follow the pointer. */
   floating?: SceneFloating[];
+  /** The Move tool's rectangle selecting layers, in art pixels of the active board. */
+  marquee?: Rect | null;
 }
 
 /** Pixels outside the active board, at their place relative to it, in art pixels. */
@@ -609,6 +611,21 @@ export function drawScene(
     ctx.textAlign = 'start';
   }
 
+  // The Move tool's marquee: a light blue rectangle, like in a design tool.
+  const marquee = scene.marquee;
+  if (marquee) {
+    const mx = X + marquee.x * s;
+    const my = Y + marquee.y * s;
+    ctx.save();
+    ctx.fillStyle = theme.highlight;
+    ctx.globalAlpha = 0.12;
+    ctx.fillRect(mx, my, marquee.w * s, marquee.h * s);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = theme.highlight;
+    ctx.lineWidth = lw;
+    ctx.strokeRect(mx + lw / 2, my + lw / 2, marquee.w * s - lw, marquee.h * s - lw);
+    ctx.restore();
+  }
   if (scene.loupe) drawLoupe(ctx, width, scene.composite, scene.loupe, camera, theme, checker);
 }
 
