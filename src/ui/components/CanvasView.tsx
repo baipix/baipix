@@ -7,7 +7,7 @@ import { flatten } from '../../engine/composite';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
 import { isShown } from '../../engine/groups';
-import type { Layer, PixelDoc } from '../../engine/document';
+import { isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
 import type { ToolId } from '../../engine/tools';
 import { t as translate, useT } from '../../i18n';
@@ -84,7 +84,7 @@ export function CanvasView() {
   const tool = useEditorState((s) => s.tool);
   const docId = useEditorState((s) => s.doc.id);
   const docName = useEditorState((s) => s.doc.name);
-  const noBoard = useEditorState((s) => !s.boards.length);
+  const noBoard = useEditorState((s) => isEmptyBoard(s.doc));
   const t = useT();
 
   useEffect(() => {
@@ -321,8 +321,7 @@ export function CanvasView() {
     /** The other boards, relative to the active one. */
     const otherBoards = (): SceneBoard[] => {
       const { boards, doc } = editor.getState();
-      if (boards.length < 2) return [];
-      const here = boards.find((b) => b.id === doc.id)!;
+      const here = activePlace();
       const docs = editor.getDocuments();
       return boards
         .filter((b) => b.id !== doc.id)
@@ -335,6 +334,31 @@ export function CanvasView() {
           image: boardImage(docs.find((d) => d.id === b.id)!),
           label: b.name,
         }));
+    };
+    /** The file's layers outside its boards when they aren't the active ones, relative to the active board. */
+    const freeLayers = (): SceneFloating | null => {
+      const free = editor.freeZone();
+      const { doc } = editor.getState();
+      if (!free || free === doc || !free.board) return null;
+      const here = activePlace();
+      return {
+        image: boardImage(free),
+        x: free.board.x - here.x,
+        y: free.board.y - here.y,
+        width: free.width,
+        height: free.height,
+        opacity: 1,
+      };
+    };
+    /** Whether a free layer (not the active ones) shows a pixel at an art point relative to the active board. */
+    const onFreeLayer = (p: Point): boolean => {
+      const free = editor.freeZone();
+      const f = freeLayers();
+      if (!free || !f) return false;
+      const [x, y] = [p.x - f.x, p.y - f.y];
+      if (x < 0 || y < 0 || x >= free.width || y >= free.height) return false;
+      const i = y * free.width + x;
+      return free.layers.some((l) => isShown(free, l) && l.opacity > 0 && l.pixels[i] >>> 24 !== 0);
     };
     /** The other board under an art point relative to the active board (its name included), if any. */
     const boardAt = (p: Point): SceneBoard | null => {
@@ -433,6 +457,7 @@ export function CanvasView() {
             : boardDraft && relative(draftRect(boardDraft)),
           selectedBoards: selectedBoardRects(),
           floating: floating(),
+          free: freeLayers(),
           marquee: editor.marqueeRect(),
         },
         camera(),
@@ -467,9 +492,8 @@ export function CanvasView() {
     });
     /** The active board's place in its file (0, 0 for a file of one board). */
     const activePlace = (): Point => {
-      const { boards, doc } = editor.getState();
-      const here = boards.find((b) => b.id === doc.id);
-      return { x: here?.x ?? 0, y: here?.y ?? 0 };
+      const { doc } = editor.getState();
+      return { x: doc.board?.x ?? 0, y: doc.board?.y ?? 0 };
     };
     /** A point on the canvas in the file's pixels: the camera keeps them still, whichever board is active. */
     const filePoint = (l: { x: number; y: number }): Point => {
@@ -548,6 +572,8 @@ export function CanvasView() {
     };
 
     const onLabel = (l: { x: number; y: number }) => {
+      // Free layers have no name shown above them.
+      if (!isBoard(editor.getState().doc)) return false;
       const r = labelRect(ctx, editor.getState().doc.name, camera());
       const x = l.x * viewport.dpr;
       const y = l.y * viewport.dpr;
@@ -860,7 +886,7 @@ export function CanvasView() {
       }
       // The frame name is renamed by double-click, so clicking it never draws.
       if (onLabel(l)) return;
-      const p = viewport.toPixel(l.x, l.y);
+      let p = viewport.toPixel(l.x, l.y);
       // Another board of the file: a click makes it the active one, and draws nothing.
       const { doc } = editor.getState();
       const outside = p.x < 0 || p.y < 0 || p.x >= doc.width || p.y >= doc.height;
@@ -881,9 +907,15 @@ export function CanvasView() {
         else boardDraft = { a: { x: p.x + at.x, y: p.y + at.y }, b: { x: p.x + at.x, y: p.y + at.y } };
         return;
       }
-      if (board) {
-        editor.switchBoard(board.id);
-        return;
+      // Free layers under the pointer, beside the boards: they become the active ones.
+      const free = !board && outside && e.button === 0 && onFreeLayer(p) ? editor.freeZone() : null;
+      if (board || free) {
+        const before = activePlace();
+        editor.switchBoard(board ? board.id : free!.id);
+        // The Move tool takes what's under the pointer at once, to drag it in the same gesture.
+        if (editor.getState().tool !== 'move') return;
+        const after = activePlace();
+        p = { x: p.x + before.x - after.x, y: p.y + before.y - after.y };
       }
       updateHover(p);
       if (e.button === 0 && beginRefDrag(l, e.metaKey || e.ctrlKey)) return;
@@ -1121,22 +1153,24 @@ export function CanvasView() {
         request();
         return;
       }
-      // A layer dragged with the Move tool and let go over another board goes onto that board.
+      // A layer dragged with the Move tool and let go over another board goes onto that board;
+      // let go beside every board, it stays there, outside them, like in Figma.
       const st = editor.getState();
       const moving =
         st.tool === 'move' &&
         editor.isStroking &&
         !editor.marqueeRect() &&
-        st.boards.length > 1 &&
-        !st.selection;
+        !st.selection &&
+        st.selectedLayers.length === 1 &&
+        !st.selectedGroup;
       const p = viewport.toPixel(local(e).x, local(e).y);
       const outside = p.x < 0 || p.y < 0 || p.x >= st.doc.width || p.y >= st.doc.height;
       const target = moving && outside ? boardAt(p) : null;
       editor.endStroke();
-      if (target) {
-        const { doc } = editor.getState();
-        editor.moveLayerToBoard(doc.layers[doc.activeLayer].id, target.id);
-      }
+      const { doc } = editor.getState();
+      const id = doc.layers[doc.activeLayer].id;
+      if (target) editor.moveLayerToBoard(id, target.id);
+      else if (moving && outside && isBoard(doc)) editor.moveLayerOut(id);
     };
 
     const onCancel = (e: PointerEvent) => {

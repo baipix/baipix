@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { isBoard } from '../../engine/document';
 import { useActions } from '../ActionsContext';
 import { ISO_PLANES, type IsoPlane } from '../../engine/isoPlane';
 import type { ToolOptions } from '../../engine/tools';
@@ -45,7 +46,7 @@ export function ToolOptionsBar() {
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const actions = useActions();
   const selectedBoards = useEditorState((s) => s.selectedBoards.length);
-  const noBoard = useEditorState((s) => !s.boards.length);
+  const noBoard = useEditorState((s) => !isBoard(s.doc));
   const repeat = useEditorState((s) => s.repeat);
   const extrusion = useEditorState((s) => s.extrude);
   const hasSelection = useEditorState((s) => s.selection !== null);

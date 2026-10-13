@@ -1,6 +1,13 @@
 import type { Selection } from '../../engine/selection';
 import { alpha, toCss, type Color } from '../../engine/color';
-import { hasBackground, isEmptyBoard, isoGridOrigin, mirrorAxes, type PixelDoc } from '../../engine/document';
+import {
+  hasBackground,
+  isEmptyBoard,
+  isFreeZone,
+  isoGridOrigin,
+  mirrorAxes,
+  type PixelDoc,
+} from '../../engine/document';
 import type { ViewSettings } from '../../engine/editor';
 import { diamondRows, tilesIsometric } from '../../engine/isoTile';
 import type { Point, Rect } from '../../engine/math';
@@ -106,6 +113,8 @@ export interface Scene {
   selectedBoards?: Rect[];
   /** What layers being moved push off the board, drawn where it is so they follow the pointer. */
   floating?: SceneFloating[];
+  /** The file's layers outside its boards, when another board is active: drawn as they are. */
+  free?: SceneFloating | null;
   /** The Move tool's rectangle selecting layers, in art pixels of the active board. */
   marquee?: Rect | null;
 }
@@ -263,7 +272,9 @@ export function drawScene(
   const cw = W * s;
   const ch = H * s;
   const lw = Math.max(1, Math.round(dpr));
-  const isoTiles = view.tile && tilesIsometric(doc);
+  // The free layers active: only their pixels, no background, frame, name or grid.
+  const free = isFreeZone(doc);
+  const isoTiles = view.tile && !free && tilesIsometric(doc);
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.imageSmoothingEnabled = false;
@@ -342,7 +353,7 @@ export function drawScene(
   // Tile preview: copies all around, as far as the view goes, drawn like the real canvas
   // (checkerboard included) so seams are easy to spot, then dimmed to keep the editable copy in
   // focus. Two pattern fills over the whole view, however many copies show when zoomed out.
-  if (view.tile) {
+  if (view.tile && !free) {
     ctx.save();
     ctx.translate(X, Y);
     ctx.fillStyle = checker;
@@ -376,7 +387,7 @@ export function drawScene(
   ctx.fillStyle = checker;
   // Isometric tiles: the canvas's corners show the neighbors, only its diamond is its own.
   if (isoTiles) ctx.fill(diamondPath(W, H, s));
-  else ctx.fillRect(0, 0, cw, ch);
+  else if (!free) ctx.fillRect(0, 0, cw, ch);
   ctx.restore();
   const ref = scene.reference;
   if (ref) {
@@ -399,6 +410,9 @@ export function drawScene(
     ctx.restore();
   }
   ctx.drawImage(scene.composite, X, Y, cw, ch);
+  // Layers outside the boards, over them, like objects beside the frames in Figma.
+  const loose = scene.free;
+  if (loose) ctx.drawImage(loose.image, X + loose.x * s, Y + loose.y * s, loose.width * s, loose.height * s);
   for (const f of scene.floating ?? []) {
     ctx.globalAlpha = f.opacity;
     ctx.drawImage(f.image, X + f.x * s, Y + f.y * s, f.width * s, f.height * s);
@@ -407,7 +421,7 @@ export function drawScene(
 
   // Render gap: paint strips between pixels with the background (or the checkerboard).
   const gap = camera.gap;
-  if (gap) {
+  if (gap && !free) {
     ctx.save();
     ctx.translate(X, Y);
     ctx.fillStyle = doc.backgroundVisible && alpha(doc.background) ? toCss(doc.background) : checker;
@@ -420,28 +434,30 @@ export function drawScene(
   ctx.font = labelFont(dpr);
   ctx.fillStyle = theme.muted;
   ctx.textBaseline = 'bottom';
-  ctx.fillText(scene.label, X, Y - Math.round(LABEL.gap * dpr));
+  if (!free) ctx.fillText(scene.label, X, Y - Math.round(LABEL.gap * dpr));
 
   // Pixel grid (every pixel) and major grid (every 8 pixels, drawn twice to stand out). Each line
   // is a column or row of the ink image, stretched: its color follows the pixels it runs along.
   const ink = scene.gridInk;
   const col = (i: number) => ctx.drawImage(ink, i, 0, 1, H, X + i * s, Y, 1, ch);
   const row = (j: number) => ctx.drawImage(ink, 0, j, W, 1, X, Y + j * s, cw, 1);
-  if (view.grid && s >= 6 && !gap) {
+  if (view.grid && s >= 6 && !gap && !free) {
     for (let i = 1; i < W; i++) if (i % 8) col(i);
     for (let j = 1; j < H; j++) if (j % 8) row(j);
   }
-  if (view.grid && s >= 2 && (W > 8 || H > 8)) {
+  if (view.grid && s >= 2 && (W > 8 || H > 8) && !free) {
     for (let k = 0; k < 2; k++) {
       for (let i = 8; i < W; i += 8) col(i);
       for (let j = 8; j < H; j += 8) row(j);
     }
   }
-  if (doc.isoGrid)
+  if (doc.isoGrid && !free)
     drawIsoGrid(ctx, doc.isoGrid, !!doc.isoGridVertical, W, H, X, Y, s, camera.dpr, theme.isoGrid);
-  ctx.strokeStyle = theme.frame;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(X - 0.5, Y - 0.5, cw + 1, ch + 1);
+  if (!free) {
+    ctx.strokeStyle = theme.frame;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(X - 0.5, Y - 0.5, cw + 1, ch + 1);
+  }
 
   if (scene.moveTarget) {
     const r = scene.moveTarget;

@@ -209,6 +209,11 @@ export interface BoardPlace {
    * shown, and goes when a board is made.
    */
   empty?: boolean;
+  /**
+   * The file's layers outside every board, like objects on Figma's canvas: not a board of its own
+   * (no background, frame or name shown, no export), it fits what it holds and goes when empty.
+   */
+  free?: boolean;
 }
 
 /** The file a document belongs to: its board's file, or itself. */
@@ -216,6 +221,12 @@ export const fileIdOf = (doc: PixelDoc): string => doc.board?.file ?? doc.id;
 
 /** Whether a document is the blank board of a file with no board (see `BoardPlace.empty`). */
 export const isEmptyBoard = (doc: PixelDoc): boolean => !!doc.board?.empty;
+
+/** Whether a document holds a file's layers outside its boards (see `BoardPlace.free`). */
+export const isFreeZone = (doc: PixelDoc): boolean => !!doc.board?.free;
+
+/** Whether a document is one of a file's boards: neither its blank board nor its free layers. */
+export const isBoard = (doc: PixelDoc): boolean => !isEmptyBoard(doc) && !isFreeZone(doc);
 
 /** The name of the file a document belongs to. */
 export const fileNameOf = (doc: PixelDoc): string => doc.board?.fileName ?? doc.name;

@@ -1,4 +1,5 @@
 import { alpha, pack } from '../engine/color';
+import { isBoard } from '../engine/document';
 import { isLinkedInstance } from '../engine/components';
 import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
@@ -141,12 +142,12 @@ export const MENU_BAR: MenuBarMenu[] = [
         { label: t('board.new'), onSelect: () => editor.addBoardBeside() },
         {
           label: t('board.duplicate'),
-          disabled: !editor.getState().boards.length,
+          disabled: !isBoard(editor.getState().doc),
           onSelect: () => editor.duplicateBoard(editor.getState().doc.id),
         },
         {
           label: t('board.delete'),
-          disabled: !editor.getState().boards.length,
+          disabled: !isBoard(editor.getState().doc),
           onSelect: () => actions.deleteBoard(),
         },
         '-',

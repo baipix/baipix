@@ -6,7 +6,7 @@ import { EffectsSection } from './EffectsSection';
 import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
-import { hasBackground, MAX_SIZE } from '../../engine/document';
+import { hasBackground, isBoard, isEmptyBoard, MAX_SIZE } from '../../engine/document';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
 import { uniqueColors } from '../../engine/region';
 import { useT } from '../../i18n';
@@ -717,16 +717,18 @@ function ExportSection() {
 
 export function RightPanel() {
   const t = useT();
-  // A file with no board: only what isn't a board's, its colors and the display.
-  const noBoard = useEditorState((s) => !s.boards.length);
+  // A file with no board: only what isn't a board's, its colors and the display. Layers outside
+  // the boards have their layer's settings, not a board's size or export.
+  const noBoard = useEditorState((s) => isEmptyBoard(s.doc));
+  const board = useEditorState((s) => isBoard(s.doc));
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
-      {!noBoard && <CanvasSection />}
+      {board && <CanvasSection />}
       <PaletteSection />
       {!noBoard && <LayerSection />}
       {!noBoard && <EffectsSection />}
       <DisplaySection />
-      {!noBoard && <ExportSection />}
+      {board && <ExportSection />}
     </aside>
   );
 }

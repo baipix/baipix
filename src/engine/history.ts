@@ -15,6 +15,8 @@ export interface Snapshot {
    * undoing it puts them back too (otherwise they stay as they are, outside the history).
    */
   resized?: boolean;
+  /** One side of a step made on two boards at once (a layer moved across): undone together. */
+  linked?: string;
 }
 
 export const takeSnapshot = (doc: PixelDoc, selection: Selection | null): Snapshot => ({
@@ -55,6 +57,11 @@ export class History {
   /** The last recorded state, to attach more to it. */
   top(): Snapshot | undefined {
     return this.undoStack[this.undoStack.length - 1];
+  }
+
+  /** The state redo would bring back, to look at. */
+  nextRedo(): Snapshot | undefined {
+    return this.redoStack[this.redoStack.length - 1];
   }
 
   /** Drops the last recorded state (e.g. a stroke that changed nothing). */

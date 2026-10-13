@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import { setLocale, t, useT, type Locale } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
@@ -137,7 +138,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   const ready = useRestore(editor, storage);
   const { uiHidden, sheet, panelWidths, home } = uiStore.use((s) => s);
   // A file with no board: no size, coordinates or preview to show.
-  const noBoard = useSyncExternalStore(editor.subscribe, () => !editor.getState().boards.length);
+  const noBoard = useSyncExternalStore(editor.subscribe, () => !isBoard(editor.getState().doc));
   useKeyboardShortcuts(editor, actions);
   // The first time the editor itself shows (not the home screen), a few tips.
   useEffect(() => {
