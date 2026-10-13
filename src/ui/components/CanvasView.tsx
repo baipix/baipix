@@ -109,7 +109,7 @@ export function CanvasView() {
     let reduceMotion = motionMedia.matches;
     let panStart: { x: number; y: number; panX: number; panY: number } | null = null;
     /** A board moved by its name: where the drag started and where the board was, in file pixels. */
-    let boardDrag: { id: string; start: Point; from: Point; moved: boolean } | null = null;
+    let boardDrag: { id: string; start: Point; from: Point; moved: boolean; copy: boolean } | null = null;
     /** A board being drawn with the board tool, corner to corner in file pixels. */
     let boardDraft: { a: Point; b: Point } | null = null;
     /** The selected board being resized by its sides: where it was, and the sides pulled. */
@@ -822,7 +822,13 @@ export function CanvasView() {
       if (e.button === 0 && (st.boards.length > 1 || st.tool === 'board')) {
         const named = boardLabelAt(l);
         if (named) {
-          boardDrag = { id: named.id, start: filePoint(l), from: { x: named.x, y: named.y }, moved: false };
+          boardDrag = {
+            id: named.id,
+            start: filePoint(l),
+            from: { x: named.x, y: named.y },
+            moved: false,
+            copy: e.altKey,
+          };
           return;
         }
       }
@@ -833,16 +839,24 @@ export function CanvasView() {
       const { doc } = editor.getState();
       const outside = p.x < 0 || p.y < 0 || p.x >= doc.width || p.y >= doc.height;
       const board = outside && e.button === 0 ? boardAt(p) : null;
-      if (board) {
-        if (st.tool === 'board') editor.selectBoards([board.id], e.shiftKey);
-        else editor.switchBoard(board.id);
+      // The board tool: a board, the active one or another, is dragged by its body too (a click
+      // selects it, Alt-drag copies it); beside every board, a drag draws a new one, corner to corner.
+      if (st.tool === 'board' && e.button === 0) {
+        const at = activePlace();
+        const target = board ?? (!outside ? st.boards.find((b) => b.id === st.doc.id) : null);
+        if (target)
+          boardDrag = {
+            id: target.id,
+            start: filePoint(l),
+            from: { x: target.x, y: target.y },
+            moved: false,
+            copy: e.altKey,
+          };
+        else boardDraft = { a: { x: p.x + at.x, y: p.y + at.y }, b: { x: p.x + at.x, y: p.y + at.y } };
         return;
       }
-      // The board tool: a click on the active board selects it; beside every board, a drag draws a
-      // new one, corner to corner (a click there lets go of the selection).
-      if (st.tool === 'board') {
-        if (!outside && e.button === 0) editor.selectBoards([st.doc.id], e.shiftKey);
-        else if (e.button === 0) boardDraft = { a: filePoint(l), b: filePoint(l) };
+      if (board) {
+        editor.switchBoard(board.id);
         return;
       }
       updateHover(p);
@@ -917,7 +931,14 @@ export function CanvasView() {
       if (boardDrag) {
         const p = filePoint(local(e));
         const [dx, dy] = [p.x - boardDrag.start.x, p.y - boardDrag.start.y];
-        if (dx || dy) boardDrag.moved = true;
+        if ((dx || dy) && !boardDrag.moved) {
+          boardDrag.moved = true;
+          // Alt-drag: a copy is made where the board is, and it's the copy that moves.
+          if (boardDrag.copy) {
+            editor.duplicateBoard(boardDrag.id, boardDrag.from);
+            boardDrag.id = editor.getState().doc.id;
+          }
+        }
         if (boardDrag.moved) editor.moveBoard(boardDrag.id, boardDrag.from.x + dx, boardDrag.from.y + dy);
         return;
       }
@@ -1028,7 +1049,8 @@ export function CanvasView() {
       if (boardDrag) {
         const { id, moved } = boardDrag;
         boardDrag = null;
-        if (!moved) editor.selectBoards([id], e.shiftKey);
+        if (moved) editor.selectBoards([id]);
+        else editor.selectBoards([id], e.shiftKey);
         return;
       }
       if (boardResize) {

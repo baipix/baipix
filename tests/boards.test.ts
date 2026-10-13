@@ -184,4 +184,12 @@ describe('boards', () => {
     expect(e.deleteBoards(ids)).toBe(2);
     expect(e.getState().boards.map((b) => b.id)).toEqual([ids[0]]);
   });
+
+  it('copies a board where asked, for Alt-drag', () => {
+    const e = twoBoards();
+    const small = e.getState().boards[1];
+    e.duplicateBoard(small.id, { x: 24, y: 20 });
+    expect(e.getState().boards[2]).toMatchObject({ name: 'Small copy', x: 24, y: 20, width: 8 });
+    expect(e.getState().doc.id).toBe(e.getState().boards[2].id);
+  });
 });

@@ -1032,8 +1032,11 @@ export class Editor {
     return going.length;
   }
 
-  /** Copies a board, layers and all, next to it on the right, and makes the copy active. */
-  duplicateBoard(id: string): void {
+  /**
+   * Copies a board, layers and all, and makes the copy active: next to it on the right, or at `at`
+   * in the file (Alt-drag drops it where the pointer goes).
+   */
+  duplicateBoard(id: string, at?: Point): void {
     const s = this.sessions.find((x) => x.doc.id === id);
     if (!s) return;
     this.cancelStroke();
@@ -1041,7 +1044,9 @@ export class Editor {
     doc.board ??= { file: doc.id, fileName: doc.name, x: 0, y: 0 };
     const copy = cloneDocument(doc, false);
     copy.name = this.labels.copyOf(doc.name);
-    copy.board = { ...doc.board, x: doc.board.x + doc.width + BOARD_SPACING };
+    copy.board = at
+      ? { ...doc.board, x: Math.round(at.x), y: Math.round(at.y) }
+      : { ...doc.board, x: doc.board.x + doc.width + BOARD_SPACING };
     copy.updatedAt = Date.now();
     const session: Session = { doc: copy, history: new History(), selection: null };
     this.sessions.splice(this.sessions.indexOf(s) + 1, 0, session);
