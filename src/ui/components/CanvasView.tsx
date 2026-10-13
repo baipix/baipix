@@ -1,4 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
+
+/** Which sides of a board a drag pulls (two for a corner). */
+type BoardSides = { left: boolean; right: boolean; top: boolean; bottom: boolean };
 import { pack, toHex } from '../../engine/color';
 import { flatten } from '../../engine/composite';
 import type { Point, Rect } from '../../engine/math';
@@ -109,6 +112,8 @@ export function CanvasView() {
     let boardDrag: { id: string; start: Point; from: Point; moved: boolean } | null = null;
     /** A board being drawn with the board tool, corner to corner in file pixels. */
     let boardDraft: { a: Point; b: Point } | null = null;
+    /** The selected board being resized by its sides: where it was, and the sides pulled. */
+    let boardResize: { from: Rect; sides: BoardSides; rect: Rect } | null = null;
     let pinch: Pinch | null = null;
     const pointers = new Map<number, { x: number; y: number; touch: boolean }>();
     // Alt held: drawing tools pick colors, so the loupe shows (even before the pointer moves).
@@ -399,7 +404,10 @@ export function CanvasView() {
           loupe,
           label: renamingRef.current ? '' : live.doc.name,
           boards: otherBoards(),
-          boardDraft: boardDraft && relative(draftRect(boardDraft)),
+          boardDraft: boardResize
+            ? relative(boardResize.rect)
+            : boardDraft && relative(draftRect(boardDraft)),
+          selectedBoards: selectedBoardRects(),
         },
         camera(),
         theme,
@@ -450,11 +458,50 @@ export function CanvasView() {
       w: Math.abs(b.x - a.x) + 1,
       h: Math.abs(b.y - a.y) + 1,
     });
+    /** The boards selected as boards, relative to the active one, for their blue frames. */
+    const selectedBoardRects = (): Rect[] => {
+      const { boards, selectedBoards } = editor.getState();
+      const at = activePlace();
+      return boards
+        .filter((b) => selectedBoards.includes(b.id))
+        .map((b) => ({ x: b.x - at.x, y: b.y - at.y, w: b.width, h: b.height }));
+    };
     /** A rectangle in file pixels, relative to the active board. */
     const relative = (r: Rect): Rect => {
       const at = activePlace();
       return { ...r, x: r.x - at.x, y: r.y - at.y };
     };
+    /**
+     * The sides of the selected board under the pointer (corners take two), with a few pixels of
+     * slack: the active board, when it's the only one selected.
+     */
+    const boardSidesAt = (l: { x: number; y: number }): BoardSides | null => {
+      const { selectedBoards, doc } = editor.getState();
+      if (selectedBoards.length !== 1 || selectedBoards[0] !== doc.id) return null;
+      const cam = camera();
+      const [x, y] = [l.x * viewport.dpr, l.y * viewport.dpr];
+      const [x0, y0] = [cam.originX, cam.originY];
+      const [x1, y1] = [x0 + doc.width * cam.scale, y0 + doc.height * cam.scale];
+      const t = 5 * viewport.dpr;
+      if (x < x0 - t || x > x1 + t || y < y0 - t || y > y1 + t) return null;
+      const sides = {
+        left: Math.abs(x - x0) <= t,
+        right: Math.abs(x - x1) <= t,
+        top: Math.abs(y - y0) <= t,
+        bottom: Math.abs(y - y1) <= t,
+      };
+      return sides.left || sides.right || sides.top || sides.bottom ? sides : null;
+    };
+    /** The board's rectangle once its `sides` are pulled to file point `p` (at least a pixel). */
+    const pulled = (from: Rect, sides: BoardSides, p: Point): Rect => {
+      let [x0, y0, x1, y1] = [from.x, from.y, from.x + from.w, from.y + from.h];
+      if (sides.left) x0 = Math.min(p.x, x1 - 1);
+      if (sides.right) x1 = Math.max(p.x + 1, x0 + 1);
+      if (sides.top) y0 = Math.min(p.y, y1 - 1);
+      if (sides.bottom) y1 = Math.max(p.y + 1, y0 + 1);
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    };
+
     /** The board whose name is under the pointer, the active one included. */
     const boardLabelAt = (l: { x: number; y: number }) => {
       const { boards } = editor.getState();
@@ -762,8 +809,16 @@ export function CanvasView() {
         axisDrag = axis;
         return;
       }
-      // With several boards (or the board tool), a board's name moves it; a click goes to it.
+      // The selected board's sides resize it.
       const st = editor.getState();
+      const sides = e.button === 0 ? boardSidesAt(l) : null;
+      if (sides) {
+        const at = activePlace();
+        const from = { x: at.x, y: at.y, w: st.doc.width, h: st.doc.height };
+        boardResize = { from, sides, rect: from };
+        return;
+      }
+      // With several boards (or the board tool), a board's name moves it; a click selects it.
       if (e.button === 0 && (st.boards.length > 1 || st.tool === 'board')) {
         const named = boardLabelAt(l);
         if (named) {
@@ -779,12 +834,15 @@ export function CanvasView() {
       const outside = p.x < 0 || p.y < 0 || p.x >= doc.width || p.y >= doc.height;
       const board = outside && e.button === 0 ? boardAt(p) : null;
       if (board) {
-        editor.switchBoard(board.id);
+        if (st.tool === 'board') editor.selectBoards([board.id], e.shiftKey);
+        else editor.switchBoard(board.id);
         return;
       }
-      // The board tool beside every board: draws a new one, corner to corner.
+      // The board tool: a click on the active board selects it; beside every board, a drag draws a
+      // new one, corner to corner (a click there lets go of the selection).
       if (st.tool === 'board') {
-        if (outside && e.button === 0) boardDraft = { a: filePoint(l), b: filePoint(l) };
+        if (!outside && e.button === 0) editor.selectBoards([st.doc.id], e.shiftKey);
+        else if (e.button === 0) boardDraft = { a: filePoint(l), b: filePoint(l) };
         return;
       }
       updateHover(p);
@@ -868,6 +926,11 @@ export function CanvasView() {
         request();
         return;
       }
+      if (boardResize) {
+        boardResize.rect = pulled(boardResize.from, boardResize.sides, filePoint(local(e)));
+        request();
+        return;
+      }
       if (axisDrag) {
         dragAxis(local(e));
         return;
@@ -908,12 +971,38 @@ export function CanvasView() {
       if (!editor.isStroking) canvas.classList.toggle('on-label', onLabel(local(e)));
       lastMods = { metaKey: e.metaKey, ctrlKey: e.ctrlKey };
       lastLocal = local(e);
-      // Over a corner handle, the cursor says it resizes.
+      // Over a corner handle, or a side of the selected board, the cursor says it resizes.
       const handle = editor.isStroking ? null : handleAt(lastLocal);
-      canvas.classList.toggle('on-handle-nwse', !!handle && (handle.corner === 0 || handle.corner === 3));
-      canvas.classList.toggle('on-handle-nesw', !!handle && (handle.corner === 1 || handle.corner === 2));
-      canvas.classList.toggle('on-handle-ns', !!handle && (handle.corner === 4 || handle.corner === 6));
-      canvas.classList.toggle('on-handle-ew', !!handle && (handle.corner === 5 || handle.corner === 7));
+      const side = editor.isStroking ? null : boardSidesAt(lastLocal);
+      const corner = (a: boolean, b: boolean) => (side ? a : false) || (!side && b);
+      canvas.classList.toggle(
+        'on-handle-nwse',
+        corner(
+          !!side && ((side.left && side.top) || (side.right && side.bottom)),
+          !!handle && (handle.corner === 0 || handle.corner === 3),
+        ),
+      );
+      canvas.classList.toggle(
+        'on-handle-nesw',
+        corner(
+          !!side && ((side.right && side.top) || (side.left && side.bottom)),
+          !!handle && (handle.corner === 1 || handle.corner === 2),
+        ),
+      );
+      canvas.classList.toggle(
+        'on-handle-ns',
+        corner(
+          !!side && (side.top || side.bottom) && !side.left && !side.right,
+          !!handle && (handle.corner === 4 || handle.corner === 6),
+        ),
+      );
+      canvas.classList.toggle(
+        'on-handle-ew',
+        corner(
+          !!side && (side.left || side.right) && !side.top && !side.bottom,
+          !!handle && (handle.corner === 5 || handle.corner === 7),
+        ),
+      );
       canvas.classList.toggle('on-rotate', !editor.isStroking && !handle && rotateZoneAt(lastLocal) !== null);
       // Alt picks a color with drawing tools: show the eyedropper while it is held.
       canvas.classList.toggle('alt-pick', e.altKey && DRAWING_TOOLS.includes(editor.getState().tool));
@@ -939,13 +1028,21 @@ export function CanvasView() {
       if (boardDrag) {
         const { id, moved } = boardDrag;
         boardDrag = null;
-        if (!moved) editor.switchBoard(id);
+        if (!moved) editor.selectBoards([id], e.shiftKey);
+        return;
+      }
+      if (boardResize) {
+        const { rect } = boardResize;
+        boardResize = null;
+        editor.resizeBoardTo(rect);
+        request();
         return;
       }
       if (boardDraft) {
         const r = draftRect(boardDraft);
         boardDraft = null;
         if (r.w > 1 && r.h > 1) editor.addBoard(r.x, r.y, r.w, r.h);
+        else editor.selectBoards([]);
         request();
         return;
       }
@@ -988,6 +1085,7 @@ export function CanvasView() {
       axisDrag = null;
       boardDrag = null;
       boardDraft = null;
+      boardResize = null;
       guideDrag = null;
       if (refDrag) editor.updateReference(refDrag.rect);
       refDrag = null;
