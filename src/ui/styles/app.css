@@ -725,6 +725,19 @@ body.is-resizing * {
 .item[style*='--depth'] {
   padding-left: calc(8px + var(--depth) * 16px);
 }
+.board-toggle {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  color: var(--muted);
+}
+/* A board's layers sit one step in from its row. */
+.board-layers {
+  padding-left: 16px;
+}
+.board-item .item-name {
+  font-weight: 600;
+}
 .group-item {
   gap: 4px;
   padding-left: calc(2px + var(--depth, 0) * 16px) !important;

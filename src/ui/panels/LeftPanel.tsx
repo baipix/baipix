@@ -202,6 +202,8 @@ function LayersSection() {
   const referenceSelected = useEditorState((s) => s.referenceSelected);
   const reference = doc.reference;
   const selectedGroup = useEditorState((s) => s.selectedGroup);
+  const boards = useEditorState((s) => s.boards);
+  const selectedBoards = useEditorState((s) => s.selectedBoards);
   const multi = !referenceSelected && selected.length > 1;
   const n = doc.layers.length;
   // A component needs something drawn on a plain layer (not an instance, not one already).
@@ -433,26 +435,9 @@ function LayersSection() {
         drag.ids.includes(g.id),
       ));
 
-  return (
-    <Section
-      title={t('section.layers')}
-      className="grow"
-      aside={
-        <>
-          {!reference && (
-            <IconButton icon="image" label={t('reference.add')} onClick={() => void actions.addReference()} />
-          )}
-          <IconButton
-            icon="component"
-            label={t('component.create')}
-            shortcut="Ctrl+Alt+K"
-            disabled={!canMakeComponent}
-            onClick={() => editor.createComponent()}
-          />
-          <IconButton icon="plus" label={t('layer.new')} onClick={() => editor.addLayer()} />
-        </>
-      }
-    >
+  // The active board's layers and groups (and its reference image).
+  const list = (
+    <>
       {/* Delete in the list removes the layers even with pixels selected (on the canvas, it clears them). */}
       <div
         className="item-list"
@@ -645,6 +630,57 @@ function LayersSection() {
           </div>
         )}
       </div>
+    </>
+  );
+
+  return (
+    <Section
+      title={t('section.layers')}
+      className="grow"
+      aside={
+        <>
+          {!reference && (
+            <IconButton icon="image" label={t('reference.add')} onClick={() => void actions.addReference()} />
+          )}
+          <IconButton
+            icon="component"
+            label={t('component.create')}
+            shortcut="Ctrl+Alt+K"
+            disabled={!canMakeComponent}
+            onClick={() => editor.createComponent()}
+          />
+          <IconButton icon="plus" label={t('layer.new')} onClick={() => editor.addLayer()} />
+        </>
+      }
+    >
+      {/* A file of several boards: each board's row, the active one open with its layers under it. */}
+      {boards.length > 1
+        ? boards.map((b) => (
+            <div key={b.id} className="board-block">
+              <div
+                role="button"
+                tabIndex={0}
+                className={`item group-item board-item${selectedBoards.includes(b.id) ? ' is-active' : ''}${
+                  b.id === doc.id ? ' is-open' : ''
+                }`}
+                onClick={(e) => editor.selectBoards([b.id], e.shiftKey)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !(e.target as HTMLElement).closest('input'))
+                    editor.selectBoards([b.id]);
+                }}
+              >
+                <span className="board-toggle" aria-hidden="true">
+                  <Icon name={b.id === doc.id ? 'caret' : 'chevronRight'} size={16} />
+                </span>
+                <span className="group-icon" aria-hidden="true">
+                  <Icon name="board" size={16} />
+                </span>
+                <EditableName value={b.name} onRename={(v) => editor.renameBoard(b.id, v)} />
+              </div>
+              {b.id === doc.id && <div className="board-layers">{list}</div>}
+            </div>
+          ))
+        : list}
     </Section>
   );
 }
