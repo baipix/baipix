@@ -3385,12 +3385,10 @@ export class Editor {
       this.commit(false);
     }
     if (id === 'move' && !this.active.selection) {
-      // Beside every layer (and outside the active one's frame), a click just drops the frame.
+      // Beside every layer (and outside the active one's frame), a click lets go of the layers
+      // selected, like a click on the empty canvas in a design tool: the active one stays, unframed.
       if (!mods.keepLayer && !this.pickLayerAt(p, mods.add)) {
-        if (!this.active.unframed) {
-          this.active.unframed = true;
-          this.commit(false);
-        }
+        this.deselectLayers();
         return false;
       }
       this.active.unframed = false;
