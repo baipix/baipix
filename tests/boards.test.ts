@@ -54,7 +54,6 @@ describe('boards', () => {
     expect(s.boards[1]).toMatchObject({ name: 'Tiny', x: 40, y: 8 });
     expect(e.deleteBoard(small)).toBe(true);
     expect(e.getState().boards).toHaveLength(1);
-    expect(e.deleteBoard(e.getState().boards[0].id)).toBe(false);
   });
 
   it('deletes, brings back and duplicates a whole file', () => {
@@ -172,7 +171,7 @@ describe('boards', () => {
     expect(e.getState().boards[1]).toMatchObject({ name: 'Moved', x: 60, y: 30 });
   });
 
-  it('deletes the selected boards in one go, one Undo bringing them back, and keeps one', () => {
+  it('deletes the selected boards in one go, one Undo bringing them back', () => {
     const e = twoBoards();
     e.addBoardBeside();
     const ids = e.getState().boards.map((b) => b.id);
@@ -180,9 +179,34 @@ describe('boards', () => {
     expect(e.getState().boards.map((b) => b.id)).toEqual([ids[0]]);
     e.restoreDeleted();
     expect(e.getState().boards).toHaveLength(3);
-    // All of them: the first one stays.
+  });
+
+  it('can be left with no board, then makes one or brings them back', () => {
+    const e = twoBoards();
+    const ids = e.getState().boards.map((b) => b.id);
     expect(e.deleteBoards(ids)).toBe(2);
-    expect(e.getState().boards.map((b) => b.id)).toEqual([ids[0]]);
+    let s = e.getState();
+    expect(s.boards).toEqual([]);
+    expect(s.files[0]).toMatchObject({ name: 'Icons', boards: 0 });
+    // Nothing to draw on.
+    e.setTool('pencil');
+    expect(e.beginStroke({ x: 0, y: 0 }, false, { shift: false })).toBe(false);
+    // Saved and opened again, it still has none.
+    const again = fileFromJson(fileToJson(e.fileBoards()));
+    expect(again.map((d) => d.board?.empty)).toEqual([true]);
+    // Undo brings them back, and the blank board goes.
+    e.restoreDeleted();
+    expect(e.getState().boards.map((b) => b.id)).toEqual(ids);
+    expect(e.fileBoards()).toHaveLength(2);
+    // A new board takes the blank one's place.
+    e.deleteBoards(ids);
+    e.addBoard(0, 0, 10, 6);
+    s = e.getState();
+    expect(s.boards).toHaveLength(1);
+    expect(e.fileBoards()).toHaveLength(1);
+    expect(s.doc).toMatchObject({ width: 10, height: 6 });
+    expect(s.doc.board?.empty).toBeUndefined();
+    expect(s.files[0]).toMatchObject({ name: 'Icons', boards: 1 });
   });
 
   it('copies a board where asked, for Alt-drag', () => {

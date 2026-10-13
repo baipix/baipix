@@ -1,6 +1,6 @@
 import type { Selection } from '../../engine/selection';
 import { alpha, toCss, type Color } from '../../engine/color';
-import { hasBackground, isoGridOrigin, mirrorAxes, type PixelDoc } from '../../engine/document';
+import { hasBackground, isEmptyBoard, isoGridOrigin, mirrorAxes, type PixelDoc } from '../../engine/document';
 import type { ViewSettings } from '../../engine/editor';
 import { diamondRows, tilesIsometric } from '../../engine/isoTile';
 import type { Point, Rect } from '../../engine/math';
@@ -336,6 +336,8 @@ export function drawScene(
     ctx.textBaseline = 'bottom';
     ctx.fillText(`${draft.w} × ${draft.h}`, dx, dy - Math.round(LABEL.gap * dpr));
   }
+  // A file with no board: only the others' outlines and a board being drawn (the canvas says to make one).
+  if (isEmptyBoard(doc)) return;
 
   // Tile preview: copies all around, as far as the view goes, drawn like the real canvas
   // (checkerboard included) so seams are easy to spot, then dimmed to keep the editable copy in

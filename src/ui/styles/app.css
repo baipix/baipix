@@ -941,6 +941,25 @@ body.is-resizing * {
   cursor: default;
 }
 /* Inline rename of the frame name, drawn over the canvas label (bottom-aligned like the text). */
+/* A file with no board: centered on the canvas, letting drags through to draw one. */
+.no-board {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+.no-board p {
+  margin: 0;
+}
+.no-board .btn {
+  pointer-events: auto;
+}
+
 .frame-name-input {
   position: absolute;
   transform: translate(-5px, -100%);

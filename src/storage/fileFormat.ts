@@ -333,7 +333,15 @@ function readBoard(b: unknown): { board: BoardPlace } | null {
     return null;
   const at = (n: unknown) =>
     typeof n === 'number' && Number.isFinite(n) ? clamp(Math.round(n), -1e6, 1e6) : 0;
-  return { board: { file: v.file, fileName: v.fileName.slice(0, 120), x: at(v.x), y: at(v.y) } };
+  return {
+    board: {
+      file: v.file,
+      fileName: v.fileName.slice(0, 120),
+      x: at(v.x),
+      y: at(v.y),
+      ...(v.empty === true && { empty: true }),
+    },
+  };
 }
 
 /**
@@ -388,7 +396,13 @@ export function fileFromJson(text: string): PixelDoc[] {
   return data.boards.map((b) => {
     const doc = deserializeDocument({ ...b, version: 1 });
     doc.id = newId('doc');
-    doc.board = { file, fileName: fileName.slice(0, 120), x: doc.board?.x ?? 0, y: doc.board?.y ?? 0 };
+    doc.board = {
+      file,
+      fileName: fileName.slice(0, 120),
+      x: doc.board?.x ?? 0,
+      y: doc.board?.y ?? 0,
+      ...(doc.board?.empty && { empty: true }),
+    };
     return doc;
   });
 }

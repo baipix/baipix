@@ -637,19 +637,25 @@ function LayersSection() {
       title={t('section.layers')}
       className="grow"
       aside={
-        <>
-          {!reference && (
-            <IconButton icon="image" label={t('reference.add')} onClick={() => void actions.addReference()} />
-          )}
-          <IconButton
-            icon="component"
-            label={t('component.create')}
-            shortcut="Ctrl+Alt+K"
-            disabled={!canMakeComponent}
-            onClick={() => editor.createComponent()}
-          />
-          <IconButton icon="plus" label={t('layer.new')} onClick={() => editor.addLayer()} />
-        </>
+        boards.length > 0 && (
+          <>
+            {!reference && (
+              <IconButton
+                icon="image"
+                label={t('reference.add')}
+                onClick={() => void actions.addReference()}
+              />
+            )}
+            <IconButton
+              icon="component"
+              label={t('component.create')}
+              shortcut="Ctrl+Alt+K"
+              disabled={!canMakeComponent}
+              onClick={() => editor.createComponent()}
+            />
+            <IconButton icon="plus" label={t('layer.new')} onClick={() => editor.addLayer()} />
+          </>
+        )
       }
     >
       {/* A file of several boards: each board's row, the active one open with its layers under it. */}
@@ -679,7 +685,7 @@ function LayersSection() {
               {b.id === doc.id && <div className="board-layers">{list}</div>}
             </div>
           ))
-        : list}
+        : boards.length > 0 && list}
     </Section>
   );
 }

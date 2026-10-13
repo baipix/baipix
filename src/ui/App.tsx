@@ -136,6 +136,8 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   const actions = useMemo(() => createActions(editor), [editor]);
   const ready = useRestore(editor, storage);
   const { uiHidden, sheet, panelWidths, home } = uiStore.use((s) => s);
+  // A file with no board: no size, coordinates or preview to show.
+  const noBoard = useSyncExternalStore(editor.subscribe, () => !editor.getState().boards.length);
   useKeyboardShortcuts(editor, actions);
   // The first time the editor itself shows (not the home screen), a few tips.
   useEffect(() => {
@@ -166,7 +168,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             <PanelResizer side="right" />
             <MobileBar />
             <MobileColors />
-            <Coordinates />
+            {!noBoard && <Coordinates />}
             <IconButton
               className="icon-btn large shortcuts-help-button"
               icon="help"
@@ -175,7 +177,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
               shortcut="?"
               onClick={() => openDialog({ type: 'shortcuts' })}
             />
-            <FloatingPreview />
+            {!noBoard && <FloatingPreview />}
             <ToolOptionsBar />
             <Toolbar />
           </main>

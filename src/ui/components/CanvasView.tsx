@@ -84,6 +84,7 @@ export function CanvasView() {
   const tool = useEditorState((s) => s.tool);
   const docId = useEditorState((s) => s.doc.id);
   const docName = useEditorState((s) => s.doc.name);
+  const noBoard = useEditorState((s) => !s.boards.length);
   const t = useT();
 
   useEffect(() => {
@@ -1268,6 +1269,16 @@ export function CanvasView() {
       }}
     >
       <canvas ref={canvasRef} className="canvas" />
+      {/* A file with no board: a word in the middle, and a button to make one. */}
+      {noBoard && (
+        <div className="no-board">
+          <p>{t('board.none')}</p>
+          <button type="button" className="btn btn-primary" onClick={() => editor.addBoardBeside()}>
+            {t('board.create')}
+          </button>
+          <p className="muted">{t('board.createHint')}</p>
+        </div>
+      )}
       {renaming && (
         <input
           className="frame-name-input"

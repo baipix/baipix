@@ -350,7 +350,9 @@ export const en = {
   'board.delete': 'Delete board',
   'board.deleted': '{name} deleted.',
   'board.deletedMany': '{count} boards deleted.',
-  'board.lastOne': 'A file keeps at least one board.',
+  'board.none': 'No board in this file yet.',
+  'board.create': 'Create a board',
+  'board.createHint': 'Or draw one with the Board tool (A).',
   'hint.plane':
     'On a wall, drag across the box the shape fits in: its top and bottom go along the wall at 2:1 (Shift: as tall as wide). On the ground, drag from the top corner of its diamond to the bottom one (Shift: regular; the ellipse: across).',
   'plane.label': 'Plane',
