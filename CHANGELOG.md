@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Boards in the Layers panel: in a file of several boards, each board has its row, the active one open with its layers and groups under it, like Figma. A click on a row selects the board (Shift adds it) and opens it; a double-click renames it. (#PR)
+- Boards in the Layers panel: in a file of several boards, each board has its row, the active one open with its layers and groups under it, like Figma. A click on a row selects the board (Shift adds it) and opens it; a double-click renames it. (#347)
 - Align boards: with several boards selected (Shift-click), the Align commands (Layer menu, their Alt shortcuts, or the buttons in the board tool's bar) line them up against the box they fill together. Delete board removes them all. (#346)
 - Alt-drag (Option-drag) a board, by its name or with the board tool by its body, to drop a copy of it where you let go, layers and all. With the board tool, a board can also be moved by dragging it anywhere. (#345)
 - Delete (or Backspace) removes the selected boards, with an Undo toast that brings them all back. A file keeps at least one board. (#344)
