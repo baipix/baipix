@@ -288,6 +288,8 @@ export const en = {
   'menu.theme': 'Theme',
   'menu.language': 'Language',
   'menu.github': 'Source code on GitHub',
+  'menu.reportBug': 'Report a bug…',
+  'menu.suggestIdea': 'Suggest an idea…',
 
   'render.pixelSize': 'Size',
   'render.pixelSizeHint': 'Size of one pixel in the exported file',

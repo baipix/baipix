@@ -14,6 +14,38 @@ import { SELECTS } from './tools';
 const GITHUB_URL = 'https://github.com/baipix/baipix';
 const CHANGELOG_URL = `${GITHUB_URL}/blob/main/CHANGELOG.md`;
 
+/**
+ * A new GitHub issue, filled in like the repository's templates (.github/ISSUE_TEMPLATE). A bug
+ * report comes with the version and the browser already written in, which are always asked for.
+ * The person sees it all before sending, on GitHub, with their account.
+ */
+function newIssueUrl(kind: 'bug' | 'idea'): string {
+  const body =
+    kind === 'bug'
+      ? [
+          '**What happened**',
+          '',
+          '',
+          '**Steps to reproduce**',
+          '1. ',
+          '2. ',
+          '',
+          '**What you expected**',
+          '',
+          '',
+          '**Browser and OS**',
+          `Baipix ${__APP_VERSION__} · ${navigator.userAgent}`,
+          '',
+          'A `.baipix` file of the drawing helps a lot (File → Download as .baipix).',
+        ]
+      : ['**What would you like to do?**', '', '', '**How do you imagine it?**', ''];
+  const params = new URLSearchParams({
+    labels: kind === 'bug' ? 'bug' : 'enhancement',
+    body: body.join('\n'),
+  });
+  return `${GITHUB_URL}/issues/new?${params}`;
+}
+
 /** A file's "…" menu, in the Files list and on the home screen cards. */
 export function fileMenu(editor: Editor, actions: Actions, file: FileInfo): MenuItem[] {
   return [
@@ -441,6 +473,12 @@ export const MENU_BAR: MenuBarMenu[] = [
       },
       { label: t('menu.shortcuts'), shortcut: '?', onSelect: () => openDialog({ type: 'shortcuts' }) },
       { label: t('menu.tour'), onSelect: () => uiStore.set({ tour: 0 }) },
+      '-',
+      { label: t('menu.reportBug'), onSelect: () => window.open(newIssueUrl('bug'), '_blank', 'noopener') },
+      {
+        label: t('menu.suggestIdea'),
+        onSelect: () => window.open(newIssueUrl('idea'), '_blank', 'noopener'),
+      },
       { label: t('menu.github'), onSelect: () => window.open(GITHUB_URL, '_blank', 'noopener') },
       '-',
       {
