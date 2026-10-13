@@ -44,6 +44,7 @@ export function ToolOptionsBar() {
   const options = useEditorState((s) => s.options);
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const actions = useActions();
+  const selectedBoards = useEditorState((s) => s.selectedBoards.length);
   const repeat = useEditorState((s) => s.repeat);
   const extrusion = useEditorState((s) => s.extrude);
   const hasSelection = useEditorState((s) => s.selection !== null);
@@ -716,6 +717,8 @@ export function ToolOptionsBar() {
       info = t('hint.board');
       body = (
         <div className="button-row">
+          {/* Several boards selected: they line up against the box they fill together. */}
+          {selectedBoards > 1 && aligns}
           <button type="button" className="btn" onClick={() => editor.addBoardBeside()}>
             {t('board.new')}
           </button>
@@ -726,7 +729,11 @@ export function ToolOptionsBar() {
           >
             {t('board.duplicate')}
           </button>
-          <button type="button" className="btn" onClick={() => actions.deleteBoard()}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => (selectedBoards ? actions.deleteSelectedBoards() : actions.deleteBoard())}
+          >
             {t('board.delete')}
           </button>
         </div>
