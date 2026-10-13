@@ -230,7 +230,9 @@ export type Notice =
   | { type: 'merged' }
   | { type: 'groupTooDeep' }
   | { type: 'instanceLocked' }
-  | { type: 'componentCreated' };
+  | { type: 'componentCreated' }
+  | { type: 'componentStaysOnBoard' }
+  | { type: 'layerToBoard'; board: string };
 
 export interface Preferences {
   tool: ToolId;
@@ -1022,6 +1024,54 @@ export class Editor {
       doc.updatedAt = Date.now();
     }
     this.commit();
+  }
+
+  /**
+   * Moves a layer of the active board to another board of the file, keeping where it is in the
+   * file (what's outside the new board is kept outside it), and makes that board active with the
+   * layer selected. Components and their copies stay on their board: their links don't cross
+   * boards yet. One undo step on each board. Returns false when nothing moved.
+   */
+  moveLayerToBoard(layerId: string, boardId: string): boolean {
+    const from = this.active;
+    const to = this.boardsOf(fileIdOf(from.doc)).find((b) => b.doc.id === boardId);
+    const layer = from.doc.layers.find((l) => l.id === layerId);
+    if (!to || to === from || !layer) return false;
+    if (layer.component || layer.instance) {
+      this.notice({ type: 'componentStaysOnBoard' });
+      return false;
+    }
+    if (layer.locked) {
+      this.notice({ type: 'layerLocked' });
+      return false;
+    }
+    this.cancelStroke();
+    const src = from.doc;
+    const dst = to.doc;
+    const dx = (src.board?.x ?? 0) - (dst.board?.x ?? 0);
+    const dy = (src.board?.y ?? 0) - (dst.board?.y ?? 0);
+    const moved = reframe(layer.pixels, src.width, src.height, layer.outside, dx, dy, dst.width, dst.height);
+    // Off the board it leaves: the board keeps a layer, even if it's an empty one.
+    this.edit((doc) => {
+      const i = doc.layers.findIndex((l) => l.id === layerId);
+      doc.layers.splice(i, 1);
+      if (!doc.layers.length) doc.layers.push(createLayer(this.labels.layer(1), doc.width, doc.height));
+      doc.activeLayer = Math.min(doc.activeLayer, doc.layers.length - 1);
+    });
+    // Onto the other one, on top, as it was (name, opacity, blend mode, effects), out of any group.
+    this.activate(to);
+    this.edit((doc) => {
+      const copy: Layer = { ...layer, pixels: moved.pixels };
+      delete copy.group;
+      if (moved.outside) copy.outside = moved.outside;
+      else delete copy.outside;
+      doc.layers.push(copy);
+      doc.activeLayer = doc.layers.length - 1;
+    });
+    this.active.picked = [layer.id];
+    this.notice({ type: 'layerToBoard', board: dst.name });
+    this.commit();
+    return true;
   }
 
   /** Moves a board of the active file to (`x`, `y`) in the file. */

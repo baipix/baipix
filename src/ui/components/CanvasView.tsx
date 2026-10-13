@@ -1095,7 +1095,17 @@ export function CanvasView() {
         request();
         return;
       }
+      // A layer dragged with the Move tool and let go over another board goes onto that board.
+      const st = editor.getState();
+      const moving = st.tool === 'move' && editor.isStroking && st.boards.length > 1 && !st.selection;
+      const p = viewport.toPixel(local(e).x, local(e).y);
+      const outside = p.x < 0 || p.y < 0 || p.x >= st.doc.width || p.y >= st.doc.height;
+      const target = moving && outside ? boardAt(p) : null;
       editor.endStroke();
+      if (target) {
+        const { doc } = editor.getState();
+        editor.moveLayerToBoard(doc.layers[doc.activeLayer].id, target.id);
+      }
     };
 
     const onCancel = (e: PointerEvent) => {
