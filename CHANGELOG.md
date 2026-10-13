@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The board tool is on A, like Figma, and the spray moves to P. (#341)
 - Help › Report a bug… and Help › Suggest an idea… open a new GitHub issue already filled in like the repository's templates; a bug report comes with the Baipix version and the browser written in. (#340)
 - A file's boards share its palette: a change on one board, undo included, is a change for all of them. With Drawing colors, each board shows the colors it uses. (#323)
 - Export every board at once: in a file of several boards, Export gets an All boards option, which gives a .zip with one file per board, named after it, in PNG, SVG or Aseprite, each at its own pixel size. (#322)
