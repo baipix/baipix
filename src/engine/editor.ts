@@ -986,6 +986,44 @@ export class Editor {
     else this.commit(false);
   }
 
+  /**
+   * Lines the selected boards up against the edges, or the middle, of the box they fill together,
+   * like Figma. Board places aren't in the undo history, like moving a board.
+   */
+  alignBoards(to: 'left' | 'centerX' | 'right' | 'top' | 'centerY' | 'bottom'): void {
+    const picked = this.boardsOf(fileIdOf(this.doc)).filter((s) =>
+      this.state.selectedBoards.includes(s.doc.id),
+    );
+    if (picked.length < 2) return;
+    const places = picked.map(({ doc }) => ({ doc, x: doc.board?.x ?? 0, y: doc.board?.y ?? 0 }));
+    const x0 = Math.min(...places.map((p) => p.x));
+    const y0 = Math.min(...places.map((p) => p.y));
+    const x1 = Math.max(...places.map((p) => p.x + p.doc.width));
+    const y1 = Math.max(...places.map((p) => p.y + p.doc.height));
+    for (const { doc, x, y } of places) {
+      if (!doc.board) continue;
+      const nx =
+        to === 'left'
+          ? x0
+          : to === 'right'
+            ? x1 - doc.width
+            : to === 'centerX'
+              ? Math.round((x0 + x1 - doc.width) / 2)
+              : x;
+      const ny =
+        to === 'top'
+          ? y0
+          : to === 'bottom'
+            ? y1 - doc.height
+            : to === 'centerY'
+              ? Math.round((y0 + y1 - doc.height) / 2)
+              : y;
+      doc.board = { ...doc.board, x: nx, y: ny };
+      doc.updatedAt = Date.now();
+    }
+    this.commit();
+  }
+
   /** Moves a board of the active file to (`x`, `y`) in the file. */
   moveBoard(id: string, x: number, y: number): void {
     const s = this.boardsOf(fileIdOf(this.doc)).find((b) => b.doc.id === id);
@@ -3068,6 +3106,8 @@ export class Editor {
    * its middle, as one undo step. Only the drawn pixels count, not the empty part of the selection.
    */
   align(to: 'left' | 'centerX' | 'right' | 'top' | 'centerY' | 'bottom'): void {
+    // Several boards selected as boards: they're the ones lined up.
+    if (this.state.selectedBoards.length > 1) return this.alignBoards(to);
     const doc = this.doc;
     const area = clipRect(this.targetRect(), doc.width, doc.height);
     // Several layers selected (a group), no selection: what they draw together.

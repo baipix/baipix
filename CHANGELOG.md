@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Align boards: with several boards selected (Shift-click), the Align commands (Layer menu, their Alt shortcuts, or the buttons in the board tool's bar) line them up against the box they fill together. Delete board removes them all. (#PR)
 - Alt-drag (Option-drag) a board, by its name or with the board tool by its body, to drop a copy of it where you let go, layers and all. With the board tool, a board can also be moved by dragging it anywhere. (#345)
 - Delete (or Backspace) removes the selected boards, with an Undo toast that brings them all back. A file keeps at least one board. (#344)
 - Select a board like a layer: click its name, or click it with the board tool (Shift adds to the selection, Escape lets go). It gets a blue frame and handles; dragging a side or a corner grows or crops the board on that side, the drawing staying where it is, in one undo step. (#343)

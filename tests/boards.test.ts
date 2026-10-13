@@ -192,4 +192,18 @@ describe('boards', () => {
     expect(e.getState().boards[2]).toMatchObject({ name: 'Small copy', x: 24, y: 20, width: 8 });
     expect(e.getState().doc.id).toBe(e.getState().boards[2].id);
   });
+
+  it('aligns the selected boards against the box they fill together', () => {
+    const e = twoBoards();
+    const [icons, small] = e.getState().boards;
+    e.moveBoard(small.id, 24, 30);
+    e.selectBoards([icons.id, small.id]);
+    e.align('top');
+    expect(e.getState().boards.map((b) => b.y)).toEqual([0, 0]);
+    e.align('bottom');
+    // Icons is 16 tall, Small 8: their bottoms meet at 16.
+    expect(e.getState().boards.map((b) => b.y + b.height)).toEqual([16, 16]);
+    e.align('left');
+    expect(e.getState().boards.map((b) => b.x)).toEqual([0, 0]);
+  });
 });
