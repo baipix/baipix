@@ -409,6 +409,18 @@ export function createActions(editor: Editor) {
       toast(t('board.deleted', { name: doc.name }), undoDelete());
     },
 
+    /** Deletes the boards selected as boards (the Delete key), with an Undo toast. */
+    deleteSelectedBoards() {
+      const { selectedBoards, boards } = editor.getState();
+      const names = boards.filter((b) => selectedBoards.includes(b.id)).map((b) => b.name);
+      const count = editor.deleteBoards(selectedBoards);
+      if (!count) return toast(t('board.lastOne'));
+      toast(
+        count === 1 ? t('board.deleted', { name: names[0] }) : t('board.deletedMany', { count }),
+        undoDelete(),
+      );
+    },
+
     /** Deletes the selected layers (or the active one), with an Undo toast. */
     deleteLayers() {
       const group = editor.getState().selectedGroup;
