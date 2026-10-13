@@ -276,6 +276,8 @@ type Deleted =
       entries: { layer: Layer; index: number }[];
       /** The groups as they were, to bring back the ones that went away with their layers. */
       groups?: LayerGroup[];
+      /** The empty layer put in when every layer went, taken out again if still empty. */
+      placeholder?: Layer;
     };
 
 type Listener = () => void;
@@ -459,6 +461,11 @@ export class Editor {
   private stroke: Stroke | null = null;
   /** Shift+press on a layer already selected: it leaves the selection on release, unless dragged. */
   private unpick: { ids: string[]; start: Point; moved: boolean } | null = null;
+  /**
+   * The Move tool dragged from beside every layer: a rectangle that selects the layers it touches,
+   * like in a design tool. `kept`: the layers selected before, with Shift.
+   */
+  private marquee: { start: Point; end: Point; kept: string[] } | null = null;
   /** Color adjustment in progress: the original pixels of the layers being adjusted. */
   /** Resizing by the handles: the content being resized and how to put it back. */
   private scaling: {
@@ -1174,6 +1181,8 @@ export class Editor {
     this.cancelAdjust();
     this.active = d.session;
     this.edit((doc) => {
+      const blank = d.kind === 'layers' && d.placeholder;
+      if (blank && !blank.pixels.some((c) => c !== 0)) doc.layers = doc.layers.filter((l) => l !== blank);
       // Lowest first, so each layer lands back at its own index.
       for (const { layer, index } of entries) doc.layers.splice(Math.min(index, doc.layers.length), 0, layer);
       // The groups that went away with their layers come back too.
@@ -1542,20 +1551,24 @@ export class Editor {
   }
 
   /**
-   * Deletes the selected layers (at least one layer stays). Returns how many were deleted; they can be
-   * brought back with `restoreDeleted`.
+   * Deletes the selected layers; when they are all of them, an empty layer takes their place. Returns
+   * how many were deleted; they can be brought back with `restoreDeleted`.
    */
   deleteLayers(): number {
     const picked = this.pickedLayers();
     if (picked.length < 2) return this.deleteLayer() ? 1 : 0;
-    if (picked.length >= this.doc.layers.length) return 0;
     this.edit((doc) => {
       const entries = picked.map((layer) => ({ layer, index: doc.layers.indexOf(layer) }));
       const groups = doc.groups?.map((g) => ({ ...g }));
       doc.layers = doc.layers.filter((l) => !picked.includes(l));
+      const placeholder = doc.layers.length
+        ? undefined
+        : createLayer(this.labels.layer(1), doc.width, doc.height);
+      if (placeholder) doc.layers.push(placeholder);
       doc.activeLayer = Math.min(doc.layers.length - 1, Math.max(0, entries[0].index - 1));
       normalizeGroups(doc);
-      this.deleted = { kind: 'layers', session: this.active, entries, groups };
+      this.deleted = { kind: 'layers', session: this.active, entries, groups, placeholder };
+      this.active.picked = [doc.layers[doc.activeLayer].id];
     });
     return picked.length;
   }
@@ -3327,7 +3340,49 @@ export class Editor {
   /* ------------------------------------------------------------------ strokes */
 
   get isStroking(): boolean {
-    return this.stroke !== null || this.groupMove !== null;
+    return this.stroke !== null || this.groupMove !== null || this.marquee !== null;
+  }
+
+  /** The rectangle being dragged to select layers, in pixels of the active board, if any. */
+  marqueeRect(): Rect | null {
+    const m = this.marquee;
+    if (!m) return null;
+    const x = Math.min(m.start.x, m.end.x);
+    const y = Math.min(m.start.y, m.end.y);
+    return { x, y, w: Math.abs(m.end.x - m.start.x) + 1, h: Math.abs(m.end.y - m.start.y) + 1 };
+  }
+
+  /**
+   * Selects the layers the marquee touches, with the ones kept: a layer in a group takes its whole
+   * group, as a click would.
+   */
+  private applyMarquee(): void {
+    const m = this.marquee!;
+    const r = this.marqueeRect()!;
+    const { width, height, layers } = this.doc;
+    const taken = new Set(m.kept);
+    layers.forEach((l, k) => {
+      if (!isShown(this.doc, l) || isLocked(this.doc, l)) return;
+      const b = pixelBounds(l.pixels, width, height);
+      if (!b || b.x >= r.x + r.w || b.y >= r.y + r.h || b.x + b.w <= r.x || b.y + b.h <= r.y) return;
+      const { group } = this.moveTarget(k);
+      for (const id of group ? groupLayers(this.doc, group).map((g) => g.id) : [l.id]) taken.add(id);
+    });
+    const s = this.active;
+    const picked = layers.filter((l) => taken.has(l.id)).map((l) => l.id);
+    if (picked.join() === this.state.selectedLayers.join() && s.unframed === !picked.length) return;
+    delete s.pickedGroup;
+    s.referencePicked = false;
+    if (picked.length) {
+      s.picked = picked;
+      s.unframed = false;
+      this.doc.activeLayer = layers.findIndex((l) => l.id === picked[picked.length - 1]);
+      s.anchor = picked[picked.length - 1];
+    } else {
+      s.picked = [activeLayer(this.doc).id];
+      s.unframed = true;
+    }
+    this.commit(false);
   }
 
   /**
@@ -3398,8 +3453,9 @@ export class Editor {
       // Beside every layer (and outside the active one's frame), a click lets go of the layers
       // selected, like a click on the empty canvas in a design tool: the active one stays, unframed.
       if (!mods.keepLayer && !this.pickLayerAt(p, mods.add)) {
-        this.deselectLayers();
-        return false;
+        if (!mods.add) this.deselectLayers();
+        this.marquee = { start: p, end: p, kept: mods.add ? [...this.state.selectedLayers] : [] };
+        return true;
       }
       this.active.unframed = false;
     }
@@ -3552,6 +3608,10 @@ export class Editor {
 
   moveStroke(p: Point, mods: Modifiers): void {
     if (this.unpick && (p.x !== this.unpick.start.x || p.y !== this.unpick.start.y)) this.unpick.moved = true;
+    if (this.marquee) {
+      this.marquee.end = p;
+      return this.applyMarquee();
+    }
     if (this.groupMove)
       return this.applyGroupMove(p.x - this.groupMove.start.x, p.y - this.groupMove.start.y);
     if (!this.stroke || !this.strokeTool) return;
@@ -3586,6 +3646,11 @@ export class Editor {
     const unpick = this.unpick;
     this.unpick = null;
     if (unpick && !unpick.moved) this.togglePicked(unpick.ids, true, activeLayer(this.doc));
+    if (this.marquee) {
+      this.marquee = null;
+      this.commit(false);
+      return;
+    }
     if (this.groupMove) {
       this.groupMove = null;
       this.commit();
@@ -3632,6 +3697,11 @@ export class Editor {
 
   cancelStroke(): void {
     this.unpick = null;
+    if (this.marquee) {
+      this.marquee = null;
+      this.commit(false);
+      return;
+    }
     if (this.groupMove) {
       for (const { layer, base, outside } of this.groupMove.items) {
         layer.pixels.set(base);

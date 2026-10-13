@@ -261,7 +261,6 @@ function LayersSection() {
         {
           label: t('layer.deleteCount', { count }),
           icon: 'trash',
-          disabled: count >= n,
           onSelect: () => actions.deleteLayers(),
         },
       ]);

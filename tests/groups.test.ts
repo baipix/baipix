@@ -298,6 +298,37 @@ describe('Editor groups', () => {
     expect(e.getState().layerFramed).toBe(false);
   });
 
+  it('a drag from beside every layer selects the layers it touches, Shift adds to them', () => {
+    const e = editor();
+    e.setTool('move');
+    click(e, 1, {}, [2, 0], 4);
+    expect(selected(e)).toEqual(['b', 'c']);
+    expect(e.marqueeRect()).toBeNull();
+    // Nothing moved, and nothing to undo.
+    expect(e.getState().doc.layers[1].pixels[1]).toBe(RED);
+    click(e, 3, { add: true }, [3, 0], 5);
+    expect(selected(e)).toEqual(['b', 'c', 'd']);
+    // They move, and go, together.
+    click(e, 1, {}, [1, 1]);
+    expect(e.getState().doc.layers[3].pixels[8 + 3]).toBe(RED);
+    e.deleteLayers();
+    expect(order(e)).toBe('a');
+  });
+
+  it('deleting every layer leaves an empty one, taken out again when they come back', () => {
+    const e = editor();
+    pick(e, 'a', 'b', 'c', 'd');
+    expect(e.deleteLayers()).toBe(4);
+    const { layers } = e.getState().doc;
+    expect(layers).toHaveLength(1);
+    expect(layers[0].pixels.some(Boolean)).toBe(false);
+    e.restoreDeleted();
+    expect(order(e)).toBe('a b c d');
+    e.undo();
+    e.undo();
+    expect(order(e)).toBe('a b c d');
+  });
+
   it('duplicates every selected layer at once, in one undo step', () => {
     const e = editor();
     pick(e, 'a', 'c');
