@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Layers outside the boards, like in Figma: a layer dragged with the Move tool and let go beside every board stays there, visible, and shows in the Layers panel at the same level as the boards. Grab it again to move it, or drop it onto a board; it can be renamed, hidden or deleted, and a file with no board can still hold such layers. They're only moved for now (the tools draw on a board), and only boards export. Undo takes a layer moved across boards back to the board it left, both sides at once. (#358)
 - A file can have no board: delete them all and the canvas says so, with a Create a board button (the board tool draws one too). Undo brings them back. (#356)
 - Select layers with a marquee: with the Move tool, drag from an empty spot to select every layer the rectangle touches (a layer in a group takes its group), Shift to add to the selection. They move together, and Delete removes them together, even all of them: an empty layer is left to draw on. (#355)
 - A layer dragged with the Move tool follows the pointer outside its board, instead of vanishing past the edge. (#354)
