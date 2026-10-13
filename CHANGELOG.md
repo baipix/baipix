@@ -28,6 +28,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Isometric lines: with Shift, the line tool also snaps to 2:1 (two pixels across for one up) and 1:2, besides 0°, 45° and 90°. They're drawn in clean steps of exactly two pixels, with no doubled or lone pixel. (#288)
 - An isometric grid (Display, or the View menu): 2:1 diamonds, the pixel art isometric angle, with lines through the pixel corners at every zoom. Pick the width of the diamonds in pixels (16 by default); they're half as tall. (#287)
 
+### Changed
+
+- The right panel's Canvas section is now called Board, like the board tool, and so are Board size… and the width and height fields: a file of one board is a board too. (#PR)
+
 ### Fixed
 
 - An ellipse on a wall had a top and a bottom that alternated pixel by pixel where its curve slopes against the wall's 2:1. They're now even. (#318)
