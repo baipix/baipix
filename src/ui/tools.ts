@@ -69,7 +69,7 @@ export const TOOL_GROUPS: (ToolMeta | ToolMeta[])[][] = [
     { id: 'move', icon: 'move', label: 'tool.move', shortcut: 'V' },
     SELECTS,
     { id: 'hand', icon: 'hand', label: 'tool.hand', shortcut: 'H' },
-    { id: 'board', icon: 'board', label: 'tool.board', shortcut: 'N' },
+    { id: 'board', icon: 'board', label: 'tool.board', shortcut: 'A' },
   ],
   [
     { id: 'pencil', icon: 'pencil', label: 'tool.pencil', shortcut: 'B' },
@@ -81,7 +81,7 @@ export const TOOL_GROUPS: (ToolMeta | ToolMeta[])[][] = [
   [
     SHADING,
     REWORK,
-    { id: 'spray', icon: 'spray', label: 'tool.spray', shortcut: 'A' },
+    { id: 'spray', icon: 'spray', label: 'tool.spray', shortcut: 'P' },
     { id: 'picker', icon: 'picker', label: 'tool.picker', shortcut: 'I' },
   ],
 ];
