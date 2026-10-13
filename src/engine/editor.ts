@@ -1008,20 +1008,28 @@ export class Editor {
 
   /** Deletes a board of a file that has others. Returns false when it's the file's only one. */
   deleteBoard(id: string): boolean {
-    const s = this.sessions.find((x) => x.doc.id === id);
-    if (!s) return false;
-    const boards = this.boardsOf(fileIdOf(s.doc));
-    if (boards.length < 2) return false;
+    return this.deleteBoards([id]) > 0;
+  }
+
+  /**
+   * Deletes boards of the active file, all in one go, which one Undo brings back (with their
+   * histories). A file keeps at least one board: when they're all asked for, the first stays.
+   * Returns how many were deleted.
+   */
+  deleteBoards(ids: string[]): number {
+    const boards = this.boardsOf(fileIdOf(this.doc));
+    let going = boards.filter((b) => ids.includes(b.doc.id));
+    if (going.length === boards.length) going = going.slice(1);
+    if (!going.length) return 0;
     this.cancelStroke();
-    const i = boards.indexOf(s);
-    const index = this.sessions.indexOf(s);
-    this.sessions = this.sessions.filter((x) => x !== s);
-    if (s === this.active) this.activate(boards[i === 0 ? 1 : i - 1]);
-    // The file keeps its id while its first board goes: the others still carry it. Undo brings
-    // the board back, with its history.
-    this.deleted = { kind: 'file', sessions: [s], index };
+    const index = this.sessions.indexOf(going[0]);
+    this.sessions = this.sessions.filter((x) => !going.includes(x));
+    // The file keeps its id while its first board goes: the others still carry it.
+    if (going.includes(this.active)) this.activate(boards.find((b) => !going.includes(b))!);
+    this.boardSelection = [];
+    this.deleted = { kind: 'file', sessions: going, index };
     this.commit();
-    return true;
+    return going.length;
   }
 
   /** Copies a board, layers and all, next to it on the right, and makes the copy active. */

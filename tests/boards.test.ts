@@ -171,4 +171,17 @@ describe('boards', () => {
     e.undo();
     expect(e.getState().boards[1]).toMatchObject({ name: 'Moved', x: 60, y: 30 });
   });
+
+  it('deletes the selected boards in one go, one Undo bringing them back, and keeps one', () => {
+    const e = twoBoards();
+    e.addBoardBeside();
+    const ids = e.getState().boards.map((b) => b.id);
+    expect(e.deleteBoards(ids.slice(1))).toBe(2);
+    expect(e.getState().boards.map((b) => b.id)).toEqual([ids[0]]);
+    e.restoreDeleted();
+    expect(e.getState().boards).toHaveLength(3);
+    // All of them: the first one stays.
+    expect(e.deleteBoards(ids)).toBe(2);
+    expect(e.getState().boards.map((b) => b.id)).toEqual([ids[0]]);
+  });
 });

@@ -350,6 +350,7 @@ export const fr: Record<MessageKey, string> = {
   'board.duplicate': 'Dupliquer le plan',
   'board.delete': 'Supprimer le plan',
   'board.deleted': '{name} supprimé.',
+  'board.deletedMany': '{count} plans supprimés.',
   'board.lastOne': 'Un fichier garde au moins un plan.',
   'hint.plane':
     'Sur un mur, fais glisser en travers de la boîte où tient la forme : son haut et son bas suivent le mur en 2:1 (Maj : aussi haute que large). Au sol, tire du coin du haut de son losange à celui du bas (Maj : régulière ; l’ellipse : en travers).',

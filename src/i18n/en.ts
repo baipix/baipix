@@ -349,6 +349,7 @@ export const en = {
   'board.duplicate': 'Duplicate board',
   'board.delete': 'Delete board',
   'board.deleted': '{name} deleted.',
+  'board.deletedMany': '{count} boards deleted.',
   'board.lastOne': 'A file keeps at least one board.',
   'hint.plane':
     'On a wall, drag across the box the shape fits in: its top and bottom go along the wall at 2:1 (Shift: as tall as wide). On the ground, drag from the top corner of its diamond to the bottom one (Shift: regular; the ellipse: across).',

@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Delete (or Backspace) removes the selected boards, with an Undo toast that brings them all back. A file keeps at least one board. (#344)
 - Select a board like a layer: click its name, or click it with the board tool (Shift adds to the selection, Escape lets go). It gets a blue frame and handles; dragging a side or a corner grows or crops the board on that side, the drawing staying where it is, in one undo step. (#343)
 - The board tool is on A, like Figma, and the spray moves to P. (#341)
 - Help › Report a bug… and Help › Suggest an idea… open a new GitHub issue already filled in like the repository's templates; a bug report comes with the Baipix version and the browser written in. (#340)
