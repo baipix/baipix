@@ -289,6 +289,8 @@ export const fr: Record<MessageKey, string> = {
   'menu.theme': 'Thème',
   'menu.language': 'Langue',
   'menu.github': 'Code source sur GitHub',
+  'menu.reportBug': 'Signaler un bug…',
+  'menu.suggestIdea': 'Proposer une idée…',
 
   'render.pixelSize': 'Taille',
   'render.scaleTip': 'Chaque pixel fait {size} × {size} px',

@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Help › Report a bug… and Help › Suggest an idea… open a new GitHub issue already filled in like the repository's templates; a bug report comes with the Baipix version and the browser written in. (#340)
 - A file's boards share its palette: a change on one board, undo included, is a change for all of them. With Drawing colors, each board shows the colors it uses. (#323)
 - Export every board at once: in a file of several boards, Export gets an All boards option, which gives a .zip with one file per board, named after it, in PNG, SVG or Aseprite, each at its own pixel size. (#322)
 - Boards, like frames in Figma: a file can hold several boards side by side, each with its own size, layers and undo history. With the Board tool (N), draw a rectangle beside them to add one; drag a board by its name to move it; click a board to work on it, and the Layers panel and the export follow. New, Duplicate and Delete board are in the File menu and the tool's options bar. A file of several boards is saved as one .baipix file; files of one board don't change. (#321)
