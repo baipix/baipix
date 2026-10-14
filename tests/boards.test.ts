@@ -181,6 +181,41 @@ describe('boards', () => {
     expect(e.getState().boards).toHaveLength(3);
   });
 
+  it('brings deleted boards back with Undo, and deletes them again with Redo', () => {
+    const e = twoBoards();
+    const [icons, small] = e.getState().boards.map((b) => b.id);
+    e.switchBoard(icons);
+    // Something drawn before on Icons stays: Undo takes the boards first.
+    e.setTool('pencil');
+    e.beginStroke({ x: 3, y: 3 }, false, { shift: false });
+    e.endStroke();
+    e.deleteBoard(small);
+    expect(e.getState().canUndo).toBe(true);
+    e.undo();
+    expect(e.getState().boards.map((b) => b.id)).toEqual([icons, small]);
+    expect(e.getState().doc.id).toBe(small);
+    expect(e.getState().canRedo).toBe(true);
+    e.redo();
+    expect(e.getState().boards.map((b) => b.id)).toEqual([icons]);
+    e.undo();
+    expect(e.getState().boards).toHaveLength(2);
+    // Then the drawing.
+    e.switchBoard(icons);
+    e.undo();
+    expect(e.getState().doc.layers[0].pixels[3 * 16 + 3]).toBe(0);
+  });
+
+  it('forgets the deleted boards for Undo once something else is done', () => {
+    const e = twoBoards();
+    const [icons, small] = e.getState().boards.map((b) => b.id);
+    e.deleteBoard(small);
+    e.setTool('pencil');
+    e.beginStroke({ x: 3, y: 3 }, false, { shift: false });
+    e.endStroke();
+    e.undo();
+    expect(e.getState().boards.map((b) => b.id)).toEqual([icons]);
+  });
+
   it('can be left with no board, then makes one or brings them back', () => {
     const e = twoBoards();
     const ids = e.getState().boards.map((b) => b.id);
