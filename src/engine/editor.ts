@@ -286,6 +286,12 @@ type Deleted =
 
 type Listener = () => void;
 
+/** A change to a file's boards themselves, undone and redone outside their histories. */
+interface FileStep {
+  undo(): boolean;
+  redo(): void;
+}
+
 /** How many recent colors are kept. */
 export const RECENT_COLORS = 8;
 
@@ -476,11 +482,17 @@ export class Editor {
    * undo or the move goes back (`at`).
    */
   /**
-   * Boards (or the free layers) just deleted: Undo brings them back, as the last thing done, until
-   * something else is. `redoDeletion` deletes them again, for Redo.
+   * What was done to the file's boards themselves, outside their own histories: boards moved,
+   * aligned or deleted. Undo and Redo go through these first, like in Figma, until a board is
+   * edited. `undo` returns false when there's nothing left to undo (e.g. the toast brought the
+   * boards back already).
    */
-  private lastDeletion: Deleted | null = null;
-  private redoDeletion: (() => void) | null = null;
+  private fileSteps: FileStep[] = [];
+  private fileRedos: FileStep[] = [];
+  /** Replaying a file step: what it does isn't recorded again. */
+  private replaying = false;
+  /** Where the file's boards were when a drag started (see `beginBoardMove`). */
+  private placesBefore: Map<string, Point> | null = null;
   private links = new Map<string, { from: Session; to: Session; created: boolean; at?: number }>();
   /** Color adjustment in progress: the original pixels of the layers being adjusted. */
   /** Resizing by the handles: the content being resized and how to put it back. */
@@ -624,8 +636,8 @@ export class Editor {
       layerFramed: !s.unframed,
       repeat: this.repeatSession?.grid ?? null,
       extrude: this.extrudeSession?.options ?? null,
-      canUndo: s.history.canUndo || (!!this.lastDeletion && this.lastDeletion === this.deleted),
-      canRedo: s.history.canRedo || !!this.redoDeletion,
+      canUndo: s.history.canUndo || this.fileSteps.length > 0,
+      canRedo: s.history.canRedo || this.fileRedos.length > 0,
       revision: this.revision,
     };
   }
@@ -654,8 +666,8 @@ export class Editor {
     // Anything else done during a repeat grid or an extrusion keeps it first: two steps, never mixed.
     if (this.repeatSession) this.endRepeat(true);
     if (this.extrudeSession) this.endExtrude(true);
-    this.lastDeletion = null;
-    this.redoDeletion = null;
+    this.fileSteps = [];
+    this.fileRedos = [];
     this.active.history.push(takeSnapshot(this.doc, this.active.selection));
     this.touch();
   }
@@ -703,21 +715,15 @@ export class Editor {
     if (this.repeatSession) return this.endRepeat(false);
     if (this.extrudeSession) return this.endExtrude(false);
     if (this.stroke || this.adjusting || this.scaling) return;
-    // Boards just deleted come back first, like in Figma.
-    const gone = this.lastDeletion;
-    if (gone && gone === this.deleted && gone.kind === 'file') {
-      const ids = gone.sessions.map((x) => x.doc.id);
-      const free = gone.sessions.find((x) => isFreeZone(x.doc));
-      if (this.restoreDeleted()) {
-        this.lastDeletion = null;
-        this.redoDeletion = free
-          ? () => {
-              this.open(free);
-              this.dropFree();
-            }
-          : () => this.deleteBoards(ids);
-        this.commit(false);
-      }
+    // Boards moved, aligned or deleted come back first, like in Figma.
+    while (this.fileSteps.length) {
+      const step = this.fileSteps.pop()!;
+      this.replaying = true;
+      const done = step.undo();
+      this.replaying = false;
+      if (!done) continue;
+      this.fileRedos.push(step);
+      this.commit();
       return;
     }
     const id = this.active.history.top()?.linked;
@@ -744,10 +750,13 @@ export class Editor {
 
   redo(): void {
     if (this.stroke || this.adjusting || this.scaling) return;
-    const again = this.redoDeletion;
+    const again = this.fileRedos.pop();
     if (again) {
-      this.redoDeletion = null;
-      again();
+      this.replaying = true;
+      again.redo();
+      this.replaying = false;
+      this.fileSteps.push(again);
+      this.commit();
       return;
     }
     // Back on free layers that went with their last layer: the move is redone from its other side.
@@ -951,6 +960,11 @@ export class Editor {
 
   private open(target: Session | undefined): void {
     if (!target || target === this.active) return;
+    // Another file: what was done to this one's boards isn't undone from there.
+    if (fileIdOf(target.doc) !== fileIdOf(this.doc) && !this.replaying) {
+      this.fileSteps = [];
+      this.fileRedos = [];
+    }
     this.cancelStroke();
     this.cancelAdjust();
     this.activate(target);
@@ -1086,6 +1100,7 @@ export class Editor {
       this.state.selectedBoards.includes(s.doc.id),
     );
     if (picked.length < 2) return;
+    const before = this.boardPlaces();
     const places = picked.map(({ doc }) => ({ doc, x: doc.board?.x ?? 0, y: doc.board?.y ?? 0 }));
     const x0 = Math.min(...places.map((p) => p.x));
     const y0 = Math.min(...places.map((p) => p.y));
@@ -1112,6 +1127,85 @@ export class Editor {
       doc.board = { ...doc.board, x: nx, y: ny };
       doc.updatedAt = Date.now();
     }
+    this.recordPlaces(before);
+    this.commit();
+  }
+
+  /** Where the active file's boards are, by id. */
+  private boardPlaces(): Map<string, Point> {
+    return new Map(
+      this.boardsOf(fileIdOf(this.doc)).map(({ doc }) => [
+        doc.id,
+        { x: doc.board?.x ?? 0, y: doc.board?.y ?? 0 },
+      ]),
+    );
+  }
+
+  /** Puts boards back at given places (those still there). */
+  private placeBoards(places: Map<string, Point>): void {
+    for (const s of this.sessions) {
+      const at = places.get(s.doc.id);
+      if (!at || !s.doc.board) continue;
+      s.doc.board = { ...s.doc.board, x: at.x, y: at.y };
+      s.doc.updatedAt = Date.now();
+    }
+  }
+
+  /** Records boards moved from `before` to where they are now as one step, when any moved. */
+  private recordPlaces(before: Map<string, Point>): void {
+    const after = this.boardPlaces();
+    const moved = new Map<string, Point>();
+    const was = new Map<string, Point>();
+    for (const [id, at] of after) {
+      const from = before.get(id);
+      if (!from || (from.x === at.x && from.y === at.y)) continue;
+      moved.set(id, at);
+      was.set(id, from);
+    }
+    if (!moved.size) return;
+    this.recordFileStep({
+      undo: () => {
+        this.placeBoards(was);
+        return true;
+      },
+      redo: () => this.placeBoards(moved),
+    });
+  }
+
+  /** Records boards (or free layers) just deleted, for Undo; `again` deletes them again, for Redo. */
+  private recordDeletion(again: () => void): void {
+    const step = {
+      gone: this.deleted,
+      undo: () => {
+        // Brought back already (the toast's Undo): nothing to undo here.
+        const gone = step.gone;
+        if (gone?.kind !== 'file' || gone.sessions.some((x) => this.sessions.includes(x))) return false;
+        this.deleted = gone;
+        return this.restoreDeleted();
+      },
+      redo: () => {
+        again();
+        step.gone = this.deleted;
+      },
+    };
+    this.recordFileStep(step);
+  }
+
+  private recordFileStep(step: FileStep): void {
+    if (this.replaying) return;
+    this.fileSteps.push(step);
+    this.fileRedos = [];
+  }
+
+  /** A board drag starts: where the boards are, to record the move as one step at its end. */
+  beginBoardMove(): void {
+    this.placesBefore = this.boardPlaces();
+  }
+
+  /** A board drag ends: the boards moved are one step, which Undo puts back. */
+  endBoardMove(): void {
+    if (this.placesBefore) this.recordPlaces(this.placesBefore);
+    this.placesBefore = null;
     this.commit();
   }
 
@@ -1233,7 +1327,7 @@ export class Editor {
       this.activate(placeholder ?? left.find((b) => isBoard(b.doc)) ?? left[0]);
     this.boardSelection = [];
     this.deleted = { kind: 'file', sessions: going, index, placeholder };
-    this.lastDeletion = this.deleted;
+    this.recordDeletion(() => this.deleteBoards(going.map((x) => x.doc.id)));
     this.commit();
     return going.length;
   }
@@ -1786,7 +1880,10 @@ export class Editor {
     const placeholder = this.boardsOf(fileId).length ? undefined : this.blankBoard(s.doc, index);
     this.activate(placeholder ?? this.boardFor(fileId)!);
     this.deleted = { kind: 'file', sessions: [s], index, placeholder };
-    this.lastDeletion = this.deleted;
+    this.recordDeletion(() => {
+      this.open(s);
+      this.dropFree();
+    });
     this.commit();
     return count;
   }
