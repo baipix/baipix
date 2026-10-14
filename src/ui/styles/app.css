@@ -940,7 +940,6 @@ body.is-resizing * {
 .canvas.on-label {
   cursor: default;
 }
-/* Inline rename of the frame name, drawn over the canvas label (bottom-aligned like the text). */
 /* A file with no board: centered on the canvas, letting drags through to draw one. */
 .no-board {
   position: absolute;
@@ -960,6 +959,7 @@ body.is-resizing * {
   pointer-events: auto;
 }
 
+/* Inline rename of the frame name, drawn over the canvas label (bottom-aligned like the text). */
 .frame-name-input {
   position: absolute;
   transform: translate(-5px, -100%);
@@ -973,8 +973,12 @@ body.is-resizing * {
   font: 500 11px var(--font);
   outline: none;
 }
+/* Space held: the hand, whatever the tool's cursor (and over handles), grabbing while it drags. */
 body.is-panning .canvas {
-  cursor: grab;
+  cursor: grab !important;
+}
+body.is-panning .canvas:active {
+  cursor: grabbing !important;
 }
 .canvas-wrap.is-dropping::after {
   content: attr(data-drop-label);
