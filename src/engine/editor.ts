@@ -475,6 +475,12 @@ export class Editor {
    * free layers they went to were made for them (`created`), and where a board taken away by an
    * undo or the move goes back (`at`).
    */
+  /**
+   * Boards (or the free layers) just deleted: Undo brings them back, as the last thing done, until
+   * something else is. `redoDeletion` deletes them again, for Redo.
+   */
+  private lastDeletion: Deleted | null = null;
+  private redoDeletion: (() => void) | null = null;
   private links = new Map<string, { from: Session; to: Session; created: boolean; at?: number }>();
   /** Color adjustment in progress: the original pixels of the layers being adjusted. */
   /** Resizing by the handles: the content being resized and how to put it back. */
@@ -618,8 +624,8 @@ export class Editor {
       layerFramed: !s.unframed,
       repeat: this.repeatSession?.grid ?? null,
       extrude: this.extrudeSession?.options ?? null,
-      canUndo: s.history.canUndo,
-      canRedo: s.history.canRedo,
+      canUndo: s.history.canUndo || (!!this.lastDeletion && this.lastDeletion === this.deleted),
+      canRedo: s.history.canRedo || !!this.redoDeletion,
       revision: this.revision,
     };
   }
@@ -648,6 +654,8 @@ export class Editor {
     // Anything else done during a repeat grid or an extrusion keeps it first: two steps, never mixed.
     if (this.repeatSession) this.endRepeat(true);
     if (this.extrudeSession) this.endExtrude(true);
+    this.lastDeletion = null;
+    this.redoDeletion = null;
     this.active.history.push(takeSnapshot(this.doc, this.active.selection));
     this.touch();
   }
@@ -695,6 +703,23 @@ export class Editor {
     if (this.repeatSession) return this.endRepeat(false);
     if (this.extrudeSession) return this.endExtrude(false);
     if (this.stroke || this.adjusting || this.scaling) return;
+    // Boards just deleted come back first, like in Figma.
+    const gone = this.lastDeletion;
+    if (gone && gone === this.deleted && gone.kind === 'file') {
+      const ids = gone.sessions.map((x) => x.doc.id);
+      const free = gone.sessions.find((x) => isFreeZone(x.doc));
+      if (this.restoreDeleted()) {
+        this.lastDeletion = null;
+        this.redoDeletion = free
+          ? () => {
+              this.open(free);
+              this.dropFree();
+            }
+          : () => this.deleteBoards(ids);
+        this.commit(false);
+      }
+      return;
+    }
     const id = this.active.history.top()?.linked;
     const link = id ? this.links.get(id) : undefined;
     // A layer moved across boards: both sides are undone, and it's back on the board it left.
@@ -719,6 +744,12 @@ export class Editor {
 
   redo(): void {
     if (this.stroke || this.adjusting || this.scaling) return;
+    const again = this.redoDeletion;
+    if (again) {
+      this.redoDeletion = null;
+      again();
+      return;
+    }
     // Back on free layers that went with their last layer: the move is redone from its other side.
     const id =
       this.active.history.nextRedo()?.linked ??
@@ -1202,6 +1233,7 @@ export class Editor {
       this.activate(placeholder ?? left.find((b) => isBoard(b.doc)) ?? left[0]);
     this.boardSelection = [];
     this.deleted = { kind: 'file', sessions: going, index, placeholder };
+    this.lastDeletion = this.deleted;
     this.commit();
     return going.length;
   }
@@ -1754,6 +1786,7 @@ export class Editor {
     const placeholder = this.boardsOf(fileId).length ? undefined : this.blankBoard(s.doc, index);
     this.activate(placeholder ?? this.boardFor(fileId)!);
     this.deleted = { kind: 'file', sessions: [s], index, placeholder };
+    this.lastDeletion = this.deleted;
     this.commit();
     return count;
   }
