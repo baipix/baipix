@@ -999,6 +999,7 @@ export function CanvasView() {
         const [dx, dy] = [p.x - boardDrag.start.x, p.y - boardDrag.start.y];
         if ((dx || dy) && !boardDrag.moved) {
           boardDrag.moved = true;
+          editor.beginBoardMove();
           // Alt-drag: a copy is made where the board is, and it's the copy that moves.
           if (boardDrag.copy) {
             editor.duplicateBoard(boardDrag.id, boardDrag.from);
@@ -1115,6 +1116,7 @@ export function CanvasView() {
       if (boardDrag) {
         const { id, moved } = boardDrag;
         boardDrag = null;
+        if (moved) editor.endBoardMove();
         if (moved) editor.selectBoards([id]);
         else editor.selectBoards([id], e.shiftKey);
         return;

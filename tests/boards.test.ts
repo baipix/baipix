@@ -205,6 +205,45 @@ describe('boards', () => {
     expect(e.getState().doc.layers[0].pixels[3 * 16 + 3]).toBe(0);
   });
 
+  it('undoes and redoes boards moved and aligned, then deleted, in order', () => {
+    const e = twoBoards();
+    const [icons, small] = e.getState().boards.map((b) => b.id);
+    const places = () => e.getState().boards.map((b) => [b.x, b.y]);
+    // A drag: one step, however many moves.
+    e.beginBoardMove();
+    e.moveBoard(small, 30, 10);
+    e.moveBoard(small, 32, 20);
+    e.endBoardMove();
+    e.selectBoards([icons, small]);
+    e.alignBoards('top');
+    expect(places()).toEqual([
+      [0, 0],
+      [32, 0],
+    ]);
+    e.deleteBoard(small);
+    e.undo();
+    expect(e.getState().boards).toHaveLength(2);
+    e.undo();
+    expect(places()).toEqual([
+      [0, 0],
+      [32, 20],
+    ]);
+    e.undo();
+    expect(places()).toEqual([
+      [0, 0],
+      [24, 0],
+    ]);
+    expect(e.getState().canUndo).toBe(false);
+    e.redo();
+    e.redo();
+    expect(places()).toEqual([
+      [0, 0],
+      [32, 0],
+    ]);
+    e.redo();
+    expect(e.getState().boards).toHaveLength(1);
+  });
+
   it('forgets the deleted boards for Undo once something else is done', () => {
     const e = twoBoards();
     const [icons, small] = e.getState().boards.map((b) => b.id);
