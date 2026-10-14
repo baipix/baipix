@@ -46,6 +46,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Undo (and Redo) now covers boards moved by a drag or aligned, each drag or alignment one step, in order with boards deleted. (#364)
 - Holding Space shows the hand whatever the tool (the Move tool and the eyedropper kept their own cursor), and the brush outline hides while it's held. (#362)
 - A board moved or renamed no longer goes back to its old place or name when a drawing step is undone. The size in the title bar follows a canvas resize right away. (#343)
 - An ellipse on a wall had a top and a bottom that alternated pixel by pixel where its curve slopes against the wall's 2:1. They're now even. (#318)
