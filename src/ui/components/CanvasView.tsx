@@ -389,7 +389,15 @@ export function CanvasView() {
         tool === 'picker' || live.stroking === 'picker' || (altHeld && DRAWING_TOOLS.includes(tool));
       let brush: BrushPreview | null = null;
       const shapeInProgress = live.stroking !== null && SHAPE_IDS.includes(live.stroking);
-      if (hover && !panStart && !pinch && BRUSH_TOOLS.includes(tool) && !shapeInProgress && !picking) {
+      if (
+        hover &&
+        !panStart &&
+        !pinch &&
+        !keyState.space &&
+        BRUSH_TOOLS.includes(tool) &&
+        !shapeInProgress &&
+        !picking
+      ) {
         const paints = !['eraser', 'shade', 'lighten', 'blur'].includes(tool);
         brush =
           tool === 'spray' || tool === 'liquify'
