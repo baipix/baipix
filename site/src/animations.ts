@@ -8,6 +8,9 @@ import type { Point } from '../../src/engine/math';
 import { outlinePixels } from '../../src/engine/outline';
 import { gradientColor, gradientT, sortedStops } from '../../src/engine/gradient';
 import { isDoubledCorner } from '../../src/engine/raster';
+import { pack } from '../../src/engine/color';
+import { Editor } from '../../src/engine/editor';
+import type { ToolId, ToolOptions } from '../../src/engine/tools';
 import { galleryDoc } from './gallery';
 
 export interface PixelAnimation {
@@ -835,6 +838,113 @@ function outline(): PixelAnimation {
   return t.done(OUTLINE_STEPS.end - OUTLINE_STEPS.round, 0.3);
 }
 
+// ---- Isometric: a courtyard, built volume by volume ---------------------------------------------
+
+/**
+ * A little courtyard drawn with the editor's own volume tools, on the isometric grid: a floor tile,
+ * stone stairs, a bevelled crate, a log lying down and a pillar. Each volume rises from its base,
+ * row by row, the way it lands when you let go of the drag.
+ */
+function isometric(): PixelAnimation {
+  const w = 128;
+  const h = 84;
+  const e = new Editor();
+  e.newFile(w, h, 'Courtyard');
+  e.setIsoGrid(16);
+  const layer = () => e.getState().doc.layers[0].pixels;
+  // Each volume: its options, its color, and its drag; what it adds is a stage of the animation.
+  const stages: Uint32Array[] = [];
+  const volume = (tool: ToolId, color: number, a: Point, z: Point, opts: Partial<ToolOptions>) => {
+    e.setTool('pencil');
+    for (const [k, v] of Object.entries(opts)) e.setOption(k as keyof ToolOptions, v as never);
+    e.setColor('primary', color);
+    e.setTool(tool);
+    e.beginStroke(a, false, { shift: false });
+    e.moveStroke(z, { shift: false });
+    e.endStroke();
+    stages.push(new Uint32Array(layer()));
+  };
+  const plain = {
+    boxOutline: true,
+    boxFaces: null,
+    boxEdges: false,
+    boxBevelTop: false,
+    boxBevelSides: false,
+  };
+  volume('rect', pack(106, 168, 79), { x: 64, y: 22 }, { x: 64, y: 78 }, { plane: 'ground', filled: true });
+  volume(
+    'ramp',
+    pack(170, 164, 150),
+    { x: 48, y: 10 },
+    { x: 48, y: 34 },
+    {
+      ...plain,
+      boxHeight: 16,
+      rampDirection: 'nw',
+      rampSteps: 4,
+    },
+  );
+  volume(
+    'box',
+    pack(196, 140, 84),
+    { x: 80, y: 30 },
+    { x: 80, y: 46 },
+    {
+      ...plain,
+      boxHeight: 12,
+      boxBevelTop: true,
+      boxBevelSides: true,
+    },
+  );
+  volume(
+    'cylinder',
+    pack(150, 96, 56),
+    { x: 40, y: 48 },
+    { x: 46, y: 60 },
+    {
+      ...plain,
+      cylinderAxis: 'left',
+      boxHeight: 8,
+    },
+  );
+  volume(
+    'cylinder',
+    pack(160, 164, 176),
+    { x: 84, y: 52 },
+    { x: 95, y: 57 },
+    {
+      ...plain,
+      cylinderAxis: 'up',
+      boxHeight: 16,
+      boxEdges: true,
+    },
+  );
+  const t = new Timeline(w, h);
+  const hex = (c: number) => (c >>> 24 ? toHex(c) : null);
+  let time = 400;
+  let before = new Uint32Array(w * h);
+  for (const after of stages) {
+    // The pixels this volume changed, from its lowest row up.
+    const changed: number[] = [];
+    for (let i = 0; i < after.length; i++) if (after[i] !== before[i]) changed.push(i);
+    const rows = new Map<number, number[]>();
+    for (const i of changed) {
+      const y = Math.floor(i / w);
+      rows.set(y, [...(rows.get(y) ?? []), i]);
+    }
+    for (const y of [...rows.keys()].sort((a, b) => b - a)) {
+      for (const i of rows.get(y)!) t.at(time, i % w, y, hex(after[i]));
+      time += 22;
+    }
+    time += 450;
+    before = after;
+  }
+  // The courtyard stays a while, then goes away all at once and the loop starts over.
+  const end = time + 2600;
+  for (let i = 0; i < before.length; i++) if (before[i] >>> 24) t.at(end, i % w, Math.floor(i / w), null);
+  return t.done(500, 0.4, time);
+}
+
 export const animations = {
   outline: outline(),
   jumble: jumble(),
@@ -848,4 +958,5 @@ export const animations = {
   components: components(),
   symmetry: symmetry(),
   tiles: tiles(),
+  isometric: isometric(),
 };

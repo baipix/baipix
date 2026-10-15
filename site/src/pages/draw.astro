@@ -45,6 +45,7 @@ const SECTIONS = [
   { id: 'symmetry', label: 'View', tone: 'symmetry' },
   { id: 'layers', label: 'Layers', tone: 'layers' },
   { id: 'components', label: 'Components', tone: 'components' },
+  { id: 'isometric', label: 'Isometric', tone: 'isometric' },
   { id: 'export', label: 'Export', tone: 'export' },
   { id: 'keys', label: 'Shortcuts' },
 ];
@@ -54,7 +55,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
 
 <Base
   title="Draw pixel art · Baipix, a free pixel art editor"
-  description="The pixel-perfect pencil, dithering, shapes, palette ramps, symmetry, seamless tiles, layers and clean SVG export: every drawing tool in Baipix, and the key that picks it."
+  description="The pixel-perfect pencil, dithering, shapes, isometric volumes, palette ramps, symmetry, seamless tiles, layers and clean SVG export: every drawing tool in Baipix, and the key that picks it."
 >
   <Nav />
 
@@ -826,9 +827,74 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </figure>
     </section>
 
+    <!-- Isometric: volumes on a 2:1 grid. -->
+    <section class="block container" id="isometric" data-tone="isometric">
+      <SectionHead label="09 · Isometric" />
+      <div class="text">
+        <h2>Whole volumes, in one drag.</h2>
+        <p class="muted intro">
+          Turn on the isometric grid and draw boxes, cylinders, pyramids and stairs, already shaded, with
+          clean 2:1 edges.
+        </p>
+        <ul class="tools">
+          <li>
+            <span class="key icon" set:html={icon('grid')} />
+            <div>
+              <h3>Isometric grid</h3>
+              <p>
+                Diamonds of the cell you pick, in the Board section. Lines snap to 2:1 with Shift, and shapes
+                lie flat on the ground or stand on a wall.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('box')} />
+            <div>
+              <h3>Box and pyramid</h3>
+              <p>
+                Drag across the top, set the height. The sides come out darker from the palette, with an
+                outline, a light edge, lines between the faces, and bevels for crates and stone blocks.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('cylinder')} />
+            <div>
+              <h3>Cylinder</h3>
+              <p>Upright for pillars and towers, or lying along a wall for logs, barrels and wheels.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('ramp')} />
+            <div>
+              <h3>Stairs and ramps</h3>
+              <p>A slope or a staircase of even steps, rising toward the corner you pick.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('rect')} />
+            <div>
+              <h3>A color per face, tiles edge by edge</h3>
+              <p>
+                Pick the top, left and right colors by hand, and choose which edges of a floor tile get the
+                outline, so tiles side by side share one line.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure class="frame">
+        <PixelPlay
+          animation={anim.isometric}
+          label="A little courtyard built volume by volume on the isometric grid: a grass tile, stone stairs, a bevelled crate, a log lying down and a pillar."
+        />
+        <figcaption class="cap">Each volume is one drag, shaded from one color.</figcaption>
+      </figure>
+    </section>
+
     <!-- Export -->
     <section class="block container" id="export" data-tone="export">
-      <SectionHead label="09 · Export" />
+      <SectionHead label="10 · Export" />
       <div class="text">
         <h2>Out as clean vector.</h2>
         <p class="muted intro">What you draw goes straight into your design files.</p>

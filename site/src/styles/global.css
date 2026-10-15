@@ -288,6 +288,11 @@ h2 {
   --tint-b: var(--mint);
   --accent: light-dark(#6d3fd6, #b69cff);
 }
+[data-tone='isometric'] {
+  --tint-a: var(--mint);
+  --tint-b: var(--butter);
+  --accent: light-dark(#13808a, #5fd3dc);
+}
 [data-tone='export'] {
   --tint-a: var(--butter);
   --tint-b: var(--mint);
