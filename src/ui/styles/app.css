@@ -2121,13 +2121,14 @@ body.is-dragging-swatch * {
 }
 
 /* One accent, a soft violet, for what's selected or acted on: the active tool, the main button,
-   focus, menus, drops. Hovers stay neutral. White ink on the light theme's violet, dark ink on the
-   dark theme's lighter one: both above 5:1. */
+   focus, menus, drops. Hovers stay neutral. Fills carry white text and icons in both themes (5.4:1
+   and 5:1); lines (the selection's frame, the rulers) take a lighter violet on the dark theme, so
+   they stand out on it. */
 :root {
-  --glow: light-dark(#6e56cf, #9e8cfc);
-  --glow-ink: light-dark(#ffffff, #17132b);
+  --glow: light-dark(#6e56cf, #7558db);
+  --glow-ink: #ffffff;
   /* Muted text on the violet (a hovered menu item): still above 4.5:1. */
-  --glow-muted: light-dark(rgba(255, 255, 255, 0.78), rgba(23, 19, 43, 0.72));
+  --glow-muted: rgba(255, 255, 255, 0.8);
   --glow-line: light-dark(#6e56cf, #9e8cfc);
 }
 :focus-visible,
