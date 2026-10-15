@@ -97,6 +97,8 @@ function drawn(children: JSX.Element): Glyph {
 // Lucide's square has rounded corners: the rectangle tool gets a sharp one, the rounded one rounder.
 const Rect = drawn(<rect x="3" y="3" width="18" height="18" />);
 const RoundRect = drawn(<rect x="3" y="3" width="18" height="18" rx="6" />);
+// Stairs and ramps: steps climbing to the right.
+const Ramp = drawn(<path d="M3 20h5v-5h5v-5h5V5h3" />);
 
 /** Interface icons, from Lucide (ISC, https://lucide.dev) plus a few drawn here in the same style. */
 export const ICONS = {
@@ -123,6 +125,7 @@ export const ICONS = {
   board: Frame,
   cylinder: Cylinder,
   pyramid: Pyramid,
+  ramp: Ramp,
   shade: Moon,
   lighten: Sun,
   spray: SprayCan,

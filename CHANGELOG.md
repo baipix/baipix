@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Isometric stairs and ramps, in the shapes menu next to the box: dragged like the box, Height tall, rising toward the corner you pick (up-left, up-right, down-right, down-left); with Steps above 0, a staircase of equal steps. Outline, face colors and the options' redraw work like the other volumes. (#394)
 - Bevels on the isometric box, for crates, stone blocks and rounded tiles: a Bevel menu in its options (top, corner or both) lights the top's back edges and turns its front edges and its front corner halfway between the faces they join, in palette colors when the color is from the palette. (#393)
 - Inner edges on isometric volumes: an Edges option next to Outline and Light edge draws a line in the outline's color between the faces: under the box's top and down its front corner, under the cylinder's rim, along the pyramid's ridges that show. (#392)
 - A color per face on isometric volumes: three swatches in the box, cylinder and pyramid's options (top, left, right) take the current color on a click, instead of shading the sides from the palette; the outline and light edge follow. A button goes back to shading. The options bar also takes its full width instead of scrolling. (#391)

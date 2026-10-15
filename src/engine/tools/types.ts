@@ -1,3 +1,4 @@
+import type { RampDirection } from '../isoRamp';
 import type { FaceColors } from '../isoBox';
 import type { Selection } from '../selection';
 import type { IsoPlane } from '../isoPlane';
@@ -31,6 +32,7 @@ export type ToolId =
   | 'box'
   | 'cylinder'
   | 'pyramid'
+  | 'ramp'
   | 'board'
   | 'shade'
   | 'lighten'
@@ -107,6 +109,9 @@ export interface ToolOptions {
   boxOutline: boolean;
   /** Isometric box: the top's front edges one step lighter, the classic highlight. */
   boxLight: boolean;
+  /** Isometric ramp: where it rises, and its number of steps (0: a smooth slope). */
+  rampDirection: RampDirection;
+  rampSteps: number;
   /** Isometric box: a bevel along the top's edges, and one on the front upright corner. */
   boxBevelTop: boolean;
   boxBevelSides: boolean;
@@ -154,6 +159,8 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   boxOutline: false,
   plane: 'flat',
   boxLight: false,
+  rampDirection: 'se',
+  rampSteps: 0,
   boxBevelTop: false,
   boxBevelSides: false,
   boxEdges: false,

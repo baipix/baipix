@@ -13,7 +13,7 @@ import { liquifyTool } from './liquify';
 import { sprayTool } from './spray';
 import { boxTool } from './box';
 import { board } from './board';
-import { cylinderTool, pyramidTool } from './volumes';
+import { cylinderTool, pyramidTool, rampTool } from './volumes';
 import { ellipseTool, heartTool, lineTool, rectTool, roundRectTool, starTool, triangleTool } from './shapes';
 import type { Tool, ToolId } from './types';
 
@@ -40,6 +40,7 @@ export const TOOLS: Record<ToolId, Tool> = {
   box: boxTool,
   cylinder: cylinderTool,
   pyramid: pyramidTool,
+  ramp: rampTool,
   shade,
   lighten,
   blur,

@@ -1,3 +1,4 @@
+import { RAMP_DIRECTIONS, type RampDirection } from '../../engine/isoRamp';
 import { toCss } from '../../engine/color';
 import type { ReactNode } from 'react';
 import { isBoard } from '../../engine/document';
@@ -409,7 +410,8 @@ export function ToolOptionsBar() {
       break;
     case 'box':
     case 'cylinder':
-    case 'pyramid': {
+    case 'pyramid':
+    case 'ramp': {
       const faces = editor.volumeFaces();
       // Width and depth are in pixels across, two per step of the 2:1 edges. No label in front: the
       // arrow says which, and its tooltip names it, so the faces fit in the bar too.
@@ -425,13 +427,48 @@ export function ToolOptionsBar() {
           onChange={(v) => editor.setOption(key, steps ? Math.round(v / 2) : v)}
         />
       );
-      info = t(tool === 'box' ? 'hint.box' : tool === 'cylinder' ? 'hint.cylinder' : 'hint.pyramid');
+      info = t(
+        tool === 'box'
+          ? 'hint.box'
+          : tool === 'cylinder'
+            ? 'hint.cylinder'
+            : tool === 'ramp'
+              ? 'hint.ramp'
+              : 'hint.pyramid',
+      );
       body = (
         <>
           {/* The box's width and depth, set by the drag; the others take their size from the drag alone. */}
-          {tool === 'box' && field('boxWidth', '↘', true)}
-          {tool === 'box' && field('boxDepth', '↙', true)}
+          {(tool === 'box' || tool === 'ramp') && field('boxWidth', '↘', true)}
+          {(tool === 'box' || tool === 'ramp') && field('boxDepth', '↙', true)}
           {field('boxHeight', '↕', false)}
+          {tool === 'ramp' && (
+            <>
+              {/* Where it rises, and in how many steps (0: a smooth slope). */}
+              <select
+                className="select-plain"
+                aria-label={t('ramp.direction')}
+                data-tip={t('ramp.direction')}
+                value={options.rampDirection}
+                onChange={(e) => editor.setOption('rampDirection', e.target.value as RampDirection)}
+              >
+                {RAMP_DIRECTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {t(`ramp.${d}`)}
+                  </option>
+                ))}
+              </select>
+              <NumberField
+                value={options.rampSteps}
+                min={0}
+                max={64}
+                label="⌗"
+                ariaLabel={t('ramp.steps')}
+                scrubHint={`${t('ramp.steps')} · ${t('common.dragToAdjust')}`}
+                onChange={(v) => editor.setOption('rampSteps', v)}
+              />
+            </>
+          )}
           <Checkbox
             checked={options.boxOutline}
             onChange={set('boxOutline')}
