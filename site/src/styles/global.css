@@ -18,8 +18,6 @@
   --ink-text: light-dark(#ffffff, #0d0d0f);
   /* The side of a pixel button, seen under it like a key. */
   --ink-side: light-dark(#55555c, #9a9aa0);
-  /* The faint pixel grid behind the hero. */
-  --dots: light-dark(#d9d9d6, #26262a);
   /* The call-to-action card stays dark in both themes, raised a little in dark mode. */
   --cta-bg: light-dark(#0d0d0f, #1a1a1d);
   --cta-text: #ffffff;
