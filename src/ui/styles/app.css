@@ -2228,6 +2228,18 @@ body.is-dragging-swatch * {
   background: var(--canvas);
   color: var(--text);
 }
+/* The ambient grid behind the files screen, fixed while the page scrolls; the content sits above it. */
+.home-glow {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.home-top,
+.home-inner {
+  position: relative;
+}
 .home.is-dropping::after {
   content: attr(data-drop-label);
   position: fixed;
