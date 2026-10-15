@@ -73,6 +73,36 @@ const features = [
     icon: ['#######', '.......', '.#####.', '.......', '..###..', '.......', '...#...'],
   },
 ];
+
+/** The cards across the grid: what's newest, with its animation from the Draw page. */
+const wide = [
+  {
+    title: 'Components',
+    tone: 'components',
+    text: 'Draw a sprite once and place instances of it anywhere: change the component, and every copy follows. Repeat one in a grid, or detach a copy to change it on its own.',
+    icon: ['...#...', '..###..', '.#####.', '#######', '.#####.', '..###..', '...#...'],
+    animation: anim.components,
+    label: 'A potion and three instances of it: the component is filled, and the copies fill along with it.',
+  },
+  {
+    title: 'Isometric volumes',
+    tone: 'isometric',
+    text: 'Turn on the isometric grid and draw boxes, cylinders standing or lying, pyramids, stairs and ramps in one drag, already shaded, with bevels and a color per face if you like.',
+    icon: ['...#...', '.##.##.', '#..#..#', '#..#..#', '#..#..#', '.##.##.', '...#...'],
+    animation: anim.isometric,
+    label:
+      'A little courtyard built volume by volume on the isometric grid: a grass tile, stone stairs, a crate, a log and a pillar.',
+  },
+  {
+    title: 'Several boards, one file',
+    tone: 'boards',
+    text: 'Variants of a sprite or a scene in four seasons, side by side, each board with its own size, layers and undo history, kept even after a reload. Export them all at once.',
+    icon: ['###.###', '#.#.#.#', '###.###', '.......', '###.###', '#.#.#.#', '###.###'],
+    animation: anim.boards,
+    label:
+      'A tree drawn on a first board, then three copies of the board turned to autumn, winter and a starry night.',
+  },
+];
 ---
 
 <Base
@@ -179,29 +209,22 @@ const features = [
             </span>
           </article>
         ))}
-        {/* Components close the list with a wide card, and the picture that shows what they do. */}
-        <article class="feature feature-wide" data-tone="components">
-          <div class="feature-wide-text">
-            <PixelIcon
-              rows={['...#...', '..###..', '.#####.', '#######', '.#####.', '..###..', '...#...']}
-              size={24}
-            />
-            <h3>
-              <a href={`${base}draw/#components`}>Components</a>
-            </h3>
-            <p class="muted">
-              Draw a sprite once and place instances of it anywhere: change the component, and every copy
-              follows. Repeat one in a grid, or detach a copy to change it on its own.
-            </p>
-          </div>
-          <PixelPlay
-            animation={anim.components}
-            label="A potion and three instances of it: the component is filled, and the copies fill along with it."
-          />
-          <span class="feature-arrow" aria-hidden="true">
-            <PixelIcon rows={ARROW} size={14} />
-          </span>
-        </article>
+        {/* Wide cards close the list, each with the animation that shows what it does. */}
+        {wide.map((f) => (
+          <article class="feature feature-wide" data-tone={f.tone}>
+            <div class="feature-wide-text">
+              <PixelIcon rows={f.icon} size={24} />
+              <h3>
+                <a href={`${base}draw/#${f.tone}`}>{f.title}</a>
+              </h3>
+              <p class="muted">{f.text}</p>
+            </div>
+            <PixelPlay animation={f.animation} label={f.label} />
+            <span class="feature-arrow" aria-hidden="true">
+              <PixelIcon rows={ARROW} size={14} />
+            </span>
+          </article>
+        ))}
       </div>
     </section>
 
@@ -445,13 +468,18 @@ const features = [
     margin-top: 12px;
     color: var(--text);
   }
-  /* The components' card: across the grid, its text and its picture side by side. */
+  /* The wide cards: across the grid, their text and their picture side by side. */
   .feature-wide {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
     align-items: center;
     gap: 40px;
+  }
+  /* Pictures of other proportions keep the potions' height, centered in their room. */
+  .feature-wide :global(.pixel-play) {
+    max-height: 240px;
+    object-fit: contain;
   }
   .feature-wide-text {
     display: flex;

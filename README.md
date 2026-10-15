@@ -19,13 +19,15 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Shapes:** line, rectangle, rounded rectangle, ellipse, triangle, star and heart, outlined or filled.
 - **Palette-aware tools:** shade and lighten pick the next darker or lighter palette color in OKLab; blur can snap its result back to the palette; liquify and jumble rework a drawing without adding colors.
 - **Palettes:** each file keeps its own: a preset (Sweetie 16, PICO-8, Endesga 32, Game Boy…), or the colors of the drawing, kept up to date as you draw. Keep your own palettes to use in every file, paste any Lospec palette, or generate hue-shifted ramps.
+- **Isometric:** a 2:1 grid and volumes in one drag, already shaded: box (bevels, light edge, inner edges), cylinder upright or lying, pyramid, stairs and ramps, with a color per face if you like. Shapes lie on the ground or stand on a wall, a selection extrudes into a volume or goes onto a face, the tile preview staggers like isometric tiles, and a drawing exports as a tileset.
+- **Boards:** several boards in one file, side by side like frames in a design tool, each with its own size, layers and undo history. Duplicate, align and arrange them, keep layers outside them, export them all at once.
 - **Layers like a design tool:** groups four levels deep, blend modes, handles to resize and rotate, layers you copy from one file to another.
 - **Components:** draw a sprite once, place instances of it anywhere, and they follow when you draw on it. Repeat one in a grid.
 - **Layer effects:** outline, drop shadow and glow, drawn from the layer without changing its pixels.
 - **Symmetry** around axes you can drag anywhere, **tile preview** for seamless textures, rulers and guides, a reference image to trace over.
 - **Rendering for design work:** choose the exported pixel size and a gap between pixels (LED / dot-matrix look), previewed live on the canvas.
-- **Export:** PNG, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files to keep working in Aseprite, `.baipix` project files, Lospec `.hex` palettes.
-- **Local-first:** everything is saved in your browser (IndexedDB). Nothing is sent anywhere.
+- **Export:** PNG, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files to keep working in Aseprite, tilesets, every board at once as a .zip, `.baipix` project files, Lospec `.hex` palettes.
+- **Local-first:** everything is saved in your browser (IndexedDB), each board's last 50 undo steps included. Nothing is sent anywhere.
 - English and French, light and dark themes.
 
 ## Getting started
