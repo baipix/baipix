@@ -52,6 +52,8 @@ export interface UiState {
   /** The tab the Adjustments panel opens on. */
   adjustTab: AdjustTab;
   panelWidths: { left: number; right: number };
+  /** The Layers panel folded into a small pill, like Figma's Minimize UI. */
+  layersFolded: boolean;
   uiHidden: boolean;
   exportFormat: 'png' | 'svg' | 'aseprite' | 'tileset';
   exportActiveLayer: boolean;
@@ -90,6 +92,7 @@ export const uiStore = createStore<UiState>({
   adjustTab: 'colors',
   preview: { open: true, collapsed: false, x: null, y: null, w: 208, h: 168, zoom: null },
   panelWidths: { left: PANEL_LIMITS.left.default, right: PANEL_LIMITS.right.default },
+  layersFolded: false,
   uiHidden: false,
   exportFormat: 'png',
   exportActiveLayer: false,
@@ -110,6 +113,8 @@ export const openDialog = (dialog: DialogState): void => uiStore.set({ dialog })
 export const openAdjust = (scope: 'layer' | 'all' = 'all', tab: AdjustTab = 'colors'): void =>
   uiStore.set({ adjust: true, adjustScope: scope, adjustTab: tab });
 export const closeDialog = (): void => uiStore.set({ dialog: null });
+/** Folds the Layers panel into a pill, or unfolds it (Ctrl/Cmd+Shift+\). */
+export const toggleLayersPanel = (): void => uiStore.set((s) => ({ layersFolded: !s.layersFolded }));
 
 /** Pixel under the cursor, for the coordinates badge (updated often, kept separate). */
 export const hoverStore = createStore<

@@ -28,6 +28,7 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
           preferences: editor.getPreferences(),
           ui: {
             panelWidths: ui.panelWidths,
+            layersFolded: ui.layersFolded,
             exportFormat: ui.exportFormat,
             exportActiveLayer: ui.exportActiveLayer,
             collapsed: ui.collapsed,

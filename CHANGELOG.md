@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Fold the Layers panel, like Figma's Minimize UI: the panel now has a header with the file's name and a button (or Ctrl/Cmd+Shift+\\) that folds it into a small pill and unfolds it again. Remembered across reloads. (#376)
 - Undo (Cmd/Ctrl+Z) right after deleting boards brings them back, and Redo deletes them again, like in Figma; the same for layers outside the boards deleted all at once. Once something else is done, Undo goes back to the board's own history (the toast's Undo still works). (#360)
 - Layers outside the boards, like in Figma: a layer dragged with the Move tool and let go beside every board stays there, visible, and shows in the Layers panel at the same level as the boards. Grab it again to move it, or drop it onto a board; it can be renamed, hidden or deleted, and a file with no board can still hold such layers. They're only moved for now (the tools draw on a board), and only boards export. Undo takes a layer moved across boards back to the board it left, both sides at once. (#358)
 - A file can have no board: delete them all and the canvas says so, with a Create a board button (the board tool draws one too). Undo brings them back. (#356)

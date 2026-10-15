@@ -87,6 +87,7 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
                 ? ui.exportFormat
                 : 'png',
             exportActiveLayer: !!ui.exportActiveLayer,
+            layersFolded: !!ui.layersFolded,
             exportTileWidth: tileSide(ui.exportTileWidth),
             exportTileHeight: tileSide(ui.exportTileHeight),
             exportTileDrop: ui.exportTileDrop !== false,

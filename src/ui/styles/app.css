@@ -2009,6 +2009,34 @@ body.is-dragging-swatch * {
   }
 }
 
+/* The left panel's header: the file's name, and the button that folds the panel into a pill. */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 6px 4px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-file {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+.panel-left.is-folded .panel-header {
+  border-bottom: 0;
+}
+@media (min-width: 821px) {
+  .panel-left.is-folded {
+    width: max-content;
+    max-width: calc(var(--left-width) + 120px);
+    overflow: hidden;
+  }
+  .app:has(.panel-left.is-folded) .resizer-left {
+    display: none;
+  }
+}
+
 /* ---------- Floating panels and accent ----------
    The interface itself is plain and precise: soft rounded corners and soft shadows, like Figma.
    The pixel style is for the logo, the site and what people draw. */
