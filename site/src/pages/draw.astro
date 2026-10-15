@@ -3,6 +3,7 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 import Cta from '../components/Cta.astro';
 import Footer from '../components/Footer.astro';
 import SectionHead from '../components/SectionHead.astro';
+import SectionTabs from '../components/SectionTabs.astro';
 import Nav from '../components/Nav.astro';
 import PixelIcon from '../components/PixelIcon.astro';
 import PixelPlay from '../components/PixelPlay.astro';
@@ -33,6 +34,20 @@ const items = gallery.find((p) => p.file === 'items.baipix')!;
 const ICON_MIRROR = ['#..#..#', '##.#.##', '###.###', '###.###', '###.###', '##.#.##', '#..#..#'];
 const ICON_GUIDES = ['..#..#.', '..#..#.', '#######', '..#..#.', '..#..#.', '#######', '..#..#.'];
 const ICON_TILE = ['###.###', '###.###', '###.###', '.......', '###.###', '###.###', '###.###'];
+
+/** The page's sections, for the bar that follows you down the page. */
+const SECTIONS = [
+  { id: 'start', label: 'Start', tone: 'start' },
+  { id: 'draw', label: 'Draw', tone: 'draw' },
+  { id: 'shapes', label: 'Shapes', tone: 'shapes' },
+  { id: 'colors', label: 'Colors', tone: 'colors' },
+  { id: 'rework', label: 'Rework', tone: 'rework' },
+  { id: 'symmetry', label: 'View', tone: 'symmetry' },
+  { id: 'layers', label: 'Layers', tone: 'layers' },
+  { id: 'components', label: 'Components', tone: 'components' },
+  { id: 'export', label: 'Export', tone: 'export' },
+  { id: 'keys', label: 'Shortcuts' },
+];
 
 const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
 ---
@@ -71,6 +86,8 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         />
       </figure>
     </section>
+
+    <SectionTabs items={SECTIONS} label="Sections of the page" />
 
     <!-- Start -->
     <section class="block container" id="start" data-tone="start">
@@ -1376,6 +1393,11 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     object-position: 50% 35%;
   }
 
+  /* A link to a section lands its head line just under the section bar, not its top padding. */
+  main > section[id] {
+    scroll-margin-top: -48px;
+  }
+
   /* ---- A section: text on the left, pictures on the right ---- */
   .block {
     display: grid;
@@ -2284,6 +2306,9 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     .block,
     .keys {
       padding-top: 88px;
+    }
+    main > section[id] {
+      scroll-margin-top: -12px;
     }
     .frame {
       padding: 20px;
