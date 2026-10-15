@@ -673,7 +673,7 @@ body.is-resizing * {
   content: '';
   position: absolute;
   inset: -3px;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--glow-line);
   border-radius: 5px;
 }
 .swatch.is-dragging {
@@ -683,12 +683,12 @@ body.is-resizing * {
 .swatch.drop-before {
   box-shadow:
     inset 0 0 0 1px var(--swatch-edge),
-    -3px 0 0 0 var(--accent);
+    -3px 0 0 0 var(--glow-line);
 }
 .swatch.drop-after {
   box-shadow:
     inset 0 0 0 1px var(--swatch-edge),
-    3px 0 0 0 var(--accent);
+    3px 0 0 0 var(--glow-line);
 }
 .palette-grid.is-sortable .swatch {
   touch-action: none;
@@ -2092,15 +2092,15 @@ body.is-dragging-swatch * {
   }
 }
 
-/* One accent, for moments of interaction only (hover, resize, drop, focus, the main button): the
-   interface stays neutral at rest. A sky blue with dark ink on top; thin lines use a deeper one in
-   light mode, so they hold up on white. */
+/* One accent, a soft violet, for what's selected or acted on: the active tool, the main button,
+   focus, menus, drops. Hovers stay neutral. White ink on the light theme's violet, dark ink on the
+   dark theme's lighter one: both above 5:1. */
 :root {
-  --glow: #66c4ff;
-  --glow-ink: #1a1a1a;
-  /* Muted text on blue (a hovered row): dark enough for 4.5:1. */
-  --glow-muted: rgba(0, 0, 0, 0.62);
-  --glow-line: light-dark(#1b93dd, #66c4ff);
+  --glow: light-dark(#6e56cf, #9e8cfc);
+  --glow-ink: light-dark(#ffffff, #17132b);
+  /* Muted text on the violet (a hovered menu item): still above 4.5:1. */
+  --glow-muted: light-dark(rgba(255, 255, 255, 0.78), rgba(23, 19, 43, 0.72));
+  --glow-line: light-dark(#6e56cf, #9e8cfc);
 }
 :focus-visible,
 .panel-tab:focus-visible {
@@ -2120,24 +2120,7 @@ body.is-dragging-swatch * {
   border-color: var(--glow-line);
   background: color-mix(in srgb, var(--glow) 16%, transparent);
 }
-/* Hovers are solid blue with dark ink; the muted text follows along. */
-.icon-btn:hover:not(:disabled),
-.tool-btn:hover:not(:disabled):not([aria-pressed='true']),
-.tool-caret:hover,
-.item:hover:not(.is-active):not(.is-selected) {
-  --text: var(--glow-ink);
-  --muted: var(--glow-muted);
-  background: var(--glow);
-  color: var(--glow-ink);
-}
-.item:hover:not(.is-active):not(.is-selected) .item-actions {
-  background: linear-gradient(90deg, transparent, var(--glow) 14px);
-}
-/* Text buttons stay neutral on hover, so the blue main button stands alone. */
-.btn:hover:not(:disabled) {
-  background: var(--hover);
-}
-/* The main button is blue at rest. */
+/* The main button and the active tool are violet. */
 .btn-primary,
 .btn-primary:hover:not(:disabled) {
   border-color: var(--glow);
@@ -2145,11 +2128,17 @@ body.is-dragging-swatch * {
   color: var(--glow-ink);
   filter: none;
 }
+.tool-btn[aria-pressed='true'],
+.tool-btn[aria-pressed='true']:hover {
+  background: var(--glow);
+  color: var(--glow-ink);
+}
 .panel-tab[aria-selected='true'] {
   border-bottom-color: var(--glow-line);
 }
 .menu-item:hover:not(:disabled),
 .menu-item:focus-visible {
+  --muted: var(--glow-muted);
   background: var(--glow);
   color: var(--glow-ink);
 }

@@ -42,6 +42,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- A soft violet replaces the blue for what's selected or acted on: the selection's frame and handles, the active layer and tool, the main button, menus, focus and checkboxes. Hovers are now neutral. Components move from purple to green, so they never look selected. (#375)
 - Line icons: the interface's icons come from Lucide, finer and lighter than the pixel ones, 16 px in the panels and 18 px in the toolbar. (#374)
 - The interface drops its pixel look: soft rounded corners and soft shadows on panels, menus, buttons and the home screen's cards, native checkboxes. The pixel style stays for the logo, the site and what you draw. (#373)
 - Precise cursors: drawing tools show a thin crosshair with a light halo instead of a pixel one, the Move tool the system arrow, the eyedropper and the rotate handles line icons. (#372)
