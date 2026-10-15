@@ -54,6 +54,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The side panels' resize handles follow their panel's edge, between its rounded corners, instead of running down the whole window. (#382)
 - Undo (and Redo) now covers boards moved by a drag or aligned, each drag or alignment one step, in order with boards deleted. (#364)
 - Holding Space shows the hand whatever the tool (the Move tool and the eyedropper kept their own cursor), and the brush outline hides while it's held. (#362)
 - A board moved or renamed no longer goes back to its old place or name when a drawing step is undone. The size in the title bar follows a canvas resize right away. (#343)

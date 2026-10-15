@@ -7,15 +7,33 @@ import { PANEL_LIMITS, uiStore } from '../uiStore';
 export function PanelResizer({ side }: { side: 'left' | 'right' }) {
   const t = useT();
   const limits = PANEL_LIMITS[side];
-  // The left panel fits its content: the handle follows its height instead of the window's.
-  const [height, setHeight] = useState<number | null>(null);
+  // The panels fit their content and float with a margin: the handle follows its panel's edge,
+  // between its rounded corners, wherever the panel is (rulers shown or not) and however tall.
+  const [place, setPlace] = useState<{ top: number; height: number } | null>(null);
   useEffect(() => {
-    if (side !== 'left') return;
-    const panel = document.querySelector<HTMLElement>('.panel-left');
+    const panel = document.querySelector<HTMLElement>(`.panel-${side}`);
     if (!panel) return;
-    const ro = new ResizeObserver(() => setHeight(panel.offsetHeight));
+    const measure = () => {
+      const handle = document.querySelector<HTMLElement>(`.resizer-${side}`);
+      const parent = handle?.offsetParent?.getBoundingClientRect();
+      const r = panel.getBoundingClientRect();
+      if (!parent) return;
+      const inset = Math.min(12, r.height / 4);
+      setPlace({ top: r.top - parent.top + inset, height: Math.max(0, r.height - inset * 2) });
+    };
+    const ro = new ResizeObserver(measure);
     ro.observe(panel);
-    return () => ro.disconnect();
+    // Showing the rulers moves the panels down without resizing them.
+    const app = panel.closest('.app');
+    const mo = new MutationObserver(measure);
+    if (app) mo.observe(app, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', measure);
+    measure();
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, [side]);
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -45,7 +63,7 @@ export function PanelResizer({ side }: { side: 'left' | 'right' }) {
   return (
     <div
       className={`resizer resizer-${side}`}
-      style={height !== null ? { height, bottom: 'auto' } : undefined}
+      style={place ? { top: place.top, height: place.height, bottom: 'auto' } : undefined}
       role="separator"
       aria-orientation="vertical"
       aria-label={t(side === 'left' ? 'panel.resizeLeft' : 'panel.resizeRight')}
