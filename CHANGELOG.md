@@ -66,6 +66,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- A star of an even width keeps its tip, two pixels wide, instead of losing it; the star and the triangle on the site's Draw page are drawn symmetric, like in the editor. (#405)
 - Several selected layers resize and turn together by the frame's handles, each in proportion within the box they fill, in one undo step; before, the handles did nothing and the frame went away. (#390)
 - The side panels' resize handles follow their panel's edge, between its rounded corners, instead of running down the whole window. (#382)
 - Undo (and Redo) now covers boards moved by a drag or aligned, each drag or alignment one step, in order with boards deleted. (#364)
