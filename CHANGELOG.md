@@ -4,12 +4,12 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-16
+
+Isometric volumes and boards: boxes, cylinders standing or lying, pyramids, stairs and ramps on an isometric grid, several boards in a file like frames in Figma, layers outside them, an undo history that survives a reload, and a lighter interface with line icons, violet selections and Figma-like rulers.
+
 ### Added
 
-- The Draw page has a Boards section: several boards in a file, arranging them, layers outside the boards and the history kept after a reload, with a tree drawn on one board and its copies turned to autumn, winter and night. (#409)
-- The Draw page has an Isometric section: the grid, the box and pyramid, the cylinder, stairs and ramps, face colors and tile edges, with a courtyard that builds itself volume by volume. (#407)
-- The Draw page has a bar of its sections that sticks to the top as you scroll: the one you're reading is framed in its color, and a click takes you to another. On a phone it scrolls sideways. (#403)
-- The site's home page has a Screenshots section: eight shots of the editor at work (boards, isometric volumes, components, gradients, tile preview, Jumble, eyedropper, pixel gap), each with a caption. A click opens it full size with its caption over it, and the arrow keys go through the others. (#399)
 - The undo history survives a reload: each board's last 50 steps (undo and redo) are kept in the browser next to the drawing, every unchanged layer stored once rather than once per step. (#397)
 - Floor tiles, edge by edge: with the isometric grid on, the rectangle's options choose which of a floor tile's edges get the outline (NW, NE, SW, SE), so tiles side by side share one line instead of a doubled one. (#396)
 - Lying cylinders, for barrels, logs and wheels: the cylinder's options can lay it along the left or the right axis. Its round end is dragged on a wall like the shapes on an isometric plane, and its body runs back by its length, lit on top and shaded underneath. (#395)
@@ -57,8 +57,6 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
-- The site's hero has the editor's files screen background: small squares lit by slow waves, a few twinkling in violet, in place of the static dot grid; still with reduced motion, paused off screen. (#401)
-- The site shows the new interface: the image shared with links, and the Draw page's selection frame in violet. (#385)
 - Rulers like Figma's: what's selected (the layer framed by the Move tool, or the pixel selection) shows as a violet band on both rulers, its edges written in violet, the numbers too close to them left out; thinner ticks; the Preview window no longer covers the left ruler. (#378)
 - A lighter right panel, floating like the Layers panel and as tall as what it shows: only the board, colors, layer and effects. The view settings (pixel grid, tile preview, rulers) open from a button in the top bar; symmetry gets two toggles in the drawing tools' options bar, at hand while drawing; the isometric grid, saved with the file, moves to the Board section. Export is a button at the top right that opens the export in a dialog. (#377)
 - A soft violet replaces the blue for what's selected or acted on: the selection's frame and handles, the active layer and tool, the main button, menus, focus and checkboxes. Hovers are now neutral. Components move from purple to green, so they never look selected. (#375)
@@ -79,6 +77,16 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Put on an isometric face: what landed past the canvas's edges was lost. It's now kept outside the canvas, as after a move, and without a selection the drawing already outside the canvas is laid on the face too. (#305)
 - Isometric box: a color that isn't in the palette got its sides from the closest palette ramp, whatever its hue (a blue box with green sides, once the palette held only greens). The sides now come down the palette's ramp only for a palette color, and are otherwise the color itself made darker. (#304)
 - In Export, the tileset's tile width and height fields were too narrow for their numbers (16 showed as 1). They now take the panel's whole width, like the canvas size. (#303)
+
+### Website
+
+- The home page and the README say what 0.7 brings: isometric volumes and boards join Components as wide cards across the feature grid, each with its animation from the Draw page. (#411)
+- The Draw page has a Boards section: several boards in a file, arranging them, layers outside the boards and the history kept after a reload, with a tree drawn on one board and its copies turned to autumn, winter and night. (#409)
+- The Draw page has an Isometric section: the grid, the box and pyramid, the cylinder, stairs and ramps, face colors and tile edges, with a courtyard that builds itself volume by volume. (#407)
+- The Draw page has a bar of its sections that sticks to the top as you scroll: the one you're reading is framed in its color, and a click takes you to another. On a phone it scrolls sideways. (#403)
+- The site's home page has a Screenshots section: eight shots of the editor at work (boards, isometric volumes, components, gradients, tile preview, Jumble, eyedropper, pixel gap), each with a caption. A click opens it full size with its caption over it, and the arrow keys go through the others. (#399)
+- The site's hero has the editor's files screen background: small squares lit by slow waves, a few twinkling in violet, in place of the static dot grid; still with reduced motion, paused off screen. (#401)
+- The site shows the new interface: the image shared with links, and the Draw page's selection frame in violet. (#385)
 
 ## [0.6.0] - 2026-10-11
 
@@ -312,7 +320,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.6.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.0...main
+[0.7.0]: https://github.com/baipix/baipix/releases/tag/v0.7.0
 [0.6.0]: https://github.com/baipix/baipix/releases/tag/v0.6.0
 [0.5.0]: https://github.com/baipix/baipix/releases/tag/v0.5.0
 [0.4.0]: https://github.com/baipix/baipix/releases/tag/v0.4.0
