@@ -20,6 +20,7 @@ import {
   Crop,
   Cylinder,
   Diamond,
+  Download,
   Droplet,
   Ellipsis,
   Eraser,
@@ -30,6 +31,7 @@ import {
   Folder,
   FolderPlus,
   Frame,
+  Grid3x3,
   Grid2x2,
   Hand,
   Heart,
@@ -58,6 +60,8 @@ import {
   Slash,
   SlidersHorizontal,
   SprayCan,
+  SquareSplitHorizontal,
+  SquareSplitVertical,
   SquareDashed,
   Star,
   Sun,
@@ -167,8 +171,13 @@ export const ICONS = {
   alignBottom: AlignEndHorizontal,
   flipH: FlipHorizontal2,
   flipV: FlipVertical2,
+  // Symmetry: the square split down the middle (left-right), or across it (top-bottom).
+  mirrorX: SquareSplitHorizontal,
+  mirrorY: SquareSplitVertical,
   image: Image,
   crop: Crop,
+  download: Download,
+  grid: Grid3x3,
 } satisfies Record<string, Glyph>;
 
 export type IconName = keyof typeof ICONS | 'logo';

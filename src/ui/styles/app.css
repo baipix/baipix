@@ -220,6 +220,38 @@ body.is-resizing * {
 .menubar-end {
   justify-content: flex-end;
 }
+/* The main action, at the top right like Figma's Share: opens the export. */
+.menubar-export {
+  height: 28px;
+  margin: 0 4px 0 6px;
+  padding: 0 12px;
+}
+/* The display options, under their button. */
+.display-popover {
+  width: 260px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+.display-popover .popover-body {
+  gap: 4px;
+  padding: 8px 16px 12px;
+}
+/* The export, in a dialog: its options in one column. */
+.export-dialog {
+  width: min(340px, calc(100vw - 32px));
+}
+.export-options {
+  display: grid;
+  gap: 10px;
+}
+@media (max-width: 820px) {
+  .menubar-export span {
+    display: none;
+  }
+  .menubar-export {
+    padding: 0 8px;
+  }
+}
 .menubar-logo,
 .menubar-title,
 .zoom-button {
@@ -2079,8 +2111,11 @@ body.is-dragging-swatch * {
     max-height: calc(100% - 26px);
     margin: 12px 0 14px 12px;
   }
+  /* As tall as what it shows, like the left one: it only holds what depends on the selection. */
   .panel-right {
     grid-column: 3;
+    align-self: start;
+    max-height: calc(100% - 26px);
     margin: 12px 12px 14px 0;
   }
   /* The handle lines up with the panel's inner edge, between its rounded corners, so the highlight
@@ -2100,6 +2135,7 @@ body.is-dragging-swatch * {
     margin: 30px 0 14px 30px;
   }
   .app.has-rulers .panel-right {
+    max-height: calc(100% - 44px);
     margin-top: 30px;
   }
   .app.has-rulers .resizer {
@@ -2156,6 +2192,12 @@ body.is-dragging-swatch * {
   background: var(--glow);
   color: var(--glow-ink);
   filter: none;
+}
+/* A toggle that's on (symmetry, a folded panel, an open popover): the selection's violet tint. */
+.icon-btn[aria-pressed='true'],
+.icon-btn[aria-pressed='true']:hover {
+  background: var(--selected);
+  color: var(--glow-line);
 }
 .tool-btn[aria-pressed='true'],
 .tool-btn[aria-pressed='true']:hover {

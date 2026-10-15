@@ -652,7 +652,7 @@ function SurfacesBlock() {
         </Specimen>
         <Specimen
           label="Tour bubble"
-          use="The first-launch tips: one at a time, pointing at what it's about (a blue ring around it), with the step, Skip and Next. Nothing is blocked meanwhile."
+          use="The first-launch tips: one at a time, pointing at what it's about (a violet ring around it), with the step, Skip and Next. Nothing is blocked meanwhile."
         >
           <div className="tour-bubble popover ds-static" style={{ width: 260 }}>
             <strong>Pixel gap</strong>
@@ -665,6 +665,18 @@ function SurfacesBlock() {
               <button type="button" className="btn btn-primary">
                 Next
               </button>
+            </div>
+          </div>
+        </Specimen>
+        <Specimen
+          label="Popover"
+          use="Options under the button that opens them, like the top bar's Display: a title, then the options. A click elsewhere or Escape closes it."
+        >
+          <div className="popover display-popover ds-static" style={{ width: 220 }}>
+            <div className="popover-header">Display</div>
+            <div className="popover-body">
+              <Checkbox checked onChange={() => {}} label="Pixel grid" />
+              <Checkbox checked={false} onChange={() => {}} label="Tile preview" />
             </div>
           </div>
         </Specimen>

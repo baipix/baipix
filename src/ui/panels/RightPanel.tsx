@@ -403,6 +403,8 @@ function CanvasSection() {
   const t = useT();
   const editor = useEditor();
   const doc = useEditorState((s) => s.doc);
+  const isoGrid = useEditorState((s) => s.doc.isoGrid);
+  const isoGridVertical = useEditorState((s) => s.doc.isoGridVertical);
   useEditorState((s) => s.revision);
   const hasBg = doc.background !== 0;
   const scrubbingBackground = useRef(false);
@@ -448,6 +450,30 @@ function CanvasSection() {
           onChange={(v) => editor.setRender({ gap: v })}
         />
       </Row>
+      {/* Saved with the file: an isometric drawing keeps its grid, and tools snap to it. */}
+      <Checkbox checked={!!isoGrid} onChange={() => editor.toggleIsoGrid()} label={t('display.isoGrid')} />
+      {isoGrid && (
+        // The diamonds' width; they're half as tall, the 2:1 of pixel art.
+        <Row label={t('display.isoCell')}>
+          <NumberField
+            value={isoGrid}
+            min={4}
+            max={256}
+            label="↔"
+            suffix="px"
+            ariaLabel={t('display.isoCell')}
+            scrubHint={t('common.dragToAdjust')}
+            onChange={(v) => editor.setIsoGrid(v)}
+          />
+        </Row>
+      )}
+      {isoGrid && (
+        <Checkbox
+          checked={!!isoGridVertical}
+          onChange={(v) => editor.setIsoGridVertical(v)}
+          label={t('display.isoVertical')}
+        />
+      )}
       <div className="subsection-title">
         <span>{t('canvas.background')}</span>
         {!hasBg && (
@@ -498,14 +524,13 @@ function CanvasSection() {
   );
 }
 
-function DisplaySection() {
+/** The display options (grid, tile preview, symmetry, rulers, isometric grid), in the top bar's popover. */
+export function DisplayOptions() {
   const t = useT();
   const editor = useEditor();
   const view = useEditorState((s) => s.view);
-  const isoGrid = useEditorState((s) => s.doc.isoGrid);
-  const isoGridVertical = useEditorState((s) => s.doc.isoGridVertical);
   return (
-    <Section id="display" title={t('section.display')}>
+    <>
       <Checkbox checked={view.grid} onChange={(v) => editor.setView('grid', v)} label={t('display.grid')} />
       <Checkbox checked={view.tile} onChange={(v) => editor.setView('tile', v)} label={t('display.tile')} />
       {view.tile && (
@@ -525,46 +550,12 @@ function DisplaySection() {
         </Row>
       )}
       <Checkbox
-        checked={view.mirrorX}
-        onChange={(v) => editor.setView('mirrorX', v)}
-        label={t('display.mirrorX')}
-      />
-      <Checkbox
-        checked={view.mirrorY}
-        onChange={(v) => editor.setView('mirrorY', v)}
-        label={t('display.mirrorY')}
-      />
-      <Checkbox
         checked={view.rulers}
         onChange={(v) => editor.setView('rulers', v)}
         label={t('display.rulers')}
       />
       {view.rulers && <p className="muted section-note">{t('display.rulersHint')}</p>}
-      {/* Saved with the file: an isometric drawing keeps its grid, and tools snap to it. */}
-      <Checkbox checked={!!isoGrid} onChange={() => editor.toggleIsoGrid()} label={t('display.isoGrid')} />
-      {isoGrid && (
-        // The diamonds' width; they're half as tall, the 2:1 of pixel art.
-        <Row label={t('display.isoCell')}>
-          <NumberField
-            value={isoGrid}
-            min={4}
-            max={256}
-            label="↔"
-            suffix="px"
-            ariaLabel={t('display.isoCell')}
-            scrubHint={t('common.dragToAdjust')}
-            onChange={(v) => editor.setIsoGrid(v)}
-          />
-        </Row>
-      )}
-      {isoGrid && (
-        <Checkbox
-          checked={!!isoGridVertical}
-          onChange={(v) => editor.setIsoGridVertical(v)}
-          label={t('display.isoVertical')}
-        />
-      )}
-    </Section>
+    </>
   );
 }
 
@@ -603,7 +594,8 @@ function TilesetOptions() {
   );
 }
 
-function ExportSection() {
+/** The export's options and buttons, in the Export dialog (the top bar's Export button). */
+export function ExportOptions() {
   const t = useT();
   const actions = useActions();
   const doc = useEditorState((s) => s.doc);
@@ -616,8 +608,8 @@ function ExportSection() {
   const everyBoard = allBoards && boardCount > 1;
   const editor = useEditor();
   return (
-    // At the bottom of the panel, like Figma: the file's preview, its pixel size, format and buttons.
-    <Section id="export" title={t('panel.export')} className="export-section">
+    // Like Figma's: the file's preview, its pixel size, format and buttons.
+    <div className="export-options">
       <ExportPreview />
       {/* Tiles are always at 1×: a game engine scales them itself. */}
       {format !== 'tileset' && <PixelSizes />}
@@ -711,14 +703,14 @@ function ExportSection() {
           {t('export.copyPng')}
         </button>
       </div>
-    </Section>
+    </div>
   );
 }
 
 export function RightPanel() {
   const t = useT();
-  // A file with no board: only what isn't a board's, its colors and the display. Layers outside
-  // the boards have their layer's settings, not a board's size or export.
+  // Only what depends on the selection, like Figma: the display and the export are in the top bar.
+  // A file with no board: only its colors. Layers outside the boards: their layer's settings.
   const noBoard = useEditorState((s) => isEmptyBoard(s.doc));
   const board = useEditorState((s) => isBoard(s.doc));
   return (
@@ -727,8 +719,6 @@ export function RightPanel() {
       <PaletteSection />
       {!noBoard && <LayerSection />}
       {!noBoard && <EffectsSection />}
-      <DisplaySection />
-      {board && <ExportSection />}
     </aside>
   );
 }

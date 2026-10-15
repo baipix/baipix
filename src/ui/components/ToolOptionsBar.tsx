@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { isBoard } from '../../engine/document';
 import { useActions } from '../ActionsContext';
 import { ISO_PLANES, type IsoPlane } from '../../engine/isoPlane';
-import type { ToolOptions } from '../../engine/tools';
+import { TOOLS, type ToolOptions } from '../../engine/tools';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { toolMeta } from '../tools';
@@ -43,6 +43,7 @@ export function ToolOptionsBar() {
   const editor = useEditor();
   const tool = useEditorState((s) => s.tool);
   const options = useEditorState((s) => s.options);
+  const view = useEditorState((s) => s.view);
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const actions = useActions();
   const selectedBoards = useEditorState((s) => s.selectedBoards.length);
@@ -783,6 +784,8 @@ export function ToolOptionsBar() {
   }
 
   if (!body) return null;
+  // Tools that paint: symmetry is at hand while drawing, like Aseprite's.
+  const paints = TOOLS[tool].editsPixels && tool !== 'move';
   return (
     <div className="tool-options" role="toolbar" aria-label={t(meta.label)}>
       <span className="tool-options-name" data-tip={info} data-kbd={meta.shortcut} tabIndex={info ? 0 : -1}>
@@ -790,6 +793,27 @@ export function ToolOptionsBar() {
         {info && <Icon name="info" size={14} />}
       </span>
       {body}
+      {paints && (
+        <>
+          <div className="toolbar-divider" />
+          <div className="button-row">
+            <IconButton
+              icon="mirrorX"
+              label={t('display.mirrorX')}
+              shortcut="Shift+X"
+              pressed={view.mirrorX}
+              onClick={() => editor.toggleView('mirrorX')}
+            />
+            <IconButton
+              icon="mirrorY"
+              label={t('display.mirrorY')}
+              shortcut="Shift+Y"
+              pressed={view.mirrorY}
+              onClick={() => editor.toggleView('mirrorY')}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

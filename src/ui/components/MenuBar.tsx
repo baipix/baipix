@@ -4,7 +4,8 @@ import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { MENU_BAR, filesMenu, mainMenu, zoomMenu } from '../menus';
-import { uiStore } from '../uiStore';
+import { DisplayOptions } from '../panels/RightPanel';
+import { openDialog, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
@@ -55,6 +56,61 @@ function FileTitle() {
 }
 
 /**
+ * The display options (grid, tile preview, symmetry, rulers, isometric grid) in a popover under
+ * their button, like Figma's view settings. Closes on a click elsewhere or Escape.
+ */
+function DisplayButton() {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement | null>(null);
+  const pop = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (!pop.current?.contains(target) && !button.current?.contains(target)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('pointerdown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [open]);
+  const r = open ? button.current?.getBoundingClientRect() : null;
+  return (
+    <>
+      <IconButton
+        icon="grid"
+        label={t('section.display')}
+        pressed={open}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={(e) => {
+          button.current = e.currentTarget;
+          setOpen((o) => !o);
+        }}
+      />
+      {open && r && (
+        <div
+          ref={pop}
+          className="popover display-popover"
+          role="dialog"
+          aria-label={t('section.display')}
+          style={{ top: r.bottom + 8, right: Math.max(8, window.innerWidth - r.right - 8) }}
+        >
+          <div className="popover-header">{t('section.display')}</div>
+          <div className="popover-body">
+            <DisplayOptions />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/**
  * The app's menu bar, across the top on larger screens: Fichier, Édition, Image… with the file
  * name in the middle and the zoom on the right. On narrow windows the menus fold into ☰.
  */
@@ -63,6 +119,7 @@ export function MenuBar() {
   const editor = useEditor();
   const actions = useActions();
   const zoom = useSyncExternalStore(viewport.subscribe, () => viewport.pixelZoom);
+  const board = useEditorState((s) => isBoard(s.doc));
   const titles = useRef<(HTMLButtonElement | null)[]>([]);
 
   const open = (i: number) => {
@@ -133,6 +190,7 @@ export function MenuBar() {
       </div>
       <FileTitle />
       <div className="menubar-end">
+        <DisplayButton />
         <button
           type="button"
           className="zoom-button"
@@ -149,6 +207,16 @@ export function MenuBar() {
           shortcut="Ctrl+K"
           onClick={() => uiStore.set({ commandPalette: true })}
         />
+        {board && (
+          <button
+            type="button"
+            className="btn btn-primary menubar-export"
+            onClick={() => openDialog({ type: 'export' })}
+          >
+            <Icon name="download" size={16} />
+            <span>{t('panel.export')}</span>
+          </button>
+        )}
       </div>
     </header>
   );
