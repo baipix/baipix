@@ -3,12 +3,35 @@ import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
 import { boxFromDrag, isoBox, type BoxFace } from '../src/engine/isoBox';
 
-const MARK: Record<BoxFace, string> = { top: 'T', left: 'L', right: 'R', edge: 'o', light: '+' };
+const MARK: Record<BoxFace, string> = {
+  top: 'T',
+  left: 'L',
+  right: 'R',
+  edge: 'o',
+  light: '+',
+  bevelLeft: 'l',
+  bevelRight: 'r',
+};
 
 /** The box as rows of text, from its leftmost column. */
-function art(width: number, depth: number, height: number, outline = false, light = false): string[] {
+function art(
+  width: number,
+  depth: number,
+  height: number,
+  outline = false,
+  light = false,
+  bevel = { top: false, sides: false },
+): string[] {
   const cells = new Map<string, BoxFace>();
-  isoBox({ x: 0, y: 0 }, { width, depth, height }, outline, (x, y, f) => cells.set(`${x},${y}`, f), light);
+  isoBox(
+    { x: 0, y: 0 },
+    { width, depth, height },
+    outline,
+    (x, y, f) => cells.set(`${x},${y}`, f),
+    light,
+    false,
+    bevel,
+  );
   const xs = [...cells.keys()].map((k) => +k.split(',')[0]);
   const ys = [...cells.keys()].map((k) => +k.split(',')[1]);
   const rows: string[] = [];
@@ -132,5 +155,17 @@ describe('the box tool', () => {
       expect(b).toBeGreaterThan(g);
       expect(b).toBeGreaterThan(r);
     }
+  });
+  it('bevels the top edges and the front corner, between the faces they join', () => {
+    expect(art(2, 2, 3, false, false, { top: true, sides: true })).toEqual([
+      '....++....',
+      '..++TT++..',
+      '++TTTTTT++',
+      'LLllTTrrRR',
+      'LLLLlrRRRR',
+      'LLLLlrRRRR',
+      '..LLlrRR..',
+      '....lr....',
+    ]);
   });
 });

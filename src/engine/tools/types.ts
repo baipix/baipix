@@ -107,6 +107,9 @@ export interface ToolOptions {
   boxOutline: boolean;
   /** Isometric box: the top's front edges one step lighter, the classic highlight. */
   boxLight: boolean;
+  /** Isometric box: a bevel along the top's edges, and one on the front upright corner. */
+  boxBevelTop: boolean;
+  boxBevelSides: boolean;
   /** Isometric volumes: a line in the outline's color between the faces, not only around them. */
   boxEdges: boolean;
   /** Isometric volumes: the faces' colors picked by hand, or null to shade them from the color. */
@@ -151,6 +154,8 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   boxOutline: false,
   plane: 'flat',
   boxLight: false,
+  boxBevelTop: false,
+  boxBevelSides: false,
   boxEdges: false,
   boxFaces: null,
 };

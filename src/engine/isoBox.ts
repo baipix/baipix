@@ -1,4 +1,4 @@
-import type { Color } from './color';
+import { blue, green, pack, red, type Color } from './color';
 import type { Point } from './math';
 import { shiftLightness, type PaletteIndex } from './palette';
 
@@ -6,7 +6,13 @@ import { shiftLightness, type PaletteIndex } from './palette';
  * The faces of an isometric box, lit from the top left; `edge` is its outline and `light` the
  * top's front edges, if it has them.
  */
-export type BoxFace = 'top' | 'left' | 'right' | 'edge' | 'light';
+export type BoxFace = 'top' | 'left' | 'right' | 'edge' | 'light' | 'bevelLeft' | 'bevelRight';
+
+/** Bevels on the box: along the top's edges, and on its front upright corner. */
+export interface BoxBevel {
+  top: boolean;
+  sides: boolean;
+}
 
 /**
  * The size of an isometric box, in steps of its 2:1 edges (two pixels across, one down) and in
@@ -53,6 +59,7 @@ export function isoBox(
   plot: (x: number, y: number, face: BoxFace) => void,
   light = false,
   edges = false,
+  bevel: BoxBevel = { top: false, sides: false },
 ): void {
   const cx = top.x;
   // The top face, row by row: its left edge goes down-left for `depth` steps then down-right,
@@ -85,6 +92,18 @@ export function isoBox(
   };
   // The front corner, where the left face meets the right one: its left column carries the line.
   const corner = cx + 2 * w - 2 * d - 1;
+  // Bevels: the top's back edges catch the light, its front edges and the front corner turn between
+  // the faces they join, like a chamfer.
+  const sideOf = (x: number): BoxFace => (x <= corner ? 'left' : 'right');
+  const bevelled = (x: number, k: number, face: BoxFace, from: number, to: number): BoxFace => {
+    if (face === 'top' && bevel.top && h > 0) {
+      if (k === from) return 'light';
+      if (k === to) return sideOf(x) === 'left' ? 'bevelLeft' : 'bevelRight';
+    }
+    if (face !== 'top' && bevel.sides && h > 0 && (x === corner || x === corner + 1))
+      return x === corner ? 'bevelLeft' : 'bevelRight';
+    return face;
+  };
   columns.forEach((col, i) => {
     const x = x0 + i;
     for (const { face, from, to } of col)
@@ -95,7 +114,7 @@ export function isoBox(
           inner ||
           (outline && (!inside(x - 1, k) || !inside(x + 1, k) || !inside(x, k - 1) || !inside(x, k + 1)));
         const front = light && face === 'top' && k === to && h > 0;
-        plot(x, top.y + k, edge ? 'edge' : front ? 'light' : face);
+        plot(x, top.y + k, edge ? 'edge' : front ? 'light' : bevelled(x, k, face, from, to));
       }
   });
 }
@@ -105,6 +124,20 @@ export function isoBox(
  * is in the palette, otherwise the color itself made darker or lighter. A color from elsewhere
  * would otherwise borrow the closest palette ramp, whatever its hue: a blue box with green sides.
  */
+/**
+ * Halfway between two colors: a bevel's tone. Kept in the palette when the first color is in it,
+ * like the other steps.
+ */
+function between(a: Color, b: Color, palette: PaletteIndex): Color {
+  const m = pack(
+    Math.round((red(a) + red(b)) / 2),
+    Math.round((green(a) + green(b)) / 2),
+    Math.round((blue(a) + blue(b)) / 2),
+  );
+  const inPalette = palette.size > 0 && palette.nearest(a) === a;
+  return inPalette ? palette.nearest(m) : m;
+}
+
 function step(c: Color, palette: PaletteIndex, dir: 1 | -1): Color {
   const inPalette = palette.size > 0 && palette.nearest(c) === c;
   return (inPalette && palette.shade(c, dir, 'ramp')) || shiftLightness(c, dir, 2, true);
@@ -117,7 +150,18 @@ function step(c: Color, palette: PaletteIndex, dir: 1 | -1): Color {
 export function boxColors(color: Color, palette: PaletteIndex): Record<BoxFace, Color> {
   const left = step(color, palette, -1);
   const right = step(left, palette, -1);
-  return { top: color, left, right, edge: step(right, palette, -1), light: step(color, palette, 1) };
+  return withBevels(
+    { top: color, left, right, edge: step(right, palette, -1), light: step(color, palette, 1) },
+    palette,
+  );
+}
+
+/** Adds the bevels' tones, halfway between the top and each side. */
+function withBevels(
+  t: Omit<Record<BoxFace, Color>, 'bevelLeft' | 'bevelRight'>,
+  palette: PaletteIndex,
+): Record<BoxFace, Color> {
+  return { ...t, bevelLeft: between(t.top, t.left, palette), bevelRight: between(t.top, t.right, palette) };
 }
 
 /** A volume's three faces picked by hand, instead of shaded from one color. */
@@ -138,5 +182,8 @@ export function volumeColors(
 ): Record<BoxFace, Color> {
   if (!faces) return boxColors(color, palette);
   const { top, left, right } = faces;
-  return { top, left, right, edge: step(right, palette, -1), light: step(top, palette, 1) };
+  return withBevels(
+    { top, left, right, edge: step(right, palette, -1), light: step(top, palette, 1) },
+    palette,
+  );
 }

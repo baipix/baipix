@@ -439,6 +439,34 @@ export function ToolOptionsBar() {
           />
           <Checkbox checked={options.boxLight} onChange={set('boxLight')} label={t('options.boxLight')} />
           <Checkbox checked={options.boxEdges} onChange={set('boxEdges')} label={t('options.boxEdges')} />
+          {tool === 'box' && (
+            // Bevels, for crates, stone blocks and rounded tiles: along the top, on the front corner.
+            <select
+              className="select-plain"
+              aria-label={t('bevel.label')}
+              data-tip={t('bevel.label')}
+              value={
+                options.boxBevelTop && options.boxBevelSides
+                  ? 'both'
+                  : options.boxBevelTop
+                    ? 'top'
+                    : options.boxBevelSides
+                      ? 'sides'
+                      : 'none'
+              }
+              onChange={(e) => {
+                const v = e.target.value;
+                editor.setOption('boxBevelTop', v === 'top' || v === 'both');
+                editor.setOption('boxBevelSides', v === 'sides' || v === 'both');
+              }}
+            >
+              {(['none', 'top', 'sides', 'both'] as const).map((v) => (
+                <option key={v} value={v}>
+                  {t(`bevel.${v}`)}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="toolbar-divider" />
           {/* The faces: shaded from the color, or picked by hand, one click each with the current color. */}
           <div className="face-colors" role="group" aria-label={t('faces.label')}>
