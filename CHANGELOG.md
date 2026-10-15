@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
-- The home page's Components, Isometric volumes and Several boards cards make one row of the feature grid, each with its animation on top, instead of three wide cards stacked. (#413)
+- The home page's Components, Isometric volumes and Several boards are cards like the others, one row of the feature grid, instead of three wide cards stacked with animations. (#413)
 
 ## [0.7.0] - 2026-10-16
 

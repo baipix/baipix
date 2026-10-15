@@ -6,8 +6,6 @@ import Gallery from '../components/Gallery.astro';
 import Nav from '../components/Nav.astro';
 import PixelGlow from '../components/PixelGlow.astro';
 import PixelIcon from '../components/PixelIcon.astro';
-import PixelPlay from '../components/PixelPlay.astro';
-import { animations as anim } from '../animations';
 import Screenshots from '../components/Screenshots.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
@@ -72,32 +70,23 @@ const features = [
     text: 'Layers like a design tool, with groups, blend modes, and handles to resize and rotate them. Outline, shadow and glow effects, layers you copy from one file to another, and a floating preview.',
     icon: ['#######', '.......', '.#####.', '.......', '..###..', '.......', '...#...'],
   },
-];
-
-/** The last row of cards: what's newest, each with its animation from the Draw page on top. */
-const animated = [
   {
     title: 'Components',
     tone: 'components',
     text: 'Draw a sprite once and place instances of it anywhere: change the component, and every copy follows. Repeat one in a grid, or detach a copy to change it on its own.',
-    animation: anim.components,
-    label: 'A potion and three instances of it: the component is filled, and the copies fill along with it.',
+    icon: ['...#...', '..###..', '.#####.', '#######', '.#####.', '..###..', '...#...'],
   },
   {
     title: 'Isometric volumes',
     tone: 'isometric',
     text: 'Turn on the isometric grid and draw boxes, cylinders standing or lying, pyramids, stairs and ramps in one drag, already shaded, with bevels and a color per face if you like.',
-    animation: anim.isometric,
-    label:
-      'A little courtyard built volume by volume on the isometric grid: a grass tile, stone stairs, a crate, a log and a pillar.',
+    icon: ['...#...', '.##.##.', '#..#..#', '#..#..#', '#..#..#', '.##.##.', '...#...'],
   },
   {
     title: 'Several boards, one file',
     tone: 'boards',
     text: 'Variants of a sprite or a scene in four seasons, side by side, each board with its own size, layers and undo history, kept even after a reload. Export them all at once.',
-    animation: anim.boards,
-    label:
-      'A tree drawn on a first board, then three copies of the board turned to autumn, winter and a starry night.',
+    icon: ['###.###', '#.#.#.#', '###.###', '.......', '###.###', '#.#.#.#', '###.###'],
   },
 ];
 ---
@@ -197,21 +186,6 @@ const animated = [
         {features.map((f) => (
           <article class="feature" data-tone={f.tone}>
             <PixelIcon rows={f.icon} size={24} />
-            <h3>
-              <a href={`${base}draw/#${f.tone}`}>{f.title}</a>
-            </h3>
-            <p class="muted">{f.text}</p>
-            <span class="feature-arrow" aria-hidden="true">
-              <PixelIcon rows={ARROW} size={14} />
-            </span>
-          </article>
-        ))}
-        {/* The last row: the newest features, each with its animation on top. */}
-        {animated.map((f) => (
-          <article class="feature feature-animated" data-tone={f.tone}>
-            <div class="feature-art">
-              <PixelPlay animation={f.animation} label={f.label} />
-            </div>
             <h3>
               <a href={`${base}draw/#${f.tone}`}>{f.title}</a>
             </h3>
@@ -463,18 +437,6 @@ const animated = [
   .feature h3 {
     margin-top: 12px;
     color: var(--text);
-  }
-  /* The animated cards: the picture on top, as tall in each card, centered in its room. */
-  .feature-art {
-    display: grid;
-    place-items: center;
-    height: 168px;
-    margin-bottom: 4px;
-  }
-  .feature-art :global(.pixel-play) {
-    width: 100%;
-    height: 168px;
-    object-fit: contain;
   }
   .feature h3 a::after {
     content: '';
