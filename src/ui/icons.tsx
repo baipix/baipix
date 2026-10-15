@@ -60,6 +60,8 @@ import {
   Slash,
   SlidersHorizontal,
   SprayCan,
+  SquareSplitHorizontal,
+  SquareSplitVertical,
   SquareDashed,
   Star,
   Sun,
@@ -169,6 +171,9 @@ export const ICONS = {
   alignBottom: AlignEndHorizontal,
   flipH: FlipHorizontal2,
   flipV: FlipVertical2,
+  // Symmetry: the square split down the middle (left-right), or across it (top-bottom).
+  mirrorX: SquareSplitHorizontal,
+  mirrorY: SquareSplitVertical,
   image: Image,
   crop: Crop,
   download: Download,

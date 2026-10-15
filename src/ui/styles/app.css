@@ -233,7 +233,8 @@ body.is-resizing * {
   overflow-y: auto;
 }
 .display-popover .popover-body {
-  padding: 12px 16px 16px;
+  gap: 4px;
+  padding: 8px 16px 12px;
 }
 /* The export, in a dialog: its options in one column. */
 .export-dialog {
@@ -2191,6 +2192,12 @@ body.is-dragging-swatch * {
   background: var(--glow);
   color: var(--glow-ink);
   filter: none;
+}
+/* A toggle that's on (symmetry, a folded panel, an open popover): the selection's violet tint. */
+.icon-btn[aria-pressed='true'],
+.icon-btn[aria-pressed='true']:hover {
+  background: var(--selected);
+  color: var(--glow-line);
 }
 .tool-btn[aria-pressed='true'],
 .tool-btn[aria-pressed='true']:hover {
