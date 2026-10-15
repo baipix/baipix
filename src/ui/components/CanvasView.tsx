@@ -6,6 +6,7 @@ import { pack, toHex } from '../../engine/color';
 import { flatten } from '../../engine/composite';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
+import { clipSelection, type Selection } from '../../engine/selection';
 import { isShown } from '../../engine/groups';
 import { isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
@@ -483,7 +484,12 @@ export function CanvasView() {
           canvas.width,
           canvas.height,
           live.doc,
-          { guides, active: guideDrag && { axis: guideDrag.axis, at: guideDrag.at } },
+          {
+            guides,
+            active: guideDrag && { axis: guideDrag.axis, at: guideDrag.at },
+            // What's selected: the layer framed by the Move tool, else the pixel selection.
+            extent: activeLayerBox() ?? selectionBox(live),
+          },
           camera(),
           theme,
         );
@@ -806,6 +812,9 @@ export function CanvasView() {
       return { x: Math.round(x), y: Math.round(y), w, h };
     };
     let activeBoxCache: { key: string; rect: Rect | null } | null = null;
+    /** The pixel selection's box on the board, if there's one. */
+    const selectionBox = (live: { selection: Selection | null; doc: PixelDoc }): Rect | null =>
+      live.selection ? clipSelection(live.selection, live.doc.width, live.doc.height) : null;
     const activeLayerBox = (): Rect | null => {
       const state = editor.getState();
       if (state.tool !== 'move' || state.selection || state.referenceSelected || !state.layerFramed)
