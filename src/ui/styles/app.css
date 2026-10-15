@@ -886,27 +886,27 @@ body.is-resizing * {
   display: block;
   width: 100%;
   height: 100%;
-  cursor: crosshair;
+  /* Drawing tools: a thin crosshair, dark on a light halo so it shows on any color, its hotspot in
+     the gap at its middle. The brush outline on the canvas shows the pixels it will paint. */
+  cursor:
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='23'%20height='23'%20viewBox='0%200%2023%2023'%20fill='none'%3E%3Cpath%20d='M11.5%201v7M11.5%2015v7M1%2011.5h7M15%2011.5h7'%20stroke='white'%20stroke-width='3'/%3E%3Cpath%20d='M11.5%201v7M11.5%2015v7M1%2011.5h7M15%2011.5h7'%20stroke='black'%20stroke-width='1'/%3E%3C/svg%3E")
+      11 11,
+    crosshair;
   touch-action: none;
 }
-/* Move tool: the pixel arrow of the toolbar, white halo, hotspot on the tip. The layer it would
-   take is outlined on the canvas instead of changing the cursor. */
+/* Move tool: the system's arrow. The layer it would take is outlined on the canvas instead. */
 .canvas-wrap[data-tool='move'] .canvas {
-  cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='-2 -2 28 28' shape-rendering='crispEdges'%3E%3Cpath d='M6 4h2v16H6zm2 0h2v2H8zm2 2h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm-8 6h2v2H8zm2-2h2v2h-2zm2-2h6v2h-6z' fill='white' stroke='white' stroke-width='4' stroke-linejoin='miter'/%3E%3Cpath d='M6 4h2v16H6zm2 0h2v2H8zm2 2h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm-8 6h2v2H8zm2-2h2v2h-2zm2-2h6v2h-6z' fill='black'/%3E%3C/svg%3E")
-      8 6,
-    default;
+  cursor: default;
 }
 .canvas-wrap[data-tool='hand'] .canvas {
   cursor: grab;
 }
-/* Eyedropper cursor: the Pixelarticons pipette of the toolbar, with a white halo one icon pixel wide
-   so it shows on any color. Hotspot on the tip. */
+/* Eyedropper: a line pipette with a light halo, its hotspot on the tip. */
 .canvas-wrap[data-tool='picker'] .canvas,
 .canvas.alt-pick {
   cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='-2 -2 28 28' shape-rendering='crispEdges'%3E%3Cpath d='M3 15h2v4H3zm2 4h4v2H5zm0-6h2v2H5zm4 4h2v2H9zm-2-6h2v2H7zm4 4h2v2h-2zM9 9h2v2H9zm4 4h2v2h-2zm-2-6h2v2h-2zM9 5h2v2H9zm2-2h2v2h-2zm2 2h2v2h-2zm2-2h2v2h-2zm2-2h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm-2 2h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm-4-4h2v2h-2zm2 2h2v2h-2zM1 19h2v4H1zM1 21h4v2H1z' fill='white' stroke='white' stroke-width='4' stroke-linejoin='miter'/%3E%3Cpath d='M3 15h2v4H3zm2 4h4v2H5zm0-6h2v2H5zm4 4h2v2H9zm-2-6h2v2H7zm4 4h2v2h-2zM9 9h2v2H9zm4 4h2v2h-2zm-2-6h2v2h-2zM9 5h2v2H9zm2-2h2v2h-2zm2 2h2v2h-2zm2-2h2v2h-2zm2-2h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm-2 2h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm-4-4h2v2h-2zm2 2h2v2h-2zM1 19h2v4H1zM1 21h4v2H1z' fill='black'/%3E%3C/svg%3E")
-      4 24,
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='26'%20height='26'%20viewBox='-1%20-1%2026%2026'%20fill='none'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m2%2022%201-1h3l9-9M3%2021v-3l9-9M15%206l3.4-3.4a2.1%202.1%200%201%201%203%203L18%209l.4.4a2.1%202.1%200%201%201-3%203l-3.8-3.8a2.1%202.1%200%201%201%203-3l.4.4Z'%20stroke='white'%20stroke-width='4.5'/%3E%3Cpath%20d='m2%2022%201-1h3l9-9M3%2021v-3l9-9M15%206l3.4-3.4a2.1%202.1%200%201%201%203%203L18%209l.4.4a2.1%202.1%200%201%201-3%203l-3.8-3.8a2.1%202.1%200%201%201%203-3l.4.4Z'%20stroke='black'%20stroke-width='1.5'/%3E%3C/svg%3E")
+      3 23,
     crosshair;
 }
 .canvas.on-handle-nwse {
@@ -921,10 +921,10 @@ body.is-resizing * {
 .canvas.on-handle-ew {
   cursor: ew-resize !important;
 }
-/* Just outside a corner of the frame: rotate (a pixel arc with an arrow, white halo). */
+/* Just outside a corner of the frame: rotate (a turning arrow, light halo). */
 .canvas.on-rotate {
   cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' shape-rendering='crispEdges'%3E%3Cpath d='M8 2h2v2h-2zM10 2h2v2h-2zM12 2h2v2h-2zM14 2h2v2h-2zM16 2h2v2h-2zM6 4h2v2h-2zM18 4h2v2h-2zM4 6h2v2h-2zM20 6h2v2h-2zM2 8h2v2h-2zM2 10h2v2h-2zM16 10h2v2h-2zM18 10h2v2h-2zM20 10h2v2h-2zM2 12h2v2h-2zM18 12h2v2h-2zM20 12h2v2h-2zM2 14h2v2h-2zM16 14h2v2h-2zM20 14h2v2h-2zM4 16h2v2h-2zM6 18h2v2h-2zM18 18h2v2h-2zM8 20h2v2h-2zM10 20h2v2h-2zM12 20h2v2h-2zM14 20h2v2h-2zM16 20h2v2h-2z' fill='white' stroke='white' stroke-width='4' stroke-linejoin='miter'/%3E%3Cpath d='M8 2h2v2h-2zM10 2h2v2h-2zM12 2h2v2h-2zM14 2h2v2h-2zM16 2h2v2h-2zM6 4h2v2h-2zM18 4h2v2h-2zM4 6h2v2h-2zM20 6h2v2h-2zM2 8h2v2h-2zM2 10h2v2h-2zM16 10h2v2h-2zM18 10h2v2h-2zM20 10h2v2h-2zM2 12h2v2h-2zM18 12h2v2h-2zM20 12h2v2h-2zM2 14h2v2h-2zM16 14h2v2h-2zM20 14h2v2h-2zM4 16h2v2h-2zM6 18h2v2h-2zM18 18h2v2h-2zM8 20h2v2h-2zM10 20h2v2h-2zM12 20h2v2h-2zM14 20h2v2h-2zM16 20h2v2h-2z' fill='black'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M21%2012a9%209%200%201%201-9-9c2.52%200%204.93%201%206.74%202.74L21%208M21%203v5h-5'%20stroke='white'%20stroke-width='4.5'/%3E%3Cpath%20d='M21%2012a9%209%200%201%201-9-9c2.52%200%204.93%201%206.74%202.74L21%208M21%203v5h-5'%20stroke='black'%20stroke-width='1.5'/%3E%3C/svg%3E")
       12 12,
     grab !important;
 }
