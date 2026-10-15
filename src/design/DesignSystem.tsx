@@ -219,8 +219,9 @@ function ColorsBlock() {
         </div>
       ))}
       <p className="ds-note">
-        The interface stays neutral at rest. Blue (<code>--glow</code>) is only for interaction: hover, focus,
-        the main button, what's selected or about to be acted on.
+        The interface stays neutral at rest, hovers included. Violet (<code>--glow</code>) is for what's
+        selected or acted on: the selection, the active tool, the main button, focus, menus. Components are
+        green (<code>--component</code>), so the two never get mixed up.
       </p>
     </Block>
   );
