@@ -43,6 +43,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Rulers like Figma's: what's selected (the layer framed by the Move tool, or the pixel selection) shows as a violet band on both rulers, its edges written in violet, the numbers too close to them left out; thinner ticks; the Preview window no longer covers the left ruler. (#378)
 - A lighter right panel, floating like the Layers panel and as tall as what it shows: only the board, colors, layer and effects. The display options (grid, tile preview, symmetry, rulers, isometric grid) open from a button in the top bar, and Export is a button at the top right that opens the export in a dialog. (#377)
 - A soft violet replaces the blue for what's selected or acted on: the selection's frame and handles, the active layer and tool, the main button, menus, focus and checkboxes. Hovers are now neutral. Components move from purple to green, so they never look selected. (#375)
 - Line icons: the interface's icons come from Lucide, finer and lighter than the pixel ones, 16 px in the panels and 18 px in the toolbar. (#374)

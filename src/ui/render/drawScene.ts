@@ -809,6 +809,11 @@ export const guidePosition = (at: number, origin: number, camera: Camera): numbe
 
 export interface RulerScene {
   guides: { x: number[]; y: number[] };
+  /**
+   * What's selected, in art pixels of the active board (the layer framed, the pixel selection),
+   * shown as a band on the rulers with its edges written in the accent, like Figma. Missing: the board.
+   */
+  extent?: Rect | null;
   /** The guide being dragged, labeled with its position on its ruler. */
   active: { axis: 'x' | 'y'; at: number } | null;
 }
@@ -839,16 +844,17 @@ export function drawRulers(
   for (const g of rulers.guides.y)
     ctx.fillRect(L, Math.round(guidePosition(g, Y, camera) - lw / 2), right - L, lw);
 
-  // Backgrounds, with the drawing's extent shaded.
+  // Backgrounds, with what's selected (else the board) shaded.
+  const ext = rulers.extent ?? { x: 0, y: 0, w: doc.width, h: doc.height };
   ctx.fillStyle = theme.panel;
   ctx.fillRect(L, 0, right - L, R);
   ctx.fillRect(L, R, R, height - R);
   ctx.fillStyle = theme.selected;
-  const x0 = Math.max(L + R, X);
-  const x1 = Math.min(right, X + doc.width * s - camera.gap);
+  const x0 = Math.max(L + R, X + ext.x * s);
+  const x1 = Math.min(right, X + (ext.x + ext.w) * s - camera.gap);
   if (x1 > x0) ctx.fillRect(x0, 0, x1 - x0, R);
-  const y0 = Math.max(R, Y);
-  const y1 = Math.min(height, Y + doc.height * s - camera.gap);
+  const y0 = Math.max(R, Y + ext.y * s);
+  const y1 = Math.min(height, Y + (ext.y + ext.h) * s - camera.gap);
   if (y1 > y0) ctx.fillRect(L, y0, R, y1 - y0);
   ctx.fillStyle = theme.line;
   ctx.fillRect(L, R - lw, right - L, lw);
@@ -861,32 +867,59 @@ export function drawRulers(
   ctx.font = `500 ${Math.round(9 * dpr)}px ${FONT}`;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'left';
+  // Numbers too close to the extent's edges are left out: the edges are written there instead.
+  const clear = 28 * dpr;
   const ticks = (
     from: number,
     to: number,
     origin: number,
+    edges: number[],
     draw: (pos: number, n: number, major: boolean) => void,
   ) => {
+    const near = (pos: number) => edges.some((e) => Math.abs(pos - guidePosition(e, origin, camera)) < clear);
     const first = Math.ceil((from - origin) / s / minor) * minor;
-    for (let n = first; origin + n * s <= to; n += minor)
-      draw(guidePosition(n, origin, camera), n, n % step === 0);
+    for (let n = first; origin + n * s <= to; n += minor) {
+      const pos = guidePosition(n, origin, camera);
+      draw(pos, n, n % step === 0 && !near(pos));
+    }
   };
-  ctx.fillStyle = theme.muted;
-  ticks(L + R, right, X, (x, n, major) => {
-    const h = major ? R / 2 : R / 4;
-    ctx.fillRect(Math.round(x), R - h, lw, h);
-    if (major) ctx.fillText(String(n), Math.round(x + 3 * dpr), Math.round(R * 0.38));
-  });
-  ticks(R, height, Y, (y, n, major) => {
-    const w = major ? R / 2 : R / 4;
-    ctx.fillRect(L + R - w, Math.round(y), w, lw);
-    if (!major) return;
+  const label = (n: number, x: number, y: number, vertical: boolean) => {
+    if (!vertical) return ctx.fillText(String(n), Math.round(x + 3 * dpr), Math.round(y));
     ctx.save();
-    ctx.translate(L + Math.round(R * 0.38), Math.round(y - 3 * dpr));
+    ctx.translate(Math.round(x), Math.round(y - 3 * dpr));
     ctx.rotate(-Math.PI / 2);
     ctx.fillText(String(n), 0, 0);
     ctx.restore();
+  };
+  const xEdges = [ext.x, ext.x + ext.w];
+  const yEdges = [ext.y, ext.y + ext.h];
+  ctx.fillStyle = theme.muted;
+  ticks(L + R, right, X, xEdges, (x, n, major) => {
+    const h = major ? R / 3 : R / 6;
+    ctx.fillRect(Math.round(x), R - h, lw, h);
+    if (major) label(n, x, R * 0.38, false);
   });
+  ticks(R, height, Y, yEdges, (y, n, major) => {
+    const w = major ? R / 3 : R / 6;
+    ctx.fillRect(L + R - w, Math.round(y), w, lw);
+    if (major) label(n, L + R * 0.38, y, true);
+  });
+  // The extent's edges, in the accent.
+  ctx.fillStyle = theme.highlight;
+  ctx.font = `600 ${Math.round(9 * dpr)}px ${FONT}`;
+  for (const n of xEdges) {
+    const x = guidePosition(n, X, camera);
+    if (x < L + R || x > right) continue;
+    ctx.fillRect(Math.round(x), R / 2, lw, R / 2);
+    label(n, x, R * 0.38, false);
+  }
+  for (const n of yEdges) {
+    const y = guidePosition(n, Y, camera);
+    if (y < R || y > height) continue;
+    ctx.fillRect(L + R / 2, Math.round(y), R / 2, lw);
+    label(n, L + R * 0.38, y, true);
+  }
+  ctx.font = `500 ${Math.round(9 * dpr)}px ${FONT}`;
 
   // The dragged guide's position, in a tag on its ruler.
   const a = rulers.active;

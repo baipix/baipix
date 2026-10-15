@@ -10,7 +10,8 @@ import { alpha, toCss } from '../../engine/color';
 import { flatten } from '../../engine/composite';
 import type { Point } from '../../engine/math';
 import { useT } from '../../i18n';
-import { useEditor } from '../EditorContext';
+import { useEditor, useEditorState } from '../EditorContext';
+import { RULER } from '../render/drawScene';
 import { checkerPattern, readTheme } from '../render/theme';
 import { uiStore, type PreviewWindow } from '../uiStore';
 import { viewport } from '../viewport';
@@ -41,6 +42,7 @@ function Window({ preview }: { preview: PreviewWindow }) {
   const [label, setLabel] = useState('');
   // Where the zoomed view is centered, in art pixels (null: the drawing's center).
   const [center, setCenter] = useState<Point | null>(null);
+  const rulers = useEditorState((s) => s.view.rulers);
 
   // The default spot: bottom left of the workspace, clear of the left panel and the toolbars.
   const place = () => {
@@ -50,10 +52,11 @@ function Window({ preview }: { preview: PreviewWindow }) {
     const x = preview.x ?? left;
     // Above the toolbar and the tool options, which sit at the bottom center.
     const y = preview.y ?? parent.height - (preview.collapsed ? HEADER : preview.h) - 132;
-    // Always kept inside the workspace, even after the window shrinks.
+    // Always kept inside the workspace, even after the window shrinks, and off the rulers.
+    const edge = rulers ? RULER + 6 : 0;
     return {
-      x: Math.max(0, Math.min(x, parent.width - preview.w)),
-      y: Math.max(0, Math.min(y, parent.height - HEADER)),
+      x: Math.max(edge, Math.min(x, parent.width - preview.w)),
+      y: Math.max(edge, Math.min(y, parent.height - HEADER)),
     };
   };
   const [, rerender] = useState(0);
