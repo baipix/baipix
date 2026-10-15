@@ -200,9 +200,9 @@ function ColorsBlock() {
       title="Colors"
       intro={
         <>
-          Every color lives in <code>tokens.css</code> (and the blue in the pixel look of <code>app.css</code>
-          ), written once for light and dark. Each chip shows the light value, then the dark one. This list is
-          read from the stylesheets.
+          Every color lives in <code>tokens.css</code> (and the accent in <code>app.css</code>), written once
+          for light and dark. Each chip shows the light value, then the dark one. This list is read from the
+          stylesheets.
         </>
       }
     >
@@ -256,19 +256,16 @@ function ShapesBlock() {
     <Block
       id="shapes"
       title="Shapes and shadows"
-      intro="No rounded corners: controls lose their corner pixel (--notch), floating surfaces are notched blocks with a hard, unblurred shadow, and keys have a solid side they sink into."
+      intro="Plain and precise, like a design tool: soft rounded corners and soft shadows. The pixel style is for the logo, the site and what people draw, not the interface."
     >
       <div className="ds-shapes">
-        <Specimen label="Notched control" use="Fields, swatches, chips, thumbnails.">
-          <span className="ds-notch" />
+        <Specimen label="Control" use="Fields, swatches, chips, thumbnails: --radius.">
+          <span className="ds-control" />
         </Specimen>
-        <Specimen
-          label="Floating surface"
-          use="Panels, menus, toasts, home cards: a 2px ring and a hard shadow."
-        >
+        <Specimen label="Floating surface" use="Panels, menus, toasts, home cards: --radius-lg and --shadow.">
           <span className="ds-surface" />
         </Specimen>
-        <Specimen label="Key" use="Buttons: a solid side, pushed halfway on hover, all the way on press.">
+        <Specimen label="Button" use="Text buttons: neutral, a light fill on hover.">
           <button type="button" className="btn">
             Button
           </button>
@@ -452,7 +449,7 @@ function FieldsBlock() {
             <span className="caret">▾</span>
           </button>
         </Specimen>
-        <Specimen label="Checkbox" use="On/off settings. A notched square with a pixel tick.">
+        <Specimen label="Checkbox" use="On/off settings. The native checkbox, in the accent color.">
           <Checkbox checked={checked} onChange={setChecked} label="Pixel grid" />
         </Specimen>
         <Specimen

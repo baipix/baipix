@@ -116,7 +116,7 @@ body {
   height: 176px;
   display: grid;
   place-items: center;
-  clip-path: var(--notch);
+  border-radius: var(--radius-lg);
 }
 .ds-logo-tile.is-light {
   background: #ffffff;
@@ -159,7 +159,7 @@ body {
   width: 16px;
   height: 16px;
   box-shadow: inset 0 0 0 1px var(--swatch-edge-strong);
-  clip-path: var(--notch);
+  border-radius: var(--radius-lg);
 }
 
 /* Colors */
@@ -214,29 +214,24 @@ body {
   gap: 10px;
   padding: 20px;
   background: var(--panel);
-  clip-path: var(--notch);
+  border-radius: var(--radius-lg);
 }
 .ds-caption {
   display: grid;
   gap: 2px;
 }
-.ds-notch {
+.ds-control {
   width: 64px;
   height: 32px;
   background: var(--input);
-  clip-path: var(--notch);
+  border-radius: var(--radius);
 }
 .ds-surface {
   width: 96px;
   height: 48px;
-  margin: 2px 6px 6px 2px;
-  background: var(--canvas);
-  box-shadow:
-    0 -2px 0 0 var(--canvas),
-    0 2px 0 0 var(--canvas),
-    -2px 0 0 0 var(--canvas),
-    2px 0 0 0 var(--canvas),
-    4px 6px 0 0 var(--hard-shadow);
+  background: var(--panel);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 .ds-toolbar {
   display: flex;
@@ -271,7 +266,7 @@ body {
   justify-items: center;
   padding: 12px 8px;
   background: var(--panel);
-  clip-path: var(--notch);
+  border-radius: var(--radius-lg);
 }
 .ds-icon-sizes {
   display: flex;
