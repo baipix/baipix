@@ -17,6 +17,7 @@ import {
   ellipseOutline,
   heartOutline,
   line,
+  mirroredHalf,
   polygonOutline,
   rectOutline,
   roundRectOutline,
@@ -99,8 +100,11 @@ function shapes() {
   rectOutline(x(1), y(1), x(1) + 11, y(1) + 11, plot(C.blue));
   roundRectOutline(x(2), y(2), x(2) + 11, y(2) + 11, 3, plot(C.sky));
   ellipseOutline(x(3), y(3), x(3) + 11, y(3) + 11, plot(C.green));
-  polygonOutline(trianglePoints(x(4), y(4), x(4) + 11, y(4) + 11), plot(C.orange));
-  polygonOutline(starPoints(x(5), y(5), x(5) + 11, y(5) + 11), plot(C.teal));
+  polygonOutline(
+    trianglePoints(x(4), y(4), x(4) + 11, y(4) + 11),
+    mirroredHalf(x(4), x(4) + 11, plot(C.orange)),
+  );
+  polygonOutline(starPoints(x(5), y(5), x(5) + 11, y(5) + 11), mirroredHalf(x(5), x(5) + 11, plot(C.teal)));
   heartOutline(x(6), y(6), x(6) + 11, y(6) + 10, plot(C.red));
   return c.svg();
 }
