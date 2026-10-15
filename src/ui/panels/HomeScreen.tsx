@@ -110,6 +110,10 @@ export function HomeScreen() {
       </header>
       <div className="home-inner">
         <section className="home-hero">
+          {/* The logo, its pixel hopping now and then. */}
+          <span className="home-mark">
+            <Icon name="logo" size={48} />
+          </span>
           <h1>{t('home.title')}</h1>
           <p className="home-tagline">{shown.length ? t('home.taglineBack') : t('home.tagline')}</p>
           <div className="home-actions">
