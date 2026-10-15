@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The site's home page has a Screenshots section: eight shots of the editor at work (boards, isometric volumes, components, gradients, tile preview, Jumble, eyedropper, pixel gap), each with a caption. A click opens it full size with its caption over it, and the arrow keys go through the others. (#399)
 - The undo history survives a reload: each board's last 50 steps (undo and redo) are kept in the browser next to the drawing, every unchanged layer stored once rather than once per step. (#397)
 - Floor tiles, edge by edge: with the isometric grid on, the rectangle's options choose which of a floor tile's edges get the outline (NW, NE, SW, SE), so tiles side by side share one line instead of a doubled one. (#396)
 - Lying cylinders, for barrels, logs and wheels: the cylinder's options can lay it along the left or the right axis. Its round end is dragged on a wall like the shapes on an isometric plane, and its body runs back by its length, lit on top and shaded underneath. (#395)
