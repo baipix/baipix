@@ -508,6 +508,18 @@ export class Editor {
     cleared?: Uint32Array;
     /** Rotating rather than resizing: prepared once for the block. */
     rotator?: Rotator;
+    /**
+     * Several layers selected: each one's content and where it was, resized (or turned) with the
+     * box they fill together, `from`.
+     */
+    group?: {
+      layer: Layer;
+      base: Uint32Array;
+      baseOutside: Outside | undefined;
+      rect: Rect;
+      block: PixelBlock;
+      rotator?: Rotator;
+    }[];
   } | null = null;
   private adjusting: {
     layers: { id: string; base: Uint32Array }[];
@@ -3378,8 +3390,8 @@ export class Editor {
     const doc = this.doc;
     const layer = activeLayer(doc);
     if (!isShown(doc, layer) || this.activeLocked()) return null;
-    // A group (several layers) isn't resized by its handles yet: it can be moved.
-    if (!this.active.selection && this.state.selectedLayers.length > 1) return null;
+    // Several layers: resized together, in the box they fill.
+    if (!this.active.selection && this.state.selectedLayers.length > 1) return this.beginGroupScale();
     const base = layer.pixels.slice();
     const sel = this.active.selection ? clipSelection(this.active.selection, doc.width, doc.height) : null;
     if (sel && sel.w && sel.h) {
@@ -3405,6 +3417,55 @@ export class Editor {
     return { ...content.rect };
   }
 
+  /** Several layers selected: each one's content, in the box they fill together. */
+  private beginGroupScale(): Rect | null {
+    const doc = this.doc;
+    const layers = this.pickedLayers().filter((l) => isShown(doc, l));
+    if (layers.some((l) => isLocked(doc, l))) {
+      this.notice({ type: 'layerLocked' });
+      return null;
+    }
+    const group = layers.flatMap((layer) => {
+      const content = layerContent(layer.pixels, doc.width, doc.height, layer.outside);
+      if (!content) return [];
+      const { rect, pixels } = content;
+      return [
+        {
+          layer,
+          base: layer.pixels.slice(),
+          baseOutside: layer.outside,
+          rect,
+          block: { width: rect.w, height: rect.h, pixels },
+        },
+      ];
+    });
+    if (!group.length) return null;
+    const x0 = Math.min(...group.map((m) => m.rect.x));
+    const y0 = Math.min(...group.map((m) => m.rect.y));
+    const x1 = Math.max(...group.map((m) => m.rect.x + m.rect.w));
+    const y1 = Math.max(...group.map((m) => m.rect.y + m.rect.h));
+    const from = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    const first = group[0];
+    this.checkpoint();
+    this.scaling = {
+      layer: first.layer,
+      base: first.base,
+      baseOutside: first.baseOutside,
+      from,
+      block: first.block,
+      group,
+    };
+    return { ...from };
+  }
+
+  /** Puts a layer's content back, transformed, at (x, y), what lands outside the canvas kept. */
+  private placeLayer(layer: Layer, block: PixelBlock, x: number, y: number): void {
+    const { width, height } = this.doc;
+    const r = reframe(block.pixels, block.width, block.height, undefined, x, y, width, height);
+    layer.pixels.set(r.pixels);
+    layer.outside = r.outside;
+  }
+
   /** Shows the content resized into `rect` (canvas pixels), from the original pixels. */
   previewScale(rect: Rect): void {
     const sc = this.scaling;
@@ -3413,6 +3474,21 @@ export class Editor {
     const h = Math.max(1, Math.round(rect.h));
     const x = Math.round(rect.x);
     const y = Math.round(rect.y);
+    if (sc.group) {
+      // Each layer keeps its place and size in the box, in proportion.
+      const kx = w / sc.from.w;
+      const ky = h / sc.from.h;
+      for (const m of sc.group) {
+        const left = Math.round(x + (m.rect.x - sc.from.x) * kx);
+        const top = Math.round(y + (m.rect.y - sc.from.y) * ky);
+        const right = Math.round(x + (m.rect.x + m.rect.w - sc.from.x) * kx);
+        const bottom = Math.round(y + (m.rect.y + m.rect.h - sc.from.y) * ky);
+        const block = scaleBlock(m.block, Math.max(1, right - left), Math.max(1, bottom - top));
+        this.placeLayer(m.layer, block, left, top);
+      }
+      this.pixelsChanged();
+      return;
+    }
     this.placeTransformed(scaleBlock(sc.block, w, h), x, y, true);
   }
 
@@ -3441,13 +3517,37 @@ export class Editor {
    */
   beginRotate(): Rect | null {
     const from = this.beginScale();
-    if (from) this.scaling!.rotator = rotator(this.scaling!.block);
+    const sc = this.scaling;
+    if (from && sc?.group) for (const m of sc.group) m.rotator = rotator(m.block);
+    else if (from) sc!.rotator = rotator(sc!.block);
     return from;
   }
 
   /** Shows the content turned by `degrees` (clockwise) around its center. Commit with `endScale`. */
   previewRotate(degrees: number): void {
     const sc = this.scaling;
+    if (sc?.group) {
+      // Each layer turns on itself, and its center turns around the box's.
+      const a = (degrees * Math.PI) / 180;
+      const gx = sc.from.x + sc.from.w / 2;
+      const gy = sc.from.y + sc.from.h / 2;
+      for (const m of sc.group) {
+        if (!m.rotator) continue;
+        const turned = m.rotator.rotate(degrees);
+        const dx = m.rect.x + m.rect.w / 2 - gx;
+        const dy = m.rect.y + m.rect.h / 2 - gy;
+        const cx = gx + dx * Math.cos(a) - dy * Math.sin(a);
+        const cy = gy + dx * Math.sin(a) + dy * Math.cos(a);
+        this.placeLayer(
+          m.layer,
+          turned,
+          Math.round(cx - turned.width / 2),
+          Math.round(cy - turned.height / 2),
+        );
+      }
+      this.pixelsChanged();
+      return;
+    }
     if (!sc?.rotator) return;
     const turned = sc.rotator.rotate(degrees);
     const cx = sc.from.x + sc.from.w / 2;
@@ -3469,6 +3569,10 @@ export class Editor {
     if (!sc) return;
     sc.layer.pixels.set(sc.base);
     sc.layer.outside = sc.baseOutside;
+    for (const m of sc.group ?? []) {
+      m.layer.pixels.set(m.base);
+      m.layer.outside = m.baseOutside;
+    }
     if (sc.cleared) this.active.selection = sc.fromSelection ?? sc.from;
     this.active.history.discardLast();
     this.scaling = null;

@@ -329,6 +329,39 @@ describe('Editor groups', () => {
     expect(order(e)).toBe('a b c d');
   });
 
+  it('resizes the selected layers together by the handles, in one undo step', () => {
+    const e = editor();
+    e.setTool('move');
+    pick(e, 'a', 'c');
+    // a's pixel at (0, 0), c's at (2, 0): they fill a 3 × 1 box.
+    expect(e.beginScale()).toEqual({ x: 0, y: 0, w: 3, h: 1 });
+    e.previewScale({ x: 0, y: 0, w: 6, h: 2 });
+    e.endScale();
+    const at = (name: string, x: number, y: number) =>
+      e.getState().doc.layers.find((l) => l.name === name)!.pixels[y * 8 + x];
+    // Twice as big each, each at its place in the doubled box.
+    expect([at('a', 0, 0), at('a', 1, 1), at('a', 2, 0)]).toEqual([RED, RED, 0]);
+    expect([at('c', 4, 0), at('c', 5, 1), at('c', 3, 0)]).toEqual([RED, RED, 0]);
+    expect(selected(e)).toEqual(['a', 'c']);
+    e.undo();
+    expect([at('a', 0, 0), at('a', 1, 1), at('c', 2, 0), at('c', 5, 1)]).toEqual([RED, 0, RED, 0]);
+  });
+
+  it('turns the selected layers together around the box they fill', () => {
+    const e = editor();
+    e.setTool('move');
+    pick(e, 'a', 'c');
+    expect(e.beginRotate()).toEqual({ x: 0, y: 0, w: 3, h: 1 });
+    e.previewRotate(90);
+    e.endScale();
+    // A quarter turn clockwise around the box's center (1.5, 0.5): a goes above it, off the canvas
+    // (kept outside), c below it.
+    const [la, , lc] = e.getState().doc.layers;
+    expect(la.pixels.some(Boolean)).toBe(false);
+    expect(la.outside).toMatchObject({ x: 1, y: -1, w: 1, h: 1 });
+    expect(lc.pixels[1 * 8 + 1]).toBe(RED);
+  });
+
   it('duplicates every selected layer at once, in one undo step', () => {
     const e = editor();
     pick(e, 'a', 'c');

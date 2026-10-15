@@ -56,6 +56,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Several selected layers resize and turn together by the frame's handles, each in proportion within the box they fill, in one undo step; before, the handles did nothing and the frame went away. (#390)
 - The side panels' resize handles follow their panel's edge, between its rounded corners, instead of running down the whole window. (#382)
 - Undo (and Redo) now covers boards moved by a drag or aligned, each drag or alignment one step, in order with boards deleted. (#364)
 - Holding Space shows the hand whatever the tool (the Move tool and the eyedropper kept their own cursor), and the brush outline hides while it's held. (#362)
