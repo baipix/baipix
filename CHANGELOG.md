@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The Draw page has an Isometric section: the grid, the box and pyramid, the cylinder, stairs and ramps, face colors and tile edges, with a courtyard that builds itself volume by volume. (#407)
 - The Draw page has a bar of its sections that sticks to the top as you scroll: the one you're reading is framed in its color, and a click takes you to another. On a phone it scrolls sideways. (#403)
 - The site's home page has a Screenshots section: eight shots of the editor at work (boards, isometric volumes, components, gradients, tile preview, Jumble, eyedropper, pixel gap), each with a caption. A click opens it full size with its caption over it, and the arrow keys go through the others. (#399)
 - The undo history survives a reload: each board's last 50 steps (undo and redo) are kept in the browser next to the drawing, every unchanged layer stored once rather than once per step. (#397)
