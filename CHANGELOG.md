@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Website
+
+- The home page's Components, Isometric volumes and Several boards are cards like the others, one row of the feature grid, instead of three wide cards stacked with animations. (#413)
+
 ## [0.7.0] - 2026-10-16
 
 Isometric volumes and boards: boxes, cylinders standing or lying, pyramids, stairs and ramps on an isometric grid, several boards in a file like frames in Figma, layers outside them, an undo history that survives a reload, and a lighter interface with line icons, violet selections and Figma-like rulers.
