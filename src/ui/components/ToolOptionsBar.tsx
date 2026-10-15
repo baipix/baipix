@@ -406,6 +406,30 @@ export function ToolOptionsBar() {
             </Row>
           )}
           <Checkbox checked={options.filled} onChange={set('filled')} label={t('options.filled')} />
+          {/* A floor tile: which of its edges get the outline, so tiles side by side share one line. */}
+          {isoGrid && tool === 'rect' && (options.plane === 'ground' || options.plane === 'flat') && (
+            <div
+              className="chips"
+              role="group"
+              aria-label={t('tileEdges.label')}
+              data-tip={t('tileEdges.hint')}
+            >
+              {(['nw', 'ne', 'sw', 'se'] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  className="chip"
+                  aria-pressed={options.tileEdges[k]}
+                  aria-label={t(`tileEdges.${k}`)}
+                  onClick={() =>
+                    editor.setOption('tileEdges', { ...options.tileEdges, [k]: !options.tileEdges[k] })
+                  }
+                >
+                  {t(`tileEdges.${k}Short`)}
+                </button>
+              ))}
+            </div>
+          )}
         </>
       );
       break;

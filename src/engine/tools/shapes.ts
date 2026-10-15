@@ -45,7 +45,7 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
       p,
       s.options.filled,
       (x, y, outline) => (outline ? stamp(s, x, y, color) : stamp(s, x, y, color, color, false, 1)),
-      { regular: mods.shift, radius: s.options.radius },
+      { regular: mods.shift, radius: s.options.radius, edges: s.options.tileEdges },
     );
     return;
   }

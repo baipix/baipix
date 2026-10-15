@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Floor tiles, edge by edge: with the isometric grid on, the rectangle's options choose which of a floor tile's edges get the outline (NW, NE, SW, SE), so tiles side by side share one line instead of a doubled one. (#396)
 - Lying cylinders, for barrels, logs and wheels: the cylinder's options can lay it along the left or the right axis. Its round end is dragged on a wall like the shapes on an isometric plane, and its body runs back by its length, lit on top and shaded underneath. (#395)
 - Isometric stairs and ramps, in the shapes menu next to the box: dragged like the box, Height tall, rising toward the corner you pick (up-left, up-right, down-right, down-left); with Steps above 0, a staircase of equal steps. Outline, face colors and the options' redraw work like the other volumes. (#394)
 - Bevels on the isometric box, for crates, stone blocks and rounded tiles: a Bevel menu in its options (top, corner or both) lights the top's back edges and turns its front edges and its front corner halfway between the faces they join, in palette colors when the color is from the palette. (#393)
