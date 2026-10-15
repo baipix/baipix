@@ -1050,6 +1050,8 @@ body.is-panning .canvas:active {
   position: absolute;
   left: 50%;
   bottom: calc(var(--toolbar-bottom) + 48px);
+  /* Its own width: placed at 50%, it would otherwise shrink to half the workspace and scroll. */
+  width: max-content;
   max-width: calc(100% - 24px);
   height: 36px;
   display: flex;
@@ -2067,6 +2069,30 @@ body.is-dragging-swatch * {
   .app:has(.panel-left.is-folded) .resizer-left {
     display: none;
   }
+}
+
+/* Volumes' faces in the options bar: three swatches, the current color on click. */
+.face-colors {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.face-colors .muted {
+  margin-right: 4px;
+}
+.face-swatch {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--swatch-edge);
+  cursor: pointer;
+}
+.face-swatch:hover {
+  box-shadow:
+    inset 0 0 0 1px var(--swatch-edge),
+    0 0 0 2px var(--glow-line);
 }
 
 /* ---------- Floating panels and accent ----------

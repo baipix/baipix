@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- A color per face on isometric volumes: three swatches in the box, cylinder and pyramid's options (top, left, right) take the current color on a click, instead of shading the sides from the palette; the outline and light edge follow. A button goes back to shading. The options bar also takes its full width instead of scrolling. (#391)
 - The logo sits above the files screen's title, its pixel hopping on a calm beat like a loader, waiting for you to start a file. (#388)
 - The logo's escaped pixel hops on hover, in the editor's top bar, on the files screen and on the site; nothing with reduced motion. (#386)
 - The files screen gets a discreet ambient background: a grid of small squares lit by slow waves, a few twinkling in violet, quieter behind the content and still when reduced motion is on. (#380)

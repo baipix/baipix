@@ -1,3 +1,4 @@
+import type { FaceColors } from '../isoBox';
 import type { Selection } from '../selection';
 import type { IsoPlane } from '../isoPlane';
 import type { Color } from '../color';
@@ -106,6 +107,8 @@ export interface ToolOptions {
   boxOutline: boolean;
   /** Isometric box: the top's front edges one step lighter, the classic highlight. */
   boxLight: boolean;
+  /** Isometric volumes: the faces' colors picked by hand, or null to shade them from the color. */
+  boxFaces: FaceColors | null;
 }
 
 export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
@@ -146,6 +149,7 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   boxOutline: false,
   plane: 'flat',
   boxLight: false,
+  boxFaces: null,
 };
 
 export interface Modifiers {

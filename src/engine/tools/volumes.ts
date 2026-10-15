@@ -1,6 +1,6 @@
 import { isoGridOrigin } from '../document';
 import { extrude } from '../extrude';
-import { boxColors, boxFromDrag, type BoxFace } from '../isoBox';
+import { boxFromDrag, volumeColors, type BoxFace } from '../isoBox';
 import type { Point } from '../math';
 import { cleanEllipse, line, polygonFilled } from '../raster';
 import { snapBox } from './box';
@@ -42,7 +42,7 @@ export function paintCylinder(s: Stroke, a: Point, b: Point): void {
     W,
     H,
     region,
-    { height: h, outline: s.options.boxOutline, light: s.options.boxLight },
+    { height: h, outline: s.options.boxOutline, light: s.options.boxLight, faces: s.options.boxFaces },
     s.palette,
   );
   lay(s, drawn);
@@ -59,7 +59,7 @@ export function paintPyramid(s: Stroke, top: Point, width: number, depth: number
   s.layer.pixels.set(s.base);
   s.visited.fill(0);
   const { width: W, height: H } = s.doc;
-  const tones = boxColors(strokeColors(s)[0], s.palette);
+  const tones = volumeColors(strokeColors(s)[0], s.palette, s.options.boxFaces);
   // The base's corners, on pixel corners, and the apex over its middle.
   const t = top;
   const r = { x: t.x + 2 * width, y: t.y + width };

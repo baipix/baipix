@@ -112,3 +112,24 @@ export function boxColors(color: Color, palette: PaletteIndex): Record<BoxFace, 
   const right = step(left, palette, -1);
   return { top: color, left, right, edge: step(right, palette, -1), light: step(color, palette, 1) };
 }
+
+/** A volume's three faces picked by hand, instead of shaded from one color. */
+export interface FaceColors {
+  top: Color;
+  left: Color;
+  right: Color;
+}
+
+/**
+ * The colors of a volume's faces: shaded from `color` (see `boxColors`), or the faces picked by
+ * hand, the outline a step darker than the right face and the light edge a step lighter than the top.
+ */
+export function volumeColors(
+  color: Color,
+  palette: PaletteIndex,
+  faces?: FaceColors | null,
+): Record<BoxFace, Color> {
+  if (!faces) return boxColors(color, palette);
+  const { top, left, right } = faces;
+  return { top, left, right, edge: step(right, palette, -1), light: step(top, palette, 1) };
+}

@@ -1,3 +1,4 @@
+import { toCss } from '../../engine/color';
 import type { ReactNode } from 'react';
 import { isBoard } from '../../engine/document';
 import { useActions } from '../ActionsContext';
@@ -44,6 +45,9 @@ export function ToolOptionsBar() {
   const tool = useEditorState((s) => s.tool);
   const options = useEditorState((s) => s.options);
   const view = useEditorState((s) => s.view);
+  // The volumes' faces follow the color and the palette when they are shaded from them.
+  useEditorState((s) => s.primary);
+  useEditorState((s) => s.palette);
   const isoGrid = useEditorState((s) => !!s.doc.isoGrid);
   const actions = useActions();
   const selectedBoards = useEditorState((s) => s.selectedBoards.length);
@@ -406,20 +410,20 @@ export function ToolOptionsBar() {
     case 'box':
     case 'cylinder':
     case 'pyramid': {
-      // Width and depth are in pixels across, two per step of the 2:1 edges.
+      const faces = editor.volumeFaces();
+      // Width and depth are in pixels across, two per step of the 2:1 edges. No label in front: the
+      // arrow says which, and its tooltip names it, so the faces fit in the bar too.
       const field = (key: 'boxWidth' | 'boxDepth' | 'boxHeight', glyph: string, steps: boolean) => (
-        <Row label={t(`options.${key}`)}>
-          <NumberField
-            value={steps ? options[key] * 2 : options[key]}
-            min={0}
-            max={steps ? 256 : 128}
-            label={glyph}
-            suffix="px"
-            ariaLabel={t(`options.${key}`)}
-            scrubHint={t('common.dragToAdjust')}
-            onChange={(v) => editor.setOption(key, steps ? Math.round(v / 2) : v)}
-          />
-        </Row>
+        <NumberField
+          value={steps ? options[key] * 2 : options[key]}
+          min={0}
+          max={steps ? 256 : 128}
+          label={glyph}
+          suffix="px"
+          ariaLabel={t(`options.${key}`)}
+          scrubHint={`${t(`options.${key}`)} · ${t('common.dragToAdjust')}`}
+          onChange={(v) => editor.setOption(key, steps ? Math.round(v / 2) : v)}
+        />
       );
       info = t(tool === 'box' ? 'hint.box' : tool === 'cylinder' ? 'hint.cylinder' : 'hint.pyramid');
       body = (
@@ -434,6 +438,30 @@ export function ToolOptionsBar() {
             label={t('options.boxOutline')}
           />
           <Checkbox checked={options.boxLight} onChange={set('boxLight')} label={t('options.boxLight')} />
+          <div className="toolbar-divider" />
+          {/* The faces: shaded from the color, or picked by hand, one click each with the current color. */}
+          <div className="face-colors" role="group" aria-label={t('faces.label')}>
+            <span className="muted">{t('faces.label')}</span>
+            {(['top', 'left', 'right'] as const).map((f) => (
+              <button
+                key={f}
+                type="button"
+                className="face-swatch"
+                style={{ background: toCss(faces[f]) }}
+                aria-label={t(`faces.${f}`)}
+                data-tip={t(`faces.${f}`)}
+                data-kbd={t('faces.hint')}
+                onClick={() => editor.setVolumeFace(f)}
+              />
+            ))}
+            {options.boxFaces && (
+              <IconButton
+                icon="rotateLeft"
+                label={t('faces.auto')}
+                onClick={() => editor.setOption('boxFaces', null)}
+              />
+            )}
+          </div>
         </>
       );
       break;

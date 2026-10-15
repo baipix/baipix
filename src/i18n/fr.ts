@@ -376,6 +376,12 @@ export const fr: Record<MessageKey, string> = {
   'options.boxHeight': 'Hauteur',
   'options.boxOutline': 'Contour',
   'options.boxLight': 'Arête claire',
+  'faces.label': 'Faces',
+  'faces.top': 'Face du dessus',
+  'faces.left': 'Face gauche',
+  'faces.right': 'Face droite',
+  'faces.hint': 'Clic : la couleur courante',
+  'faces.auto': 'Ombrer depuis la couleur',
   'hint.gradient':
     'Glisse du début du dégradé jusqu’à sa fin (Shift : par 45°). Il remplit la zone de même couleur sous le premier clic, ou la sélection. Ses couleurs viennent de la palette, tramées entre elles. Change les options juste après : le dernier dégradé suit.',
   'gradient.stops': 'Arrêts du dégradé',

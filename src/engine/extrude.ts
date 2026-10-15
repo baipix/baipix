@@ -1,4 +1,4 @@
-import { boxColors, type BoxFace } from './isoBox';
+import { volumeColors, type BoxFace, type FaceColors } from './isoBox';
 import type { PaletteIndex } from './palette';
 
 /** How a flat shape is pulled up into a volume. */
@@ -9,6 +9,8 @@ export interface ExtrudeOptions {
   outline: boolean;
   /** The top's front edge one step lighter, like the box's. */
   light: boolean;
+  /** The faces' colors picked by hand (the volume tools), instead of shaded from each pixel's color. */
+  faces?: FaceColors | null;
 }
 
 export const DEFAULT_EXTRUDE: ExtrudeOptions = { height: 8, outline: false, light: false };
@@ -53,7 +55,7 @@ export function extrude(
   const tonesOf = new Map<number, Record<BoxFace, number>>();
   const tones = (c: number) => {
     let t = tonesOf.get(c);
-    if (!t) tonesOf.set(c, (t = boxColors(c, palette)));
+    if (!t) tonesOf.set(c, (t = volumeColors(c, palette, o.faces)));
     return t;
   };
   for (let y = 0; y < height; y++)
