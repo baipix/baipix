@@ -117,7 +117,7 @@ type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
 const BOARD_SPACING = 16;
 
 /** The isometric volumes: their options (height, outline, light edge) redraw the last one drawn. */
-const VOLUMES: ToolId[] = ['box', 'cylinder', 'pyramid'];
+const VOLUMES: ToolId[] = ['box', 'cylinder', 'pyramid', 'ramp'];
 
 /** Tools where Shift-click draws a straight line from the last point painted. */
 const STRAIGHT_LINES: ToolId[] = ['pencil', 'eraser'];
@@ -2673,7 +2673,7 @@ export class Editor {
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
     this.options = { ...this.options, [key]: value };
     if (key.startsWith('gradient')) this.redrawGradient();
-    if (key.startsWith('box')) this.redrawVolume();
+    if (key.startsWith('box') || key.startsWith('ramp')) this.redrawVolume();
     this.commit();
   }
 

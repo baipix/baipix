@@ -1,6 +1,7 @@
 import { isoGridOrigin } from '../document';
 import { extrude } from '../extrude';
 import { boxFromDrag, volumeColors, type BoxFace } from '../isoBox';
+import { isoRamp } from '../isoRamp';
 import type { Point } from '../math';
 import { cleanEllipse, line, polygonFilled } from '../raster';
 import { snapBox } from './box';
@@ -133,7 +134,7 @@ function drawPyramid(s: Stroke, p: Point, mods: Modifiers): void {
 }
 
 const volumeTool = (
-  id: 'cylinder' | 'pyramid',
+  id: 'cylinder' | 'pyramid' | 'ramp',
   draw: (s: Stroke, p: Point, mods: Modifiers) => void,
 ): Tool => ({
   id,
@@ -143,5 +144,46 @@ const volumeTool = (
   onMove: draw,
 });
 
+/**
+ * An isometric ramp or staircase in the box the drag sets, like the box's (Shift: square), Height
+ * tall, rising toward the direction in the options, in as many steps as asked (0: a smooth slope).
+ */
+export function paintRamp(s: Stroke, top: Point, width: number, depth: number): void {
+  s.layer.pixels.set(s.base);
+  s.visited.fill(0);
+  const { width: W, height: H } = s.doc;
+  const tones = volumeColors(strokeColors(s)[0], s.palette, s.options.boxFaces);
+  const drawn = new Uint32Array(W * H);
+  const put = (x: number, y: number, c: number) => {
+    if (x >= 0 && y >= 0 && x < W && y < H) drawn[y * W + x] = c;
+  };
+  isoRamp(
+    top,
+    { width, depth, height: Math.max(0, Math.round(s.options.boxHeight)) },
+    s.options.rampDirection,
+    Math.max(0, Math.round(s.options.rampSteps)),
+    (x, y, face) => put(x, y, tones[face]),
+  );
+  if (s.options.boxOutline) {
+    const inside = drawn.slice();
+    const at = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H && inside[y * W + x] !== 0;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (at(x, y) && (!at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1)))
+          drawn[y * W + x] = tones.edge;
+  }
+  lay(s, drawn);
+}
+
+function drawRamp(s: Stroke, p: Point, mods: Modifiers): void {
+  const drag = boxFromDrag(s.start, p, mods.shift);
+  const { top, width, depth } = s.doc.isoGrid
+    ? snapBox(drag, s.doc.isoGrid, isoGridOrigin(s.doc.width))
+    : drag;
+  s.scratch.repaint = () => paintRamp(s, top, width, depth);
+  paintRamp(s, top, width, depth);
+}
+
 export const cylinderTool = volumeTool('cylinder', drawCylinder);
+export const rampTool = volumeTool('ramp', drawRamp);
 export const pyramidTool = volumeTool('pyramid', drawPyramid);
