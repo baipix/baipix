@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Bevels on the isometric box, for crates, stone blocks and rounded tiles: a Bevel menu in its options (top, corner or both) lights the top's back edges and turns its front edges and its front corner halfway between the faces they join, in palette colors when the color is from the palette. (#393)
 - Inner edges on isometric volumes: an Edges option next to Outline and Light edge draws a line in the outline's color between the faces: under the box's top and down its front corner, under the cylinder's rim, along the pyramid's ridges that show. (#392)
 - A color per face on isometric volumes: three swatches in the box, cylinder and pyramid's options (top, left, right) take the current color on a click, instead of shading the sides from the palette; the outline and light edge follow. A button goes back to shading. The options bar also takes its full width instead of scrolling. (#391)
 - The logo sits above the files screen's title, its pixel hopping on a calm beat like a loader, waiting for you to start a file. (#388)

@@ -16,6 +16,8 @@ export function paintBox(s: Stroke, top: Point): void {
     boxLight,
     boxEdges,
     boxFaces,
+    boxBevelTop,
+    boxBevelSides,
   } = s.options;
   const colors = volumeColors(strokeColors(s)[0], s.palette, boxFaces);
   isoBox(
@@ -25,6 +27,7 @@ export function paintBox(s: Stroke, top: Point): void {
     (x, y, face) => stamp(s, x, y, colors[face], colors[face], false, 1),
     boxLight,
     boxEdges,
+    { top: boxBevelTop, sides: boxBevelSides },
   );
 }
 
