@@ -46,6 +46,7 @@ const SECTIONS = [
   { id: 'layers', label: 'Layers', tone: 'layers' },
   { id: 'components', label: 'Components', tone: 'components' },
   { id: 'isometric', label: 'Isometric', tone: 'isometric' },
+  { id: 'boards', label: 'Boards', tone: 'boards' },
   { id: 'export', label: 'Export', tone: 'export' },
   { id: 'keys', label: 'Shortcuts' },
 ];
@@ -892,9 +893,67 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </figure>
     </section>
 
+    <!-- Boards: several drawings in one file. -->
+    <section class="block container" id="boards" data-tone="boards">
+      <SectionHead label="10 · Boards" />
+      <div class="text">
+        <h2>Several boards, one file.</h2>
+        <p class="muted intro">
+          A sprite and its variants, a scene in four seasons, a sheet of icons: side by side, each with its
+          own size and layers.
+        </p>
+        <ul class="tools">
+          <li>
+            <span class="key icon" set:html={icon('board')} />
+            <div>
+              <h3>Boards</h3>
+              <p>
+                Draw a rectangle beside the others with the Board tool to add one, or duplicate a board next
+                to it. Drag a board by its name to move it, click it to work on it.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('alignLeft')} />
+            <div>
+              <h3>Arrange</h3>
+              <p>
+                Select several boards to move, align or delete them together. Deleted one by mistake? Undo
+                brings it back.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('layers')} />
+            <div>
+              <h3>Layers outside the boards</h3>
+              <p>
+                Drag a layer off every board and it stays there, listed next to the boards, until you drop it
+                onto one.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('undo')} />
+            <div>
+              <h3>History that stays</h3>
+              <p>Each board keeps its last 50 steps of undo and redo, even after you reload the page.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <figure class="frame">
+        <PixelPlay
+          animation={anim.boards}
+          label="A tree on a hill drawn on a first board, then three copies of the board turned to autumn, winter and a starry night."
+        />
+        <figcaption class="cap">Duplicate the board, recolor the copy: four seasons in one file.</figcaption>
+      </figure>
+    </section>
+
     <!-- Export -->
     <section class="block container" id="export" data-tone="export">
-      <SectionHead label="10 · Export" />
+      <SectionHead label="11 · Export" />
       <div class="text">
         <h2>Out as clean vector.</h2>
         <p class="muted intro">What you draw goes straight into your design files.</p>

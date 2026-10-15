@@ -7,7 +7,7 @@ import { renderGeometry, toSvg } from '../../src/engine/export/svg';
 import type { Point } from '../../src/engine/math';
 import { outlinePixels } from '../../src/engine/outline';
 import { gradientColor, gradientT, sortedStops } from '../../src/engine/gradient';
-import { isDoubledCorner } from '../../src/engine/raster';
+import { isDoubledCorner, line } from '../../src/engine/raster';
 import { pack } from '../../src/engine/color';
 import { Editor } from '../../src/engine/editor';
 import type { ToolId, ToolOptions } from '../../src/engine/tools';
@@ -945,6 +945,167 @@ function isometric(): PixelAnimation {
   return t.done(500, 0.4, time);
 }
 
+// ---- Boards: one scene, four seasons ------------------------------------------------------------
+
+/** A tree on a hill: what each pixel of the board is, colored by season. */
+type Part = 'sky' | 'hill' | 'hillLit' | 'trunk' | 'leaf' | 'leafLit' | 'leafDark' | 'bloom' | 'snow';
+
+const SEASONS: Record<'spring' | 'autumn' | 'winter' | 'night', Record<Part, string>> = {
+  spring: {
+    sky: '#a6dcf5',
+    hill: S.green,
+    hillLit: S.lime,
+    trunk: '#6b4226',
+    leaf: S.green,
+    leafLit: S.lime,
+    leafDark: S.teal,
+    bloom: '#ffb3d1',
+    snow: S.white,
+  },
+  autumn: {
+    sky: '#f7d9a8',
+    hill: '#b8863b',
+    hillLit: '#d9ae5a',
+    trunk: '#6b4226',
+    leaf: S.orange,
+    leafLit: S.yellow,
+    leafDark: S.red,
+    bloom: S.red,
+    snow: S.white,
+  },
+  winter: {
+    sky: '#cfdde8',
+    hill: '#e9eff4',
+    hillLit: S.white,
+    trunk: '#5a3a24',
+    leaf: '#cfdde8',
+    leafLit: '#cfdde8',
+    leafDark: '#cfdde8',
+    bloom: '#cfdde8',
+    snow: S.white,
+  },
+  night: {
+    sky: '#1f1b5c',
+    hill: '#1d4a4f',
+    hillLit: S.teal,
+    trunk: '#2a1a12',
+    leaf: '#22594a',
+    leafLit: '#3f8f68',
+    leafDark: '#183b3a',
+    bloom: '#22594a',
+    snow: S.white,
+  },
+};
+
+/** The board's size, and its tree: a crown, a trunk, and the branches that show in winter. */
+const BW = 32;
+const BH = 24;
+const BRANCHES: [number, number, number, number][] = [
+  [16, 12, 10, 5],
+  [16, 11, 22, 4],
+  [16, 10, 16, 2],
+  [12, 7, 9, 8],
+  [20, 6, 24, 7],
+];
+
+/** The scene, pixel by pixel: in leaf (spring, autumn, night) or bare with snow (winter). */
+function treeScene(bare: boolean, random: () => number): Part[] {
+  const parts: Part[] = [];
+  for (let y = 0; y < BH; y++)
+    for (let x = 0; x < BW; x++) {
+      const crown = Math.hypot((x - 16) / 8.5, (y - 7) / 5.8) <= 1;
+      const hillTop = 19 - Math.round(2.5 * Math.cos((x - 16) / 10));
+      let p: Part = 'sky';
+      if (y >= hillTop) p = y === hillTop ? 'hillLit' : 'hill';
+      else if (crown && !bare) {
+        // Lit from the top left, shaded to the bottom right, a few blossoms.
+        const side = x - 16 + (y - 7) * 1.3;
+        p = side < -6 ? 'leafLit' : side > 5 ? 'leafDark' : 'leaf';
+        if (random() < 0.08) p = 'bloom';
+      } else if (x >= 15 && x <= 16 && y > 8) p = 'trunk';
+      parts.push(p);
+    }
+  if (bare) {
+    for (const [x0, y0, x1, y1] of BRANCHES)
+      line(x0, y0, x1, y1, (x, y) => {
+        parts[y * BW + x] = 'trunk';
+        if (y > 0 && parts[(y - 1) * BW + x] === 'sky') parts[(y - 1) * BW + x] = 'snow';
+      });
+  }
+  return parts;
+}
+
+/**
+ * Several boards in one file: a tree drawn on the first board, then the board duplicated three
+ * times beside and under it, each copy turned to another season, the way you'd do it in Baipix.
+ */
+function boards(): PixelAnimation {
+  const gap = 6;
+  const w = BW * 2 + gap;
+  const h = BH * 2 + gap;
+  const random = seeded(11);
+  const leafy = treeScene(false, random);
+  const bare = treeScene(true, seeded(11));
+  const t = new Timeline(w, h);
+  const origin = [
+    [0, 0],
+    [BW + gap, 0],
+    [0, BH + gap],
+    [BW + gap, BH + gap],
+  ];
+  const put = (time: number, board: number, i: number, hex: string | null) =>
+    t.at(time, origin[board][0] + (i % BW), origin[board][1] + Math.floor(i / BW), hex);
+  const isTree = (p: Part) => p !== 'sky' && p !== 'hill' && p !== 'hillLit';
+  let time = 300;
+  // The first board: the sky and the hill fill in, then the tree is drawn pixel by pixel.
+  leafy.forEach((p, i) => {
+    if (!isTree(p)) put(time + Math.floor(i / BW) * 18, 0, i, SEASONS.spring[p]);
+  });
+  time += BH * 18 + 200;
+  const tree = leafy
+    .map((p, i) => ({ p, i, k: (p === 'trunk' ? 0 : 1) + random() * 0.9 }))
+    .filter(({ p }) => isTree(p))
+    .sort((a, b) => a.k - b.k);
+  for (const { p, i } of tree) {
+    put(time, 0, i, SEASONS.spring[p]);
+    time += 8;
+  }
+  time += 600;
+  // Each copy lands whole, like a duplicate, then turns to its season from the top down.
+  const seasons: [number, keyof typeof SEASONS, Part[]][] = [
+    [1, 'autumn', leafy],
+    [2, 'winter', bare],
+    [3, 'night', leafy],
+  ];
+  for (const [board, season, parts] of seasons) {
+    leafy.forEach((p, i) => put(time, board, i, SEASONS.spring[p]));
+    time += 500;
+    const order = parts
+      .map((p, i) => ({ p, i, k: Math.floor(i / BW) + random() * 6 }))
+      .filter(({ p, i }) => SEASONS[season][p] !== SEASONS.spring[leafy[i]])
+      .sort((a, b) => a.k - b.k);
+    order.forEach(({ p, i }, n) => put(time + n * 4, board, i, SEASONS[season][p]));
+    time += order.length * 4 + 300;
+    // Stars come out at night.
+    if (season === 'night')
+      for (let n = 0; n < 12; n++) {
+        const i = Math.floor(random() * BW * 9);
+        if (parts[i] !== 'sky') continue;
+        put(time, board, i, n % 3 ? '#8f8fd6' : S.white);
+        time += 110;
+      }
+    time += 500;
+  }
+  const still = time;
+  // A while to look, then the boards go, last first, and the loop starts over.
+  time += 2800;
+  for (let board = 3; board >= 0; board--) {
+    leafy.forEach((p, i) => put(time, board, i, null));
+    time += 160;
+  }
+  return t.done(500, 0.35, still);
+}
+
 export const animations = {
   outline: outline(),
   jumble: jumble(),
@@ -959,4 +1120,5 @@ export const animations = {
   symmetry: symmetry(),
   tiles: tiles(),
   isometric: isometric(),
+  boards: boards(),
 };
