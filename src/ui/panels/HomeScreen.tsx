@@ -6,6 +6,7 @@ import { getLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
+import { HomeGlow } from '../components/HomeGlow';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
@@ -102,15 +103,13 @@ export function HomeScreen() {
         if (file) void importFile(file);
       }}
     >
+      <HomeGlow />
       <header className="home-top">
         <Icon name="logo" size={16} />
         <span className="home-brand">Baipix</span>
       </header>
       <div className="home-inner">
         <section className="home-hero">
-          <span className="home-mark">
-            <Icon name="pencil" size={60} />
-          </span>
           <h1>{t('home.title')}</h1>
           <p className="home-tagline">{shown.length ? t('home.taglineBack') : t('home.tagline')}</p>
           <div className="home-actions">
