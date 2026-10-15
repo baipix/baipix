@@ -5,7 +5,8 @@ import { isBoard } from '../../engine/document';
 import { useActions } from '../ActionsContext';
 import { ISO_PLANES, type IsoPlane } from '../../engine/isoPlane';
 import { TOOLS, type ToolOptions } from '../../engine/tools';
-import { useT } from '../../i18n';
+import { CYLINDER_AXES, type CylinderAxis } from '../../engine/tools/types';
+import { useT, type MessageKey } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { toolMeta } from '../tools';
 import { Checkbox } from './Checkbox';
@@ -415,15 +416,20 @@ export function ToolOptionsBar() {
       const faces = editor.volumeFaces();
       // Width and depth are in pixels across, two per step of the 2:1 edges. No label in front: the
       // arrow says which, and its tooltip names it, so the faces fit in the bar too.
-      const field = (key: 'boxWidth' | 'boxDepth' | 'boxHeight', glyph: string, steps: boolean) => (
+      const field = (
+        key: 'boxWidth' | 'boxDepth' | 'boxHeight',
+        glyph: string,
+        steps: boolean,
+        name: MessageKey = `options.${key}`,
+      ) => (
         <NumberField
           value={steps ? options[key] * 2 : options[key]}
           min={0}
           max={steps ? 256 : 128}
           label={glyph}
-          suffix="px"
-          ariaLabel={t(`options.${key}`)}
-          scrubHint={`${t(`options.${key}`)} · ${t('common.dragToAdjust')}`}
+          suffix={name === 'options.boxLength' ? undefined : 'px'}
+          ariaLabel={t(name)}
+          scrubHint={`${t(name)} · ${t('common.dragToAdjust')}`}
           onChange={(v) => editor.setOption(key, steps ? Math.round(v / 2) : v)}
         />
       );
@@ -441,7 +447,26 @@ export function ToolOptionsBar() {
           {/* The box's width and depth, set by the drag; the others take their size from the drag alone. */}
           {(tool === 'box' || tool === 'ramp') && field('boxWidth', '↘', true)}
           {(tool === 'box' || tool === 'ramp') && field('boxDepth', '↙', true)}
-          {field('boxHeight', '↕', false)}
+          {tool === 'cylinder' && (
+            // Standing up, or lying along one of the two axes, for barrels, logs and wheels.
+            <select
+              className="select-plain"
+              aria-label={t('cylinder.axis')}
+              data-tip={t('cylinder.axis')}
+              value={options.cylinderAxis}
+              onChange={(e) => editor.setOption('cylinderAxis', e.target.value as CylinderAxis)}
+            >
+              {CYLINDER_AXES.map((a) => (
+                <option key={a} value={a}>
+                  {t(`cylinder.${a}`)}
+                </option>
+              ))}
+            </select>
+          )}
+          {/* Lying down, the height is the cylinder's length. */}
+          {tool === 'cylinder' && options.cylinderAxis !== 'up'
+            ? field('boxHeight', '⟷', false, 'options.boxLength')
+            : field('boxHeight', '↕', false)}
           {tool === 'ramp' && (
             <>
               {/* Where it rises, and in how many steps (0: a smooth slope). */}

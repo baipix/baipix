@@ -97,6 +97,8 @@ import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
 import { volumeColors, type FaceColors } from './isoBox';
+import { RAMP_DIRECTIONS } from './isoRamp';
+import { CYLINDER_AXES } from './tools/types';
 import { strokeColors } from './tools/paint';
 
 export interface ViewSettings {
@@ -2673,7 +2675,7 @@ export class Editor {
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
     this.options = { ...this.options, [key]: value };
     if (key.startsWith('gradient')) this.redrawGradient();
-    if (key.startsWith('box') || key.startsWith('ramp')) this.redrawVolume();
+    if (key.startsWith('box') || key.startsWith('ramp') || key.startsWith('cylinder')) this.redrawVolume();
     this.commit();
   }
 
@@ -2792,6 +2794,9 @@ export class Editor {
         gradientDither: GRADIENT_DITHERS.includes(o.gradientDither) ? o.gradientDither : 'bayer',
         plane: ISO_PLANES.includes(o.plane) ? o.plane : 'flat',
         boxFaces: readFaces(o.boxFaces),
+        cylinderAxis: CYLINDER_AXES.includes(o.cylinderAxis) ? o.cylinderAxis : 'up',
+        rampDirection: RAMP_DIRECTIONS.includes(o.rampDirection) ? o.rampDirection : 'se',
+        rampSteps: Number.isFinite(o.rampSteps) ? clamp(Math.round(o.rampSteps), 0, 64) : 0,
       };
     }
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;

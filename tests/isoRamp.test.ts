@@ -76,3 +76,26 @@ describe('isometric stairs and ramps', () => {
     expect(e.getState().doc.layers[0].pixels.some(Boolean)).toBe(true);
   });
 });
+
+describe('lying cylinders', () => {
+  it('lies along an axis: its round end in front, its body going back', () => {
+    const e = new Editor();
+    e.newFile(48, 40);
+    e.setColor('primary', pack(176, 120, 72));
+    e.setOption('cylinderAxis', 'left');
+    e.setOption('boxHeight', 6);
+    e.setTool('cylinder');
+    e.beginStroke({ x: 26, y: 16 }, false, { shift: false });
+    e.moveStroke({ x: 33, y: 30 }, { shift: false });
+    e.endStroke();
+    const px = e.getState().doc.layers[0].pixels;
+    const xs = [...px.keys()].filter((i) => px[i]).map((i) => i % 48);
+    // The body reaches back up-left, 2 pixels across per step: 12 pixels left of the round end.
+    expect(Math.min(...xs)).toBe(26 - 12);
+    expect(Math.max(...xs)).toBe(33);
+    // Upright again: the same drag is a standing cylinder, nothing left of the drag.
+    e.setOption('cylinderAxis', 'up');
+    const up = e.getState().doc.layers[0].pixels;
+    expect(Math.min(...[...up.keys()].filter((i) => up[i]).map((i) => i % 48))).toBeGreaterThanOrEqual(26);
+  });
+});
