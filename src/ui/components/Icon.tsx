@@ -16,6 +16,8 @@ export function Icon({ name, size = 16 }: IconProps) {
         width={(size * LOGO.width) / LOGO.height}
         height={size}
         shapeRendering="crispEdges"
+        // The pixel hops above the logo's box on hover.
+        overflow="visible"
         aria-hidden="true"
       >
         <path fill="currentColor" d={LOGO.d} />

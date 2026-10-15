@@ -6,7 +6,14 @@ interface Props {
 const { size = 20 } = Astro.props;
 ---
 
-<svg viewBox="0 0 8 8" width={size} height={size} shape-rendering="crispEdges" aria-hidden="true">
+<svg
+  viewBox="0 0 8 8"
+  width={size}
+  height={size}
+  shape-rendering="crispEdges"
+  overflow="visible"
+  aria-hidden="true"
+>
   <path fill="currentColor" d="M0 2h3v6H0zM3 5h3v3H3z"></path>
   <path class="logo-pixel" fill="currentColor" d="M5 0h3v3H5z"></path>
 </svg>
