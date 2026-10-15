@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- The logo sits above the files screen's title, its pixel hopping on a steady beat like a loader, waiting for you to start a file. (#388)
+- The logo sits above the files screen's title, its pixel hopping on a calm beat like a loader, waiting for you to start a file. (#388)
 - The logo's escaped pixel hops on hover, in the editor's top bar, on the files screen and on the site; nothing with reduced motion. (#386)
 - The files screen gets a discreet ambient background: a grid of small squares lit by slow waves, a few twinkling in violet, quieter behind the content and still when reduced motion is on. (#380)
 - Fold the Layers panel, like Figma's Minimize UI: the panel now has a header with the file's name and a button (or Ctrl/Cmd+Shift+\\) that folds it into a small pill and unfolds it again. Remembered across reloads. (#376)

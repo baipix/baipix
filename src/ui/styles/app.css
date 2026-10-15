@@ -2296,32 +2296,32 @@ body.is-dragging-swatch * {
   font-size: 14px;
   font-weight: 700;
 }
-/* The logo above the title: its pixel hops on a steady beat, like a loader waiting for you to start
-   a file. A squash, a jump, a landing with a small rebound, then a short rest. */
+/* The logo above the title: its pixel hops on a calm beat, like a loader waiting for you to start a
+   file. A squash, a jump, a landing with a small rebound (under a second), then a rest of two. */
 .home-mark {
   display: flex;
   margin-bottom: 28px;
 }
 .home-mark .logo-pixel {
-  animation: logo-hop-idle 1.6s ease-in-out infinite;
+  animation: logo-hop-idle 3.2s ease-in-out infinite;
 }
 @keyframes logo-hop-idle {
   0% {
     transform: none;
   }
-  10% {
+  3.5% {
     transform: scale(1.15, 0.8);
   }
-  32% {
+  11% {
     transform: translateY(-2.5px) scale(0.92, 1.1);
   }
-  50% {
+  17.5% {
     transform: scale(1.12, 0.85);
   }
-  60% {
+  21% {
     transform: translateY(-0.5px);
   }
-  70%,
+  24%,
   100% {
     transform: none;
   }
