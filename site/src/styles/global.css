@@ -293,6 +293,11 @@ h2 {
   --tint-b: var(--butter);
   --accent: light-dark(#13808a, #5fd3dc);
 }
+[data-tone='boards'] {
+  --tint-a: var(--peach);
+  --tint-b: var(--sky);
+  --accent: light-dark(#c2453a, #ff9a8a);
+}
 [data-tone='export'] {
   --tint-a: var(--butter);
   --tint-b: var(--mint);
