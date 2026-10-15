@@ -19,7 +19,7 @@
     "screenshots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
-    "pixelarticons": "^2.4.1",
+    "lucide-react": "1.49.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

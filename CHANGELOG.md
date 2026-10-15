@@ -42,6 +42,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Line icons: the interface's icons come from Lucide, finer and lighter than the pixel ones, 16 px in the panels and 18 px in the toolbar. (#374)
 - The interface drops its pixel look: soft rounded corners and soft shadows on panels, menus, buttons and the home screen's cards, native checkboxes. The pixel style stays for the logo, the site and what you draw. (#373)
 - Precise cursors: drawing tools show a thin crosshair with a light halo instead of a pixel one, the Move tool the system arrow, the eyedropper and the rotate handles line icons. (#372)
 - The right panel's Canvas section is now called Board, like the board tool, and so are Board size… and the width and height fields: a file of one board is a board too. (#342)

@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react';
+import type { ComponentType, SVGProps } from 'react';
 import {
   AlignCenterHorizontal,
   AlignCenterVertical,
@@ -6,333 +6,116 @@ import {
   AlignEndVertical,
   AlignStartHorizontal,
   AlignStartVertical,
-  ArrowBarDown,
-  ArrowsHorizontal,
+  ArrowDownToLine,
+  ArrowLeftRight,
+  Blend,
+  Box,
   ChevronDown,
   ChevronRight,
   ChevronUp,
   Circle,
-  CircleInfo,
-  CircleQuestion,
-  Close,
+  CircleHelp,
+  Component,
   Copy,
   Crop,
-  CursorMinimal,
+  Cylinder,
+  Diamond,
+  Droplet,
+  Ellipsis,
   Eraser,
   Eye,
-  Folder,
-  FolderPlus,
   EyeOff,
   FlipHorizontal2,
   FlipVertical2,
+  Folder,
+  FolderPlus,
+  Frame,
+  Grid2x2,
   Hand,
-  Lasso,
-  Wand,
+  Heart,
   Image,
+  Info,
+  Lasso,
+  LassoSelect,
+  Layers,
   Lock,
+  LockOpen,
   Menu,
   Minus,
   Moon,
-  MoreHorizontal,
+  MousePointer2,
+  PaintBucket,
   Pencil,
   Pipette,
   Plus,
-  Redo,
-  Reload,
+  Pyramid,
+  Redo2,
+  RotateCcw,
+  RotateCw,
   Search,
-  Sliders,
-  Square,
   Shuffle,
-  SquareSharp,
+  Slash,
+  SlidersHorizontal,
   SprayCan,
+  SquareDashed,
   Star,
-  Heart,
   Sun,
-  Trash,
-  Undo,
-  Unlock,
+  Trash2,
+  Triangle,
+  Undo2,
+  Unlink,
+  Wand,
   Waves,
-} from 'pixelarticons/react';
+  X,
+} from 'lucide-react';
 
-type PixelGlyph = (props: SVGProps<SVGSVGElement>) => JSX.Element;
+/** An icon: a 24×24 line drawing in the current color, its stroke width given by `Icon`. */
+type Glyph = ComponentType<SVGProps<SVGSVGElement>>;
 
-/**
- * An icon drawn on a 12×12 grid ('#' filled, '.' empty), scaled ×2 into the same 24×24 box as
- * Pixelarticons so both kinds line up.
- */
-function drawn(rows: string[]): PixelGlyph {
-  const d = rows
-    .flatMap((row, y) => [...row].map((c, x) => (c === '#' ? `M${x * 2} ${y * 2}h2v2h-2z` : '')))
-    .join('');
+/** An icon drawn here, in Lucide's style: 24×24, round line ends, no fill. */
+function drawn(children: JSX.Element): Glyph {
   return (props) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d={d} />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      {children}
     </svg>
   );
 }
 
-// Pixelarticons has no equivalent for these tools: drawn by hand on the same grid.
-const Select = drawn([
-  '............',
-  '.##..##..##.',
-  '.#........#.',
-  '............',
-  '............',
-  '.#........#.',
-  '.#........#.',
-  '............',
-  '............',
-  '.#........#.',
-  '.##..##..##.',
-  '............',
-]);
-// Lasso selection: the selection's dashes along a free loop, its string hanging down.
-const LassoSelect = drawn([
-  '...##..##...',
-  '.#........#.',
-  '#..........#',
-  '............',
-  '#..........#',
-  '.#........#.',
-  '..##..##.#..',
-  '....#.......',
-  '...#........',
-  '...#........',
-  '....##......',
-  '............',
-]);
-const Bucket = drawn([
-  '............',
-  '....#.......',
-  '...#.#......',
-  '..#...#.....',
-  '.#.....#....',
-  '#########.#.',
-  '.#######.###',
-  '..#####..###',
-  '...###....#.',
-  '....#.......',
-  '............',
-  '............',
-]);
-const Line = drawn([
-  '............',
-  '..........#.',
-  '.........#..',
-  '........#...',
-  '.......#....',
-  '......#.....',
-  '.....#......',
-  '....#.......',
-  '...#........',
-  '..#.........',
-  '.#..........',
-  '............',
-]);
-const Triangle = drawn([
-  '............',
-  '.....##.....',
-  '.....##.....',
-  '....#..#....',
-  '....#..#....',
-  '...#....#...',
-  '...#....#...',
-  '..#......#..',
-  '..#......#..',
-  '.#........#.',
-  '.##########.',
-  '............',
-]);
-const Drop = drawn([
-  '............',
-  '.....##.....',
-  '....#..#....',
-  '....#..#....',
-  '...#....#...',
-  '..#......#..',
-  '..#......#..',
-  '..#......#..',
-  '..#......#..',
-  '...#....#...',
-  '....####....',
-  '............',
-]);
-const Layers = drawn([
-  '............',
-  '.....##.....',
-  '...##..##...',
-  '.##......##.',
-  '...##..##...',
-  '.#...##...#.',
-  '..##....##..',
-  '....####....',
-  '............',
-  '............',
-  '............',
-  '............',
-]);
+// Lucide's square has rounded corners: the rectangle tool gets a sharp one, the rounded one rounder.
+const Rect = drawn(<rect x="3" y="3" width="18" height="18" />);
+const RoundRect = drawn(<rect x="3" y="3" width="18" height="18" rx="6" />);
 
-// Components, like Figma's: a filled diamond for a master, an outlined one for an instance.
-const Component = drawn([
-  '.....##.....',
-  '....####....',
-  '...######...',
-  '..########..',
-  '.##########.',
-  '############',
-  '############',
-  '.##########.',
-  '..########..',
-  '...######...',
-  '....####....',
-  '.....##.....',
-]);
-const Instance = drawn([
-  '.....##.....',
-  '....#..#....',
-  '...#....#...',
-  '..#......#..',
-  '.#........#.',
-  '#..........#',
-  '#..........#',
-  '.#........#.',
-  '..#......#..',
-  '...#....#...',
-  '....#..#....',
-  '.....##.....',
-]);
-
-// Repeat grid: one square drawn, its copies outlined.
-const Repeat = drawn([
-  '#####..#####',
-  '#####..#...#',
-  '#####..#...#',
-  '#####..#...#',
-  '#####..#####',
-  '............',
-  '............',
-  '#####..#####',
-  '#...#..#...#',
-  '#...#..#...#',
-  '#...#..#...#',
-  '#####..#####',
-]);
-
-// Gradient: a square whose fill thins out in dithering, left to right.
-// Isometric box: its top a 2:1 diamond, its two sides hanging under it.
-const Box = drawn([
-  '....####....',
-  '..##....##..',
-  '##........##',
-  '#.##....##.#',
-  '#...####...#',
-  '#....##....#',
-  '#....##....#',
-  '#....##....#',
-  '##...##...##',
-  '..##.##.##..',
-  '....####....',
-  '............',
-]);
-// Isometric cylinder: an ellipse on top, its sides going down to a rounded bottom.
-const Cylinder = drawn([
-  '...######...',
-  '.##......##.',
-  '#..........#',
-  '#.##....##.#',
-  '#...####...#',
-  '#..........#',
-  '#..........#',
-  '#..........#',
-  '#..........#',
-  '.##......##.',
-  '...######...',
-  '............',
-]);
-// Isometric pyramid: its apex, its front ridge, and its diamond base's front edges.
-const Pyramid = drawn([
-  '.....##.....',
-  '....#..#....',
-  '...#.##.#...',
-  '...#.##.#...',
-  '..#..##..#..',
-  '..#..##..#..',
-  '.#...##...#.',
-  '.#...##...#.',
-  '#....##....#',
-  '.##..##..##.',
-  '...######...',
-  '............',
-]);
-// Board: a frame, its corners crossing like Figma's, a name tab on top.
-const Board = drawn([
-  '..#......#..',
-  '..#......#..',
-  '############',
-  '..#......#..',
-  '..#......#..',
-  '..#......#..',
-  '..#......#..',
-  '..#......#..',
-  '..#......#..',
-  '############',
-  '..#......#..',
-  '..#......#..',
-]);
-const Gradient = drawn([
-  '############',
-  '#####.#.#..#',
-  '######.#...#',
-  '#####.#.#..#',
-  '######.#...#',
-  '#####.#.#..#',
-  '######.#...#',
-  '#####.#.#..#',
-  '######.#...#',
-  '#####.#.#..#',
-  '######.#...#',
-  '############',
-]);
-
-// Detach: the instance's diamond broken open, like Figma's.
-const Detach = drawn([
-  '.....##.....',
-  '....#..#....',
-  '...#....#...',
-  '..#.........',
-  '.#..........',
-  '#...........',
-  '...........#',
-  '..........#.',
-  '.........#..',
-  '...#....#...',
-  '....#..#....',
-  '.....##.....',
-]);
-
-/** Interface icons, from Pixelarticons (MIT, https://pixelarticons.com) plus a few drawn here. */
+/** Interface icons, from Lucide (ISC, https://lucide.dev) plus a few drawn here in the same style. */
 export const ICONS = {
+  // Components, like Figma's: four diamonds for a master, one for an instance.
   component: Component,
-  instance: Instance,
-  detach: Detach,
-  repeat: Repeat,
-  gradient: Gradient,
-  move: CursorMinimal,
+  instance: Diamond,
+  detach: Unlink,
+  repeat: Grid2x2,
+  gradient: Blend,
+  move: MousePointer2,
   hand: Hand,
-  select: Select,
+  select: SquareDashed,
   pencil: Pencil,
   eraser: Eraser,
-  bucket: Bucket,
-  line: Line,
-  rect: SquareSharp,
-  // Pixelarticons' square has notched corners: it reads as the rounded one next to the sharp one.
-  roundRect: Square,
+  bucket: PaintBucket,
+  line: Slash,
+  rect: Rect,
+  roundRect: RoundRect,
   ellipse: Circle,
   triangle: Triangle,
   star: Star,
   heart: Heart,
   box: Box,
-  board: Board,
+  board: Frame,
   cylinder: Cylinder,
   pyramid: Pyramid,
   shade: Moon,
@@ -343,17 +126,17 @@ export const ICONS = {
   wand: Wand,
   jumble: Shuffle,
   liquify: Waves,
-  blur: Drop,
+  blur: Droplet,
   picker: Pipette,
-  undo: Undo,
-  redo: Redo,
+  undo: Undo2,
+  redo: Redo2,
   plus: Plus,
   minus: Minus,
-  trash: Trash,
+  trash: Trash2,
   eye: Eye,
   eyeOff: EyeOff,
   lock: Lock,
-  unlock: Unlock,
+  unlock: LockOpen,
   up: ChevronUp,
   down: ChevronDown,
   caret: ChevronDown,
@@ -361,19 +144,18 @@ export const ICONS = {
   folder: Folder,
   folderPlus: FolderPlus,
   duplicate: Copy,
-  merge: ArrowBarDown,
-  more: MoreHorizontal,
-  swap: ArrowsHorizontal,
+  merge: ArrowDownToLine,
+  more: Ellipsis,
+  swap: ArrowLeftRight,
   menu: Menu,
   layers: Layers,
-  panel: Sliders,
-  close: Close,
-  info: CircleInfo,
-  help: CircleQuestion,
+  panel: SlidersHorizontal,
+  close: X,
+  info: Info,
+  help: CircleHelp,
   search: Search,
-  rotate: Reload,
-  // The same arrow, mirrored: a turn the other way.
-  rotateLeft: (props) => <Reload {...props} style={{ ...props.style, transform: 'scaleX(-1)' }} />,
+  rotate: RotateCw,
+  rotateLeft: RotateCcw,
   // Named by what moves: the drawing against the left edge, centered across, and so on.
   alignLeft: AlignStartVertical,
   alignCenterX: AlignCenterVertical,
@@ -385,7 +167,7 @@ export const ICONS = {
   flipV: FlipVertical2,
   image: Image,
   crop: Crop,
-} satisfies Record<string, PixelGlyph>;
+} satisfies Record<string, Glyph>;
 
 export type IconName = keyof typeof ICONS | 'logo';
 

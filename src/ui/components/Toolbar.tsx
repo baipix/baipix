@@ -22,7 +22,7 @@ function SplitToolButton({ tools, label }: { tools: ToolMeta[]; label: string })
       <IconButton
         className="tool-btn"
         icon={meta.icon}
-        iconSize={24}
+        iconSize={18}
         label={t(meta.label)}
         shortcut={meta.shortcut || undefined}
         pressed={ids.includes(tool)}
@@ -76,7 +76,7 @@ export function Toolbar() {
                 key={meta.id}
                 className="tool-btn"
                 icon={meta.icon}
-                iconSize={24}
+                iconSize={18}
                 label={t(meta.label)}
                 shortcut={meta.shortcut}
                 pressed={tool === meta.id}
@@ -91,7 +91,7 @@ export function Toolbar() {
       <IconButton
         className="tool-btn"
         icon="undo"
-        iconSize={24}
+        iconSize={18}
         label={t('menu.undo')}
         shortcut="Ctrl+Z"
         disabled={!canUndo}
@@ -100,7 +100,7 @@ export function Toolbar() {
       <IconButton
         className="tool-btn"
         icon="redo"
-        iconSize={24}
+        iconSize={18}
         label={t('menu.redo')}
         shortcut="Ctrl+Shift+Z"
         disabled={!canRedo}
