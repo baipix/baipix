@@ -1,0 +1,184 @@
+---
+import SectionHead from './SectionHead.astro';
+
+const base = import.meta.env.BASE_URL;
+
+// Captured from the editor itself, on drawings from the gallery and a few made for the occasion.
+const shots = [
+  {
+    file: 'boards',
+    title: 'Several boards in one file',
+    text: 'The four seasons of a scene side by side, each board with its own layers, and a floating preview of the one you work on.',
+  },
+  {
+    file: 'iso',
+    title: 'Isometric volumes',
+    text: 'Boxes, cylinders standing or lying, stairs and ramps on an isometric grid, with outlines, bevels and a color per face.',
+  },
+  {
+    file: 'components',
+    title: 'Components',
+    text: 'One banana, five instances in their own groups and colors. Change the component, and every copy follows.',
+  },
+  {
+    file: 'gradient',
+    title: 'Gradients in palette colors',
+    text: 'A radial gradient on a Game Boy screen, dithered in its four greens and nothing else.',
+  },
+  {
+    file: 'tile',
+    title: 'Seamless tiles',
+    text: 'Tile preview repeats the drawing all around it, and strokes wrap around the edges.',
+  },
+  {
+    file: 'jumble',
+    title: 'Rework without new colors',
+    text: 'Blur, Jumble and Liquify reshape a painting and keep its palette as it is.',
+  },
+  {
+    file: 'picker',
+    title: 'An eyedropper with a loupe',
+    text: 'Pick a color from a magnified loupe with its hex code, while the preview shows the whole drawing.',
+  },
+  {
+    file: 'gap',
+    title: 'Pixel gap',
+    text: 'Space pixels apart for an LED look, right on the canvas and in the SVG export.',
+  },
+  {
+    file: 'copysvg',
+    title: 'Every command on Ctrl+K',
+    text: 'Search any command, like Copy as SVG, and paste the drawing straight into Figma or Illustrator.',
+  },
+  {
+    file: 'templates',
+    title: 'Start from a template',
+    text: 'Your recent files, and new ones from presets: an icon, a sprite, a Game Boy screen, an isometric scene…',
+  },
+];
+---
+
+<section id="screenshots" class="screenshots container">
+  <SectionHead label="Screenshots" />
+  <h2>See it at work.</h2>
+  <div class="shot-grid">
+    {shots.map((s) => (
+      <figure class="tile">
+        <a href={`${base}screenshots/${s.file}.webp`} data-zoom aria-label={`${s.title}, full size`}>
+          <img
+            src={`${base}screenshots/${s.file}.webp`}
+            width="1600"
+            height="891"
+            alt={`${s.title}: ${s.text}`}
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+        <figcaption>
+          <h3>{s.title}</h3>
+          <p class="muted">{s.text}</p>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+  <dialog class="zoom" aria-label="Screenshot">
+    <form method="dialog">
+      <button type="submit" aria-label="Close">
+        <img alt="" />
+      </button>
+    </form>
+  </dialog>
+</section>
+
+<script>
+  // A screenshot opens full size over the page; a click or Escape closes it.
+  const dialog = document.querySelector<HTMLDialogElement>('.screenshots .zoom')!;
+  const big = dialog.querySelector('img')!;
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('.screenshots [data-zoom]')) {
+    link.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      big.src = link.href;
+      big.alt = link.querySelector('img')!.alt;
+      dialog.showModal();
+    });
+  }
+</script>
+
+<style>
+  .screenshots {
+    padding-top: 120px;
+  }
+  h2 {
+    margin-top: 40px;
+  }
+  /* Shared borders, like the feature grid. */
+  .shot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 40px;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  @media (max-width: 720px) {
+    .shot-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 0;
+    padding: 20px 20px 28px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .tile a {
+    display: block;
+    background: var(--surface);
+    cursor: zoom-in;
+  }
+  .tile img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+  }
+  .tile a:focus-visible {
+    outline: 2px solid var(--accent, currentColor);
+    outline-offset: 2px;
+  }
+  figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  h3 {
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  .zoom {
+    max-width: min(1600px, 96vw);
+    max-height: 96vh;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .zoom::backdrop {
+    background: rgb(0 0 0 / 0.8);
+  }
+  .zoom button {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-out;
+  }
+  .zoom img {
+    display: block;
+    max-width: 100%;
+    max-height: 96vh;
+  }
+</style>
