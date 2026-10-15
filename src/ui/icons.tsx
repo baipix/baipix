@@ -20,6 +20,7 @@ import {
   Crop,
   Cylinder,
   Diamond,
+  Download,
   Droplet,
   Ellipsis,
   Eraser,
@@ -30,6 +31,7 @@ import {
   Folder,
   FolderPlus,
   Frame,
+  Grid3x3,
   Grid2x2,
   Hand,
   Heart,
@@ -169,6 +171,8 @@ export const ICONS = {
   flipV: FlipVertical2,
   image: Image,
   crop: Crop,
+  download: Download,
+  grid: Grid3x3,
 } satisfies Record<string, Glyph>;
 
 export type IconName = keyof typeof ICONS | 'logo';

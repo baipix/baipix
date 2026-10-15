@@ -498,14 +498,15 @@ function CanvasSection() {
   );
 }
 
-function DisplaySection() {
+/** The display options (grid, tile preview, symmetry, rulers, isometric grid), in the top bar's popover. */
+export function DisplayOptions() {
   const t = useT();
   const editor = useEditor();
   const view = useEditorState((s) => s.view);
   const isoGrid = useEditorState((s) => s.doc.isoGrid);
   const isoGridVertical = useEditorState((s) => s.doc.isoGridVertical);
   return (
-    <Section id="display" title={t('section.display')}>
+    <>
       <Checkbox checked={view.grid} onChange={(v) => editor.setView('grid', v)} label={t('display.grid')} />
       <Checkbox checked={view.tile} onChange={(v) => editor.setView('tile', v)} label={t('display.tile')} />
       {view.tile && (
@@ -564,7 +565,7 @@ function DisplaySection() {
           label={t('display.isoVertical')}
         />
       )}
-    </Section>
+    </>
   );
 }
 
@@ -603,7 +604,8 @@ function TilesetOptions() {
   );
 }
 
-function ExportSection() {
+/** The export's options and buttons, in the Export dialog (the top bar's Export button). */
+export function ExportOptions() {
   const t = useT();
   const actions = useActions();
   const doc = useEditorState((s) => s.doc);
@@ -616,8 +618,8 @@ function ExportSection() {
   const everyBoard = allBoards && boardCount > 1;
   const editor = useEditor();
   return (
-    // At the bottom of the panel, like Figma: the file's preview, its pixel size, format and buttons.
-    <Section id="export" title={t('panel.export')} className="export-section">
+    // Like Figma's: the file's preview, its pixel size, format and buttons.
+    <div className="export-options">
       <ExportPreview />
       {/* Tiles are always at 1×: a game engine scales them itself. */}
       {format !== 'tileset' && <PixelSizes />}
@@ -711,14 +713,14 @@ function ExportSection() {
           {t('export.copyPng')}
         </button>
       </div>
-    </Section>
+    </div>
   );
 }
 
 export function RightPanel() {
   const t = useT();
-  // A file with no board: only what isn't a board's, its colors and the display. Layers outside
-  // the boards have their layer's settings, not a board's size or export.
+  // Only what depends on the selection, like Figma: the display and the export are in the top bar.
+  // A file with no board: only its colors. Layers outside the boards: their layer's settings.
   const noBoard = useEditorState((s) => isEmptyBoard(s.doc));
   const board = useEditorState((s) => isBoard(s.doc));
   return (
@@ -727,8 +729,6 @@ export function RightPanel() {
       <PaletteSection />
       {!noBoard && <LayerSection />}
       {!noBoard && <EffectsSection />}
-      <DisplaySection />
-      {board && <ExportSection />}
     </aside>
   );
 }

@@ -51,8 +51,7 @@ const STEPS: Step[] = [
   {
     title: 'tour.exportTitle',
     text: 'tour.export',
-    prepare: showDesign('export'),
-    target: all('.panel-right .export-section'),
+    target: all('.menubar-export'),
   },
 ];
 

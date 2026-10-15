@@ -19,6 +19,7 @@ import { SizeList, type SizeChoice } from '../components/SizeList';
 import { Icon } from '../components/Icon';
 import { createFromTemplate, type Template } from '../templates';
 import { SHORTCUT_GROUPS } from './shortcuts';
+import { ExportOptions } from '../panels/RightPanel';
 
 /** The sizes of the files changed last, different ones only, newest first. */
 function recentSizes(files: { width: number; height: number; updatedAt: number }[], count = 3) {
@@ -321,6 +322,16 @@ function ShortcutsDialog() {
 }
 
 /** Renders the active dialog from the UI store. */
+/** The export, from the top bar's Export button: the file's preview, its size, format and buttons. */
+function ExportDialog() {
+  const t = useT();
+  return (
+    <Dialog title={t('panel.export')} onClose={closeDialog} className="export-dialog">
+      <ExportOptions />
+    </Dialog>
+  );
+}
+
 export function Dialogs() {
   const dialog = uiStore.use((s) => s.dialog);
   if (!dialog) return null;
@@ -333,6 +344,8 @@ export function Dialogs() {
       return <PaletteManagerDialog />;
     case 'shortcuts':
       return <ShortcutsDialog />;
+    case 'export':
+      return <ExportDialog />;
     case 'canvasSize':
       return <CanvasSizeDialog />;
     case 'upscaled':
