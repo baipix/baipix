@@ -2296,6 +2296,41 @@ body.is-dragging-swatch * {
   font-size: 14px;
   font-weight: 700;
 }
+/* The logo above the title: its pixel hops on a calm beat, like a loader waiting for you to start a
+   file. A squash, a jump, a landing with a small rebound (under a second), then a rest of two. */
+.home-mark {
+  display: flex;
+  margin-bottom: 28px;
+}
+.home-mark .logo-pixel {
+  animation: logo-hop-idle 3.2s ease-in-out infinite;
+}
+@keyframes logo-hop-idle {
+  0% {
+    transform: none;
+  }
+  3.5% {
+    transform: scale(1.15, 0.8);
+  }
+  11% {
+    transform: translateY(-2.5px) scale(0.92, 1.1);
+  }
+  17.5% {
+    transform: scale(1.12, 0.85);
+  }
+  21% {
+    transform: translateY(-0.5px);
+  }
+  24%,
+  100% {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-mark .logo-pixel {
+    animation: none;
+  }
+}
 .home-hero h1 {
   margin: 0 0 8px;
   font-size: 32px;
