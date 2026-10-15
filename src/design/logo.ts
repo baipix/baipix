@@ -8,7 +8,7 @@ export const LOGO_COLORS = [
 
 /** The logo as an SVG file, on its 8×8 grid, scaled to `size` px. */
 export const logoSvg = (color: string, size = 256): string =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${LOGO.width} ${LOGO.height}" shape-rendering="crispEdges"><path fill="${color}" d="${LOGO.d}"/></svg>\n`;
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${LOGO.width} ${LOGO.height}" shape-rendering="crispEdges"><path fill="${color}" d="${LOGO.d}${LOGO.pixel}"/></svg>\n`;
 
 /** The logo as a PNG with a transparent background, `size` px (a multiple of 8 keeps it sharp). */
 export function logoPng(color: string, size: number): Promise<Blob> {
@@ -17,7 +17,7 @@ export function logoPng(color: string, size: number): Promise<Blob> {
   const ctx = canvas.getContext('2d')!;
   ctx.scale(size / LOGO.width, size / LOGO.height);
   ctx.fillStyle = color;
-  ctx.fill(new Path2D(LOGO.d));
+  ctx.fill(new Path2D(LOGO.d + LOGO.pixel));
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('PNG failed'))), 'image/png'),
   );

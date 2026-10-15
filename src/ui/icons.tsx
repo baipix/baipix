@@ -189,5 +189,7 @@ export type IconName = keyof typeof ICONS | 'logo';
 export const LOGO = {
   width: 8,
   height: 8,
-  d: 'M0 2h3v6H0zM3 5h3v3H3zM5 0h3v3H5z',
+  /** The block, then the pixel escaping it (its own path, so it can hop). */
+  d: 'M0 2h3v6H0zM3 5h3v3H3z',
+  pixel: 'M5 0h3v3H5z',
 };

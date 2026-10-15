@@ -1,5 +1,5 @@
 ---
-/** The Baipix logo: a pixel escaping its block (8×8 grid). Drawn in the text color. */
+/** The Baipix logo: a pixel escaping its block (8×8 grid), which hops on hover. Drawn in the text color. */
 interface Props {
   size?: number;
 }
@@ -7,5 +7,6 @@ const { size = 20 } = Astro.props;
 ---
 
 <svg viewBox="0 0 8 8" width={size} height={size} shape-rendering="crispEdges" aria-hidden="true">
-  <path fill="currentColor" d="M0 2h3v6H0zM3 5h3v3H3zM5 0h3v3H5z"></path>
+  <path fill="currentColor" d="M0 2h3v6H0zM3 5h3v3H3z"></path>
+  <path class="logo-pixel" fill="currentColor" d="M5 0h3v3H5z"></path>
 </svg>

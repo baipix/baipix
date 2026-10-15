@@ -19,6 +19,7 @@ export function Icon({ name, size = 16 }: IconProps) {
         aria-hidden="true"
       >
         <path fill="currentColor" d={LOGO.d} />
+        <path className="logo-pixel" fill="currentColor" d={LOGO.pixel} />
       </svg>
     );
   }
