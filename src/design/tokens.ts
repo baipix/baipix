@@ -39,6 +39,6 @@ function parse(css: string, fallbackGroup: string): Token[] {
   return tokens;
 }
 
-export const TOKENS: Token[] = [...parse(tokensCss, 'Tokens'), ...parse(appCss, 'Pixel look')].filter(
+export const TOKENS: Token[] = [...parse(tokensCss, 'Tokens'), ...parse(appCss, 'Accent')].filter(
   (t, i, all) => all.findIndex((x) => x.name === t.name) === i,
 );

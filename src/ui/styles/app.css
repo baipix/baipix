@@ -1283,7 +1283,7 @@ body.is-dragging-swatch * {
 .remap-preview {
   display: flex;
   height: 12px;
-  clip-path: var(--notch);
+  border-radius: var(--radius);
   box-shadow: inset 0 0 0 1px var(--swatch-edge);
 }
 .remap-preview i {
@@ -1300,7 +1300,7 @@ body.is-dragging-swatch * {
 .outline-color i {
   width: 16px;
   height: 16px;
-  clip-path: var(--notch);
+  border-radius: var(--radius);
   box-shadow: inset 0 0 0 1px var(--swatch-edge);
 }
 .outline-color .muted {
@@ -1504,7 +1504,7 @@ body.is-dragging-swatch * {
   flex-basis: 100%;
   display: flex;
   height: 10px;
-  clip-path: var(--notch);
+  border-radius: var(--radius);
 }
 .menu-swatches i {
   flex: 1;
@@ -1650,7 +1650,7 @@ body.is-dragging-swatch * {
   height: 30px;
   padding: 0 10px;
   cursor: default;
-  clip-path: var(--notch);
+  border-radius: var(--radius);
 }
 .command-category,
 .command-shortcut {
@@ -1960,7 +1960,7 @@ body.is-dragging-swatch * {
     padding: 0;
     border: 0;
     box-shadow: inset 0 0 0 1px var(--swatch-edge);
-    clip-path: var(--notch);
+    border-radius: var(--radius);
     -webkit-touch-callout: none;
     user-select: none;
   }
@@ -2009,61 +2009,9 @@ body.is-dragging-swatch * {
   }
 }
 
-/* ---------- Pixel look ----------
-   Square corners with the corner pixel removed on controls, and floating surfaces drawn as a
-   notched block with a hard, unblurred shadow. */
-:root {
-  --radius: 0;
-  --radius-lg: 0;
-  --notch: polygon(
-    0 1px,
-    1px 1px,
-    1px 0,
-    calc(100% - 1px) 0,
-    calc(100% - 1px) 1px,
-    100% 1px,
-    100% calc(100% - 1px),
-    calc(100% - 1px) calc(100% - 1px),
-    calc(100% - 1px) 100%,
-    1px 100%,
-    1px calc(100% - 1px),
-    0 calc(100% - 1px)
-  );
-  --hard-shadow: rgba(0, 0, 0, 0.14);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --hard-shadow: rgba(0, 0, 0, 0.5);
-  }
-}
-:root[data-theme='dark'] {
-  --hard-shadow: rgba(0, 0, 0, 0.5);
-}
-
-.btn,
-.icon-btn,
-.tool-btn,
-.tool-caret,
-.field,
-.select-plain,
-.zoom-button,
-.menubar-title,
-.menubar-logo,
-.item,
-.chip,
-.menu-item,
-.swatch,
-.color-chip,
-.color-chip i,
-.thumb,
-.preview,
-.textarea,
-.adjust-value input {
-  border-radius: 0;
-  clip-path: var(--notch);
-}
-
-/* A 2px ring in the surface color, minus its corners, then a hard shadow. */
+/* ---------- Floating panels and accent ----------
+   The interface itself is plain and precise: soft rounded corners and soft shadows, like Figma.
+   The pixel style is for the logo, the site and what people draw. */
 .toolbar,
 .tool-options,
 .popover,
@@ -2076,26 +2024,7 @@ body.is-dragging-swatch * {
 .mobile-bar,
 .mobile-colors,
 .floating-preview {
-  --surface: var(--panel);
-  border-radius: 0;
-  box-shadow:
-    0 -2px 0 0 var(--surface),
-    0 2px 0 0 var(--surface),
-    -2px 0 0 0 var(--surface),
-    2px 0 0 0 var(--surface),
-    4px 6px 0 0 var(--hard-shadow);
-}
-.menu {
-  --surface: var(--menu-bg);
-}
-.toast {
-  --surface: var(--toast-bg);
-}
-.shortcuts-help-button {
-  clip-path: none;
-}
-.shortcuts-help-button:hover {
-  --surface: var(--glow);
+  border-radius: var(--radius-lg);
 }
 
 /* Floating side panels: the workspace fills the window, the panels sit over it with a margin. */
@@ -2112,12 +2041,8 @@ body.is-dragging-swatch * {
     z-index: 10;
     grid-row: 2;
     border: 0;
-    box-shadow:
-      0 -2px 0 0 var(--panel),
-      0 2px 0 0 var(--panel),
-      -2px 0 0 0 var(--panel),
-      2px 0 0 0 var(--panel),
-      4px 6px 0 0 var(--hard-shadow);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
   }
   /* The left panel is as tall as its layers, up to the window, then the list scrolls. */
   .panel-left {
@@ -2130,16 +2055,16 @@ body.is-dragging-swatch * {
     grid-column: 3;
     margin: 12px 12px 14px 0;
   }
-  /* The handle lines up with the panel's inner edge (its 2px ring included), between the notched
-     corners, so the highlight covers exactly the edge that stretches. */
+  /* The handle lines up with the panel's inner edge, between its rounded corners, so the highlight
+     covers exactly the edge that stretches. */
   .resizer {
     z-index: 11;
-    top: 12px;
-    bottom: 14px;
+    top: 24px;
+    bottom: 26px;
     width: 8px;
   }
   .resizer-left {
-    left: calc(var(--left-width) - 2px);
+    left: calc(var(--left-width) - 4px);
   }
   /* Rulers shown: the panels move aside, by a ruler's thickness (18px), to leave them in view. */
   .app.has-rulers .panel-left {
@@ -2150,10 +2075,10 @@ body.is-dragging-swatch * {
     margin-top: 30px;
   }
   .app.has-rulers .resizer {
-    top: 30px;
+    top: 42px;
   }
   .resizer-right {
-    right: calc(var(--right-width) - 2px);
+    right: calc(var(--right-width) - 4px);
   }
   .resizer-left::after {
     left: 2px;
@@ -2167,43 +2092,6 @@ body.is-dragging-swatch * {
   }
 }
 
-/* Key buttons, like the website: a solid side under the button, pushed halfway down on hover and
-   all the way on press, with no easing. --depth is the side's height. */
-.btn {
-  --side: color-mix(in srgb, var(--line) 70%, var(--text));
-  --depth: 2px;
-  margin-bottom: 2px;
-  box-shadow: 0 var(--depth) 0 var(--side);
-  clip-path: polygon(
-    1px 0,
-    calc(100% - 1px) 0,
-    calc(100% - 1px) 1px,
-    100% 1px,
-    100% calc(100% + var(--depth) - 1px),
-    calc(100% - 1px) calc(100% + var(--depth) - 1px),
-    calc(100% - 1px) calc(100% + var(--depth)),
-    1px calc(100% + var(--depth)),
-    1px calc(100% + var(--depth) - 1px),
-    0 calc(100% + var(--depth) - 1px),
-    0 1px,
-    1px 1px
-  );
-}
-.btn-primary {
-  --side: color-mix(in srgb, var(--accent) 55%, var(--panel));
-}
-.btn:hover:not(:disabled) {
-  --depth: 1px;
-  transform: translateY(1px);
-}
-.btn:active:not(:disabled) {
-  --depth: 0px;
-  transform: translateY(2px);
-}
-.btn:focus-visible {
-  outline-offset: -4px;
-}
-
 /* One accent, for moments of interaction only (hover, resize, drop, focus, the main button): the
    interface stays neutral at rest. A sky blue with dark ink on top; thin lines use a deeper one in
    light mode, so they hold up on white. */
@@ -2213,8 +2101,6 @@ body.is-dragging-swatch * {
   /* Muted text on blue (a hovered row): dark enough for 4.5:1. */
   --glow-muted: rgba(0, 0, 0, 0.62);
   --glow-line: light-dark(#1b93dd, #66c4ff);
-  /* The side of a blue key. */
-  --glow-side: light-dark(#3a93d6, #3b86bd);
 }
 :focus-visible,
 .panel-tab:focus-visible {
@@ -2247,14 +2133,13 @@ body.is-dragging-swatch * {
 .item:hover:not(.is-active):not(.is-selected) .item-actions {
   background: linear-gradient(90deg, transparent, var(--glow) 14px);
 }
-/* Text buttons stay neutral on hover (they only sink), so the blue main button stands alone. */
+/* Text buttons stay neutral on hover, so the blue main button stands alone. */
 .btn:hover:not(:disabled) {
   background: var(--hover);
 }
 /* The main button is blue at rest. */
 .btn-primary,
 .btn-primary:hover:not(:disabled) {
-  --side: var(--glow-side);
   border-color: var(--glow);
   background: var(--glow);
   color: var(--glow-ink);
@@ -2269,45 +2154,17 @@ body.is-dragging-swatch * {
   color: var(--glow-ink);
 }
 
-/* The active tool is a key held down: sunk by a pixel, with the key's side showing at the top. */
-.tool-btn[aria-pressed='true'] {
-  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--accent) 55%, var(--panel));
-  transform: translateY(1px);
-}
-
-/* Pixel checkboxes: a notched square, solid blue with a dark pixel tick when checked. */
+/* Checkboxes: the native ones, in the accent color. */
 .checkbox input,
 .palette-row input[type='checkbox'] {
-  appearance: none;
   flex: none;
-  width: 12px;
-  height: 12px;
   margin: 0;
-  border: 1px solid var(--muted);
-  background: transparent;
-  clip-path: var(--notch);
+  accent-color: var(--glow-line);
   cursor: pointer;
-}
-.checkbox input:hover,
-.palette-row input[type='checkbox']:hover:not(:disabled) {
-  border-color: var(--text);
-}
-.checkbox input:checked,
-.palette-row input[type='checkbox']:checked {
-  border-color: var(--glow);
-  background: var(--glow)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%231a1a1a' d='M1 4h2v2H1zM2 5h2v2H2zM3 6h2v2H3zM5 5h2v2H5zM6 4h2v2H6zM7 3h2v2H7zM8 2h1v2H8z'/%3E%3C/svg%3E")
-    center / 10px 10px no-repeat;
 }
 .palette-row input[type='checkbox']:disabled {
   cursor: default;
   opacity: 0.5;
-}
-.checkbox input:focus-visible,
-.palette-row input:focus-visible {
-  outline: 2px solid var(--glow-line);
-  outline-offset: 1px;
-  clip-path: none;
 }
 
 /* ---------- Home screen ---------- */
@@ -2395,72 +2252,30 @@ body.is-dragging-swatch * {
   margin-top: 28px;
 }
 
-/* Big action buttons (home screen): chunkier than the interface's buttons, a 2px stepped corner and a
-   deep solid side that the button sinks into on hover and press. */
-:root {
-  --notch-big: polygon(
-    0 4px,
-    2px 4px,
-    2px 2px,
-    4px 2px,
-    4px 0,
-    calc(100% - 4px) 0,
-    calc(100% - 4px) 2px,
-    calc(100% - 2px) 2px,
-    calc(100% - 2px) 4px,
-    100% 4px,
-    100% calc(100% - 4px),
-    calc(100% - 2px) calc(100% - 4px),
-    calc(100% - 2px) calc(100% - 2px),
-    calc(100% - 4px) calc(100% - 2px),
-    calc(100% - 4px) 100%,
-    4px 100%,
-    4px calc(100% - 2px),
-    2px calc(100% - 2px),
-    2px calc(100% - 4px),
-    0 calc(100% - 4px)
-  );
-}
+/* Big action buttons (home screen): taller than the interface's buttons, the main one in the accent. */
 .action-btn {
-  --face: var(--panel);
-  --side: color-mix(in srgb, var(--line) 45%, var(--text));
-  --depth: 6px;
-  position: relative;
-  isolation: isolate;
   height: 44px;
   padding: 0 22px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
   border: 0;
-  background: none;
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow);
   color: var(--text);
-  font: 700 14px var(--font);
+  font: 600 14px var(--font);
   cursor: pointer;
-  filter: drop-shadow(0 var(--depth) 0 var(--side));
-}
-/* The face carries the notch; the drop shadow under it gives the notched side. */
-.action-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--face);
-  clip-path: var(--notch-big);
-}
-.action-btn.is-primary {
-  --face: var(--glow);
-  --side: var(--glow-side);
-  color: var(--glow-ink);
 }
 .action-btn:hover {
-  --depth: 3px;
-  transform: translateY(3px);
+  background: var(--hover);
 }
-.action-btn:active {
-  --depth: 0px;
-  transform: translateY(6px);
+.action-btn.is-primary {
+  background: var(--glow);
+  color: var(--glow-ink);
+}
+.action-btn.is-primary:hover {
+  filter: brightness(1.05);
 }
 .action-btn:focus-visible {
   outline: 2px solid var(--glow-line);
@@ -2477,40 +2292,26 @@ body.is-dragging-swatch * {
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
 }
-/* Cards float like the panels: a block with notched corners (the 2px ring) and a hard shadow. Like the
-   big buttons, they sink into their shadow on hover and all the way on press. */
+/* Cards float like the panels: rounded, with a soft shadow that grows on hover. */
 .home-card {
-  --lift-x: 4px;
-  --lift-y: 6px;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 4px;
-  margin: 2px;
   padding: 6px 6px 8px;
   border: 0;
+  border-radius: var(--radius-lg);
   background: var(--panel);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  box-shadow:
-    0 -2px 0 0 var(--panel),
-    0 2px 0 0 var(--panel),
-    -2px 0 0 0 var(--panel),
-    2px 0 0 0 var(--panel),
-    var(--lift-x) var(--lift-y) 0 0 var(--hard-shadow);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.12s ease;
 }
 .home-card:hover {
-  --lift-x: 2px;
-  --lift-y: 3px;
-  transform: translate(2px, 3px);
-}
-.home-card:active:not(:has(.home-card-action:active)) {
-  --lift-x: 0px;
-  --lift-y: 0px;
-  transform: translate(4px, 6px);
+  box-shadow: var(--shadow-pop);
 }
 .home-card:focus-visible {
   outline: 2px solid var(--glow-line);
@@ -2520,6 +2321,7 @@ body.is-dragging-swatch * {
   width: 100%;
   aspect-ratio: 16 / 9;
   margin-bottom: 6px;
+  border-radius: var(--radius);
   object-fit: cover;
   image-rendering: pixelated;
   background: conic-gradient(var(--check-b) 25%, var(--check-a) 0 50%, var(--check-b) 0 75%, var(--check-a) 0)
@@ -2715,7 +2517,7 @@ body.is-dragging-swatch * {
   max-width: 100%;
   margin: 4px 0 8px;
   image-rendering: pixelated;
-  clip-path: var(--notch);
+  border-radius: var(--radius);
 }
 .three-columns {
   display: grid;
@@ -2738,7 +2540,7 @@ body.is-dragging-swatch * {
   max-width: 100%;
   touch-action: none;
   cursor: move;
-  clip-path: var(--notch);
+  border-radius: var(--radius);
 }
 .resize-controls {
   display: flex;
