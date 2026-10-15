@@ -2289,10 +2289,6 @@ body.is-dragging-swatch * {
   font-size: 14px;
   font-weight: 700;
 }
-.home-mark {
-  display: flex;
-  margin-bottom: 20px;
-}
 .home-hero h1 {
   margin: 0 0 8px;
   font-size: 32px;
