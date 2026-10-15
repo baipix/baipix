@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { Editor } from '../../engine/editor';
 import { getLocale, t } from '../../i18n';
+import { packHistories } from '../../storage/history';
 import type { StorageAdapter } from '../../storage/workspace';
 import { toast, uiStore } from '../uiStore';
 
@@ -43,16 +44,38 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
           warned = true;
         });
     };
+    // The undo history, apart and less often: it's bigger, and only matters after a reload.
+    let historyTimer = 0;
+    const saveHistory = () => {
+      clearTimeout(historyTimer);
+      if (!storage.saveHistory) return;
+      const kept = new Set(
+        editor
+          .getDocuments()
+          .filter((d) => !editor.isFresh(d.id))
+          .map((d) => d.id),
+      );
+      storage.saveHistory(packHistories(editor.histories().filter((h) => kept.has(h.id)))).catch(() => {
+        /* the drawing is saved anyway; only the undo steps would be lost */
+      });
+    };
     const schedule = () => {
       clearTimeout(timer);
       timer = window.setTimeout(save, 600);
+      clearTimeout(historyTimer);
+      historyTimer = window.setTimeout(saveHistory, 2000);
+    };
+    const leave = () => {
+      save();
+      saveHistory();
     };
     const offs = [editor.onPersist(schedule), editor.subscribe(schedule), uiStore.subscribe(schedule)];
-    window.addEventListener('pagehide', save);
+    window.addEventListener('pagehide', leave);
     return () => {
       clearTimeout(timer);
+      clearTimeout(historyTimer);
       offs.forEach((off) => off());
-      window.removeEventListener('pagehide', save);
+      window.removeEventListener('pagehide', leave);
     };
   }, [editor, storage, ready]);
 }

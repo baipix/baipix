@@ -1,6 +1,7 @@
 import type { PixelDoc, ReferenceImage } from '../engine/document';
 import type { Preferences } from '../engine/editor';
 import type { Outside } from '../engine/outside';
+import type { StoredHistory } from './history';
 import {
   decodePixels,
   deserializeDocument,
@@ -49,6 +50,9 @@ export interface StoredWorkspace {
 export interface StorageAdapter {
   load(): Promise<Workspace | null>;
   save(workspace: Workspace): Promise<void>;
+  /** The boards' undo histories, kept apart from the workspace (they're bigger and change less). */
+  loadHistory?(): Promise<StoredHistory | null>;
+  saveHistory?(history: StoredHistory): Promise<void>;
 }
 
 export const toStored = (w: Workspace): StoredWorkspace => ({

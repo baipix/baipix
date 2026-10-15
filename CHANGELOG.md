@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The undo history survives a reload: each board's last 50 steps (undo and redo) are kept in the browser next to the drawing, every unchanged layer stored once rather than once per step. (#397)
 - Floor tiles, edge by edge: with the isometric grid on, the rectangle's options choose which of a floor tile's edges get the outline (NW, NE, SW, SE), so tiles side by side share one line instead of a doubled one. (#396)
 - Lying cylinders, for barrels, logs and wheels: the cylinder's options can lay it along the left or the right axis. Its round end is dragged on a wall like the shapes on an isometric plane, and its body runs back by its length, lit on top and shaded underneath. (#395)
 - Isometric stairs and ramps, in the shapes menu next to the box: dragged like the box, Height tall, rising toward the corner you pick (up-left, up-right, down-right, down-left); with Steps above 0, a staircase of equal steps. Outline, face colors and the options' redraw work like the other volumes. (#394)

@@ -289,6 +289,13 @@ type Deleted =
 
 type Listener = () => void;
 
+/** A board's undo and redo steps, kept across a reload (see `Editor.histories`). */
+export interface BoardHistory {
+  id: string;
+  undo: Snapshot[];
+  redo: Snapshot[];
+}
+
 /** A change to a file's boards themselves, undone and redone outside their histories. */
 interface FileStep {
   undo(): boolean;
@@ -898,6 +905,37 @@ export class Editor {
   /** The active file's boards, in order: what a .baipix file of it holds. */
   fileBoards(): PixelDoc[] {
     return this.boardsOf(fileIdOf(this.doc)).map((s) => s.doc);
+  }
+
+  /** Each board's undo and redo steps, oldest first, to keep them across a reload. */
+  histories(): BoardHistory[] {
+    return this.sessions.map((s) => ({ id: s.doc.id, ...s.history.steps() }));
+  }
+
+  /**
+   * Gives the boards back the steps saved with `histories`. A step that doesn't hold together (a
+   * layer whose pixels don't fit its document) is left out, with the steps before it.
+   */
+  restoreHistories(saved: BoardHistory[]): void {
+    const fits = (s: Snapshot) =>
+      !!s?.doc &&
+      s.doc.width > 0 &&
+      s.doc.height > 0 &&
+      Array.isArray(s.doc.layers) &&
+      s.doc.layers.length > 0 &&
+      s.doc.layers.every(
+        (l) => l.pixels instanceof Uint32Array && l.pixels.length === s.doc.width * s.doc.height,
+      );
+    for (const h of saved) {
+      const session = this.sessions.find((s) => s.doc.id === h.id);
+      if (!session) continue;
+      // Undo walks back from the end: keep the steps after the last one that doesn't fit.
+      const after = (xs: Snapshot[]) => xs.slice(xs.reduce((k, x, i) => (fits(x) ? k : i), -1) + 1);
+      const undo = after(h.undo);
+      const redo = after(h.redo);
+      session.history.load(undo, redo);
+    }
+    this.commit(false);
   }
 
   /** Replaces every file, e.g. when restoring a saved workspace. */

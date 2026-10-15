@@ -82,4 +82,15 @@ export class History {
     this.undoStack.push(current);
     return next;
   }
+
+  /** Both stacks, oldest step first, to keep them across a reload. */
+  steps(): { undo: Snapshot[]; redo: Snapshot[] } {
+    return { undo: [...this.undoStack], redo: [...this.redoStack] };
+  }
+
+  /** Takes back stacks saved with `steps`. */
+  load(undo: Snapshot[], redo: Snapshot[]): void {
+    this.undoStack = [...undo];
+    this.redoStack = [...redo];
+  }
 }
