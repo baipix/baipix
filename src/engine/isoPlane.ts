@@ -21,6 +21,15 @@ export const ISO_PLANES: IsoPlane[] = ['flat', 'left', 'right', 'ground'];
 /** The shapes that can go on a plane: all but the line, which has its own iso angles. */
 export type PlaneKind = 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart';
 
+/** A floor tile's four edges, by the corner of the screen they face. */
+export interface TileEdges {
+  nw: boolean;
+  ne: boolean;
+  sw: boolean;
+  se: boolean;
+}
+export const ALL_EDGES: TileEdges = { nw: true, ne: true, sw: true, se: true };
+
 /**
  * Smooths the top and bottom of a shape that is one run per column, slid onto a wall. Where its
  * own curve slopes against the wall's 2:1, the two two-pixel steps fall a column apart and the
@@ -82,9 +91,16 @@ export function planeShape(
   b: Point,
   filled: boolean,
   plot: (x: number, y: number, outline: boolean) => void,
-  { regular = false, radius = 2 }: { regular?: boolean; radius?: number } = {},
+  {
+    regular = false,
+    radius = 2,
+    edges = ALL_EDGES,
+  }: { regular?: boolean; radius?: number; edges?: TileEdges } = {},
 ): void {
   const cells = new Set<string>();
+  // A floor tile's outline is drawn only along the edges asked for, so two tiles side by side can
+  // share one line: each outline pixel belongs to the edges it touches the outside along.
+  let onEdge: ((x: number, y: number, out: (dx: number, dy: number) => boolean) => boolean) | null = null;
   const add = (x: number, y: number) => cells.add(`${x},${y}`);
   if (plane === 'ground' && kind === 'ellipse') {
     const half = Math.max(Math.abs(b.y - a.y) + 1, Math.round((Math.abs(b.x - a.x) + 1) / 2));
@@ -93,8 +109,18 @@ export function planeShape(
     cleanEllipse(a.x, a.y, bx, by, true, add);
   } else if (plane === 'ground') {
     const { top, width, depth } = boxFromDrag(a, b, regular);
-    if (kind === 'rect') isoBox(top, { width, depth, height: 0 }, false, add);
-    else {
+    if (kind === 'rect') {
+      isoBox(top, { width, depth, height: 0 }, false, add);
+      // The top and bottom corners' columns, the left and right corners' rows.
+      const bottomX = top.x + 2 * width - 2 * depth;
+      const leftY = top.y + depth;
+      const rightY = top.y + width;
+      onEdge = (x, y, out) =>
+        (out(0, -1) && (x < top.x ? edges.nw : edges.ne)) ||
+        (out(0, 1) && (x < bottomX ? edges.sw : edges.se)) ||
+        (out(-1, 0) && (y <= leftY ? edges.nw : edges.sw)) ||
+        (out(1, 0) && (y <= rightY ? edges.ne : edges.se));
+    } else {
       // The flat shape at two of its pixels per 2:1 step, the diamond's size along each edge.
       const [n, m] = [2 * width, 2 * depth];
       const flat = new Set<string>();
@@ -121,9 +147,9 @@ export function planeShape(
   // The outline is the shape's edge, so a slid or laid-down shape stays in one piece.
   for (const c of cells) {
     const [x, y] = c.split(',').map(Number);
-    const edge = [`${x - 1},${y}`, `${x + 1},${y}`, `${x},${y - 1}`, `${x},${y + 1}`].some(
-      (k) => !cells.has(k),
-    );
+    const out = (dx: number, dy: number) => !cells.has(`${x + dx},${y + dy}`);
+    const border = out(-1, 0) || out(1, 0) || out(0, -1) || out(0, 1);
+    const edge = border && (!onEdge || onEdge(x, y, out));
     if (edge || filled) plot(x, y, edge);
   }
 }

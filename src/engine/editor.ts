@@ -2794,6 +2794,15 @@ export class Editor {
         gradientDither: GRADIENT_DITHERS.includes(o.gradientDither) ? o.gradientDither : 'bayer',
         plane: ISO_PLANES.includes(o.plane) ? o.plane : 'flat',
         boxFaces: readFaces(o.boxFaces),
+        tileEdges:
+          o.tileEdges && typeof o.tileEdges === 'object'
+            ? {
+                nw: o.tileEdges.nw !== false,
+                ne: o.tileEdges.ne !== false,
+                sw: o.tileEdges.sw !== false,
+                se: o.tileEdges.se !== false,
+              }
+            : { nw: true, ne: true, sw: true, se: true },
         cylinderAxis: CYLINDER_AXES.includes(o.cylinderAxis) ? o.cylinderAxis : 'up',
         rampDirection: RAMP_DIRECTIONS.includes(o.rampDirection) ? o.rampDirection : 'se',
         rampSteps: Number.isFinite(o.rampSteps) ? clamp(Math.round(o.rampSteps), 0, 64) : 0,

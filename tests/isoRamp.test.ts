@@ -99,3 +99,32 @@ describe('lying cylinders', () => {
     expect(Math.min(...[...up.keys()].filter((i) => up[i]).map((i) => i % 48))).toBeGreaterThanOrEqual(26);
   });
 });
+
+describe('floor tiles, edge by edge', () => {
+  it('draws the outline only along the edges asked for', () => {
+    const e = new Editor();
+    e.newFile(32, 32);
+    e.setIsoGrid(16);
+    e.setColor('primary', pack(255, 0, 0));
+    e.setTool('rect');
+    e.setOption('plane', 'ground');
+    e.setOption('filled', false);
+    const tile = () => {
+      e.beginStroke({ x: 16, y: 4 }, false, { shift: false });
+      e.moveStroke({ x: 16, y: 12 }, { shift: false });
+      e.endStroke();
+      return [...e.getState().doc.layers[0].pixels.keys()].filter(
+        (i) => e.getState().doc.layers[0].pixels[i],
+      );
+    };
+    const all = tile();
+    e.undo();
+    e.setOption('tileEdges', { nw: true, ne: true, sw: false, se: false });
+    const upper = tile();
+    // Only the two upper edges: nothing below the middle row, and fewer pixels than all four.
+    const ys = (cells: number[]) => cells.map((i) => Math.floor(i / 32));
+    expect(upper.length).toBeLessThan(all.length);
+    expect(Math.max(...ys(upper))).toBeLessThan(Math.max(...ys(all)));
+    expect(Math.min(...ys(upper))).toBe(Math.min(...ys(all)));
+  });
+});
