@@ -118,6 +118,9 @@ describe('shapes', () => {
         expect(filled.size).toBeGreaterThan(outline.size);
       }
     }
+    // An even width (12 pixels) keeps the star's tip, two pixels wide.
+    const star = collect((p) => polygonOutline(starPoints(0, 0, 11, 11), mirroredHalf(0, 11, p)));
+    expect(star.has('5,0') && star.has('6,0')).toBe(true);
     const tri = trianglePoints(0, 0, 8, 8);
     expect(tri[0]).toEqual({ x: 4, y: 0 });
     expect(tri[2]).toEqual({ x: 8, y: 8 });

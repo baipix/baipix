@@ -313,7 +313,14 @@ export function starPoints(x0: number, y0: number, x1: number, y1: number): Poin
   const h = y1 - y0;
   return unit.map((p) => {
     const u = (p.x + maxX) / (2 * maxX); // 0..1, left to right
-    const x = u <= 0.5 ? x0 + Math.round(u * w) : x1 - Math.round((1 - u) * w);
+    // The top and inner bottom points sit on the axis: on its left pixel when the width is even,
+    // so the mirrored half (see mirroredHalf) keeps them and gives a 2-pixel tip.
+    const x =
+      Math.abs(u - 0.5) < 1e-9
+        ? Math.floor((x0 + x1) / 2)
+        : u < 0.5
+          ? x0 + Math.round(u * w)
+          : x1 - Math.round((1 - u) * w);
     return { x, y: y0 + Math.round(((p.y - minY) / (maxY - minY)) * h) };
   });
 }
