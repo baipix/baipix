@@ -1,0 +1,111 @@
+---
+/**
+ * A bar of the page's sections that sticks to the top while you scroll: the one you're reading
+ * is framed in its accent, and a click scrolls to another. On a phone it scrolls sideways.
+ */
+interface Props {
+  items: { id: string; label: string; tone?: string }[];
+  label: string;
+}
+const { items, label } = Astro.props;
+---
+
+<nav class="section-tabs" aria-label={label}>
+  <div class="container tabs-row">
+    {items.map((item) => (
+      <a href={`#${item.id}`} data-tone={item.tone} data-section={item.id}>
+        {item.label}
+      </a>
+    ))}
+  </div>
+</nav>
+
+<script>
+  for (const bar of document.querySelectorAll<HTMLElement>('.section-tabs')) {
+    const row = bar.querySelector<HTMLElement>('.tabs-row')!;
+    const links = [...bar.querySelectorAll<HTMLAnchorElement>('[data-section]')];
+    const sections = links.map((a) => document.getElementById(a.dataset.section!)!);
+    let current: HTMLAnchorElement | null = null;
+    // The section you're reading: the last one whose top went past a third of the screen.
+    const update = () => {
+      const line = innerHeight / 3;
+      let at = -1;
+      sections.forEach((s, i) => {
+        if (s.getBoundingClientRect().top <= line) at = i;
+      });
+      const link = links[at] ?? null;
+      if (link === current) return;
+      current?.removeAttribute('aria-current');
+      current = link;
+      if (!link) return;
+      link.setAttribute('aria-current', 'location');
+      // Keeps it in sight in the row, without moving the page.
+      const left = link.offsetLeft - row.offsetLeft;
+      if (left < row.scrollLeft || left + link.offsetWidth > row.scrollLeft + row.clientWidth)
+        row.scrollTo({ left: left - 16, behavior: 'smooth' });
+    };
+    let queued = false;
+    addEventListener(
+      'scroll',
+      () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          update();
+        });
+      },
+      { passive: true },
+    );
+    addEventListener('resize', update);
+    update();
+  }
+</script>
+
+<style>
+  .section-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin-top: 0;
+    border-block: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .tabs-row {
+    display: flex;
+    gap: 8px;
+    padding-block: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-row::-webkit-scrollbar {
+    display: none;
+  }
+  /* Bordered keys, like the site's buttons; the current one framed and tinted in its accent. */
+  a {
+    flex: 1 0 auto;
+    padding: 9px 14px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+  }
+  a:hover {
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+  a[aria-current] {
+    border-color: var(--accent, var(--text));
+    background: linear-gradient(160deg, var(--tint-a, var(--surface)), var(--tint-b, var(--surface)));
+    color: var(--text);
+    box-shadow: 2px 2px 0 var(--accent, var(--text));
+  }
+  a:focus-visible {
+    outline: 2px solid var(--accent, var(--text));
+    outline-offset: 2px;
+  }
+</style>
