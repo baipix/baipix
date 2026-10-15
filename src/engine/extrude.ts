@@ -9,6 +9,8 @@ export interface ExtrudeOptions {
   outline: boolean;
   /** The top's front edge one step lighter, like the box's. */
   light: boolean;
+  /** A line in the outline's color where the sides meet the top. */
+  edges?: boolean;
   /** The faces' colors picked by hand (the volume tools), instead of shaded from each pixel's color. */
   faces?: FaceColors | null;
 }
@@ -75,7 +77,13 @@ export function extrude(
     if (!face || !c || !(c >>> 24)) continue;
     const t = tones(c);
     for (let y = bottom[x] - h + 1; y <= bottom[x]; y++)
-      placed.set(key(x, y), { x, y, color: t[face], tones: t });
+      placed.set(key(x, y), {
+        x,
+        y,
+        // With edges, the sides' first row, under the top's front rim, is a line.
+        color: o.edges && y === bottom[x] - h + 1 ? t.edge : t[face],
+        tones: t,
+      });
   }
 
   const covered = new Uint8Array(width * height);

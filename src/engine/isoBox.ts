@@ -43,7 +43,8 @@ export function boxFromDrag(
  * Plots an isometric box whose top corner is the pair of pixels left of and at `top`. Its top is
  * a diamond with edges of exactly two pixels per step; under it hang the left and right faces,
  * `height` pixels tall. With `outline`, the pixels on its outer edge are `edge` instead; with
- * `light`, the top's pixels along its two front edges (over the sides) are `light`.
+ * `light`, the top's pixels along its two front edges (over the sides) are `light`; with `edges`,
+ * the lines between the faces (under the top, and the front corner) are `edge` too.
  */
 export function isoBox(
   top: Point,
@@ -51,6 +52,7 @@ export function isoBox(
   outline: boolean,
   plot: (x: number, y: number, face: BoxFace) => void,
   light = false,
+  edges = false,
 ): void {
   const cx = top.x;
   // The top face, row by row: its left edge goes down-left for `depth` steps then down-right,
@@ -81,12 +83,17 @@ export function isoBox(
     const col = columns[x - x0];
     return !!col && y >= col[0].from && y <= col[1].to;
   };
+  // The front corner, where the left face meets the right one: its left column carries the line.
+  const corner = cx + 2 * w - 2 * d - 1;
   columns.forEach((col, i) => {
     const x = x0 + i;
     for (const { face, from, to } of col)
       for (let k = from; k <= to; k++) {
+        // Inner edges: the sides' first row under the top, and the front corner, top to bottom.
+        const inner = edges && h > 0 && face !== 'top' && (k === from || x === corner);
         const edge =
-          outline && (!inside(x - 1, k) || !inside(x + 1, k) || !inside(x, k - 1) || !inside(x, k + 1));
+          inner ||
+          (outline && (!inside(x - 1, k) || !inside(x + 1, k) || !inside(x, k - 1) || !inside(x, k + 1)));
         const front = light && face === 'top' && k === to && h > 0;
         plot(x, top.y + k, edge ? 'edge' : front ? 'light' : face);
       }

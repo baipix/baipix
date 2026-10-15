@@ -438,6 +438,7 @@ export function ToolOptionsBar() {
             label={t('options.boxOutline')}
           />
           <Checkbox checked={options.boxLight} onChange={set('boxLight')} label={t('options.boxLight')} />
+          <Checkbox checked={options.boxEdges} onChange={set('boxEdges')} label={t('options.boxEdges')} />
           <div className="toolbar-divider" />
           {/* The faces: shaded from the color, or picked by hand, one click each with the current color. */}
           <div className="face-colors" role="group" aria-label={t('faces.label')}>

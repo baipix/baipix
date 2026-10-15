@@ -376,6 +376,7 @@ export const fr: Record<MessageKey, string> = {
   'options.boxHeight': 'Hauteur',
   'options.boxOutline': 'Contour',
   'options.boxLight': 'Arête claire',
+  'options.boxEdges': 'Arêtes',
   'faces.label': 'Faces',
   'faces.top': 'Face du dessus',
   'faces.left': 'Face gauche',
