@@ -25,6 +25,8 @@ export const fr: Record<MessageKey, string> = {
   'default.image': 'Image',
 
   'panel.left': 'Fichiers et calques',
+  'panel.fold': 'Replier le panneau',
+  'panel.unfold': 'Déplier le panneau',
   'panel.right': 'Propriétés',
   'panel.export': 'Export',
   'panel.resizeLeft': 'Redimensionner le panneau gauche',

@@ -6,7 +6,7 @@ import { isMenuOpen } from '../components/Menu';
 import { renameFile, togglePreview } from '../menus';
 import { keyState } from '../keyState';
 import { TOOL_LIST } from '../tools';
-import { openAdjust, openDialog, toast, uiStore } from '../uiStore';
+import { openAdjust, openDialog, toast, toggleLayersPanel, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
 
 const isTyping = (target: EventTarget | null) =>
@@ -36,6 +36,11 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
       const key = e.key.toLowerCase();
       const mod = e.ctrlKey || e.metaKey;
 
+      // Like Figma: Cmd/Ctrl+Shift+\ folds the Layers panel into a pill, or unfolds it.
+      if (mod && e.shiftKey && e.code === 'Backslash') {
+        e.preventDefault();
+        return toggleLayersPanel();
+      }
       if (e.code === 'Space') {
         keyState.space = true;
         document.body.classList.add('is-panning');

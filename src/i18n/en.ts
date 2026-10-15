@@ -24,6 +24,8 @@ export const en = {
   'default.image': 'Image',
 
   'panel.left': 'Files and layers',
+  'panel.fold': 'Fold the panel',
+  'panel.unfold': 'Unfold the panel',
   'panel.right': 'Properties',
   'panel.export': 'Export',
   'panel.resizeLeft': 'Resize the left panel',

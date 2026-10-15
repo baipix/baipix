@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { findMaster, isLinkedInstance, masters, spritePixels } from '../../engine/components';
-import { isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
+import { fileNameOf, isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
 import {
   groupChain,
   groupDepth,
@@ -20,7 +20,7 @@ import { openMenu } from '../components/Menu';
 import { Section } from '../components/Section';
 import { Thumbnail } from '../components/Thumbnail';
 import { COMPONENT_MIME } from '../dragTypes';
-import { openAdjust } from '../uiStore';
+import { openAdjust, toggleLayersPanel, uiStore } from '../uiStore';
 
 /** Inline rename on double-click, used by files and layers. */
 function EditableName({
@@ -725,10 +725,30 @@ function LayersSection() {
 
 export function LeftPanel() {
   const t = useT();
+  const folded = uiStore.use((s) => s.layersFolded);
+  const name = useEditorState((s) => fileNameOf(s.doc));
+  // Like Figma's Minimize UI: the file's name and a button to fold the panel into a pill, or unfold it.
+  const header = (
+    <div className="panel-header">
+      <span className="panel-file truncate">{name}</span>
+      <IconButton
+        icon="panelLeft"
+        label={t(folded ? 'panel.unfold' : 'panel.fold')}
+        shortcut={'Ctrl+Shift+\\'}
+        pressed={folded}
+        onClick={toggleLayersPanel}
+      />
+    </div>
+  );
   return (
-    <aside className="panel panel-left" aria-label={t('panel.left')}>
-      <ComponentsSection />
-      <LayersSection />
+    <aside className={`panel panel-left${folded ? ' is-folded' : ''}`} aria-label={t('panel.left')}>
+      {header}
+      {!folded && (
+        <>
+          <ComponentsSection />
+          <LayersSection />
+        </>
+      )}
     </aside>
   );
 }
