@@ -1,8 +1,10 @@
+import type { StoredHistory } from './history';
 import { fromStored, toStored, type StorageAdapter, type StoredWorkspace, type Workspace } from './workspace';
 
 const DB_NAME = 'baipix';
 const STORE = 'workspace';
 const KEY = 'current';
+const HISTORY_KEY = 'history';
 
 function openDb(factory: IDBFactory): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -47,5 +49,15 @@ export class IndexedDbStorage implements StorageAdapter {
   async save(workspace: Workspace): Promise<void> {
     const db = await this.connect();
     await run(db, 'readwrite', (s) => s.put(toStored(workspace), KEY));
+  }
+
+  async loadHistory(): Promise<StoredHistory | null> {
+    const db = await this.connect();
+    return (await run<StoredHistory | undefined>(db, 'readonly', (s) => s.get(HISTORY_KEY))) ?? null;
+  }
+
+  async saveHistory(history: StoredHistory): Promise<void> {
+    const db = await this.connect();
+    await run(db, 'readwrite', (s) => s.put(history, HISTORY_KEY));
   }
 }
