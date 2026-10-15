@@ -37,3 +37,27 @@ describe('a color per face on isometric volumes', () => {
     expect(px(10, 9)).not.toBe(GREEN);
   });
 });
+
+describe('inner edges on isometric volumes', () => {
+  it('draws a line between the faces of the box, in the outline color', () => {
+    const e = new Editor();
+    e.newFile(32, 32);
+    e.setColor('primary', RED);
+    e.setTool('box');
+    e.setOption('boxHeight', 4);
+    e.setOption('boxFaces', { top: RED, left: GREEN, right: BLUE });
+    e.beginStroke({ x: 16, y: 2 }, false, { shift: false });
+    e.moveStroke({ x: 16, y: 10 }, { shift: false });
+    e.endStroke();
+    const px = (x: number, y: number) => e.getState().doc.layers[0].pixels[y * 32 + x];
+    const sides = (y: number) => [...Array(32).keys()].map((x) => px(x, y));
+    const before = new Set(e.getState().doc.layers[0].pixels);
+    e.setOption('boxEdges', true);
+    const after = new Set(e.getState().doc.layers[0].pixels);
+    // A new color, the outline's: under the top, and down the front corner.
+    const edge = [...after].find((c) => !before.has(c))!;
+    expect(edge).toBeDefined();
+    expect(sides(13).filter((c) => c === edge)).toHaveLength(1);
+    expect(px(10, 9)).toBe(GREEN);
+  });
+});

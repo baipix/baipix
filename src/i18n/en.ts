@@ -375,6 +375,7 @@ export const en = {
   'options.boxHeight': 'Height',
   'options.boxOutline': 'Outline',
   'options.boxLight': 'Light edge',
+  'options.boxEdges': 'Edges',
   'faces.label': 'Faces',
   'faces.top': 'Top face',
   'faces.left': 'Left face',

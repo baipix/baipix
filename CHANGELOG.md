@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Inner edges on isometric volumes: an Edges option next to Outline and Light edge draws a line in the outline's color between the faces: under the box's top and down its front corner, under the cylinder's rim, along the pyramid's ridges that show. (#392)
 - A color per face on isometric volumes: three swatches in the box, cylinder and pyramid's options (top, left, right) take the current color on a click, instead of shading the sides from the palette; the outline and light edge follow. A button goes back to shading. The options bar also takes its full width instead of scrolling. (#391)
 - The logo sits above the files screen's title, its pixel hopping on a calm beat like a loader, waiting for you to start a file. (#388)
 - The logo's escaped pixel hops on hover, in the editor's top bar, on the files screen and on the site; nothing with reduced motion. (#386)

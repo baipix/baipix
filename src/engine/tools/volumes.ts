@@ -42,7 +42,13 @@ export function paintCylinder(s: Stroke, a: Point, b: Point): void {
     W,
     H,
     region,
-    { height: h, outline: s.options.boxOutline, light: s.options.boxLight, faces: s.options.boxFaces },
+    {
+      height: h,
+      outline: s.options.boxOutline,
+      light: s.options.boxLight,
+      edges: s.options.boxEdges,
+      faces: s.options.boxFaces,
+    },
     s.palette,
   );
   lay(s, drawn);
@@ -79,8 +85,26 @@ export function paintPyramid(s: Stroke, top: Point, width: number, depth: number
   const put = (x: number, y: number, c: number) => {
     if (x >= 0 && y >= 0 && x < W && y < H) drawn[y * W + x] = c;
   };
-  for (const [ps, face] of faces) polygonFilled(ps, (x, y) => put(x, y, tones[face]));
-  // The front ridge, lit, then the outline around the whole pyramid.
+  // Which face shows at each pixel (1 to 4, front faces drawn last so they cover the back ones).
+  const shown = new Uint8Array(W * H);
+  faces.forEach(([ps, face], k) =>
+    polygonFilled(ps, (x, y) => {
+      if (x < 0 || y < 0 || x >= W || y >= H) return;
+      put(x, y, tones[face]);
+      shown[y * W + x] = k + 1;
+    }),
+  );
+  // The ridges between the faces that show, in the outline's color: where a pixel's face differs
+  // from the one left of it or above it.
+  if (s.options.boxEdges)
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const f = shown[y * W + x];
+        const left = x > 0 ? shown[y * W + x - 1] : 0;
+        const up = y > 0 ? shown[(y - 1) * W + x] : 0;
+        if (f && ((left && left !== f) || (up && up !== f))) drawn[y * W + x] = tones.edge;
+      }
+  // The front ridge lit, then the outline around the whole pyramid.
   if (s.options.boxLight) line(b.x, b.y - 1, apex.x, apex.y, (x, y) => put(x, y, tones.light));
   if (s.options.boxOutline) {
     const inside = drawn.slice();

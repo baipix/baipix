@@ -8,7 +8,15 @@ import type { Modifiers, Stroke, Tool } from './types';
 export function paintBox(s: Stroke, top: Point): void {
   s.layer.pixels.set(s.base);
   s.visited.fill(0);
-  const { boxWidth: width, boxDepth: depth, boxHeight: height, boxOutline, boxLight, boxFaces } = s.options;
+  const {
+    boxWidth: width,
+    boxDepth: depth,
+    boxHeight: height,
+    boxOutline,
+    boxLight,
+    boxEdges,
+    boxFaces,
+  } = s.options;
   const colors = volumeColors(strokeColors(s)[0], s.palette, boxFaces);
   isoBox(
     top,
@@ -16,6 +24,7 @@ export function paintBox(s: Stroke, top: Point): void {
     boxOutline,
     (x, y, face) => stamp(s, x, y, colors[face], colors[face], false, 1),
     boxLight,
+    boxEdges,
   );
 }
 
