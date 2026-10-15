@@ -377,6 +377,11 @@ export const en = {
   'options.boxOutline': 'Outline',
   'options.boxLight': 'Light edge',
   'options.boxEdges': 'Edges',
+  'cylinder.axis': 'Stands',
+  'cylinder.up': 'Upright',
+  'cylinder.left': 'Lying along the left',
+  'cylinder.right': 'Lying along the right',
+  'options.boxLength': 'Length (2:1 steps)',
   'hint.ramp':
     'Drag from one corner of its top to the opposite one, like the box (Shift: square). It rises toward the direction you pick, Height tall; with Steps above 0, it’s a staircase. The options redraw the last one.',
   'ramp.direction': 'Rises toward',

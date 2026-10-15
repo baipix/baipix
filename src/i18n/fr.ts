@@ -378,6 +378,11 @@ export const fr: Record<MessageKey, string> = {
   'options.boxOutline': 'Contour',
   'options.boxLight': 'Arête claire',
   'options.boxEdges': 'Arêtes',
+  'cylinder.axis': 'Position',
+  'cylinder.up': 'Debout',
+  'cylinder.left': 'Couché vers la gauche',
+  'cylinder.right': 'Couché vers la droite',
+  'options.boxLength': 'Longueur (pas en 2:1)',
   'hint.ramp':
     'Tire d’un coin de son dessus au coin opposé, comme la boîte (Maj : carré). Elle monte vers le sens choisi, haute de Hauteur ; avec plus de 0 marche, c’est un escalier. Les options redessinent le dernier.',
   'ramp.direction': 'Monte vers',

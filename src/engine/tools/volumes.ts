@@ -2,6 +2,7 @@ import { isoGridOrigin } from '../document';
 import { extrude } from '../extrude';
 import { boxFromDrag, volumeColors, type BoxFace } from '../isoBox';
 import { isoRamp } from '../isoRamp';
+import { planeShape } from '../isoPlane';
 import type { Point } from '../math';
 import { cleanEllipse, line, polygonFilled } from '../raster';
 import { snapBox } from './box';
@@ -22,6 +23,7 @@ function lay(s: Stroke, drawn: Uint32Array): void {
  * that ellipse, so its sides are shaded like the box's.
  */
 export function paintCylinder(s: Stroke, a: Point, b: Point): void {
+  if (s.options.cylinderAxis !== 'up') return paintLyingCylinder(s, a, b);
   s.layer.pixels.set(s.base);
   s.visited.fill(0);
   const { width: W, height: H } = s.doc;
@@ -52,6 +54,46 @@ export function paintCylinder(s: Stroke, a: Point, b: Point): void {
     },
     s.palette,
   );
+  lay(s, drawn);
+}
+
+/**
+ * A cylinder lying on its side, for barrels, logs and wheels: its round end dragged on a wall like
+ * the shapes on an isometric plane (the right wall for one lying along the left axis, the left wall
+ * along the right one), and its body Height steps long behind it. The body's upper half is lit like a
+ * top, its lower half shaded like the side it shows; the round end in front is the color of the face
+ * it stands on.
+ */
+function paintLyingCylinder(s: Stroke, a: Point, b: Point): void {
+  s.layer.pixels.set(s.base);
+  s.visited.fill(0);
+  const { width: W, height: H } = s.doc;
+  const tones = volumeColors(strokeColors(s)[0], s.palette, s.options.boxFaces);
+  const alongLeft = s.options.cylinderAxis === 'left';
+  // The round end, on the wall facing along the axis.
+  const end: Point[] = [];
+  planeShape('ellipse', alongLeft ? 'right' : 'left', a, b, true, (x, y) => end.push({ x, y }));
+  if (!end.length) return;
+  const middle = (Math.min(...end.map((p) => p.y)) + Math.max(...end.map((p) => p.y))) / 2;
+  const drawn = new Uint32Array(W * H);
+  const put = (x: number, y: number, c: number) => {
+    if (x >= 0 && y >= 0 && x < W && y < H) drawn[y * W + x] = c;
+  };
+  // Back to front: the body, one 2:1 step at a time away from the end, then the end over it.
+  const length = Math.max(0, Math.round(s.options.boxHeight));
+  const [dx, dy] = alongLeft ? [-2, -1] : [2, -1];
+  const side = alongLeft ? tones.left : tones.right;
+  for (let t = length; t >= 1; t--)
+    for (const p of end) put(p.x + dx * t, p.y + dy * t, p.y < middle ? tones.top : side);
+  for (const p of end) put(p.x, p.y, alongLeft ? tones.right : tones.left);
+  if (s.options.boxOutline) {
+    const inside = drawn.slice();
+    const at = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H && inside[y * W + x] !== 0;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++)
+        if (at(x, y) && (!at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1)))
+          drawn[y * W + x] = tones.edge;
+  }
   lay(s, drawn);
 }
 

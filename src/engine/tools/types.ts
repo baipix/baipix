@@ -1,4 +1,8 @@
 import type { RampDirection } from '../isoRamp';
+
+/** How an isometric cylinder stands: upright, or lying along the left or the right axis. */
+export type CylinderAxis = 'up' | 'left' | 'right';
+export const CYLINDER_AXES: CylinderAxis[] = ['up', 'left', 'right'];
 import type { FaceColors } from '../isoBox';
 import type { Selection } from '../selection';
 import type { IsoPlane } from '../isoPlane';
@@ -109,6 +113,8 @@ export interface ToolOptions {
   boxOutline: boolean;
   /** Isometric box: the top's front edges one step lighter, the classic highlight. */
   boxLight: boolean;
+  /** Isometric cylinder: standing up, or lying along the left face's axis or the right one's. */
+  cylinderAxis: CylinderAxis;
   /** Isometric ramp: where it rises, and its number of steps (0: a smooth slope). */
   rampDirection: RampDirection;
   rampSteps: number;
@@ -159,6 +165,7 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   boxOutline: false,
   plane: 'flat',
   boxLight: false,
+  cylinderAxis: 'up',
   rampDirection: 'se',
   rampSteps: 0,
   boxBevelTop: false,
