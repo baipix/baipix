@@ -1,5 +1,5 @@
 import { isoGridOrigin } from '../document';
-import { boxColors, boxFromDrag, isoBox } from '../isoBox';
+import { boxFromDrag, isoBox, volumeColors } from '../isoBox';
 import type { Point } from '../math';
 import { stamp, strokeColors } from './paint';
 import type { Modifiers, Stroke, Tool } from './types';
@@ -8,8 +8,8 @@ import type { Modifiers, Stroke, Tool } from './types';
 export function paintBox(s: Stroke, top: Point): void {
   s.layer.pixels.set(s.base);
   s.visited.fill(0);
-  const { boxWidth: width, boxDepth: depth, boxHeight: height, boxOutline, boxLight } = s.options;
-  const colors = boxColors(strokeColors(s)[0], s.palette);
+  const { boxWidth: width, boxDepth: depth, boxHeight: height, boxOutline, boxLight, boxFaces } = s.options;
+  const colors = volumeColors(strokeColors(s)[0], s.palette, boxFaces);
   isoBox(
     top,
     { width, depth, height },

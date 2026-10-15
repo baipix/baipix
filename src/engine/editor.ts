@@ -96,6 +96,7 @@ import { DEFAULT_EXTRUDE, extrude, type ExtrudeOptions } from './extrude';
 import { cleanStops, GRADIENT_DITHERS, GRADIENT_SHAPES } from './gradient';
 import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
+import { volumeColors, type FaceColors } from './isoBox';
 import { strokeColors } from './tools/paint';
 
 export interface ViewSettings {
@@ -2676,6 +2677,28 @@ export class Editor {
     this.commit();
   }
 
+  /**
+   * The volumes' faces as they'd be drawn now: picked by hand, or shaded from a color, the last
+   * volume's while it can still be changed (so picking one face keeps the others as drawn), else
+   * the primary.
+   */
+  volumeFaces(): FaceColors {
+    const v = this.lastVolume;
+    const editable =
+      v &&
+      VOLUMES.includes(this.tool) &&
+      this.doc.layers.includes(v.stroke.layer) &&
+      !changed(v.result, v.stroke.layer.pixels);
+    const color = editable ? strokeColors(v.stroke)[0] : this.primary;
+    const tones = volumeColors(color, this.paletteIndex, this.options.boxFaces);
+    return { top: tones.top, left: tones.left, right: tones.right };
+  }
+
+  /** Gives a volume's face the primary color: the faces are picked by hand from then on. */
+  setVolumeFace(face: keyof FaceColors): void {
+    this.setOption('boxFaces', { ...this.volumeFaces(), [face]: this.primary });
+  }
+
   /** Redraws the last box, cylinder or pyramid with the current options, in place (no undo step of its own). */
   private redrawVolume(): void {
     const v = this.lastVolume;
@@ -2768,6 +2791,7 @@ export class Editor {
         gradientShape: GRADIENT_SHAPES.includes(o.gradientShape) ? o.gradientShape : 'linear',
         gradientDither: GRADIENT_DITHERS.includes(o.gradientDither) ? o.gradientDither : 'bayer',
         plane: ISO_PLANES.includes(o.plane) ? o.plane : 'flat',
+        boxFaces: readFaces(o.boxFaces),
       };
     }
     if (typeof p.primary === 'number') this.primary = p.primary >>> 0;
@@ -4151,6 +4175,16 @@ export class Editor {
     this.active.selection = s.selection;
     this.commit(false);
   }
+}
+
+/** Faces picked by hand, from saved preferences: three colors, or none. */
+function readFaces(f: unknown): FaceColors | null {
+  const v = f as Partial<FaceColors> | null;
+  if (!v || typeof v !== 'object') return null;
+  const { top, left, right } = v;
+  return [top, left, right].every((c) => typeof c === 'number')
+    ? { top: top! >>> 0, left: left! >>> 0, right: right! >>> 0 }
+    : null;
 }
 
 function changed(a: Uint32Array, b: Uint32Array): boolean {
