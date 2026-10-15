@@ -283,15 +283,15 @@ function IconsBlock() {
     <Block
       id="icons"
       title="Icons"
-      intro="Pixelarticons (MIT) on a 12×12 grid, plus a few drawn by hand on the same grid when it has none. Sizes are multiples of 6 px (12, 18, 24) so each icon pixel lands on whole device pixels."
+      intro="Lucide (ISC), line icons on a 24 px box, plus a few drawn here in the same style. 16 px in the panels, 18 px in the toolbar, with a 1.75 stroke."
     >
       <div className="ds-icons">
         {names.map((n) => (
           <div key={n} className="ds-icon">
             <div className="ds-icon-sizes">
               <Icon name={n} size={12} />
+              <Icon name={n} size={16} />
               <Icon name={n} size={18} />
-              <Icon name={n} size={24} />
             </div>
             <code>{n}</code>
           </div>
@@ -351,16 +351,16 @@ function ButtonsBlock() {
         </Specimen>
         <Specimen label="Tool button" use="The toolbar. The active tool is a key held down.">
           <div className="ds-toolbar">
-            <IconButton className="tool-btn" icon="move" iconSize={24} label="Move" shortcut="V" />
+            <IconButton className="tool-btn" icon="move" iconSize={18} label="Move" shortcut="V" />
             <IconButton
               className="tool-btn"
               icon="pencil"
-              iconSize={24}
+              iconSize={18}
               label="Pencil"
               shortcut="B"
               pressed
             />
-            <IconButton className="tool-btn" icon="eraser" iconSize={24} label="Eraser" shortcut="E" />
+            <IconButton className="tool-btn" icon="eraser" iconSize={18} label="Eraser" shortcut="E" />
           </div>
         </Specimen>
       </div>

@@ -173,7 +173,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             <IconButton
               className="icon-btn large shortcuts-help-button"
               icon="help"
-              iconSize={20}
+              iconSize={18}
               label={t('menu.shortcuts')}
               shortcut="?"
               onClick={() => openDialog({ type: 'shortcuts' })}
