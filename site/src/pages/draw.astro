@@ -2047,11 +2047,11 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     left: 14%;
     top: 30%;
   }
-  /* The editor's selection: a blue frame with white square handles on its corners. */
+  /* The editor's selection: a violet frame with white square handles on its corners. */
   .sel-frame {
     position: absolute;
     inset: -2px;
-    outline: 1px solid #1b93dd;
+    outline: 1px solid light-dark(#6e56cf, #9e8cfc);
     visibility: hidden;
   }
   .is-selected .sel-frame {
@@ -2061,7 +2061,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     position: absolute;
     width: 7px;
     height: 7px;
-    border: 1px solid #1b93dd;
+    border: 1px solid light-dark(#6e56cf, #9e8cfc);
     background: #ffffff;
   }
   .sel-frame i:nth-child(1) {

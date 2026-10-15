@@ -44,6 +44,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- The site shows the new interface: the image shared with links, and the Draw page's selection frame in violet. (#385)
 - Rulers like Figma's: what's selected (the layer framed by the Move tool, or the pixel selection) shows as a violet band on both rulers, its edges written in violet, the numbers too close to them left out; thinner ticks; the Preview window no longer covers the left ruler. (#378)
 - A lighter right panel, floating like the Layers panel and as tall as what it shows: only the board, colors, layer and effects. The view settings (pixel grid, tile preview, rulers) open from a button in the top bar; symmetry gets two toggles in the drawing tools' options bar, at hand while drawing; the isometric grid, saved with the file, moves to the Board section. Export is a button at the top right that opens the export in a dialog. (#377)
 - A soft violet replaces the blue for what's selected or acted on: the selection's frame and handles, the active layer and tool, the main button, menus, focus and checkboxes. Hovers are now neutral. Components move from purple to green, so they never look selected. (#375)
