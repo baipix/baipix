@@ -1,3 +1,4 @@
+import type { CodeLanguage } from '../engine/export/code';
 import type { Color } from '../engine/color';
 import type { PixelBlock } from '../engine/region';
 import type { PixelGrid } from '../engine/upscale';
@@ -11,6 +12,7 @@ export type DialogState =
   | { type: 'paletteManager' }
   | { type: 'shortcuts' }
   | { type: 'export' }
+  | { type: 'code' }
   | { type: 'canvasSize' }
   | { type: 'confirm'; title: string; message: string; confirmLabel: string; onConfirm: () => void }
   | { type: 'output'; title: string; message: string; image?: string; text?: string }
@@ -57,6 +59,8 @@ export interface UiState {
   layersFolded: boolean;
   uiHidden: boolean;
   exportFormat: 'png' | 'svg' | 'aseprite' | 'tileset';
+  /** The language picked in the Code dialog. */
+  exportCode: CodeLanguage;
   exportActiveLayer: boolean;
   /** Tileset export: the size of the tiles, and whether empty and repeated tiles are left out. */
   exportTileWidth: number;
@@ -96,6 +100,7 @@ export const uiStore = createStore<UiState>({
   layersFolded: false,
   uiHidden: false,
   exportFormat: 'png',
+  exportCode: 'react',
   exportActiveLayer: false,
   exportTileWidth: 16,
   exportTileHeight: 16,

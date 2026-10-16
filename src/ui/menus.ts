@@ -165,6 +165,7 @@ export const MENU_BAR: MenuBarMenu[] = [
           onSelect: () =>
             void actions.exportImage(uiStore.get().exportFormat, uiStore.get().exportActiveLayer),
         },
+        { label: t('menu.code'), onSelect: () => openDialog({ type: 'code' }) },
         '-',
         { label: t('menu.deleteFile'), onSelect: () => actions.deleteFile(current.id, current.name) },
       ];
