@@ -1,3 +1,4 @@
+import { CODE_LANGUAGES, type CodeLanguage } from '../engine/export/code';
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
@@ -87,6 +88,9 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
               ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' || ui.exportFormat === 'tileset'
                 ? ui.exportFormat
                 : 'png',
+            exportCode: CODE_LANGUAGES.includes(ui.exportCode as CodeLanguage)
+              ? (ui.exportCode as CodeLanguage)
+              : 'react',
             exportActiveLayer: !!ui.exportActiveLayer,
             layersFolded: !!ui.layersFolded,
             exportTileWidth: tileSide(ui.exportTileWidth),

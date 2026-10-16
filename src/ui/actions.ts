@@ -5,6 +5,7 @@ import type { Editor } from '../engine/editor';
 import type { PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
+import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
@@ -31,7 +32,7 @@ export function createActions(editor: Editor) {
   const undoDelete = () => ({ label: t('common.undo'), run: () => editor.restoreDeleted() });
   const baseName = () => safeFileName(doc().name);
 
-  function renderInput(onlyActiveLayer: boolean) {
+  function renderInput(onlyActiveLayer: boolean, quiet = false) {
     const d = doc();
     const pixels = editor.flatten(
       onlyActiveLayer ? { onlyLayer: d.layers[d.activeLayer] } : { includeBackground: false },
@@ -39,7 +40,7 @@ export function createActions(editor: Editor) {
     const geometry = renderGeometry(d.width, d.height, d.render.pixelSize, d.render.gap);
     const withBackground = uiStore.get().exportBackground && !onlyActiveLayer && hasBackground(d);
     const background: Color = withBackground ? d.background : 0;
-    if (geometry.pixelSize !== d.render.pixelSize)
+    if (!quiet && geometry.pixelSize !== d.render.pixelSize)
       toast(t('toast.exportShrunk', { size: geometry.pixelSize }));
     return { d, pixels, geometry, background };
   }
@@ -50,6 +51,14 @@ export function createActions(editor: Editor) {
     return onlyActiveLayer
       ? toSvg(pixels, d.width, d.height, geometry, background)
       : toLayeredSvg(d, geometry, background);
+  }
+
+  /** The drawing as code: the SVG with its layers, the rest made from the drawing merged. */
+  function codeText(language: CodeLanguage, onlyActiveLayer: boolean, quiet = false): string {
+    const { d, pixels, geometry, background } = renderInput(onlyActiveLayer, quiet);
+    const flatSvg = toSvg(pixels, d.width, d.height, geometry, background);
+    const svg = onlyActiveLayer ? flatSvg : toLayeredSvg(d, geometry, background);
+    return codeOf(language, { name: d.name, width: d.width, height: d.height, pixels, svg, flatSvg });
   }
 
   /** Replaces the palette with a .hex, .gpl or .txt file (picked, or dropped on the canvas). */
@@ -188,6 +197,30 @@ export function createActions(editor: Editor) {
       ]);
       const filename = `${name}.zip`;
       await report(filename, saveFile(filename, new Blob([bytes as BlobPart]), 'application/zip'));
+    },
+
+    /** The code's text, for the Export dialog's preview: no toast for a size that shrinks. */
+    codePreview(language: CodeLanguage, onlyActiveLayer = false): string {
+      return codeText(language, onlyActiveLayer, true);
+    },
+
+    async copyCode(language: CodeLanguage, onlyActiveLayer = false) {
+      const code = codeText(language, onlyActiveLayer);
+      if (await copyText(code)) toast(t('toast.codeCopied'));
+      else
+        openDialog({
+          type: 'output',
+          title: t('output.copyCodeTitle'),
+          message: t('output.copyCodeBlocked'),
+          text: code,
+        });
+    },
+
+    async downloadCode(language: CodeLanguage, onlyActiveLayer = false) {
+      const filename = `${baseName()}.${CODE_EXTENSIONS[language]}`;
+      const type =
+        language === 'svg' ? 'image/svg+xml' : language === 'json' ? 'application/json' : 'text/plain';
+      await report(filename, saveFile(filename, codeText(language, onlyActiveLayer), type));
     },
 
     async copySvg(onlyActiveLayer = false) {
