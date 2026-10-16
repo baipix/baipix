@@ -543,6 +543,23 @@ function TabsDemo() {
   );
 }
 
+function PillTabsDemo() {
+  const [tab, setTab] = useState('react');
+  return (
+    <div className="code-tabs" role="tablist" aria-label="Language">
+      {[
+        ['react', 'React'],
+        ['svg', 'SVG'],
+        ['css', 'CSS'],
+      ].map(([id, label]) => (
+        <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function SurfacesBlock() {
   return (
     <Block id="surfaces" title="Surfaces">
@@ -706,9 +723,28 @@ function SurfacesBlock() {
         </Specimen>
         <Specimen
           label="Tabs"
-          use="Kinds of content in one panel (Design / Export, the Adjustments). The current one is underlined in blue."
+          use="Kinds of content in one panel (Design / Export, the Adjustments). The current one is underlined."
         >
           <TabsDemo />
+        </Specimen>
+        <Specimen
+          label="Pill tabs"
+          use="A choice of what to show in a dialog (the Code dialog's languages). The current one is filled in violet."
+        >
+          <PillTabsDemo />
+        </Specimen>
+        <Specimen
+          wide
+          label="Code well"
+          use="Code to read and copy (the Code dialog): monospace, scrolls both ways, focusable for the keyboard."
+        >
+          <pre className="code-preview" tabIndex={0} aria-label="Code">
+            <code>
+              {
+                'import type { SVGProps } from \'react\';\n\nexport function Knight(props: SVGProps<SVGSVGElement>) {\n  return <svg viewBox="0 0 16 16" {...props} />;\n}'
+              }
+            </code>
+          </pre>
         </Specimen>
         <Specimen label="Tooltip" use="On hover of any element with data-tip. Dark in both themes.">
           <button type="button" className="btn" data-tip="A tooltip" data-kbd="⌘K">

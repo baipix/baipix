@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The drawing as code: a </> button next to Export (or File › Code…) opens a dialog with a React component, the SVG, CSS (a background image and the colors as custom properties), JSON (named colors and the pixels) or ASCII, to read, copy or download. It follows the drawing's pixel size and gap, and can take the active layer alone. (#419)
 - A 30-second video of Baipix on YouTube, linked from the top of the README with its thumbnail. (#415)
 
 ### Changed

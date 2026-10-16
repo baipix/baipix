@@ -20,6 +20,7 @@ import { Icon } from '../components/Icon';
 import { createFromTemplate, type Template } from '../templates';
 import { SHORTCUT_GROUPS } from './shortcuts';
 import { ExportOptions } from '../panels/RightPanel';
+import { CodeDialog } from './CodeDialog';
 
 /** The sizes of the files changed last, different ones only, newest first. */
 function recentSizes(files: { width: number; height: number; updatedAt: number }[], count = 3) {
@@ -347,6 +348,8 @@ export function Dialogs() {
       return <ShortcutsDialog />;
     case 'export':
       return <ExportDialog />;
+    case 'code':
+      return <CodeDialog />;
     case 'canvasSize':
       return <CanvasSizeDialog />;
     case 'upscaled':

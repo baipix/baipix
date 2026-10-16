@@ -3037,3 +3037,65 @@ body.is-dragging-swatch * {
     animation: none;
   }
 }
+
+/* The Code dialog: the languages as pills, the code in a dark well, the buttons under it. */
+.code-dialog {
+  width: min(720px, calc(100vw - 32px));
+}
+.code-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.code-tabs button {
+  height: 26px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.code-tabs button:hover {
+  color: var(--text);
+}
+.code-tabs button[aria-selected='true'] {
+  background: var(--glow);
+  color: var(--glow-ink);
+}
+.code-preview {
+  max-height: min(52vh, 440px);
+  margin: 0;
+  padding: 12px 14px;
+  overflow: auto;
+  border-radius: var(--radius);
+  background: var(--input);
+  color: var(--text);
+  font:
+    400 11.5px/1.6 ui-monospace,
+    'SF Mono',
+    Menlo,
+    monospace;
+  white-space: pre;
+  tab-size: 2;
+}
+.code-preview:focus-visible {
+  outline: 2px solid var(--glow-line);
+  outline-offset: 1px;
+}
+.code-dialog .hint {
+  margin-top: 8px;
+}
+.code-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.code-buttons {
+  display: flex;
+  gap: 8px;
+}

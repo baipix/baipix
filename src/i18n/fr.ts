@@ -564,6 +564,20 @@ export const fr: Record<MessageKey, string> = {
   'export.name': 'Nom',
   'export.includeBackground': 'Inclure le fond',
   'export.previewLabel': "Aperçu de l'image exportée",
+  'code.title': 'Code',
+  'code.language': 'Langage',
+  'code.preview': 'Le dessin en {language}',
+  'code.cut': 'Les {shown} premières lignes sur {total}. Copier et Télécharger les donnent toutes.',
+  'code.copy': 'Copier',
+  'code.download': 'Télécharger le .{ext}',
+  'code.hint.react':
+    'Un composant qui dessine le sprite en SVG. Donne-lui une largeur, une className ou n’importe quelle prop SVG, comme une icône.',
+  'code.hint.svg': 'Le SVG de Copier en SVG : un groupe par calque, un tracé par couleur.',
+  'code.hint.css':
+    'Le dessin en image de fond, et ses couleurs en propriétés personnalisées. Ajoute la classe à n’importe quel élément.',
+  'code.hint.json':
+    'La taille, les couleurs avec un nom, et les pixels en lignes de numéros de couleur (0 est vide).',
+  'code.hint.ascii': 'Le dessin en caractères, sa légende au-dessus : pour un README ou un commentaire.',
   'export.shrunk': 'réduit à {size}× (trop grand)',
 
   'coordinates.transparent': 'Transparent',
@@ -669,6 +683,10 @@ export const fr: Record<MessageKey, string> = {
   'toast.downloadBusy': 'Une demande de téléchargement est déjà ouverte.',
   'toast.exportShrunk': 'Image trop grande : pixels réduits à {size} px.',
   'toast.svgCopied': 'SVG copié. Colle-le dans Figma ou Illustrator.',
+  'toast.codeCopied': 'Code copié.',
+  'output.copyCodeTitle': 'Copier le code',
+  'output.copyCodeBlocked': 'Le navigateur bloque la copie automatique. Copie ce code (Ctrl+C).',
+  'menu.code': 'Code…',
   'toast.pngCopied': 'Image copiée dans le presse-papier.',
   'toast.opened': '{name} ouvert.',
   'toast.notBaipix': "Ce n'est pas un fichier .baipix valide.",

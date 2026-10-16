@@ -207,6 +207,15 @@ export function MenuBar() {
           shortcut="Ctrl+K"
           onClick={() => uiStore.set({ commandPalette: true })}
         />
+        {/* The drawing as code (React, SVG, CSS…), next to the export: for developers. */}
+        {board && (
+          <IconButton
+            icon="code"
+            className="icon-btn"
+            label={t('menu.code')}
+            onClick={() => openDialog({ type: 'code' })}
+          />
+        )}
         {board && (
           <button
             type="button"
