@@ -15,6 +15,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- The README credits Lucide for the editor's icons (Pixelarticons only for the pixel cursors of the site's animations), and DESIGN.md describes the current interface: the violet accent, soft corners and shadows, line icons. (#417)
 - The home page's Components, Isometric volumes and Several boards are cards like the others, one row of the feature grid, instead of three wide cards stacked with animations. (#413)
 
 ## [0.7.0] - 2026-10-16

@@ -86,4 +86,4 @@ If you like Baipix, a ⭐ on [GitHub](https://github.com/baipix/baipix) helps ot
 
 [MIT](LICENSE)
 
-Icons from [Pixelarticons](https://pixelarticons.com) (MIT).
+Icons from [Lucide](https://lucide.dev) (ISC). The pixel cursors in the website's animations are from [Pixelarticons](https://pixelarticons.com) (MIT).
