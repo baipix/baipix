@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - A 30-second video of Baipix on YouTube, linked from the top of the README with its thumbnail. (#415)
 
+### Changed
+
+- Dialogs stand out from the editor: a darker, slightly blurred backdrop, a hairline edge and a deeper shadow. On opening, the focus goes to the first field to type in, or to the dialog itself, instead of the first button, whose focus ring looked like a selection (Export's 1×). (#421)
+
 ### Website
 
 - The home page's Components, Isometric volumes and Several boards are cards like the others, one row of the feature grid, instead of three wide cards stacked with animations. (#413)

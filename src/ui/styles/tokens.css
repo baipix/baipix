@@ -72,7 +72,13 @@
     0 2px 5px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35)),
     0 10px 16px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.35));
   --shadow-menu: 0 0 0.5px rgba(0, 0, 0, 0.4), 0 5px 17px rgba(0, 0, 0, 0.25), 0 2px 7px rgba(0, 0, 0, 0.15);
-  --backdrop: rgba(0, 0, 0, 0.3);
+  /* Behind a dialog: the editor dims enough for the dialog to be what you look at. */
+  --backdrop: light-dark(rgba(20, 20, 20, 0.38), rgba(0, 0, 0, 0.62));
+  /* A dialog stands above everything: a hairline edge (lighter on the dark theme) and a deep shadow. */
+  --shadow-dialog:
+    0 0 0 1px light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.09)),
+    0 4px 10px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4)),
+    0 24px 56px light-dark(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.6));
 
   --radius: 5px;
   --radius-lg: 13px;
