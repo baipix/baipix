@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
 import {
   AlignCenterHorizontal,
+  CodeXml,
   AlignCenterVertical,
   AlignEndHorizontal,
   AlignEndVertical,
@@ -180,6 +181,7 @@ export const ICONS = {
   image: Image,
   crop: Crop,
   download: Download,
+  code: CodeXml,
   grid: Grid3x3,
 } satisfies Record<string, Glyph>;
 

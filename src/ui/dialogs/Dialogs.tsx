@@ -20,6 +20,7 @@ import { Icon } from '../components/Icon';
 import { createFromTemplate, type Template } from '../templates';
 import { SHORTCUT_GROUPS } from './shortcuts';
 import { ExportOptions } from '../panels/RightPanel';
+import { CodeDialog } from './CodeDialog';
 
 /** The sizes of the files changed last, different ones only, newest first. */
 function recentSizes(files: { width: number; height: number; updatedAt: number }[], count = 3) {
@@ -326,7 +327,8 @@ function ShortcutsDialog() {
 function ExportDialog() {
   const t = useT();
   return (
-    <Dialog title={t('panel.export')} onClose={closeDialog} className="export-dialog">
+    // Its name field is there to check, rarely to change: no caret in it on opening.
+    <Dialog title={t('panel.export')} onClose={closeDialog} className="export-dialog" focusField={false}>
       <ExportOptions />
     </Dialog>
   );
@@ -346,6 +348,8 @@ export function Dialogs() {
       return <ShortcutsDialog />;
     case 'export':
       return <ExportDialog />;
+    case 'code':
+      return <CodeDialog />;
     case 'canvasSize':
       return <CanvasSizeDialog />;
     case 'upscaled':
