@@ -2,11 +2,15 @@
 
 **A free online pixel art editor, with the interface of a modern design tool.** Open source, runs in the browser, no account needed, and exports clean SVG you can paste straight into Figma.
 
-**[Open the editor](https://baipix.app/app/)** · [Website](https://baipix.app)
+**[Open the editor](https://baipix.app/app/)** · [Website](https://baipix.app) · [Watch the video](https://youtu.be/Or_5nmTCQO0)
 
 ![Baipix](docs/screenshot.png)
 
 The sky above is [`docs/sunset.baipix`](docs/sunset.baipix): open it in Baipix (Open a .baipix file, or drop it on the canvas) to explore its layers.
+
+## Baipix in 30 seconds
+
+[![Baipix in 30 seconds, on YouTube](docs/video.png)](https://youtu.be/Or_5nmTCQO0)
 
 ## Pixel art that leaves as clean vector
 
