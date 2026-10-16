@@ -327,7 +327,8 @@ function ShortcutsDialog() {
 function ExportDialog() {
   const t = useT();
   return (
-    <Dialog title={t('panel.export')} onClose={closeDialog} className="export-dialog">
+    // Its name field is there to check, rarely to change: no caret in it on opening.
+    <Dialog title={t('panel.export')} onClose={closeDialog} className="export-dialog" focusField={false}>
       <ExportOptions />
     </Dialog>
   );

@@ -9,6 +9,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The drawing as code: a </> button next to Export (or File › Code…) opens a dialog with a React component, the SVG, CSS (a background image and the colors as custom properties), JSON (named colors and the pixels) or ASCII, to read, copy or download. It follows the drawing's pixel size and gap, and can take the active layer alone. (#419)
 - A 30-second video of Baipix on YouTube, linked from the top of the README with its thumbnail. (#415)
 
+### Changed
+
+- Dialogs stand out from the editor: a darker, slightly blurred backdrop, a hairline edge and a deeper shadow. On opening, the focus goes to the first field to type in, or to the dialog itself, instead of the first button, whose focus ring looked like a selection (Export's 1×). (#421)
+
 ### Website
 
 - The home page's Components, Isometric volumes and Several boards are cards like the others, one row of the feature grid, instead of three wide cards stacked with animations. (#413)

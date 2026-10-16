@@ -15,6 +15,8 @@ interface DialogProps {
   className?: string;
   /** On the left of the footer, before the buttons: a secondary action. */
   footer?: ReactNode;
+  /** Whether its first field takes the focus on opening; false for a field you rarely change. */
+  focusField?: boolean;
 }
 
 /** Modal based on the native <dialog> element (focus trap and Escape for free). */
@@ -27,6 +29,7 @@ export function Dialog({
   cancelLabel,
   className = '',
   footer,
+  focusField = true,
 }: DialogProps) {
   const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
@@ -34,11 +37,16 @@ export function Dialog({
     const el = ref.current!;
     if (!el.open) {
       el.showModal();
-      // The × comes first but shouldn't take the focus: the first field or button after it does.
+      // The × comes first but shouldn't take the focus: the first field to type in does, or else
+      // the dialog itself, so that no button looks picked (a focus ring reads as a selection).
       if (document.activeElement === el.querySelector('.dialog-close'))
-        el.querySelector<HTMLElement>(
-          '.dialog-body :is(input, textarea, select, button), .dialog-footer button',
-        )?.focus();
+        (
+          (focusField &&
+            el.querySelector<HTMLElement>(
+              '.dialog-body :is(input:not([type="checkbox"], [type="radio"]), textarea)',
+            )) ||
+          el
+        ).focus();
     }
     const onCancel = (e: Event) => {
       e.preventDefault();
@@ -53,7 +61,7 @@ export function Dialog({
     onClose();
   };
   return (
-    <dialog ref={ref} className={`dialog ${className}`}>
+    <dialog ref={ref} className={`dialog ${className}`} tabIndex={-1}>
       <form onSubmit={submit}>
         <div className="dialog-header">
           <span>{title}</span>
