@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-10-17
+
+The drawing as code: a </> button next to Export gives it as a React component, SVG, CSS, JSON or ASCII, to copy or download. Dialogs stand out from the editor, and the background's hex field shows all six characters.
+
 ### Added
 
 - The drawing as code: a </> button next to Export (or File › Code…) opens a dialog with a React component, the SVG, CSS (a background image and the colors as custom properties), JSON (named colors and the pixels) or ASCII, to read, copy or download. It follows the drawing's pixel size and gap, and can take the active layer alone. (#419)
@@ -338,7 +342,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.1...main
+[0.7.1]: https://github.com/baipix/baipix/releases/tag/v0.7.1
 [0.7.0]: https://github.com/baipix/baipix/releases/tag/v0.7.0
 [0.6.0]: https://github.com/baipix/baipix/releases/tag/v0.6.0
 [0.5.0]: https://github.com/baipix/baipix/releases/tag/v0.5.0
