@@ -648,7 +648,7 @@ body.is-resizing * {
 .color-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   min-height: 32px;
 }
 .color-row.is-dimmed .field {
@@ -656,12 +656,16 @@ body.is-resizing * {
 }
 .hex-field {
   flex: 1;
+  /* Room for the swatch and six digits, even with buttons after the opacity (the background's). */
+  min-width: 78px;
 }
 .hex-field.is-editing {
   border-color: var(--accent);
 }
+/* Six letters as wide as D's fit: nothing to keep on the right, the field ends there. */
 .hex-field input {
-  padding-left: 6px;
+  padding-right: 2px;
+  padding-left: 4px;
 }
 /* Wide enough for the ◐ handle, three digits and the % sign. */
 .opacity-field {
