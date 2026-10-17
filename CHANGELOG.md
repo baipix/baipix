@@ -13,6 +13,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Dialogs stand out from the editor: a darker, slightly blurred backdrop, a hairline edge and a deeper shadow. On opening, the focus goes to the first field to type in, or to the dialog itself, instead of the first button, whose focus ring looked like a selection (Export's 1×). (#421)
 
+### Fixed
+
+- The background's hex field, in the Board section, shows its six characters instead of cutting the last one: color rows keep room for six wide letters, their gaps a little tighter. (#423)
+
 ### Website
 
 - The README credits Lucide for the editor's icons (Pixelarticons only for the pixel cursors of the site's animations), and DESIGN.md describes the current interface: the violet accent, soft corners and shadows, line icons. (#417)
