@@ -29,8 +29,8 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
 ---
 
 <Base title={`${title} · Baipix docs`} description={description}>
-  <Nav />
-  <div class="docs container">
+  <Nav wide />
+  <div class="docs container-wide">
     <nav class="docs-nav" aria-label="Docs">
       <a class="docs-home" href={`${base}docs/`} aria-current={path === `${base}docs/` ? 'page' : undefined}>
         Docs
@@ -81,7 +81,7 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
       <ul></ul>
     </aside>
   </div>
-  <Footer />
+  <Footer wide />
 </Base>
 
 <script>
@@ -131,14 +131,14 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
 <style>
   .docs {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 240px minmax(0, 1fr);
     gap: 56px;
     padding-top: 48px;
   }
   /* With room for it, a third column: the page's own sections. */
   @media (min-width: 1200px) {
     .docs {
-      grid-template-columns: 220px minmax(0, 1fr) 200px;
+      grid-template-columns: 240px minmax(0, 1fr) 220px;
     }
   }
   .docs-toc {
@@ -189,6 +189,8 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
     align-self: start;
     max-height: calc(100vh - var(--header-height) - 48px);
     overflow-y: auto;
+    padding-right: 24px;
+    border-right: 1px solid var(--line);
     font-size: 14px;
   }
   .docs-home {
@@ -229,9 +231,12 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
     color: var(--text);
     font-weight: 500;
   }
+  /* The text at a comfortable measure, centered between the two columns. */
   .docs-main {
+    justify-self: center;
+    width: 100%;
     min-width: 0;
-    max-width: 760px;
+    max-width: 800px;
   }
   .docs-eyebrow {
     margin: 0 0 12px;
@@ -397,7 +402,8 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
     .docs-nav {
       position: static;
       max-height: none;
-      padding-bottom: 20px;
+      padding: 0 0 20px;
+      border-right: 0;
       border-bottom: 1px solid var(--line);
     }
   }
