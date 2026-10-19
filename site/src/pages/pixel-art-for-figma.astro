@@ -10,24 +10,47 @@ import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 import { galleryDoc } from '../gallery';
-import { toHex } from '../../../src/engine/color';
 import { flatten } from '../../../src/engine/composite';
-import { renderGeometry, toLayeredSvg, toSvg } from '../../../src/engine/export/svg';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
 
 const base = import.meta.env.BASE_URL;
 
-// Mount Fuji from the gallery, and what lands in Figma when it's pasted: its layers as groups, each
-// with its shapes, one per color. Read from the file at build time.
-const doc = galleryDoc('mount-fuji.baipix');
-const { width: w, height: h } = doc;
-const svg = toSvg(flatten(doc), w, h, renderGeometry(w, h, 1, 0));
-const layers = [...doc.layers].reverse().map((layer) => {
-  const colors = [...new Set([...layer.pixels].filter((c) => c >>> 24))];
-  return { name: layer.name, colors: colors.map(toHex) };
+// The gallery's sheet of game icons, cut into its six icons. Each is drawn on its own as SVG for the
+// mock-up, and the copied SVG has one group per icon, named, as a designer would want them in Figma.
+const sheet = galleryDoc('items.baipix');
+const sheetPixels = flatten(sheet, { includeBackground: false });
+const CELL = 12;
+const ICONS = [
+  { name: 'Heart', x: 3, y: 3, count: 3 },
+  { name: 'Coin', x: 17, y: 3, count: 128 },
+  { name: 'Potion', x: 31, y: 3, count: 2 },
+  { name: 'Key', x: 3, y: 17, count: 1 },
+  { name: 'Sword', x: 17, y: 17, count: 1 },
+  { name: 'Gem', x: 31, y: 17, count: 7 },
+];
+const icons = ICONS.map((icon) => {
+  const px = new Uint32Array(CELL * CELL);
+  for (let y = 0; y < CELL; y++)
+    for (let x = 0; x < CELL; x++) px[y * CELL + x] = sheetPixels[(icon.y + y) * sheet.width + icon.x + x];
+  const colors = new Set([...px].filter((c) => c >>> 24)).size;
+  return { ...icon, px, colors, svg: toSvg(px, CELL, CELL, renderGeometry(CELL, CELL, 1, 0)) };
 });
-const shapes = layers.reduce((n, l) => n + l.colors.length, 0);
-// What Copy as SVG gives for it, layers kept, at 8× so it lands at a comfortable size.
-const layered = toLayeredSvg(doc, renderGeometry(w, h, 8, 0));
+// What lands in Figma: the six icons side by side at 8×, each a named group of one shape per color.
+const SCALE = 8;
+const STEP = (CELL + 4) * SCALE;
+const copied = [
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${STEP * icons.length - 4 * SCALE}" height="${CELL * SCALE}" viewBox="0 0 ${STEP * icons.length - 4 * SCALE} ${CELL * SCALE}" shape-rendering="crispEdges">`,
+  ...icons.map((icon, i) => {
+    const body = toSvg(icon.px, CELL, CELL, renderGeometry(CELL, CELL, SCALE, 0))
+      .split('\n')
+      .filter((line) => line.startsWith('<path'))
+      .join('');
+    return `<g id="${icon.name}" transform="translate(${i * STEP} 0)">${body}</g>`;
+  }),
+  '</svg>',
+  '',
+].join('\n');
+const shapes = icons.reduce((n, icon) => n + icon.colors, 0);
 
 const faq = [
   {
@@ -78,36 +101,44 @@ const faq = [
       design tools you know. Then paste it into Figma as vector you can edit.
     </GuideHero>
 
-    <section class="demo container" aria-label="A drawing, and what lands in Figma">
-      <figure class="frame demo-art">
-        <div
-          class="pix"
-          set:html={svg}
-          role="img"
-          aria-label="Mount Fuji at dawn, a 128 by 80 pixel landscape"
-        />
-      </figure>
-      <div class="demo-facts">
-        <div class="layers-panel" aria-label="The layers it gets in Figma">
-          <p class="layers-title">{doc.name}</p>
-          <ul>
-            {layers.map((l) => (
-              <li>
-                <span class="layer-name">{l.name}</span>
-                <span class="swatches" aria-label={`${l.colors.length} shapes`}>
-                  {l.colors.slice(0, 8).map((c) => (
-                    <i style={`background:${c}`} />
-                  ))}
-                  {l.colors.length > 8 && <span class="more">+{l.colors.length - 8}</span>}
-                </span>
+    <section class="demo container" aria-label="Pixel art icons in an app design">
+      {/* A design as it would sit on a canvas: an app's inventory screen, its icons drawn in Baipix. */}
+      <figure class="canvas" aria-label="An inventory screen designed with the six pixel art icons">
+        <p class="canvas-frame-name">Inventory</p>
+        <div class="screen">
+          <div class="screen-head">
+            <span>Inventory</span>
+            <span class="screen-gold">
+              <span class="pix" set:html={icons[1].svg} aria-hidden="true" />
+              128
+            </span>
+          </div>
+          <ul class="slots">
+            {icons.map((icon) => (
+              <li class="slot">
+                <span class="pix" set:html={icon.svg} aria-hidden="true" />
+                <span class="slot-name">{icon.name}</span>
+                <span class="slot-count">×{icon.count}</span>
               </li>
             ))}
           </ul>
+          <span class="screen-button">Use item</span>
         </div>
+      </figure>
+      <div class="demo-facts">
+        <ul class="icon-groups" aria-label="The groups it gets in Figma">
+          {icons.map((icon) => (
+            <li>
+              <span class="pix" set:html={icon.svg} aria-hidden="true" />
+              {icon.name}
+              <span class="muted">{icon.colors} shapes</span>
+            </li>
+          ))}
+        </ul>
         <p class="muted">
-          {`Mount Fuji from the gallery, pasted in Figma: ${layers.length} groups named after its layers, and ${shapes} shapes, one per color in each layer.`}
+          {`Six 12 × 12 icons from the gallery. Pasted in Figma, each is a group named after it, made of one shape per color: ${shapes} shapes in all, to recolor or resize like any vector.`}
         </p>
-        <CopySvgButton svg={layered} />
+        <CopySvgButton svg={copied} />
       </div>
     </section>
 
@@ -192,47 +223,114 @@ const faq = [
 </Base>
 
 <style>
-  /* A Figma-like layers panel: each layer of the drawing, and its shapes as color swatches. */
-  .layers-panel {
-    border: 1px solid var(--line);
-    background: var(--surface);
-    font-size: 14px;
-  }
-  .layers-title {
+  /* A canvas with a frame on it: a light gray board, the frame's name above it, a phone-sized screen. */
+  .canvas {
+    display: grid;
+    place-items: center;
     margin: 0;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--line);
-    font-weight: 600;
+    padding: 40px 24px;
+    background:
+      radial-gradient(circle at 1px 1px, light-dark(#d6d6d6, #2c2c2c) 1px, transparent 1.5px) 0 0 / 16px 16px,
+      light-dark(#ececec, #1e1e1e);
   }
-  .layers-panel ul {
-    margin: 0;
-    padding: 6px 0;
-    list-style: none;
+  .canvas-frame-name {
+    justify-self: center;
+    width: min(100%, 320px);
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: light-dark(#7a7a7a, #9a9a9a);
   }
-  .layers-panel li {
+  .screen {
+    display: grid;
+    gap: 16px;
+    width: min(100%, 320px);
+    padding: 20px;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #17171c;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+    font-size: 13px;
+  }
+  .screen-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 8px 16px 8px 28px;
+    font-size: 17px;
+    font-weight: 600;
   }
-  .swatches {
+  .screen-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 6px;
+    border-radius: 999px;
+    background: #f4f1e8;
+    font-size: 13px;
+  }
+  .screen-gold .pix {
+    width: 18px;
+  }
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .slot {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 12px 6px 10px;
+    border-radius: 12px;
+    background: #f3f3f6;
+  }
+  .slot .pix {
+    width: 40px;
+  }
+  .slot-name {
+    font-weight: 500;
+  }
+  .slot-count {
+    color: #7b7b86;
+    font-size: 12px;
+  }
+  .screen-button {
+    display: grid;
+    place-items: center;
+    height: 40px;
+    border-radius: 12px;
+    background: #17171c;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  /* The groups it gets in Figma: each icon, its name, its shapes. */
+  .icon-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    list-style: none;
+  }
+  .icon-groups li {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 12px;
+    padding: 12px 16px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
   }
-  .swatches i {
-    width: 12px;
-    height: 12px;
-    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  .icon-groups .pix {
+    width: 28px;
   }
-  .more {
-    margin-left: 4px;
-    font: 400 12px/1 var(--mono);
-    color: var(--muted);
-  }
-  .demo-art :global(.pix) {
-    width: 100%;
+  .icon-groups .muted {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 400;
   }
   .familiar li {
     padding-top: 20px;
