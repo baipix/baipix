@@ -75,9 +75,58 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
         </nav>
       )}
     </main>
+    {/* Filled in the browser from the page's headings, the one you're reading lit. */}
+    <aside class="docs-toc" aria-label="On this page" hidden>
+      <p class="docs-toc-title">On this page</p>
+      <ul></ul>
+    </aside>
   </div>
   <Footer />
 </Base>
+
+<script>
+  // The page's sections in the right column: each h2, linked by an id made from its text if it
+  // has none, and the one at the top of the screen highlighted as you scroll.
+  const toc = document.querySelector<HTMLElement>('.docs-toc');
+  const headings = [...document.querySelectorAll<HTMLHeadingElement>('.docs-content h2')];
+  if (toc && headings.length > 1) {
+    const list = toc.querySelector('ul')!;
+    const slug = (text: string) =>
+      text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+    const links = headings.map((h) => {
+      h.id ||= slug(h.textContent ?? '');
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = `#${h.id}`;
+      a.textContent = h.textContent;
+      li.append(a);
+      list.append(li);
+      return a;
+    });
+    toc.hidden = false;
+    let current: HTMLAnchorElement | null = null;
+    const update = () => {
+      // The last heading above a line just under the sticky header.
+      const line =
+        parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) + 40;
+      let at = 0;
+      headings.forEach((h, i) => {
+        if (h.getBoundingClientRect().top <= line) at = i;
+      });
+      if (links[at] === current) return;
+      current?.removeAttribute('aria-current');
+      current = links[at];
+      current.setAttribute('aria-current', 'location');
+    };
+    addEventListener('scroll', update, { passive: true });
+    update();
+  }
+</script>
 
 <style>
   .docs {
@@ -85,6 +134,53 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 56px;
     padding-top: 48px;
+  }
+  /* With room for it, a third column: the page's own sections. */
+  @media (min-width: 1200px) {
+    .docs {
+      grid-template-columns: 220px minmax(0, 1fr) 200px;
+    }
+  }
+  .docs-toc {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+    align-self: start;
+    max-height: calc(100vh - var(--header-height) - 48px);
+    overflow-y: auto;
+    font-size: 13px;
+  }
+  .docs-toc-title {
+    margin: 0 0 12px;
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .docs-toc ul {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .docs-toc :global(a) {
+    display: block;
+    padding: 4px 0 4px 10px;
+    border-left: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .docs-toc :global(a:hover) {
+    color: var(--text);
+  }
+  .docs-toc :global(a[aria-current]) {
+    border-left-color: var(--text);
+    color: var(--text);
+  }
+  @media (max-width: 1199px) {
+    .docs-toc {
+      display: none;
+    }
   }
   /* The table of contents stays in view under the sticky header. */
   .docs-nav {
