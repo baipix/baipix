@@ -1,6 +1,8 @@
 import type { ComponentType, SVGProps } from 'react';
 import {
   AlignCenterHorizontal,
+  BookOpen,
+  Bug,
   CodeXml,
   AlignCenterVertical,
   AlignEndHorizontal,
@@ -163,6 +165,8 @@ export const ICONS = {
   close: X,
   info: Info,
   help: CircleHelp,
+  docs: BookOpen,
+  bug: Bug,
   search: Search,
   rotate: RotateCw,
   rotateLeft: RotateCcw,

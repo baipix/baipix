@@ -2468,6 +2468,58 @@ body.is-dragging-swatch * {
   outline: 2px solid var(--glow-line);
   outline-offset: 2px;
 }
+/* Centered under the drawings, side by side, one under the other on a phone. */
+.home-help {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+.home-help-card {
+  flex: 0 1 320px;
+}
+/* Like the file cards, flatter: a row with an icon, a title and a line. */
+.home-help-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.12s ease;
+}
+.home-help-card:hover {
+  box-shadow: var(--shadow-pop);
+}
+.home-help-card:focus-visible {
+  outline: 2px solid var(--glow-line);
+  outline-offset: 2px;
+}
+.home-help-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  background: var(--input);
+  color: var(--text);
+}
+.home-help-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.home-help-title {
+  font-weight: 600;
+}
 .home-thumb {
   width: 100%;
   aspect-ratio: 16 / 9;
