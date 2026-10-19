@@ -552,6 +552,7 @@ export function drawScene(
   // Selected reference, or the active layer with the Move tool: a blue frame with white corner
   // handles, and the layer's size under it.
   if (ref?.selected) {
+    // The same frame as a layer's: handles on the corners and the sides, its size under it.
     const r = ref.rect;
     drawFrame(
       ctx,
@@ -561,6 +562,8 @@ export function drawScene(
       Math.round(r.h * s),
       dpr,
       theme,
+      `${Math.round(r.w)} × ${Math.round(r.h)}`,
+      true,
     );
   } else if (scene.layerBox) {
     const r = scene.layerBox;

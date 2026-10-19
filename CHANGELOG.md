@@ -9,6 +9,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Open a drawing from a link: the editor opens a .baipix file of baipix.app given as `?open=…`, straight in the editor. The guides' Open the editor buttons open their example, and each gallery piece has an Open link. Only files from the site itself are opened. (#433)
 - Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
 
+### Fixed
+
+- The selected reference image gets the same frame as a layer: handles on its sides too, its size under it, and the resize cursors over the handles. A side stretches it one way; a corner still keeps its proportions. (#451)
+
 ### Website
 
 - Docs for layers (layers and groups, blend modes and effects, move, resize and rotate), components and boards, with screenshots. The docs home shows the 30-second video, loaded from YouTube (without cookies) only when it's played. (#447)

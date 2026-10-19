@@ -126,12 +126,14 @@ export function CanvasView() {
     // Dragging a guide out of a ruler (index null) or an existing one (with the Move tool).
     let guideDrag: { axis: 'x' | 'y'; index: number | null; at: number } | null = null;
     let sprayTimer = 0;
-    // Adjusting the reference image: moving it, or resizing it from a corner (the opposite one stays).
+    // Adjusting the reference image: moving it, or resizing it from a corner (the opposite one stays) or a side.
     let refDrag: {
       mode: 'move' | 'resize';
       start: Point;
       rect: { x: number; y: number; w: number; h: number };
       anchor: Point;
+      /** The handle being dragged, as `handleAt` numbers them (0 to 3 corners, 4 to 7 sides). */
+      handle?: number;
     } | null = null;
     const refImages = new Map<string, HTMLImageElement>();
     const refImage = (src: string): HTMLImageElement | null => {
@@ -167,19 +169,13 @@ export function CanvasView() {
       const selected = editor.getState().referenceSelected;
       const p = artPoint(l);
       const rect = { x: r.x, y: r.y, w: r.w, h: r.h };
-      if (selected) {
-        const reach = (10 * viewport.dpr) / viewport.scale;
-        const corners: Point[] = [
-          { x: r.x, y: r.y },
-          { x: r.x + r.w, y: r.y },
-          { x: r.x, y: r.y + r.h },
-          { x: r.x + r.w, y: r.y + r.h },
-        ];
-        const i = corners.findIndex((c) => Math.abs(c.x - p.x) <= reach && Math.abs(c.y - p.y) <= reach);
-        if (i >= 0) {
-          refDrag = { mode: 'resize', start: p, rect, anchor: corners[3 - i] };
-          return true;
-        }
+      // Selected: its handles resize it, the corners and the sides, like a layer's.
+      const handle = selected ? handleAt(l) : null;
+      if (handle) {
+        const corners = cornersOf(rect);
+        const anchor = handle.corner < 4 ? corners[3 - handle.corner] : p;
+        refDrag = { mode: 'resize', start: p, rect, anchor, handle: handle.corner };
+        return true;
       }
       if (!insideReference(r, p)) return false;
       if (keep ? !selected : editor.layerAt(viewport.toPixel(l.x, l.y)) >= 0) return false;
@@ -198,7 +194,23 @@ export function CanvasView() {
         );
         return;
       }
-      // Keep the proportions: the larger of the two drag distances wins.
+      // A side stretches it one way, from the opposite side.
+      const side = refDrag.handle ?? 0;
+      if (side >= 4) {
+        const right = rect.x + rect.w;
+        const bottom = rect.y + rect.h;
+        const patch =
+          side === 4
+            ? { y: Math.min(p.y, bottom - 1), h: Math.max(1, bottom - p.y) }
+            : side === 6
+              ? { h: Math.max(1, p.y - rect.y) }
+              : side === 5
+                ? { w: Math.max(1, p.x - rect.x) }
+                : { x: Math.min(p.x, right - 1), w: Math.max(1, right - p.x) };
+        editor.updateReference(patch, final);
+        return;
+      }
+      // A corner keeps the proportions: the larger of the two drag distances wins.
       const ratio = rect.w / rect.h;
       const w = Math.max(1, Math.abs(p.x - anchor.x), Math.abs(p.y - anchor.y) * ratio);
       const h = w / ratio;
@@ -728,8 +740,11 @@ export function CanvasView() {
      */
     const handleAt = (l: { x: number; y: number }): { rect: Rect; corner: number } | null => {
       const state = editor.getState();
-      if (state.tool !== 'move' || state.referenceSelected || editor.isStroking) return null;
-      const rect = state.selection ?? activeLayerBox();
+      if (state.tool !== 'move' || editor.isStroking) return null;
+      // The selected reference has the same handles as a layer.
+      const ref = state.referenceSelected ? movableReference() : null;
+      if (state.referenceSelected && !ref) return null;
+      const rect = ref ? { x: ref.x, y: ref.y, w: ref.w, h: ref.h } : (state.selection ?? activeLayerBox());
       if (!rect) return null;
       const p = artPoint(l);
       const reach = (7 * viewport.dpr) / viewport.scale;
