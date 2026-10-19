@@ -25,6 +25,30 @@ const boards = fileFromJson(hobbitFile).map((doc) => ({
   height: doc.height,
 }));
 
+/**
+ * An isometric grid as the editor draws it (see drawIsoGrid): 2:1 lines through pixel corners, one
+ * every 8 pixels down (diamonds 16 wide), through the point `ox` along the top. As an SVG to lay over
+ * a picture of `w` × `h` pixels.
+ */
+const isoGrid = (w: number, h: number, ox: number) => {
+  const lines: string[] = [];
+  for (const dir of [1, -1]) {
+    const y0 = (c: number) => c - (dir * ox) / 2;
+    const y1 = (c: number) => c + (dir * (w - ox)) / 2;
+    for (
+      let k = Math.floor(-Math.max(y0(0), y1(0)) / 8);
+      k <= Math.ceil((h - Math.min(y0(0), y1(0))) / 8);
+      k++
+    )
+      lines.push(`M0 ${y0(k * 8)}L${w} ${y1(k * 8)}`);
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${lines.join('')}"/></svg>`;
+};
+// Over the spring board: set on the ground's top edges, where the grass meets the soil (measured).
+const houseGrid = isoGrid(boards[0].width, boards[0].height, 15);
+// Over the courtyard: the grid it was drawn on, through the middle of the top like in the editor.
+const courtyardGrid = isoGrid(anim.isometric.w, anim.isometric.h, Math.floor(anim.isometric.w / 2));
+
 const faq = [
   {
     q: 'What is isometric pixel art?',
@@ -78,21 +102,24 @@ const faq = [
     <section class="seasons container" aria-label="A hobbit house in four seasons">
       <figure class="frame seasons-art">
         <div class="seasons-grid">
-          {boards.map((b) => (
+          {boards.map((b, i) => (
             <div class="season">
-              <span class="season-name">{b.name}</span>
-              <div
-                class="pix"
-                set:html={b.svg}
-                role="img"
-                aria-label={`The hobbit house, ${b.name.toLowerCase()}`}
-              />
+              <span class="season-name">{i === 0 ? `${b.name} · isometric grid` : b.name}</span>
+              <div class="season-art">
+                <div
+                  class="pix"
+                  set:html={b.svg}
+                  role="img"
+                  aria-label={`The hobbit house, ${b.name.toLowerCase()}`}
+                />
+                {i === 0 && <div class="iso-grid" set:html={houseGrid} />}
+              </div>
             </div>
           ))}
         </div>
         <figcaption class="muted">
-          A hobbit house drawn in Baipix, in four seasons: one file, four boards, the same house recolored.
-          Open the editor to see how it's made.
+          A hobbit house drawn in Baipix on the isometric grid, in four seasons: one file, four boards, the
+          same house recolored. Open the editor to see how it's made.
         </figcaption>
       </figure>
     </section>
@@ -102,10 +129,13 @@ const faq = [
       <h2>Volumes in one drag.</h2>
       <div class="iso-block">
         <figure class="frame">
-          <PixelPlay
-            animation={anim.isometric}
-            label="A little courtyard built volume by volume on the isometric grid: a grass tile, stone stairs, a crate, a log and a pillar."
-          />
+          <div class="season-art">
+            <PixelPlay
+              animation={anim.isometric}
+              label="A little courtyard built volume by volume on the isometric grid: a grass tile, stone stairs, a crate, a log and a pillar."
+            />
+            <div class="iso-grid" set:html={courtyardGrid} />
+          </div>
         </figure>
         <div class="card-grid iso-cards">
           <article class="card">
@@ -242,6 +272,26 @@ const faq = [
   .season-name {
     font-size: 13px;
     color: var(--tint-ink, var(--muted));
+  }
+  /* The grid over the first board: thin light lines, the drawing still reads through them. */
+  .season-art {
+    position: relative;
+  }
+  .iso-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .iso-grid :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .iso-grid :global(path) {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.28);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
   }
   .seasons-art figcaption {
     max-width: 640px;
