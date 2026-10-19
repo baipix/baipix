@@ -1,7 +1,11 @@
 ---
 /** The docs' home: each section with what it covers, and its pages. */
 import { DOCS } from '../../docs';
+import PixelIcon from '../../components/PixelIcon.astro';
 import DocsLayout from '../../layouts/DocsLayout.astro';
+
+/** A pixel play triangle. */
+const PLAY = ['#......', '###....', '#####..', '#######', '#####..', '###....', '#......'];
 
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 ---
@@ -14,6 +18,24 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
     How to use Baipix, from your first file to the export. For a quick look at what each tool does, see the{' '}
     <a href={`${base}draw/`}>Draw</a> page; here is the detail.
   </p>
+  {/*
+    The video, without YouTube until it's played: a picture and a button, then the player from
+    youtube-nocookie.com on a click. So the page sets no cookie for those who don't watch.
+  */}
+  <figure class="video">
+    <button
+      type="button"
+      class="video-play"
+      data-video="Or_5nmTCQO0"
+      aria-label="Play the video: Baipix in 30 seconds"
+    >
+      <img src={`${base}docs/video.webp`} width="1280" height="720" alt="" loading="lazy" />
+      <span class="video-button" aria-hidden="true">
+        <PixelIcon rows={PLAY} size={26} />
+      </span>
+    </button>
+    <figcaption>Baipix in 30 seconds. The video plays from YouTube.</figcaption>
+  </figure>
   <div class="docs-sections">
     {DOCS.map((section) => (
       <section class="docs-section">
@@ -31,7 +53,64 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
   </div>
 </DocsLayout>
 
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-video]')) {
+    button.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = `https://www.youtube-nocookie.com/embed/${button.dataset.video}?autoplay=1&rel=0`;
+      frame.title = 'Baipix in 30 seconds';
+      frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      frame.allowFullscreen = true;
+      button.replaceWith(frame);
+    });
+  }
+</script>
+
 <style>
+  .video {
+    margin: 28px 0 8px;
+  }
+  .video-play,
+  .video :global(iframe) {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    border: 1px solid var(--line);
+    background: #000;
+    cursor: pointer;
+  }
+  .video-play img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* A square pixel button over the picture, dark so it reads on the light thumbnail. */
+  .video-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 80px;
+    height: 80px;
+    translate: -50% -50%;
+    background: rgb(15 15 17 / 0.88);
+    color: #ffffff;
+    box-shadow: 0 4px 0 rgb(0 0 0 / 0.45);
+  }
+  .video-play:hover .video-button,
+  .video-play:focus-visible .video-button {
+    translate: -50% calc(-50% + 2px);
+    box-shadow: 0 2px 0 rgb(0 0 0 / 0.45);
+  }
+  .video figcaption {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+  }
   .docs-sections {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -44,7 +123,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
   }
-  .docs-section :global(h2) {
+  .docs-sections .docs-section :global(h2) {
     margin: 0 0 8px;
     padding: 0;
     border: 0;
