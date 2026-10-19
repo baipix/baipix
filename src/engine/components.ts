@@ -9,6 +9,25 @@ import type { Rect } from './math';
  * `syncInstances`), so drawing, compositing and exports treat them as ordinary pixels.
  */
 
+/**
+ * A component belongs to its file, not to its board: its instances can be on any board of the
+ * file, or outside the boards. Each document knows the documents of its file (its scope, set by
+ * the editor with `linkBoards`), and a master is looked up across them. A document with no scope
+ * (a test, a file being read) is its own file.
+ */
+const scopes = new WeakMap<PixelDoc, readonly PixelDoc[]>();
+
+/** Sets the documents of one file: each finds the masters of all of them. */
+export function linkBoards(docs: readonly PixelDoc[]): void {
+  for (const doc of docs) scopes.set(doc, docs);
+}
+
+/** The documents of `doc`'s file, `doc` first. */
+export function fileDocs(doc: PixelDoc): PixelDoc[] {
+  const scope = scopes.get(doc);
+  return scope ? [doc, ...scope.filter((d) => d !== doc)] : [doc];
+}
+
 /** The frame of a master's sprite, in canvas pixels. */
 export type ComponentFrame = Rect;
 
@@ -42,10 +61,22 @@ export function spritePixels(doc: PixelDoc, master: Layer): Uint32Array {
 /** The masters of a document, bottom to top. */
 export const masters = (doc: PixelDoc): Layer[] => doc.layers.filter(isMaster);
 
-export const findMaster = (doc: PixelDoc, id: string): Layer | undefined =>
-  doc.layers.find((l) => l.id === id && isMaster(l));
+/** The masters of the whole file `doc` is in, with the document each is on. */
+export const fileMasters = (doc: PixelDoc): { doc: PixelDoc; layer: Layer }[] =>
+  fileDocs(doc).flatMap((d) => masters(d).map((layer) => ({ doc: d, layer })));
 
-/** The instances of a master, bottom to top. */
+/** A master of the file, and the document it's on. */
+export function masterOf(doc: PixelDoc, id: string): { doc: PixelDoc; layer: Layer } | null {
+  for (const d of fileDocs(doc)) {
+    const layer = d.layers.find((l) => l.id === id && isMaster(l));
+    if (layer) return { doc: d, layer };
+  }
+  return null;
+}
+
+export const findMaster = (doc: PixelDoc, id: string): Layer | undefined => masterOf(doc, id)?.layer;
+
+/** The instances of a master, bottom to top, on `doc` only. */
 export const instancesOf = (doc: PixelDoc, masterId: string): Layer[] =>
   doc.layers.filter((l) => l.instance?.of === masterId);
 
@@ -58,12 +89,26 @@ export function clampFrame(doc: PixelDoc, r: Rect): ComponentFrame {
   return { x, y, w, h };
 }
 
-/** Draws `master`'s sprite into `target`'s pixels at the instance's position, clearing the rest. */
-function render(doc: PixelDoc, master: Layer, target: Layer, at: { x: number; y: number }): void {
+/**
+ * Draws `master`'s sprite (on `from`, its document) into `target`'s pixels (on `doc`) at the
+ * instance's position, clearing the rest. Returns whether any pixel changed.
+ */
+function render(
+  from: PixelDoc,
+  master: Layer,
+  doc: PixelDoc,
+  target: Layer,
+  at: { x: number; y: number },
+): boolean {
   const frame = master.component!;
   const { width: W, height: H } = doc;
-  // Drawn in place when the size is right: this runs on every pointer move while dragging.
-  const out = target.pixels.length === W * H ? target.pixels.fill(0) : new Uint32Array(W * H);
+  const MW = from.width;
+  const MH = from.height;
+  // Drawn in place when the size is right: this runs on every pointer move while dragging. The
+  // copy kept to tell whether anything changed is cheap next to what it saves: the other boards
+  // are only drawn again when their instances did.
+  const before = target.pixels.length === W * H ? target.pixels.slice() : null;
+  const out = before ? target.pixels.fill(0) : new Uint32Array(W * H);
   for (let sy = 0; sy < frame.h; sy++) {
     const ty = at.y + sy;
     if (ty < 0 || ty >= H) continue;
@@ -73,26 +118,39 @@ function render(doc: PixelDoc, master: Layer, target: Layer, at: { x: number; y:
       // A master dragged partly off the canvas: its frame follows it, what's outside is empty.
       const fx = frame.x + sx;
       const fy = frame.y + sy;
-      if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
-      out[ty * W + tx] = master.pixels[fy * W + fx];
+      if (fx < 0 || fy < 0 || fx >= MW || fy >= MH) continue;
+      out[ty * W + tx] = master.pixels[fy * MW + fx];
     }
   }
   target.pixels = out;
   // An instance has nothing off the canvas of its own: its master keeps the sprite.
   delete target.outside;
+  if (!before) return true;
+  for (let i = 0; i < out.length; i++) if (out[i] !== before[i]) return true;
+  return false;
 }
 
 /**
  * Renders every instance (or only those of `masterId`) from its master. Call after a master's
  * pixels or frame change, or an instance moves.
  */
-export function syncInstances(doc: PixelDoc, masterId?: string): void {
+export function syncInstances(doc: PixelDoc, masterId?: string): boolean {
+  let changed = false;
   for (const layer of doc.layers) {
     const ref = layer.instance;
     if (!ref || (masterId && ref.of !== masterId)) continue;
-    const master = findMaster(doc, ref.of);
-    if (master) render(doc, master, layer, ref);
+    const master = masterOf(doc, ref.of);
+    if (master && render(master.doc, master.layer, doc, layer, ref)) changed = true;
   }
+  return changed;
+}
+
+/**
+ * Renders the instances on every document of `doc`'s file (or only those of `masterId`). Returns
+ * the documents whose instances changed, so their pictures can be drawn again.
+ */
+export function syncFileInstances(doc: PixelDoc, masterId?: string): PixelDoc[] {
+  return fileDocs(doc).filter((d) => syncInstances(d, masterId));
 }
 
 /** Turns a layer into a master, its sprite being what's inside `frame`. Not for an instance. */
@@ -109,15 +167,18 @@ export function makeComponent(doc: PixelDoc, layerIndex: number, frame: Rect): b
  * with the frame's top-left at (x, y). Returns the new layer's index, or -1.
  */
 export function addInstance(doc: PixelDoc, masterId: string, x: number, y: number, index?: number): number {
-  const master = findMaster(doc, masterId);
-  if (!master) return -1;
+  const found = masterOf(doc, masterId);
+  if (!found) return -1;
+  const master = found.layer;
   doc.layerCounter++;
   const layer = createLayer(master.name, doc.width, doc.height);
   layer.instance = { of: masterId, x: Math.round(x), y: Math.round(y) };
-  if (master.group) layer.group = master.group;
-  const at = index ?? doc.layers.indexOf(master) + 1;
+  // On the master's board: next to it, in its group. On another one: where `index` says, or on top.
+  const here = found.doc === doc;
+  if (here && master.group) layer.group = master.group;
+  const at = index ?? (here ? doc.layers.indexOf(master) + 1 : doc.layers.length);
   doc.layers.splice(at, 0, layer);
-  render(doc, master, layer, layer.instance);
+  render(found.doc, master, doc, layer, layer.instance);
   return at;
 }
 
@@ -155,9 +216,10 @@ export function growFrame(doc: PixelDoc, master: Layer, before: Uint32Array): bo
   const dx = x0 - f.x;
   const dy = y0 - f.y;
   master.component = { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
-  for (const layer of instancesOf(doc, master.id))
-    layer.instance = { ...layer.instance!, x: layer.instance!.x + dx, y: layer.instance!.y + dy };
-  syncInstances(doc, master.id);
+  for (const d of fileDocs(doc))
+    for (const layer of instancesOf(d, master.id))
+      layer.instance = { ...layer.instance!, x: layer.instance!.x + dx, y: layer.instance!.y + dy };
+  syncFileInstances(doc, master.id);
   return true;
 }
 
@@ -167,16 +229,19 @@ export function detachInstance(layer: Layer): void {
 }
 
 /**
- * Keeps the model sound (after loading a file, or deleting layers): a master can't also be an
- * instance, an instance whose master is gone becomes a plain layer, frames stay in the canvas,
- * and instances are rendered from their masters.
+ * Keeps the model sound (after loading a file): a master can't also be an instance, an instance
+ * whose master isn't in the file becomes a plain layer, frames stay in the canvas, and instances
+ * are rendered from their masters. `docs` are the file's documents, all of them.
  */
-export function normalizeComponents(doc: PixelDoc): void {
-  for (const layer of doc.layers) {
-    if (layer.component && layer.instance) delete layer.instance;
-    if (layer.component) layer.component = clampFrame(doc, layer.component);
-  }
-  for (const layer of doc.layers)
-    if (layer.instance && !findMaster(doc, layer.instance.of)) detachInstance(layer);
-  syncInstances(doc);
+export function normalizeComponents(docs: readonly PixelDoc[]): void {
+  linkBoards(docs);
+  for (const doc of docs)
+    for (const layer of doc.layers) {
+      if (layer.component && layer.instance) delete layer.instance;
+      if (layer.component) layer.component = clampFrame(doc, layer.component);
+    }
+  for (const doc of docs)
+    for (const layer of doc.layers)
+      if (layer.instance && !masterOf(doc, layer.instance.of)) detachInstance(layer);
+  for (const doc of docs) syncInstances(doc);
 }

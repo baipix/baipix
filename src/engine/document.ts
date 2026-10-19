@@ -231,7 +231,12 @@ export const isBoard = (doc: PixelDoc): boolean => !isEmptyBoard(doc) && !isFree
 /** The name of the file a document belongs to. */
 export const fileNameOf = (doc: PixelDoc): string => doc.board?.fileName ?? doc.name;
 
-export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
+/**
+ * A copy of a document. With `keepIds` false, its layers get new ids, recorded in `ids` (old to
+ * new) when given: copying all the boards of a file, `relinkInstances` then points instances at
+ * the copies of masters on other boards.
+ */
+export function cloneDocument(doc: PixelDoc, keepIds = true, ids?: Map<string, string>): PixelDoc {
   return {
     ...doc,
     id: keepIds ? doc.id : newId('doc'),
@@ -239,17 +244,26 @@ export function cloneDocument(doc: PixelDoc, keepIds = true): PixelDoc {
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.groups && { groups: doc.groups.map((g) => ({ ...g })) }),
     ...(doc.board && { board: { ...doc.board } }),
-    layers: keepIds ? doc.layers.map((l) => cloneLayer(l)) : cloneLayersWithNewIds(doc.layers),
+    layers: keepIds ? doc.layers.map((l) => cloneLayer(l)) : cloneLayersWithNewIds(doc.layers, ids),
   };
 }
 
 /** Copies layers under new ids, instances still pointing at their (copied) masters. */
-function cloneLayersWithNewIds(layers: Layer[]): Layer[] {
+function cloneLayersWithNewIds(layers: Layer[], ids = new Map<string, string>()): Layer[] {
   const copies = layers.map((l) => cloneLayer(l, false));
-  const ids = new Map(layers.map((l, i) => [l.id, copies[i].id]));
+  layers.forEach((l, i) => ids.set(l.id, copies[i].id));
   for (const copy of copies)
-    if (copy.instance) copy.instance.of = ids.get(copy.instance.of) ?? copy.instance.of;
+    if (copy.instance)
+      copy.instance = { ...copy.instance, of: ids.get(copy.instance.of) ?? copy.instance.of };
   return copies;
+}
+
+/** Points the instances of `docs` at the copies of their masters, from `ids` (old to new). */
+export function relinkInstances(docs: PixelDoc[], ids: Map<string, string>): void {
+  for (const doc of docs)
+    for (const layer of doc.layers)
+      if (layer.instance && ids.has(layer.instance.of))
+        layer.instance = { ...layer.instance, of: ids.get(layer.instance.of)! };
 }
 
 export const activeLayer = (doc: PixelDoc): Layer => doc.layers[doc.activeLayer];

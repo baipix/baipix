@@ -4,6 +4,7 @@ import {
   activeLayer,
   centeredOffset,
   cloneDocument,
+  relinkInstances,
   cloneLayer,
   createDocument,
   createLayer,
@@ -59,11 +60,15 @@ import {
 import { fragmentOf, pasteFragment, type LayerFragment } from './layerClipboard';
 import {
   addInstance,
+  clampFrame,
   detachInstance,
   findMaster,
   growFrame,
   isLinkedInstance,
+  linkBoards,
   makeComponent,
+  masterOf,
+  syncFileInstances,
   syncInstances,
 } from './components';
 import { History, takeSnapshot, type Snapshot } from './history';
@@ -237,7 +242,6 @@ export type Notice =
   | { type: 'groupTooDeep' }
   | { type: 'instanceLocked' }
   | { type: 'componentCreated' }
-  | { type: 'componentStaysOnBoard' }
   | { type: 'layerToBoard'; board: string };
 
 export interface Preferences {
@@ -666,12 +670,26 @@ export class Editor {
 
   /** Publishes a change. `persist` is false for pure UI changes that don't need saving. */
   private commit(persist = true): void {
-    // Instances show their master as it is now, whatever changed it.
-    syncInstances(this.doc);
+    // Instances show their master as it is now, whatever changed it, on every board of the file:
+    // a board whose instances changed is dated, so its picture on the canvas is drawn again.
+    this.linkFiles();
+    for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
     this.refresh();
     this.listeners.forEach((l) => l());
     this.pixelListeners.forEach((l) => l());
     if (persist) this.persistListeners.forEach((l) => l());
+  }
+
+  /** Tells each document the documents of its file, for components (see `linkBoards`). */
+  private linkFiles(): void {
+    const files = new Map<string, PixelDoc[]>();
+    for (const { doc } of this.sessions) {
+      const file = fileIdOf(doc);
+      const docs = files.get(file);
+      if (docs) docs.push(doc);
+      else files.set(file, [doc]);
+    }
+    for (const docs of files.values()) linkBoards(docs);
   }
 
   private pixelsChanged(): void {
@@ -995,6 +1013,8 @@ export class Editor {
   /** Makes a session active, remembering it as its file's last board. */
   private activate(target: Session): void {
     this.active = target;
+    // Its file's boards may have changed (added, replaced by an undo): components look across them.
+    this.linkFiles();
     this.lastBoard.set(fileIdOf(target.doc), target.doc.id);
   }
 
@@ -1045,13 +1065,20 @@ export class Editor {
     if (!boards.length) return;
     this.cancelStroke();
     const file = newId('doc');
+    // One map of new ids for the whole file: instances follow the copies of their masters,
+    // wherever on the file they are.
+    const ids = new Map<string, string>();
     const copies = boards.map(({ doc }) => {
-      const copy = cloneDocument(doc, false);
+      const copy = cloneDocument(doc, false, ids);
       if (copy.board) copy.board = { ...copy.board, file, fileName: this.labels.copyOf(copy.board.fileName) };
       else copy.name = this.labels.copyOf(copy.name);
       copy.updatedAt = Date.now();
       return { doc: copy, history: new History(), selection: null } as Session;
     });
+    relinkInstances(
+      copies.map((c) => c.doc),
+      ids,
+    );
     const at = this.sessions.indexOf(boards[boards.length - 1]) + 1;
     this.sessions.splice(at, 0, ...copies);
     this.activate(copies[boards.indexOf(this.boardFor(id)!)] ?? copies[0]);
@@ -1273,10 +1300,6 @@ export class Editor {
     const to = this.boardsOf(fileIdOf(from.doc)).find((b) => b.doc.id === boardId);
     const layer = from.doc.layers.find((l) => l.id === layerId);
     if (!to || to === from || !layer) return false;
-    if (layer.component || layer.instance) {
-      this.notice({ type: 'componentStaysOnBoard' });
-      return false;
-    }
     if (layer.locked) {
       this.notice({ type: 'layerLocked' });
       return false;
@@ -1313,6 +1336,16 @@ export class Editor {
     this.activate(to);
     const put = (doc: PixelDoc) => {
       const copy: Layer = { ...layer, pixels: moved.pixels };
+      // A component keeps its id, so its instances on every board still follow it: its frame
+      // moves with its pixels. An instance lands where it was let go, drawn again on its new board.
+      if (copy.component)
+        copy.component = clampFrame(doc, {
+          ...copy.component,
+          x: copy.component.x + dx,
+          y: copy.component.y + dy,
+        });
+      if (copy.instance)
+        copy.instance = { ...copy.instance, x: copy.instance.x + dx, y: copy.instance.y + dy };
       delete copy.group;
       if (moved.outside) copy.outside = moved.outside;
       else delete copy.outside;
@@ -1448,11 +1481,6 @@ export class Editor {
     const src = from.doc;
     const layer = src.layers.find((l) => l.id === layerId);
     if (!layer || isFreeZone(src)) return false;
-    // Before making room outside the boards for it: a component stays on its board.
-    if (layer.component || layer.instance) {
-      this.notice({ type: 'componentStaysOnBoard' });
-      return false;
-    }
     const box = layerContent(layer.pixels, src.width, src.height, layer.outside)?.rect;
     if (!box) return false;
     // A file of one board becomes a file of boards, its board at (0, 0).
@@ -3155,9 +3183,11 @@ export class Editor {
   /** From an instance: its component becomes the active layer, to edit every copy at once. */
   goToMaster(): boolean {
     const layer = activeLayer(this.doc);
-    const master = layer.instance && findMaster(this.doc, layer.instance.of);
-    if (!master) return false;
-    this.setActiveLayer(this.doc.layers.indexOf(master));
+    const found = layer.instance && masterOf(this.doc, layer.instance.of);
+    if (!found) return false;
+    // On another board of the file: that board, then the master.
+    if (found.doc !== this.doc) this.switchBoard(found.doc.id);
+    this.setActiveLayer(this.doc.layers.indexOf(found.layer));
     return true;
   }
 
@@ -3169,11 +3199,12 @@ export class Editor {
   }
 
   /**
-   * A new instance of a master (dropped from the Components list), its sprite centered on `p`,
-   * above the master. It becomes the active layer.
+   * A new instance of a master of the file (dropped from the Components list), its sprite centered
+   * on `p` in the active board: above the master on its own board, on top on another. It becomes
+   * the active layer.
    */
   addInstanceAt(masterId: string, p: Point): boolean {
-    const master = findMaster(this.doc, masterId);
+    const master = masterOf(this.doc, masterId)?.layer;
     if (!master?.component) return false;
     const { w, h } = master.component;
     let index = -1;

@@ -26,6 +26,8 @@ export const FILE_VERSION = 1;
 export const FILE_EXTENSION = '.baipix';
 
 export interface BaipixLayer {
+  /** The layer's id, so components can point at it from another board (missing in older files). */
+  id?: string;
   name: string;
   visible: boolean;
   /** Missing in older files: unlocked. */
@@ -38,10 +40,11 @@ export interface BaipixLayer {
   /** A component's master: the frame of its sprite, in canvas pixels. */
   component?: { x: number; y: number; w: number; h: number };
   /**
-   * An instance: its master as an index in `layers`, and where the sprite lands. Its pixels are
-   * saved too, so a version without components still shows them.
+   * An instance: its master as an index in `layers` (-1 when it's on another board of the file),
+   * the master's id (`master`, missing in older files), and where the sprite lands. Its pixels are
+   * saved too, so a version without components, or without components across boards, still shows them.
    */
-  instance?: { of: number; x: number; y: number };
+  instance?: { of: number; master?: string; x: number; y: number };
   /** Layer effects (missing: none), colors as unsigned 32-bit integers. */
   effects?: LayerEffect[];
   /** Distinct colors as unsigned 32-bit integers (0xAABBGGRR). */
@@ -160,6 +163,7 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
       },
     }),
     layers: doc.layers.map((l) => ({
+      id: l.id,
       name: l.name,
       visible: l.visible,
       locked: l.locked,
@@ -167,10 +171,14 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
       ...(l.blendMode && l.blendMode !== 'normal' && { blendMode: l.blendMode }),
       ...(l.group && groupIndex.has(l.group) && { group: groupIndex.get(l.group) }),
       ...(l.component && { component: { ...l.component } }),
-      ...(l.instance &&
-        layerIndex.has(l.instance.of) && {
-          instance: { of: layerIndex.get(l.instance.of)!, x: l.instance.x, y: l.instance.y },
-        }),
+      ...(l.instance && {
+        instance: {
+          of: layerIndex.get(l.instance.of) ?? -1,
+          master: l.instance.of,
+          x: l.instance.x,
+          y: l.instance.y,
+        },
+      }),
       ...(l.effects?.length && { effects: l.effects.map((e) => ({ ...e, color: e.color >>> 0 })) }),
       ...encodePixels(l.pixels),
     })),
@@ -212,7 +220,11 @@ function readGroups(raw: unknown, layers: Layer[], refs: unknown[]): LayerGroup[
   return groups;
 }
 
-/** Components from a file: masters' frames, and instances pointing at their master by index. */
+/**
+ * Components from a file: masters' frames, and instances pointing at their master, by its id
+ * (`master`, which may be on another board) or, in older files, by its index in the same board.
+ * An instance whose master isn't found stays one for now: the file's other boards are read after.
+ */
 function readComponents(layers: Layer[], raw: Partial<BaipixLayer>[]): void {
   const whole = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
   raw.forEach((l, i) => {
@@ -220,8 +232,12 @@ function readComponents(layers: Layer[], raw: Partial<BaipixLayer>[]): void {
     if (c && whole(c.x) && whole(c.y) && whole(c.w) && whole(c.h))
       layers[i].component = { x: c.x, y: c.y, w: c.w, h: c.h };
     const ref = l.instance;
-    if (ref && whole(ref.of) && whole(ref.x) && whole(ref.y) && layers[ref.of] && ref.of !== i)
-      layers[i].instance = { of: layers[ref.of].id, x: Math.round(ref.x), y: Math.round(ref.y) };
+    if (!ref || !whole(ref.x) || !whole(ref.y)) return;
+    const at = { x: Math.round(ref.x), y: Math.round(ref.y) };
+    if (typeof ref.master === 'string' && ref.master && ref.master !== layers[i].id)
+      layers[i].instance = { of: ref.master, ...at };
+    else if (whole(ref.of) && layers[ref.of] && ref.of !== i)
+      layers[i].instance = { of: layers[ref.of].id, ...at };
   });
 }
 
@@ -264,16 +280,27 @@ function readGuides(
   return guides.x.length || guides.y.length ? { guides } : null;
 }
 
-/** Validates and converts a parsed `.baipix` object into a document. Throws FileFormatError. */
-export function deserializeDocument(data: unknown): PixelDoc {
+/**
+ * Validates and converts a parsed `.baipix` object into a document. Throws FileFormatError.
+ * `inFile`: one board of a file being read, whose components are checked once all its boards are
+ * (see `normalizeComponents`); otherwise the document is a file of its own and is checked now.
+ */
+export function deserializeDocument(data: unknown, inFile = false): PixelDoc {
   const f = data as Partial<BaipixFile> | null;
   if (!f || f.format !== FILE_FORMAT) throw new FileFormatError('Not a .baipix file');
   if (typeof f.version !== 'number' || f.version > FILE_VERSION)
     throw new FileFormatError('Unsupported version');
   const width = clamp(Math.round(Number(f.width)) || 0, 1, MAX_SIZE);
   const height = clamp(Math.round(Number(f.height)) || 0, 1, MAX_SIZE);
+  // A layer keeps its id from the file when it has a sound one, not used twice.
+  const ids = new Set<string>();
+  const idOf = (raw: unknown): string => {
+    const id = typeof raw === 'string' && /^[\w-]{1,64}$/.test(raw) && !ids.has(raw) ? raw : newId('layer');
+    ids.add(id);
+    return id;
+  };
   const layers: Layer[] = (Array.isArray(f.layers) ? f.layers : []).map((l, i) => ({
-    id: newId('layer'),
+    id: idOf((l as Partial<BaipixLayer>).id),
     name: typeof l.name === 'string' && l.name ? l.name.slice(0, 120) : `Layer ${i + 1}`,
     visible: l.visible !== false,
     locked: l.locked === true,
@@ -322,7 +349,7 @@ export function deserializeDocument(data: unknown): PixelDoc {
     const effects = cleanEffects((l as Partial<BaipixLayer>).effects);
     if (effects && layers[i]) layers[i].effects = effects;
   });
-  normalizeComponents(doc);
+  if (!inFile) normalizeComponents([doc]);
   return doc;
 }
 
@@ -380,7 +407,26 @@ const parseJson = (text: string): unknown => {
 };
 
 export function documentFromJson(text: string): PixelDoc {
-  return deserializeDocument(parseJson(text));
+  return renewLayerIds([deserializeDocument(parseJson(text))])[0];
+}
+
+/**
+ * New ids for every layer of a file's boards, the instances following their masters: a file
+ * opened twice, or next to the one it was saved from, doesn't share ids with it.
+ */
+function renewLayerIds(docs: PixelDoc[]): PixelDoc[] {
+  const ids = new Map<string, string>();
+  for (const doc of docs)
+    for (const layer of doc.layers) {
+      const id = newId('layer');
+      ids.set(layer.id, id);
+      layer.id = id;
+    }
+  for (const doc of docs)
+    for (const layer of doc.layers)
+      if (layer.instance)
+        layer.instance = { ...layer.instance, of: ids.get(layer.instance.of) ?? layer.instance.of };
+  return docs;
 }
 
 /**
@@ -394,8 +440,8 @@ export function fileFromJson(text: string): PixelDoc[] {
   if (!Array.isArray(data.boards) || !data.boards.length) throw new FileFormatError('No boards');
   const file = newId('doc');
   const fileName = (typeof data.name === 'string' && data.name.trim()) || 'Untitled';
-  return data.boards.map((b) => {
-    const doc = deserializeDocument({ ...b, version: 1 });
+  const docs = data.boards.map((b) => {
+    const doc = deserializeDocument({ ...b, version: 1 }, true);
     doc.id = newId('doc');
     doc.board = {
       file,
@@ -407,4 +453,7 @@ export function fileFromJson(text: string): PixelDoc[] {
     };
     return doc;
   });
+  // The components once every board is read: an instance can point at another board's master.
+  normalizeComponents(docs);
+  return renewLayerIds(docs);
 }
