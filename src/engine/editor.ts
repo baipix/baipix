@@ -1448,6 +1448,11 @@ export class Editor {
     const src = from.doc;
     const layer = src.layers.find((l) => l.id === layerId);
     if (!layer || isFreeZone(src)) return false;
+    // Before making room outside the boards for it: a component stays on its board.
+    if (layer.component || layer.instance) {
+      this.notice({ type: 'componentStaysOnBoard' });
+      return false;
+    }
     const box = layerContent(layer.pixels, src.width, src.height, layer.outside)?.rect;
     if (!box) return false;
     // A file of one board becomes a file of boards, its board at (0, 0).
@@ -3676,10 +3681,17 @@ export class Editor {
         : [activeLayer(doc)];
     let b: Rect | null = null;
     for (const layer of layers) {
-      const block = extractBlock(layer.pixels, doc.width, doc.height, area);
-      const inner = pixelBounds(block.pixels, block.width, block.height);
-      if (!inner) continue;
-      const r = { x: area.x + inner.x, y: area.y + inner.y, w: inner.w, h: inner.h };
+      // Without a selection, all of the layer counts, what's past the board's edges too: aligning
+      // brings back a drawing moved off the board.
+      let r: Rect | null = null;
+      if (!this.active.selection)
+        r = layerContent(layer.pixels, doc.width, doc.height, layer.outside)?.rect ?? null;
+      else {
+        const block = extractBlock(layer.pixels, doc.width, doc.height, area);
+        const inner = pixelBounds(block.pixels, block.width, block.height);
+        if (inner) r = { x: area.x + inner.x, y: area.y + inner.y, w: inner.w, h: inner.h };
+      }
+      if (!r) continue;
       if (!b) b = r;
       else {
         const x = Math.min(b.x, r.x);

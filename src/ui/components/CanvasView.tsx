@@ -1185,6 +1185,15 @@ export function CanvasView() {
       const p = viewport.toPixel(local(e).x, local(e).y);
       const outside = p.x < 0 || p.y < 0 || p.x >= st.doc.width || p.y >= st.doc.height;
       const target = moving && outside ? boardAt(p) : null;
+      // A component and its instances stay on their board: let go off it, the drag goes back to
+      // where it started, and a message says why. Kept going, it would be lost past the board's edge.
+      const dragged = st.doc.layers[st.doc.activeLayer];
+      if (moving && outside && dragged && (dragged.component || dragged.instance)) {
+        editor.cancelStroke();
+        if (target) editor.moveLayerToBoard(dragged.id, target.id);
+        else if (isBoard(st.doc)) editor.moveLayerOut(dragged.id);
+        return;
+      }
       editor.endStroke();
       const { doc } = editor.getState();
       const id = doc.layers[doc.activeLayer].id;
