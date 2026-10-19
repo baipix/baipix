@@ -9,6 +9,7 @@ const base = import.meta.env.BASE_URL;
 const STAR = ['...#...', '..###..', '#######', '.#####.', '..###..', '.##.##.', '.#...#.'];
 const links = [
   { href: `${base}draw/`, label: 'Draw' },
+  { href: `${base}docs/`, label: 'Docs' },
   { href: `${base}#gallery`, label: 'Gallery' },
   { href: `${base}#install`, label: 'Get started' },
 ];
@@ -23,7 +24,12 @@ const here = Astro.url.pathname;
     </a>
     <nav class="nav-links">
       {links.map((l) => (
-        <a href={l.href} aria-current={here === l.href ? 'page' : undefined}>
+        <a
+          href={l.href}
+          aria-current={
+            here === l.href || (!l.href.includes('#') && here.startsWith(l.href)) ? 'page' : undefined
+          }
+        >
           {l.label}
         </a>
       ))}
