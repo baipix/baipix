@@ -31,6 +31,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - [Open the editor](${new URL(APP_URL, site).href}): free, in the browser.
 - [Home page](${url('')}): features, screenshots and a gallery of drawings made with Baipix.
 - [Draw](${url('draw/')}): every tool explained, with the key that picks it.
+- [Pixel art to SVG](${url('pixel-art-to-svg/')}): how Baipix turns pixel art into clean vector, with a measured example.
 - [Source code on GitHub](${REPO_URL}): README, how to run it locally, how to contribute.
 - [Changelog](${REPO_URL}/blob/main/CHANGELOG.md): what each version brought.
 `;

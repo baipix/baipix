@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- A Pixel art to SVG page: the gallery's starfighter as an example with its numbers measured at build time (18 paths instead of 1024 squares, 85% lighter), copy and paste straight into Figma, what's in the file, how to do it in three steps, and common questions, under the home page's animated background. It's in the footer, the sitemap and llms.txt. (#431)
 - baipix.app/llms.txt sums up Baipix for AI assistants: what it is, what it does, the current version and the links to read more. (#429)
 
 ## [0.7.1] - 2026-10-17

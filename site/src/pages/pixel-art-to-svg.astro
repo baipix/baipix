@@ -1,0 +1,503 @@
+---
+import ArrowIcon from '../components/ArrowIcon.astro';
+import Cta from '../components/Cta.astro';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+import PixelGlow from '../components/PixelGlow.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Base from '../layouts/Base.astro';
+import { galleryDoc } from '../gallery';
+import { APP_URL } from '../links';
+import { toHex } from '../../../src/engine/color';
+import { flatten } from '../../../src/engine/composite';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+
+const base = import.meta.env.BASE_URL;
+
+// The starfighter from the gallery, as Baipix exports it, and as a naive converter would: one
+// square per pixel. The numbers on the page are measured here, at build time.
+const doc = galleryDoc('starfighter.baipix');
+const pixels = flatten(doc, { includeBackground: false });
+const { width: w, height: h } = doc;
+const svg = toSvg(pixels, w, h, renderGeometry(w, h, 1, 0));
+const opaque = [...pixels].filter((c) => c >>> 24).length;
+const colors = new Set([...pixels].filter((c) => c >>> 24)).size;
+const naive = [
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`,
+  ...[...pixels].flatMap((c, i) =>
+    c >>> 24 ? [`<rect x="${i % w}" y="${Math.floor(i / w)}" width="1" height="1" fill="${toHex(c)}"/>`] : [],
+  ),
+  '</svg>',
+].join('\n');
+const kb = (s: string) => (new TextEncoder().encode(s).length / 1024).toFixed(1);
+const smaller = Math.round((1 - svg.length / naive.length) * 100);
+// The first lines of the real file, for the code sample.
+const lines = svg.trim().split('\n');
+const sample = [
+  lines[0],
+  ...lines.slice(1, 4).map((l) => (l.length > 96 ? `${l.slice(0, 93)}…"/>` : l)),
+  '…',
+  '</svg>',
+].join('\n');
+// The same ship with a gap between its pixels, the LED look.
+const gapSvg = toSvg(pixels, w, h, renderGeometry(w, h, 8, 2));
+
+const faq = [
+  {
+    q: 'Can I convert a PNG of pixel art to SVG?',
+    a: 'Yes. Import it in Baipix (File › Import an image, or drop it on the canvas), then Export › SVG. If it was scaled up, like a screenshot at 400%, Baipix finds the pixel grid and gets the original pixels back first.',
+  },
+  {
+    q: 'Is it free?',
+    a: 'Yes. Baipix is free and open source (MIT). It runs in your browser, with no account, and your drawings stay on your device.',
+  },
+  {
+    q: 'Will the SVG look right in Figma or Illustrator?',
+    a: 'Yes. Copy as SVG (Ctrl+Shift+C), then paste it on the canvas. Each color is one shape, the layers stay grouped, and there are no thin lines between pixels.',
+  },
+  {
+    q: 'Why not one square per pixel?',
+    a: 'It makes heavy files that are slow to edit, and many apps show thin lines between the squares when they scale them. Baipix merges pixels of the same color into one path instead.',
+  },
+  {
+    q: 'Can I get it as code?',
+    a: 'Yes. The </> button next to Export gives it as a React component, CSS, JSON or plain SVG, to copy or download.',
+  },
+];
+---
+
+<Base
+  title="Pixel art to SVG · Clean vector from pixel art, free | Baipix"
+  description="Export pixel art as clean SVG, for free: one path per color, pixels of the same color merged, layers kept. Draw it or import a PNG in Baipix, then paste it into Figma or Illustrator."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main data-tone="export">
+    <section class="hero">
+      <div class="hero-glow" aria-hidden="true">
+        <PixelGlow />
+      </div>
+      <div class="container hero-inner">
+        <p class="eyebrow">Pixel art to SVG</p>
+        <h1>
+          Pixel art to clean SVG<span class="pixel-dot" aria-hidden="true"></span>
+        </h1>
+        <p class="lead">
+          Baipix exports your pixel art as SVG with one path per color, and pixels of the same color merged
+          into one shape. The file stays small and sharp at any size, and pastes into Figma or Illustrator as
+          shapes you can edit.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-dark" href={APP_URL}>
+            Open the editor <ArrowIcon />
+          </a>
+          <a class="btn" href="#how">
+            How to do it
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo container" aria-label="The same sprite, exported">
+      <figure class="frame demo-art">
+        <div
+          class="pix"
+          set:html={svg}
+          role="img"
+          aria-label="A 32 by 32 pixel starfighter, exported to SVG"
+        />
+      </figure>
+      <div class="demo-facts">
+        <dl class="facts">
+          <div>
+            <dt>Pixels</dt>
+            <dd>{opaque}</dd>
+          </div>
+          <div>
+            <dt>Colors, so paths</dt>
+            <dd>{colors}</dd>
+          </div>
+          <div>
+            <dt>Baipix SVG</dt>
+            <dd>{kb(svg)} KB</dd>
+          </div>
+          <div>
+            <dt>A square per pixel</dt>
+            <dd>{kb(naive)} KB</dd>
+          </div>
+        </dl>
+        <p class="muted">
+          {`The ${w} × ${h} starfighter from the gallery, compared with an SVG made of one square per pixel: ${smaller}% lighter, and ${colors} shapes to edit instead of ${opaque}.`}
+        </p>
+        <pre class="code"><code>{sample}</code></pre>
+      </div>
+    </section>
+
+    <section id="paste" class="paste container">
+      <SectionHead label="Copy and paste" />
+      <h2>Straight into Figma, no file.</h2>
+      <div class="paste-grid">
+        <div class="paste-step">
+          <p class="keys">
+            <kbd>Ctrl</kbd>
+            <kbd>Shift</kbd>
+            <kbd>C</kbd>
+          </p>
+          <h3>Copy as SVG in Baipix</h3>
+          <p class="muted">The drawing goes to the clipboard as SVG. On a Mac, it's Cmd+Shift+C.</p>
+        </div>
+        <div class="paste-step">
+          <p class="keys">
+            <kbd>Ctrl</kbd>
+            <kbd>V</kbd>
+          </p>
+          <h3>Paste in Figma</h3>
+          <p class="muted">
+            It lands as vector, not as an image: one shape per color, your layers as named groups, ready to
+            recolor or resize. The same works in Illustrator, and in any app or code editor that takes SVG.
+          </p>
+        </div>
+      </div>
+      <p class="muted paste-note">Copy as PNG is next to it, for apps that only take images.</p>
+    </section>
+
+    <section id="why" class="cards container">
+      <SectionHead label="What you get" />
+      <h2>What's in the file.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>One path per color</h3>
+          <p class="muted">Each color is one shape. To change a color everywhere, you change it once.</p>
+        </article>
+        <article class="card">
+          <h3>Pixels merged, no gaps</h3>
+          <p class="muted">
+            Pixels of the same color next to each other are drawn as one shape. The file stays small, and no
+            thin lines show up between pixels when you scale it up.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Layers kept</h3>
+          <p class="muted">
+            Your layers and groups come out as named groups, with their opacity and blend mode.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Any size, or a gap</h3>
+          <p class="muted">
+            Choose how big a pixel is, from 1× to 32×. You can also leave a gap between pixels for an LED
+            look: it stays vector too.
+          </p>
+          <div
+            class="pix gap-art"
+            set:html={gapSvg}
+            role="img"
+            aria-label="The starfighter with a gap between its pixels"
+          />
+        </article>
+      </div>
+    </section>
+
+    <section id="how" class="steps container">
+      <SectionHead label="How to do it" />
+      <h2>Three steps.</h2>
+      <ol class="step-list">
+        <li>
+          <span class="step-n">1</span>
+          <div>
+            <h3>Draw it, or import it</h3>
+            <p class="muted">
+              Draw in Baipix, or import a PNG. If the image was scaled up, like a screenshot at 400%, Baipix
+              finds the pixel grid and gets the original pixels back.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div>
+            <h3>Export as SVG</h3>
+            <p class="muted">
+              Click Export, pick SVG and a size. Or press Ctrl+Shift+C to copy the SVG without saving a file.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div>
+            <h3>Use it</h3>
+            <p class="muted">
+              Paste it into Figma, Illustrator or a web page. The &lt;/&gt; button next to Export also gives
+              it as a React component or CSS.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="faq" class="faq container">
+      <SectionHead label="Questions" />
+      <h2>Common questions.</h2>
+      <div class="faq-list">
+        {faq.map(({ q, a }) => (
+          <details>
+            <summary>{q}</summary>
+            <p class="muted">{a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <Cta />
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  /* The home page's background, behind the title, fading out before the example. */
+  .hero {
+    position: relative;
+    padding-top: 72px;
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+  }
+  .eyebrow {
+    font:
+      400 16px/1 'Silkscreen',
+      var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  h1 {
+    max-width: 16ch;
+    margin-top: 20px;
+    font-size: clamp(40px, 6.4vw, 68px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+  }
+  .pixel-dot {
+    display: inline-block;
+    width: 0.16em;
+    height: 0.16em;
+    margin-left: 0.06em;
+    background: var(--accent);
+  }
+  .lead {
+    max-width: 600px;
+    margin-top: 24px;
+    font-size: 18px;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  h2 {
+    margin-top: 40px;
+  }
+  h3 {
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---- The sprite, and its numbers ---- */
+  .demo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 40px;
+    margin-top: 64px;
+  }
+  .frame {
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 48px;
+    background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
+  }
+  .pix :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+  .demo-art .pix {
+    width: min(100%, 360px);
+  }
+  .demo-facts {
+    display: grid;
+    align-content: center;
+    gap: 20px;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .facts div {
+    padding: 16px 18px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .facts dt {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .facts dd {
+    margin: 4px 0 0;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .code {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    background: var(--surface);
+    font: 400 12px/1.7 var(--mono);
+  }
+
+  /* ---- Copy and paste ---- */
+  .paste-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 40px;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .paste-step {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 32px 28px 36px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .keys {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 8px;
+  }
+  kbd {
+    min-width: 36px;
+    padding: 8px 10px;
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 3px 0 var(--accent);
+    background: var(--bg);
+    font: 500 14px/1 var(--mono);
+    text-align: center;
+  }
+  .paste-note {
+    margin-top: 20px;
+  }
+
+  /* ---- Why it's clean ---- */
+  .paste,
+  .cards,
+  .steps,
+  .faq {
+    padding-top: 120px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 40px;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 32px 28px 36px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .gap-art {
+    width: 160px;
+    margin-top: 8px;
+  }
+
+  /* ---- How it works ---- */
+  .step-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+    margin: 40px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .step-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .step-list div {
+    display: grid;
+    gap: 10px;
+  }
+  .step-n {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    color: var(--bg);
+    font:
+      400 16px/1 'Silkscreen',
+      var(--mono);
+  }
+
+  /* ---- Questions ---- */
+  .faq-list {
+    margin-top: 40px;
+    border-top: 1px solid var(--line);
+  }
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+  summary {
+    padding: 20px 0;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  details p {
+    max-width: 720px;
+    padding-bottom: 20px;
+  }
+
+  @media (max-width: 760px) {
+    /* minmax(0, …): the code's long lines scroll inside it instead of widening the page. */
+    .demo,
+    .paste-grid,
+    .card-grid,
+    .step-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .frame {
+      padding: 28px;
+    }
+  }
+</style>
