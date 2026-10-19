@@ -25,6 +25,20 @@ const boards = fileFromJson(hobbitFile).map((doc) => ({
   height: doc.height,
 }));
 
+// The isometric grid over the first board, as the editor shows it: 2:1 lines through pixel corners,
+// diamonds 16 pixels wide, set on the ground's top edges (where the grass meets the soil).
+const grid = (() => {
+  const { width: w, height: h } = boards[0];
+  const lines: string[] = [];
+  for (const [slope, offset] of [
+    [0.5, 0.5],
+    [-0.5, 7.5],
+  ]) {
+    for (let b = offset - w; b < h + w; b += 8) lines.push(`M0 ${b}L${w} ${b + slope * w}`);
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${lines.join('')}"/></svg>`;
+})();
+
 const faq = [
   {
     q: 'What is isometric pixel art?',
@@ -78,21 +92,24 @@ const faq = [
     <section class="seasons container" aria-label="A hobbit house in four seasons">
       <figure class="frame seasons-art">
         <div class="seasons-grid">
-          {boards.map((b) => (
+          {boards.map((b, i) => (
             <div class="season">
-              <span class="season-name">{b.name}</span>
-              <div
-                class="pix"
-                set:html={b.svg}
-                role="img"
-                aria-label={`The hobbit house, ${b.name.toLowerCase()}`}
-              />
+              <span class="season-name">{i === 0 ? `${b.name} · isometric grid` : b.name}</span>
+              <div class="season-art">
+                <div
+                  class="pix"
+                  set:html={b.svg}
+                  role="img"
+                  aria-label={`The hobbit house, ${b.name.toLowerCase()}`}
+                />
+                {i === 0 && <div class="iso-grid" set:html={grid} />}
+              </div>
             </div>
           ))}
         </div>
         <figcaption class="muted">
-          A hobbit house drawn in Baipix, in four seasons: one file, four boards, the same house recolored.
-          Open the editor to see how it's made.
+          A hobbit house drawn in Baipix on the isometric grid, in four seasons: one file, four boards, the
+          same house recolored. Open the editor to see how it's made.
         </figcaption>
       </figure>
     </section>
@@ -242,6 +259,26 @@ const faq = [
   .season-name {
     font-size: 13px;
     color: var(--tint-ink, var(--muted));
+  }
+  /* The grid over the first board: thin light lines, the drawing still reads through them. */
+  .season-art {
+    position: relative;
+  }
+  .iso-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .iso-grid :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .iso-grid :global(path) {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.28);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
   }
   .seasons-art figcaption {
     max-width: 640px;
