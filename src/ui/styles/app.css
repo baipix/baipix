@@ -1849,6 +1849,19 @@ body.is-dragging-swatch * {
   max-height: 60vh;
   overflow: auto;
 }
+/* Under the shortcuts: the docs, for the rest. */
+.shortcuts-docs {
+  margin: 4px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.shortcuts-docs a {
+  color: var(--glow-line);
+  text-decoration: none;
+}
+.shortcuts-docs a:hover {
+  text-decoration: underline;
+}
 .shortcuts h3 {
   margin: 0 0 4px;
   font-size: 11px;

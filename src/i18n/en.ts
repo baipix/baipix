@@ -269,6 +269,8 @@ export const en = {
   'menu.select': 'Select',
   'menu.view': 'View',
   'menu.help': 'Help',
+  'menu.docs': 'Documentation',
+  'shortcuts.docs': 'Every shortcut, and how each tool works, in the docs ↗',
   'menu.recent': 'Recent',
   'menu.reference': 'Reference image…',
   'menu.duplicateFile': 'Duplicate file',

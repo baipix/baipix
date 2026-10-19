@@ -10,6 +10,7 @@ Components that belong to the file: their instances on any board, or outside the
 
 ### Added
 
+- The docs from the editor: Help › Documentation opens them, and the keyboard shortcuts dialog (the ? button) links to every shortcut and tool there. (#458)
 - Components belong to the file, not to a board: an instance can be on any board of the file, or outside the boards, and follows its component wherever it is. Drag a component from the Components section onto any board, move a component or an instance to another board with the Move tool, and they stay linked; Go to component opens the component's board. The Components section lists the components of the whole file. (#456)
 - Open a drawing from a link: the editor opens a .baipix file of baipix.app given as `?open=…`, straight in the editor. The guides' Open the editor buttons open their example, and each gallery piece has an Open link. Only files from the site itself are opened. (#433)
 - Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
