@@ -1,0 +1,22 @@
+---
+/** Questions and their answers, folded. The page passes the same list to its FAQPage structured data. */
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  items: { q: string; a: string }[];
+}
+const { items } = Astro.props;
+---
+
+<section id="faq" class="faq container">
+  <SectionHead label="Questions" />
+  <h2>Common questions.</h2>
+  <div class="faq-list">
+    {items.map(({ q, a }) => (
+      <details>
+        <summary>{q}</summary>
+        <p class="muted">{a}</p>
+      </details>
+    ))}
+  </div>
+</section>

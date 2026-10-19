@@ -1,0 +1,41 @@
+---
+/** The top of a guide: a label, the title with its pixel dot, a lead, the editor's button, on the home page's background. */
+import { APP_URL } from '../links';
+import ArrowIcon from './ArrowIcon.astro';
+import PixelGlow from './PixelGlow.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  /** A drawing the editor opens with (its .baipix address on the site): the page's example. */
+  open?: string;
+  /** The second button: a section further down the page. */
+  more: { href: string; text: string };
+}
+const { eyebrow, title, open, more } = Astro.props;
+const editor = open ? `${APP_URL}?open=${encodeURIComponent(open)}` : APP_URL;
+---
+
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true">
+    <PixelGlow />
+  </div>
+  <div class="container hero-inner">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1>
+      {title}
+      <span class="pixel-dot" aria-hidden="true"></span>
+    </h1>
+    <p class="lead">
+      <slot />
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-dark" href={editor}>
+        Open the editor <ArrowIcon />
+      </a>
+      <a class="btn" href={more.href}>
+        {more.text}
+      </a>
+    </div>
+  </div>
+</section>

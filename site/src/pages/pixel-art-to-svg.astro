@@ -1,13 +1,15 @@
 ---
-import ArrowIcon from '../components/ArrowIcon.astro';
+import CopySvgButton from '../components/CopySvgButton.astro';
 import Cta from '../components/Cta.astro';
+import Faq from '../components/Faq.astro';
 import Footer from '../components/Footer.astro';
+import GuideHero from '../components/GuideHero.astro';
 import Nav from '../components/Nav.astro';
-import PixelGlow from '../components/PixelGlow.astro';
+import PasteSteps from '../components/PasteSteps.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
-import { galleryDoc } from '../gallery';
-import { APP_URL } from '../links';
+import '../styles/guide.css';
+import { gallery, galleryDoc } from '../gallery';
 import { toHex } from '../../../src/engine/color';
 import { flatten } from '../../../src/engine/composite';
 import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
@@ -81,31 +83,17 @@ const faq = [
 >
   <Nav />
 
-  <main data-tone="export">
-    <section class="hero">
-      <div class="hero-glow" aria-hidden="true">
-        <PixelGlow />
-      </div>
-      <div class="container hero-inner">
-        <p class="eyebrow">Pixel art to SVG</p>
-        <h1>
-          Pixel art to clean SVG<span class="pixel-dot" aria-hidden="true"></span>
-        </h1>
-        <p class="lead">
-          Baipix exports your pixel art as SVG with one path per color, and pixels of the same color merged
-          into one shape. The file stays small and sharp at any size, and pastes into Figma or Illustrator as
-          shapes you can edit.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-dark" href={APP_URL}>
-            Open the editor <ArrowIcon />
-          </a>
-          <a class="btn" href="#how">
-            How to do it
-          </a>
-        </div>
-      </div>
-    </section>
+  <main class="guide" data-tone="export">
+    <GuideHero
+      open={gallery.find((p) => p.file === 'starfighter.baipix')!.download}
+      eyebrow="Pixel art to SVG"
+      title="Pixel art to clean SVG"
+      more={{ href: '#how', text: 'How to do it' }}
+    >
+      Baipix exports your pixel art as SVG with one path per color, and pixels of the same color merged into
+      one shape. The file stays small and sharp at any size, and pastes into Figma or Illustrator as shapes
+      you can edit.
+    </GuideHero>
 
     <section class="demo container" aria-label="The same sprite, exported">
       <figure class="frame demo-art">
@@ -139,36 +127,11 @@ const faq = [
           {`The ${w} × ${h} starfighter from the gallery, compared with an SVG made of one square per pixel: ${smaller}% lighter, and ${colors} shapes to edit instead of ${opaque}.`}
         </p>
         <pre class="code"><code>{sample}</code></pre>
+        <CopySvgButton svg={toSvg(pixels, w, h, renderGeometry(w, h, 8, 0))} />
       </div>
     </section>
 
-    <section id="paste" class="paste container">
-      <SectionHead label="Copy and paste" />
-      <h2>Straight into Figma, no file.</h2>
-      <div class="paste-grid">
-        <div class="paste-step">
-          <p class="keys">
-            <kbd>Ctrl</kbd>
-            <kbd>Shift</kbd>
-            <kbd>C</kbd>
-          </p>
-          <h3>Copy as SVG in Baipix</h3>
-          <p class="muted">The drawing goes to the clipboard as SVG. On a Mac, it's Cmd+Shift+C.</p>
-        </div>
-        <div class="paste-step">
-          <p class="keys">
-            <kbd>Ctrl</kbd>
-            <kbd>V</kbd>
-          </p>
-          <h3>Paste in Figma</h3>
-          <p class="muted">
-            It lands as vector, not as an image: one shape per color, your layers as named groups, ready to
-            recolor or resize. The same works in Illustrator, and in any app or code editor that takes SVG.
-          </p>
-        </div>
-      </div>
-      <p class="muted paste-note">Copy as PNG is next to it, for apps that only take images.</p>
-    </section>
+    <PasteSteps title="Straight into Figma, no file." />
 
     <section id="why" class="cards container">
       <SectionHead label="What you get" />
@@ -243,261 +206,10 @@ const faq = [
       </ol>
     </section>
 
-    <section id="faq" class="faq container">
-      <SectionHead label="Questions" />
-      <h2>Common questions.</h2>
-      <div class="faq-list">
-        {faq.map(({ q, a }) => (
-          <details>
-            <summary>{q}</summary>
-            <p class="muted">{a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
+    <Faq items={faq} />
 
     <Cta />
   </main>
 
   <Footer />
 </Base>
-
-<style>
-  /* The home page's background, behind the title, fading out before the example. */
-  .hero {
-    position: relative;
-    padding-top: 72px;
-    overflow: hidden;
-  }
-  .hero-glow {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-  .hero-inner {
-    position: relative;
-  }
-  .eyebrow {
-    font:
-      400 16px/1 'Silkscreen',
-      var(--mono);
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-  h1 {
-    max-width: 16ch;
-    margin-top: 20px;
-    font-size: clamp(40px, 6.4vw, 68px);
-    line-height: 1.04;
-    letter-spacing: -0.035em;
-  }
-  .pixel-dot {
-    display: inline-block;
-    width: 0.16em;
-    height: 0.16em;
-    margin-left: 0.06em;
-    background: var(--accent);
-  }
-  .lead {
-    max-width: 600px;
-    margin-top: 24px;
-    font-size: 18px;
-    color: var(--muted);
-    text-wrap: pretty;
-  }
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 32px;
-  }
-  h2 {
-    margin-top: 40px;
-  }
-  h3 {
-    font-size: 18px;
-    letter-spacing: -0.01em;
-  }
-
-  /* ---- The sprite, and its numbers ---- */
-  .demo {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 40px;
-    margin-top: 64px;
-  }
-  .frame {
-    display: grid;
-    place-items: center;
-    margin: 0;
-    padding: 48px;
-    background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
-  }
-  .pix :global(svg) {
-    display: block;
-    width: 100%;
-    height: auto;
-    image-rendering: pixelated;
-  }
-  .demo-art .pix {
-    width: min(100%, 360px);
-  }
-  .demo-facts {
-    display: grid;
-    align-content: center;
-    gap: 20px;
-  }
-  .facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
-    margin: 0;
-    border-top: 1px solid var(--line);
-    border-left: 1px solid var(--line);
-  }
-  .facts div {
-    padding: 16px 18px;
-    border-right: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-  .facts dt {
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .facts dd {
-    margin: 4px 0 0;
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-  .code {
-    margin: 0;
-    padding: 16px 18px;
-    overflow-x: auto;
-    background: var(--surface);
-    font: 400 12px/1.7 var(--mono);
-  }
-
-  /* ---- Copy and paste ---- */
-  .paste-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 40px;
-    border-top: 1px solid var(--line);
-    border-left: 1px solid var(--line);
-  }
-  .paste-step {
-    display: grid;
-    align-content: start;
-    gap: 12px;
-    padding: 32px 28px 36px;
-    border-right: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-  .keys {
-    display: flex;
-    gap: 6px;
-    margin: 0 0 8px;
-  }
-  kbd {
-    min-width: 36px;
-    padding: 8px 10px;
-    border: 1px solid var(--line-strong);
-    box-shadow: 0 3px 0 var(--accent);
-    background: var(--bg);
-    font: 500 14px/1 var(--mono);
-    text-align: center;
-  }
-  .paste-note {
-    margin-top: 20px;
-  }
-
-  /* ---- Why it's clean ---- */
-  .paste,
-  .cards,
-  .steps,
-  .faq {
-    padding-top: 120px;
-  }
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 40px;
-    border-top: 1px solid var(--line);
-    border-left: 1px solid var(--line);
-  }
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 32px 28px 36px;
-    border-right: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-  .gap-art {
-    width: 160px;
-    margin-top: 8px;
-  }
-
-  /* ---- How it works ---- */
-  .step-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 32px;
-    margin: 40px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .step-list li {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .step-list div {
-    display: grid;
-    gap: 10px;
-  }
-  .step-n {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    background: var(--accent);
-    color: var(--bg);
-    font:
-      400 16px/1 'Silkscreen',
-      var(--mono);
-  }
-
-  /* ---- Questions ---- */
-  .faq-list {
-    margin-top: 40px;
-    border-top: 1px solid var(--line);
-  }
-  details {
-    border-bottom: 1px solid var(--line);
-  }
-  summary {
-    padding: 20px 0;
-    font-size: 18px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  details p {
-    max-width: 720px;
-    padding-bottom: 20px;
-  }
-
-  @media (max-width: 760px) {
-    /* minmax(0, …): the code's long lines scroll inside it instead of widening the page. */
-    .demo,
-    .paste-grid,
-    .card-grid,
-    .step-list {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .frame {
-      padding: 28px;
-    }
-  }
-</style>

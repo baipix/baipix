@@ -1,4 +1,5 @@
 import { CODE_LANGUAGES, type CodeLanguage } from '../engine/export/code';
+import { openFromUrl } from './openFromUrl';
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
@@ -30,7 +31,7 @@ import { EditorContext } from './EditorContext';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
-import { showEmptyHome } from './home';
+import { leaveHome, showEmptyHome } from './home';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
 import { RightPanel } from './panels/RightPanel';
@@ -137,6 +138,10 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
       if (cancelled) return;
       if (firstRun) showEmptyHome(editor);
       setReady(true);
+      // A link from the site with a drawing to open (?open=…): straight into the editor with it. After
+      // ready, so that autosave keeps it; on a first run, the blank starter file makes way for it, as for
+      // any file opened from the home screen.
+      if (await openFromUrl(editor)) leaveHome(editor);
     })();
     return () => {
       cancelled = true;

@@ -1,0 +1,240 @@
+/* The guides (Pixel art to SVG, Pixel art for Figma): hero, numbers, keys, cards, steps and
+   questions, under .guide on the page's <main>. */
+/* The home page's background, behind the title, fading out before the example. */
+.guide .hero {
+  position: relative;
+  /* Room under the buttons for their side, which the hero would otherwise clip with its background. */
+  padding: 72px 0 16px;
+  overflow: hidden;
+}
+.guide .hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.guide .hero-inner {
+  position: relative;
+}
+.guide .eyebrow {
+  font:
+    400 16px/1 'Silkscreen',
+    var(--mono);
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.guide h1 {
+  max-width: 16ch;
+  margin-top: 20px;
+  font-size: clamp(40px, 6.4vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+.guide .pixel-dot {
+  display: inline-block;
+  width: 0.16em;
+  height: 0.16em;
+  margin-left: 0.06em;
+  background: var(--accent);
+}
+.guide .lead {
+  max-width: 600px;
+  margin-top: 24px;
+  font-size: 18px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.guide .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+.guide section > h2 {
+  margin-top: 40px;
+}
+.guide h3 {
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+/* ---- The sprite, and its numbers ---- */
+.guide .demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+  margin-top: 64px;
+}
+.guide .frame {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 48px;
+  background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
+}
+.guide .pix svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.guide .demo-art .pix {
+  width: min(100%, 360px);
+}
+.guide .demo-facts {
+  display: grid;
+  align-content: center;
+  gap: 20px;
+}
+.guide .facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.guide .facts div {
+  padding: 16px 18px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.guide .facts dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+.guide .facts dd {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.guide .code {
+  margin: 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  background: var(--surface);
+  font: 400 12px/1.7 var(--mono);
+}
+
+/* ---- Copy and paste ---- */
+.guide .paste-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.guide .paste-step {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 32px 28px 36px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.guide .keys {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+.guide kbd {
+  min-width: 36px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 3px 0 var(--accent);
+  background: var(--bg);
+  font: 500 14px/1 var(--mono);
+  text-align: center;
+}
+.guide .paste-note {
+  margin-top: 20px;
+}
+
+/* ---- Why it's clean ---- */
+.guide .paste,
+.guide .cards,
+.guide .steps,
+.guide .faq {
+  padding-top: 120px;
+}
+.guide .card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.guide .card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px 28px 36px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.guide .gap-art {
+  width: 160px;
+  margin-top: 8px;
+}
+
+/* ---- How it works ---- */
+.guide .step-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin: 40px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.guide .step-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.guide .step-list div {
+  display: grid;
+  gap: 10px;
+}
+.guide .step-n {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  color: var(--bg);
+  font:
+    400 16px/1 'Silkscreen',
+    var(--mono);
+}
+
+/* ---- Questions ---- */
+.guide .faq-list {
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+}
+.guide details {
+  border-bottom: 1px solid var(--line);
+}
+.guide summary {
+  padding: 20px 0;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.guide details p {
+  max-width: 720px;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 760px) {
+  /* minmax(0, …): the code's long lines scroll inside it instead of widening the page. */
+  .guide .demo,
+  .guide .paste-grid,
+  .guide .card-grid,
+  .guide .step-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guide .frame {
+    padding: 28px;
+  }
+}

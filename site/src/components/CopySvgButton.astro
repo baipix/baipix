@@ -1,0 +1,52 @@
+---
+/**
+ * Copies the example's SVG to the clipboard, to paste it in Figma right away and see what lands.
+ * The SVG is the one the editor's Copy as SVG gives for that drawing.
+ */
+interface Props {
+  svg: string;
+}
+const { svg } = Astro.props;
+---
+
+<div class="copy-svg">
+  <button type="button" class="btn" data-copy-svg={svg}>
+    Copy this SVG
+  </button>
+  <span class="muted copy-svg-hint" aria-live="polite">
+    Then paste it in Figma with Ctrl+V (Cmd+V on a Mac).
+  </span>
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-svg]')) {
+    const hint = button.parentElement!.querySelector<HTMLElement>('.copy-svg-hint')!;
+    const label = button.textContent;
+    const text = hint.textContent;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copySvg ?? '');
+        button.textContent = 'Copied';
+        hint.textContent = 'Now paste it in Figma: Ctrl+V, or Cmd+V on a Mac.';
+      } catch {
+        hint.textContent = 'Your browser blocked the copy. Open the drawing in Baipix and use Copy as SVG.';
+      }
+      setTimeout(() => {
+        button.textContent = label;
+        hint.textContent = text;
+      }, 4000);
+    });
+  }
+</script>
+
+<style>
+  .copy-svg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+  }
+  .copy-svg-hint {
+    font-size: 14px;
+  }
+</style>
