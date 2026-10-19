@@ -57,6 +57,27 @@ const SHOTS = [
       ui.uiStore.set({ home: true });`,
   },
   { name: 'new-file', setup: `ui.openDialog({ type: 'newFile' });`, frame: ['.dialog'] },
+  // Drawing and Colors: a tool's options and menus, opened as you'd see them.
+  {
+    name: 'pencil-more',
+    setup: `__ed.setTool('pencil'); await new Promise((r) => setTimeout(r, 200));
+      document.querySelector('.options-more').click();`,
+    frame: ['.tool-options', '.menu'],
+  },
+  { name: 'gradient', setup: `__ed.setTool('gradient');`, frame: ['.tool-options', '.toolbar'] },
+  {
+    name: 'shapes-menu',
+    setup: `[...document.querySelectorAll('.tool-split')]
+      .find((s) => s.querySelector('[data-tool="line"], [data-tool="rect"], [data-tool="ellipse"]'))
+      .querySelector('.tool-caret').click();`,
+    frame: ['.menu', '.toolbar'],
+  },
+  {
+    name: 'palette-menu',
+    setup: `document.querySelector('[aria-label="Preset palette"]').click();`,
+    frame: ['.menu'],
+  },
+  { name: 'adjustments', setup: `ui.openAdjust('layer', 'colors');`, frame: ['.adjust-panel'] },
 ];
 
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe' });
@@ -146,6 +167,7 @@ for (const theme of ['dark', 'light']) {
         if (f.sibling) stack.push(f.sibling);
       }
       window.ui = await import('/src/ui/uiStore.ts');
+      window.wait = (t) => new Promise((r) => setTimeout(r, t));
       window.ff = await import('/src/storage/fileFormat.ts');`);
     if (shot.setup) await run(`${shot.setup} await new Promise((r) => setTimeout(r, 600));`);
     // Numbered badges on the parts, in the accent, at their top left corner.

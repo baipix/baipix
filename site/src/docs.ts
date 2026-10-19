@@ -26,6 +26,27 @@ export const DOCS: DocSection[] = [
     ],
   },
   {
+    title: 'Drawing',
+    intro:
+      'The pencil and the eraser, fills and gradients, shapes, selections, and the tools that rework a drawing.',
+    pages: [
+      { slug: 'drawing/pencil-and-eraser', title: 'Pencil and eraser' },
+      { slug: 'drawing/fills-and-gradients', title: 'Fills and gradients' },
+      { slug: 'drawing/shapes', title: 'Shapes' },
+      { slug: 'drawing/selections', title: 'Selections' },
+      { slug: 'drawing/spray-and-rework', title: 'Spray and rework' },
+    ],
+  },
+  {
+    title: 'Colors',
+    intro: 'Your two colors and the eyedropper, palettes, shading along a ramp, and adjustments.',
+    pages: [
+      { slug: 'colors/colors-and-palettes', title: 'Colors and palettes' },
+      { slug: 'colors/shade-and-lighten', title: 'Shade and lighten' },
+      { slug: 'colors/adjustments', title: 'Adjustments' },
+    ],
+  },
+  {
     title: 'Reference',
     intro: 'Every keyboard shortcut, read from the editor itself.',
     pages: [{ slug: 'reference/shortcuts', title: 'Keyboard shortcuts' }],

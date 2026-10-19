@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- Docs for drawing (pencil and eraser, fills and gradients, shapes, selections, spray and rework) and colors (colors and palettes, shade and lighten, adjustments), with screenshots of the tools' options and menus. Previous and next are the site's pixel buttons. (#445)
 - The docs take the whole screen, up to 1600 px, like software docs: the navigation at the left with a line beside it, the text centered at a comfortable measure, the page's sections at the right. Their header and footer follow. (#443)
 - Docs, under /docs/: a table of contents that stays in view, the page's own sections on the right (on wide screens), previous and next links, Getting started (the interface, creating and opening files, files and saving) with screenshots of the editor in both themes, taken by `npm run screenshots:docs`, and every keyboard shortcut, read from the editor at build time. Docs is in the header and the footer. (#441)
 - On the Isometric pixel art page, the spring hobbit house and the courtyard animation show the isometric grid over them, lined up with what's drawn on it. (#439)
