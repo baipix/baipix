@@ -1,0 +1,96 @@
+---
+/**
+ * Every keyboard shortcut, read from the editor's own lists at build time: the tools and their keys
+ * (src/ui/tools.ts) and the shortcuts dialog's groups (src/ui/dialogs/shortcuts.ts). So this page
+ * changes when the editor does.
+ */
+import { en } from '../../../../../src/i18n/en';
+import { SHORTCUT_GROUPS } from '../../../../../src/ui/dialogs/shortcuts';
+import { TOOL_LIST } from '../../../../../src/ui/tools';
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+import { icon } from '../../../toolIcons';
+
+const label = (key: string) => (en as Record<string, string>)[key] ?? key;
+const tools = TOOL_LIST.filter((tool) => tool.shortcut).map((tool) => ({
+  name: label(tool.label),
+  key: tool.shortcut,
+  svg: icon(tool.icon, 18),
+}));
+// The tools' group of the dialog is left out: the tools above come with their icons.
+const groups = SHORTCUT_GROUPS.filter((g) => g.title !== 'shortcuts.tools').map((g) => ({
+  title: label(g.title),
+  items: g.items.map(([key, keys]) => ({ name: label(key), keys })),
+}));
+---
+
+<DocsLayout
+  title="Keyboard shortcuts"
+  description="Every keyboard shortcut in Baipix, the free pixel art editor: one key per tool, and the shortcuts for drawing, layers and the view."
+>
+  <p>
+    Every tool is one key away, and most commands have a shortcut too. On a Mac, <kbd>Ctrl</kbd> is{' '}
+    <kbd>Cmd</kbd>. In the editor, the <kbd>?</kbd> button at the top right of the canvas lists them as well.
+  </p>
+
+  <h2>Tools</h2>
+  <table class="shortcut-table">
+    <tbody>
+      {tools.map((tool) => (
+        <tr>
+          <td class="tool-name">
+            <span class="tool-icon" set:html={tool.svg} />
+            {tool.name}
+          </td>
+          <td class="keys">
+            <kbd>{tool.key}</kbd>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  {groups.map((group) => (
+    <>
+      <h2>{group.title}</h2>
+      <table class="shortcut-table">
+        <tbody>
+          {group.items.map((item) => (
+            <tr>
+              <td>{item.name}</td>
+              <td class="keys">
+                <kbd>{item.keys}</kbd>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  ))}
+</DocsLayout>
+
+<style>
+  /* :global: the rows come from loops, out of the page's scope. */
+  .shortcut-table :global(td) {
+    color: var(--text);
+  }
+  .shortcut-table :global(.keys) {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .shortcut-table :global(.tool-name) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .shortcut-table :global(.tool-icon) {
+    display: inline-grid;
+    color: var(--muted);
+  }
+  /* On a phone, long combinations wrap instead of widening the page. */
+  @media (max-width: 600px) {
+    .shortcut-table :global(.keys) {
+      white-space: normal;
+    }
+  }
+</style>

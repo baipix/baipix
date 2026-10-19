@@ -1,0 +1,58 @@
+---
+/** The docs' home: each section with what it covers, and its pages. */
+import { DOCS } from '../../docs';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+
+<DocsLayout
+  title="Baipix docs"
+  description="How to use Baipix, the free pixel art editor in your browser: the interface, files, every tool and every shortcut."
+>
+  <p>
+    How to use Baipix, from your first file to the export. For a quick look at what each tool does, see the{' '}
+    <a href={`${base}draw/`}>Draw</a> page; here is the detail.
+  </p>
+  <div class="docs-sections">
+    {DOCS.map((section) => (
+      <section class="docs-section">
+        <h2>{section.title}</h2>
+        <p>{section.intro}</p>
+        <ul>
+          {section.pages.map((page) => (
+            <li>
+              <a href={`${base}docs/${page.slug}/`}>{page.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</DocsLayout>
+
+<style>
+  .docs-sections {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 32px;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .docs-section {
+    padding: 24px 24px 20px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .docs-section :global(h2) {
+    margin: 0 0 8px;
+    padding: 0;
+    border: 0;
+    font-size: 20px;
+  }
+  @media (max-width: 640px) {
+    .docs-sections {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

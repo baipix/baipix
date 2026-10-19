@@ -31,6 +31,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - [Open the editor](${new URL(APP_URL, site).href}): free, in the browser.
 - [Home page](${url('')}): features, screenshots and a gallery of drawings made with Baipix.
 - [Draw](${url('draw/')}): every tool explained, with the key that picks it.
+- [Docs](${url('docs/')}): how to use Baipix, from the interface and files to every shortcut.
 - [Pixel art to SVG](${url('pixel-art-to-svg/')}): how Baipix turns pixel art into clean vector, with a measured example.
 - [Pixel art for Figma](${url('pixel-art-for-figma/')}): drawing pixel art in Baipix and pasting it into Figma as vector.
 - [Isometric pixel art](${url('isometric-pixel-art/')}): the isometric grid and volume tools, how to start a scene, and tips.

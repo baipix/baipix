@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- Docs, under /docs/: a table of contents that stays in view, the page's own sections on the right (on wide screens), previous and next links, Getting started (the interface, creating and opening files, files and saving) with screenshots of the editor in both themes, taken by `npm run screenshots:docs`, and every keyboard shortcut, read from the editor at build time. Docs is in the header and the footer. (#441)
 - On the Isometric pixel art page, the spring hobbit house and the courtyard animation show the isometric grid over them, lined up with what's drawn on it. (#439)
 - An Isometric pixel art page: a hobbit house in four seasons (one file, four boards) that the editor button opens, the volume tools with the courtyard animation, how to start a scene, tips for clean isometric pixel art, and common questions. In the footer's guides, the sitemap and llms.txt. (#437)
 - The site's header stays at the top as you scroll, over a light blur, with a line under it once the page has moved. The Draw page's section bar sits right under it, and links to a section land below both. (#435)
