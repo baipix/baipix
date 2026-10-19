@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- A component or an instance let go off its board goes back where it was, with the message that it stays on its board, instead of staying out of sight past the edge; no empty room is made outside the boards for it. And Align, with nothing selected, counts what's past the board's edges, so it brings back a drawing moved off the board. (#452)
 - The selected reference image gets the same frame as a layer: handles on its sides too, its size under it, and the resize cursors over the handles. A side stretches it one way; a corner still keeps its proportions. (#451)
 
 ### Website

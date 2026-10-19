@@ -334,4 +334,31 @@ describe('boards', () => {
     expect(e.moveLayerToBoard(layer.id, small.id)).toBe(false);
     expect(e.getState().doc.id).toBe(icons.id);
   });
+
+  it('keeps a component on its board when it is let go beside the boards, with no empty room made for it', () => {
+    const e = twoBoards();
+    e.switchBoard(e.getState().boards[0].id);
+    e.createComponent();
+    const layer = e.getState().doc.layers[e.getState().doc.activeLayer];
+    // The room outside the boards would be a document of its own, left empty.
+    const documents = e.getDocuments().length;
+    expect(e.moveLayerOut(layer.id)).toBe(false);
+    expect(e.getDocuments()).toHaveLength(documents);
+    expect(e.getState().doc.layers.some((l) => l.id === layer.id)).toBe(true);
+  });
+
+  it('brings back with Align a drawing moved off the board', () => {
+    const e = new Editor();
+    e.newFile(16, 16, 'Off');
+    const doc = () => e.getState().doc;
+    doc().layers[0].pixels[2 * 16 + 2] = RED;
+    // Dragged 40 pixels to the right with the Move tool: past the right edge, out of sight.
+    e.setTool('move');
+    e.beginStroke({ x: 2, y: 2 }, false, { shift: false });
+    e.moveStroke({ x: 42, y: 2 }, { shift: false });
+    e.endStroke();
+    expect([...doc().layers[0].pixels].some((c) => c)).toBe(false);
+    e.align('left');
+    expect(doc().layers[0].pixels[2 * 16]).toBe(RED);
+  });
 });
