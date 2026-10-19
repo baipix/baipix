@@ -9,7 +9,7 @@ import PasteSteps from '../components/PasteSteps.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
-import { galleryDoc } from '../gallery';
+import { gallery, galleryDoc } from '../gallery';
 import { toHex } from '../../../src/engine/color';
 import { flatten } from '../../../src/engine/composite';
 import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
@@ -85,6 +85,7 @@ const faq = [
 
   <main class="guide" data-tone="export">
     <GuideHero
+      open={gallery.find((p) => p.file === 'starfighter.baipix')!.download}
       eyebrow="Pixel art to SVG"
       title="Pixel art to clean SVG"
       more={{ href: '#how', text: 'How to do it' }}

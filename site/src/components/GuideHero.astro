@@ -7,10 +7,13 @@ import PixelGlow from './PixelGlow.astro';
 interface Props {
   eyebrow: string;
   title: string;
+  /** A drawing the editor opens with (its .baipix address on the site): the page's example. */
+  open?: string;
   /** The second button: a section further down the page. */
   more: { href: string; text: string };
 }
-const { eyebrow, title, more } = Astro.props;
+const { eyebrow, title, open, more } = Astro.props;
+const editor = open ? `${APP_URL}?open=${encodeURIComponent(open)}` : APP_URL;
 ---
 
 <section class="hero">
@@ -27,7 +30,7 @@ const { eyebrow, title, more } = Astro.props;
       <slot />
     </p>
     <div class="hero-actions">
-      <a class="btn btn-dark" href={APP_URL}>
+      <a class="btn btn-dark" href={editor}>
         Open the editor <ArrowIcon />
       </a>
       <a class="btn" href={more.href}>

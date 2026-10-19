@@ -9,7 +9,7 @@ import PasteSteps from '../components/PasteSteps.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
-import { galleryDoc } from '../gallery';
+import { gallery, galleryDoc } from '../gallery';
 import { flatten } from '../../../src/engine/composite';
 import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
 
@@ -93,6 +93,7 @@ const faq = [
 
   <main class="guide" data-tone="layers">
     <GuideHero
+      open={gallery.find((p) => p.file === 'items.baipix')!.download}
       eyebrow="Pixel art for Figma"
       title="Pixel art for Figma"
       more={{ href: '#paste', text: 'How it works' }}

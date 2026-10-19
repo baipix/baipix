@@ -1,5 +1,6 @@
 ---
 import { gallery } from '../gallery';
+import { APP_URL } from '../links';
 import PixelIcon from './PixelIcon.astro';
 import SectionHead from './SectionHead.astro';
 
@@ -40,6 +41,9 @@ const ARROW_RIGHT = ARROW.map((r) => [...r].reverse().join(''));
           <span class="muted meta">
             {piece.style} · {piece.width}×{piece.height} · {piece.colors} colors
           </span>
+          <a class="download" href={`${APP_URL}?open=${encodeURIComponent(piece.download)}`}>
+            Open
+          </a>
           <a class="download" href={piece.download} download={piece.file}>
             .baipix
           </a>
@@ -164,6 +168,10 @@ const ARROW_RIGHT = ARROW.map((r) => [...r].reverse().join(''));
   }
   .download:hover {
     color: var(--text);
+  }
+  /* Open, then .baipix: side by side at the right of the caption. */
+  .download + .download {
+    margin-left: 0;
   }
   @media (max-width: 640px) {
     .controls {

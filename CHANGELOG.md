@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Open a drawing from a link: the editor opens a .baipix file of baipix.app given as `?open=…`, straight in the editor. The guides' Open the editor buttons open their example, and each gallery piece has an Open link. Only files from the site itself are opened. (#433)
 - Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
 
 ### Website
