@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
+
 ## [0.7.1] - 2026-10-17
 
 The drawing as code: a </> button next to Export gives it as a React component, SVG, CSS, JSON or ASCII, to copy or download. Dialogs stand out from the editor, and the background's hex field shows all six characters.
