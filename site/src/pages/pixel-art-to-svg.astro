@@ -3,6 +3,7 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 import Cta from '../components/Cta.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
+import PixelGlow from '../components/PixelGlow.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import { galleryDoc } from '../gallery';
@@ -44,30 +45,30 @@ const gapSvg = toSvg(pixels, w, h, renderGeometry(w, h, 8, 2));
 const faq = [
   {
     q: 'Can I convert a PNG of pixel art to SVG?',
-    a: 'Yes. Open the PNG in Baipix (File › Import an image, or drop it on the canvas). If it was scaled up, like a screenshot at 800%, Baipix finds its pixel grid and gives you back the real pixels first. Then Export › SVG.',
+    a: 'Yes. Import it in Baipix (File › Import an image, or drop it on the canvas), then Export › SVG. If it was scaled up, like a screenshot at 400%, Baipix finds the pixel grid and gets the original pixels back first.',
   },
   {
     q: 'Is it free?',
-    a: 'Yes. Baipix is free and open source (MIT), runs in your browser, and needs no account. Your drawings stay on your device.',
+    a: 'Yes. Baipix is free and open source (MIT). It runs in your browser, with no account, and your drawings stay on your device.',
   },
   {
     q: 'Will the SVG look right in Figma or Illustrator?',
-    a: 'Yes: Copy as SVG (Ctrl+Shift+C) and paste it into the canvas. Every color is one shape you can recolor in one click, the layers stay as groups, and there are no hairlines between pixels.',
+    a: 'Yes. Copy as SVG (Ctrl+Shift+C), then paste it on the canvas. Each color is one shape, the layers stay grouped, and there are no thin lines between pixels.',
   },
   {
     q: 'Why not one square per pixel?',
-    a: 'A square per pixel makes big files that are slow to edit, and many apps draw faint lines between the squares when they scale them. Baipix merges neighboring pixels of the same color into one path per color.',
+    a: 'It makes heavy files that are slow to edit, and many apps show thin lines between the squares when they scale them. Baipix merges pixels of the same color into one path instead.',
   },
   {
     q: 'Can I get it as code?',
-    a: 'Yes. The </> button next to Export gives the drawing as a React component, CSS, JSON or the SVG itself, to copy or download.',
+    a: 'Yes. The </> button next to Export gives it as a React component, CSS, JSON or plain SVG, to copy or download.',
   },
 ];
 ---
 
 <Base
   title="Pixel art to SVG · Clean vector from pixel art, free | Baipix"
-  description="Turn pixel art into clean SVG for free: one path per color, neighboring pixels merged, no seams, layers kept. Draw or open a PNG in Baipix, then paste the vector straight into Figma or Illustrator."
+  description="Export pixel art as clean SVG, for free: one path per color, pixels of the same color merged, layers kept. Draw it or import a PNG in Baipix, then paste it into Figma or Illustrator."
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -81,23 +82,28 @@ const faq = [
   <Nav />
 
   <main data-tone="export">
-    <section class="hero container">
-      <p class="eyebrow">Pixel art to SVG</p>
-      <h1>
-        Pixel art to SVG, the clean way<span class="pixel-dot" aria-hidden="true"></span>
-      </h1>
-      <p class="lead">
-        Baipix turns pixel art into vector that's light, sharp at any size and easy to edit: one path per
-        color, neighboring pixels merged, no seams. Draw it, or open a PNG, and paste it straight into your
-        design tool.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-dark" href={APP_URL}>
-          Open the editor <ArrowIcon />
-        </a>
-        <a class="btn" href="#how">
-          How it works
-        </a>
+    <section class="hero">
+      <div class="hero-glow" aria-hidden="true">
+        <PixelGlow />
+      </div>
+      <div class="container hero-inner">
+        <p class="eyebrow">Pixel art to SVG</p>
+        <h1>
+          Pixel art to clean SVG<span class="pixel-dot" aria-hidden="true"></span>
+        </h1>
+        <p class="lead">
+          Baipix exports your pixel art as SVG with one path per color, and pixels of the same color merged
+          into one shape. The file stays small and sharp at any size, and pastes into Figma or Illustrator as
+          shapes you can edit.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-dark" href={APP_URL}>
+            Open the editor <ArrowIcon />
+          </a>
+          <a class="btn" href="#how">
+            How to do it
+          </a>
+        </div>
       </div>
     </section>
 
@@ -130,42 +136,66 @@ const faq = [
           </div>
         </dl>
         <p class="muted">
-          The {w} × {h} starfighter from the gallery: {smaller}% smaller than a square per pixel, and {colors}{' '}
-          shapes to recolor instead of {opaque}.
+          {`The ${w} × ${h} starfighter from the gallery, compared with an SVG made of one square per pixel: ${smaller}% lighter, and ${colors} shapes to edit instead of ${opaque}.`}
         </p>
         <pre class="code"><code>{sample}</code></pre>
       </div>
     </section>
 
+    <section id="paste" class="paste container">
+      <SectionHead label="Copy and paste" />
+      <h2>Straight into Figma, no file.</h2>
+      <div class="paste-grid">
+        <div class="paste-step">
+          <p class="keys">
+            <kbd>Ctrl</kbd>
+            <kbd>Shift</kbd>
+            <kbd>C</kbd>
+          </p>
+          <h3>Copy as SVG in Baipix</h3>
+          <p class="muted">The drawing goes to the clipboard as SVG. On a Mac, it's Cmd+Shift+C.</p>
+        </div>
+        <div class="paste-step">
+          <p class="keys">
+            <kbd>Ctrl</kbd>
+            <kbd>V</kbd>
+          </p>
+          <h3>Paste in Figma</h3>
+          <p class="muted">
+            It lands as vector, not as an image: one shape per color, your layers as named groups, ready to
+            recolor or resize. The same works in Illustrator, and in any app or code editor that takes SVG.
+          </p>
+        </div>
+      </div>
+      <p class="muted paste-note">Copy as PNG is next to it, for apps that only take images.</p>
+    </section>
+
     <section id="why" class="cards container">
-      <SectionHead label="Why it's clean" />
-      <h2>Vector made the pixel art way.</h2>
+      <SectionHead label="What you get" />
+      <h2>What's in the file.</h2>
       <div class="card-grid">
         <article class="card">
           <h3>One path per color</h3>
-          <p class="muted">
-            Every color is a single shape. Recolor the whole sprite in one click in Figma, Illustrator or CSS.
-          </p>
+          <p class="muted">Each color is one shape. To change a color everywhere, you change it once.</p>
         </article>
         <article class="card">
-          <h3>Pixels merged, no seams</h3>
+          <h3>Pixels merged, no gaps</h3>
           <p class="muted">
-            Neighboring pixels of the same color become one run, drawn crisp. No faint lines between pixels
-            when it's scaled, and small files.
+            Pixels of the same color next to each other are drawn as one shape. The file stays small, and no
+            thin lines show up between pixels when you scale it up.
           </p>
         </article>
         <article class="card">
           <h3>Layers kept</h3>
           <p class="muted">
-            Each layer and group is a named group in the SVG, with its opacity and blend mode, so they stay
-            apart once opened.
+            Your layers and groups come out as named groups, with their opacity and blend mode.
           </p>
         </article>
         <article class="card">
           <h3>Any size, or a gap</h3>
           <p class="muted">
-            Pick the pixel size, 1× to 32×, and space the pixels apart for an LED or dot-matrix look, exported
-            as real vector too.
+            Choose how big a pixel is, from 1× to 32×. You can also leave a gap between pixels for an LED
+            look: it stays vector too.
           </p>
           <div
             class="pix gap-art"
@@ -178,16 +208,16 @@ const faq = [
     </section>
 
     <section id="how" class="steps container">
-      <SectionHead label="How it works" />
-      <h2>Three steps, in your browser.</h2>
+      <SectionHead label="How to do it" />
+      <h2>Three steps.</h2>
       <ol class="step-list">
         <li>
           <span class="step-n">1</span>
           <div>
-            <h3>Draw, or open your pixel art</h3>
+            <h3>Draw it, or import it</h3>
             <p class="muted">
-              Draw in Baipix, or import a PNG or any image of pixel art. A screenshot scaled up is fine:
-              Baipix finds its pixel grid and recovers the real pixels.
+              Draw in Baipix, or import a PNG. If the image was scaled up, like a screenshot at 400%, Baipix
+              finds the pixel grid and gets the original pixels back.
             </p>
           </div>
         </li>
@@ -196,17 +226,17 @@ const faq = [
           <div>
             <h3>Export as SVG</h3>
             <p class="muted">
-              Export, then SVG, with the pixel size you want. Or Copy as SVG (Ctrl+Shift+C) to skip the file.
+              Click Export, pick SVG and a size. Or press Ctrl+Shift+C to copy the SVG without saving a file.
             </p>
           </div>
         </li>
         <li>
           <span class="step-n">3</span>
           <div>
-            <h3>Paste it anywhere</h3>
+            <h3>Use it</h3>
             <p class="muted">
-              Paste into Figma or Illustrator, put it on a web page, or take it as a React component or CSS
-              with the code button next to Export.
+              Paste it into Figma, Illustrator or a web page. The &lt;/&gt; button next to Export also gives
+              it as a React component or CSS.
             </p>
           </div>
         </li>
@@ -215,7 +245,7 @@ const faq = [
 
     <section id="faq" class="faq container">
       <SectionHead label="Questions" />
-      <h2>Pixel art to SVG, answered.</h2>
+      <h2>Common questions.</h2>
       <div class="faq-list">
         {faq.map(({ q, a }) => (
           <details>
@@ -233,8 +263,19 @@ const faq = [
 </Base>
 
 <style>
+  /* The home page's background, behind the title, fading out before the example. */
   .hero {
+    position: relative;
     padding-top: 72px;
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
   }
   .eyebrow {
     font:
@@ -337,7 +378,42 @@ const faq = [
     font: 400 12px/1.7 var(--mono);
   }
 
+  /* ---- Copy and paste ---- */
+  .paste-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 40px;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .paste-step {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 32px 28px 36px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .keys {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 8px;
+  }
+  kbd {
+    min-width: 36px;
+    padding: 8px 10px;
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 3px 0 var(--accent);
+    background: var(--bg);
+    font: 500 14px/1 var(--mono);
+    text-align: center;
+  }
+  .paste-note {
+    margin-top: 20px;
+  }
+
   /* ---- Why it's clean ---- */
+  .paste,
   .cards,
   .steps,
   .faq {
@@ -415,6 +491,7 @@ const faq = [
   @media (max-width: 760px) {
     /* minmax(0, …): the code's long lines scroll inside it instead of widening the page. */
     .demo,
+    .paste-grid,
     .card-grid,
     .step-list {
       grid-template-columns: minmax(0, 1fr);
