@@ -16,6 +16,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- Docs for isometric, the view, export and code, with screenshots, which completes them. A search box at the top of the docs' sidebar (or press /) finds any section, from an index built with the site. (#455)
 - Docs for layers (layers and groups, blend modes and effects, move, resize and rotate), components and boards, with screenshots. The docs home shows the 30-second video, loaded from YouTube (without cookies) only when it's played. (#447)
 - Docs for drawing (pencil and eraser, fills and gradients, shapes, selections, spray and rework) and colors (colors and palettes, shade and lighten, adjustments), with screenshots of the tools' options and menus. Previous and next are the site's pixel buttons. (#445)
 - The docs take the whole screen, up to 1600 px, like software docs: the navigation at the left with a line beside it, the text centered at a comfortable measure, the page's sections at the right. Their header and footer follow. (#443)

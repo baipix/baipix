@@ -64,6 +64,22 @@ export const DOCS: DocSection[] = [
     ],
   },
   {
+    title: 'Isometric and view',
+    intro: 'The isometric grid and volumes, and zooming, symmetry, tiles, rulers and the preview.',
+    pages: [
+      { slug: 'isometric/isometric', title: 'Isometric' },
+      { slug: 'view/view', title: 'The view' },
+    ],
+  },
+  {
+    title: 'Export',
+    intro: 'PNG, SVG, Aseprite and tilesets, every board at once, and the drawing as code.',
+    pages: [
+      { slug: 'export/export', title: 'Export' },
+      { slug: 'export/code', title: 'Code' },
+    ],
+  },
+  {
     title: 'Reference',
     intro: 'Every keyboard shortcut, read from the editor itself.',
     pages: [{ slug: 'reference/shortcuts', title: 'Keyboard shortcuts' }],

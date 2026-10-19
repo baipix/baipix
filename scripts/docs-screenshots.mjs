@@ -78,6 +78,19 @@ const SHOTS = [
     frame: ['.menu'],
   },
   { name: 'adjustments', setup: `ui.openAdjust('layer', 'colors');`, frame: ['.adjust-panel'] },
+  // Isometric, the view and the export.
+  {
+    name: 'iso-box',
+    setup: `__ed.newFile(64, 48, 'Box'); __ed.setIsoGrid(16); await wait(200); __ed.setTool('box');`,
+    frame: ['.tool-options', '.toolbar'],
+  },
+  {
+    name: 'display',
+    setup: `document.querySelector('[aria-label="Display"]').click();`,
+    frame: ['.display-popover'],
+  },
+  { name: 'export', setup: `ui.openDialog({ type: 'export' });`, frame: ['.dialog'] },
+  { name: 'code', setup: `ui.openDialog({ type: 'code' });`, frame: ['.dialog'] },
   // Layers, components and boards.
   {
     name: 'layer-menu',

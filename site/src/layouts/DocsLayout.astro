@@ -35,25 +35,47 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
 <Base title={`${title} · Baipix docs`} description={description}>
   <Nav wide />
   <div class="docs container-wide">
-    <nav class="docs-nav" aria-label="Docs">
-      <a class="docs-home" href={`${base}docs/`} aria-current={path === `${base}docs/` ? 'page' : undefined}>
-        Docs
-      </a>
-      {DOCS.map((s) => (
-        <div class="docs-group">
-          <p class="docs-group-title">{s.title}</p>
-          <ul>
-            {s.pages.map((p) => (
-              <li>
-                <a href={href(p.slug)} aria-current={href(p.slug) === path ? 'page' : undefined}>
-                  {p.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </nav>
+    <div class="docs-side">
+      {/* Search: the index loads on first use, results show over the table of contents. */}
+      <div class="docs-search" role="search">
+        <input
+          type="search"
+          placeholder="Search the docs"
+          aria-label="Search the docs"
+          aria-controls="docs-results"
+          autocomplete="off"
+          spellcheck="false"
+          data-index={`${base}docs/search.json`}
+        />
+        <kbd class="docs-search-key" aria-hidden="true">
+          /
+        </kbd>
+        <ul id="docs-results" class="docs-results" hidden></ul>
+      </div>
+      <nav class="docs-nav" aria-label="Docs">
+        <a
+          class="docs-home"
+          href={`${base}docs/`}
+          aria-current={path === `${base}docs/` ? 'page' : undefined}
+        >
+          Docs
+        </a>
+        {DOCS.map((s) => (
+          <div class="docs-group">
+            <p class="docs-group-title">{s.title}</p>
+            <ul>
+              {s.pages.map((p) => (
+                <li>
+                  <a href={href(p.slug)} aria-current={href(p.slug) === path ? 'page' : undefined}>
+                    {p.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </div>
     <main class="docs-main">
       {section && <p class="docs-eyebrow">{section.title}</p>}
       <article class="docs-content">
@@ -97,6 +119,129 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
 </Base>
 
 <script>
+  // Search the docs: every word typed must appear in a section's page name, title or text; the
+  // title counts most. The best ten show, each with a bit of text around the first word found.
+  interface Entry {
+    url: string;
+    page: string;
+    title: string;
+    text: string;
+  }
+  const box = document.querySelector<HTMLDivElement>('.docs-search');
+  if (box) {
+    const input = box.querySelector('input')!;
+    const list = box.querySelector<HTMLUListElement>('.docs-results')!;
+    let index: Entry[] | null = null;
+    let loading: Promise<void> | null = null;
+    const load = () =>
+      (loading ??= fetch(input.dataset.index!)
+        .then((r) => r.json())
+        .then((entries: Entry[]) => {
+          index = entries;
+        })
+        .catch(() => {
+          index = [];
+        }));
+    const fold = (t: string) =>
+      t
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    const snippet = (text: string, word: string) => {
+      const at = fold(text).indexOf(word);
+      if (at < 0) return text.slice(0, 110) + (text.length > 110 ? '…' : '');
+      const start = Math.max(0, at - 40);
+      return (start ? '…' : '') + text.slice(start, start + 120) + (start + 120 < text.length ? '…' : '');
+    };
+    let active = -1;
+    const items = () => [...list.querySelectorAll<HTMLAnchorElement>('a')];
+    const show = () => {
+      const words = fold(input.value).split(/\s+/).filter(Boolean);
+      list.replaceChildren();
+      active = -1;
+      if (!words.length || !index) {
+        list.hidden = true;
+        return;
+      }
+      const scored = index
+        .map((e) => {
+          const title = fold(e.title);
+          const page = fold(e.page);
+          const text = fold(e.text);
+          let score = 0;
+          for (const w of words) {
+            if (title.includes(w)) score += 10;
+            else if (page.includes(w)) score += 4;
+            else if (text.includes(w)) score += 1;
+            else return null;
+          }
+          return { e, score };
+        })
+        .filter((x): x is { e: Entry; score: number } => !!x)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+      if (!scored.length) {
+        const li = document.createElement('li');
+        li.className = 'docs-results-empty';
+        li.textContent = 'Nothing found.';
+        list.append(li);
+      }
+      for (const { e } of scored) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = e.url;
+        const title = document.createElement('strong');
+        title.textContent = e.title === e.page ? e.page : `${e.title}`;
+        const where = document.createElement('span');
+        where.className = 'docs-results-page';
+        where.textContent = e.title === e.page ? '' : e.page;
+        const text = document.createElement('span');
+        text.className = 'docs-results-text';
+        text.textContent = snippet(e.text, words[0]);
+        a.append(title, where, text);
+        li.append(a);
+        list.append(li);
+      }
+      list.hidden = false;
+    };
+    input.addEventListener('focus', () => void load());
+    input.addEventListener('input', async () => {
+      await load();
+      show();
+    });
+    input.addEventListener('keydown', (e) => {
+      const links = items();
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (!links.length) return;
+        e.preventDefault();
+        active = (active + (e.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length;
+        links.forEach((l, i) => l.toggleAttribute('aria-selected', i === active));
+      } else if (e.key === 'Enter') {
+        const link = links[Math.max(0, active)];
+        if (link) location.href = link.href;
+      } else if (e.key === 'Escape') {
+        input.value = '';
+        show();
+        input.blur();
+      }
+    });
+    // A click elsewhere closes the results.
+    document.addEventListener('click', (e) => {
+      if (!box.contains(e.target as Node)) list.hidden = true;
+    });
+    input.addEventListener('focus', () => {
+      if (input.value) show();
+    });
+    // "/" anywhere on the page goes to the search box.
+    document.addEventListener('keydown', (e) => {
+      const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+      if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        input.focus();
+      }
+    });
+  }
+
   // The page's sections in the right column: each h2, linked by an id made from its text if it
   // has none, and the one at the top of the screen highlighted as you scroll.
   const toc = document.querySelector<HTMLElement>('.docs-toc');
@@ -194,16 +339,99 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
       display: none;
     }
   }
-  /* The table of contents stays in view under the sticky header. */
-  .docs-nav {
+  /* The search and the table of contents stay in view under the sticky header; only the table of
+     contents scrolls, so the search results can spread over the page. */
+  .docs-side {
     position: sticky;
     top: calc(var(--header-height) + 24px);
     align-self: start;
-    max-height: calc(100vh - var(--header-height) - 48px);
-    overflow-y: auto;
     padding-right: 24px;
     border-right: 1px solid var(--line);
+  }
+  .docs-nav {
+    max-height: calc(100vh - var(--header-height) - 108px);
+    overflow-y: auto;
     font-size: 14px;
+  }
+  /* ---- Search ---- */
+  .docs-search {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .docs-search input {
+    width: 100%;
+    height: 36px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+  }
+  /* Escape clears it: no native clear button over the "/" key. */
+  .docs-search input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .docs-search input:focus {
+    outline: 2px solid var(--accent, var(--text));
+    outline-offset: -1px;
+  }
+  .docs-search-key {
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    padding: 0 5px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font: 500 11px/16px var(--mono);
+    pointer-events: none;
+  }
+  .docs-results {
+    position: absolute;
+    z-index: 25;
+    top: 42px;
+    left: 0;
+    width: min(420px, calc(100vw - 32px));
+    max-height: 60vh;
+    margin: 0;
+    padding: 6px 0;
+    overflow-y: auto;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.25);
+    list-style: none;
+  }
+  .docs-results :global(a) {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 10px 14px;
+    border: 0;
+    color: var(--text);
+  }
+  .docs-results :global(a:hover),
+  .docs-results :global(a[aria-selected]) {
+    background: var(--surface);
+  }
+  .docs-results :global(strong) {
+    font-weight: 600;
+  }
+  .docs-results :global(.docs-results-page) {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .docs-results :global(.docs-results-page:empty) {
+    display: none;
+  }
+  .docs-results :global(.docs-results-text) {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .docs-results :global(.docs-results-empty) {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--muted);
   }
   .docs-home {
     display: block;
@@ -414,12 +642,14 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
       padding-top: 24px;
     }
     /* On a phone the table of contents comes first, as a plain list. */
-    .docs-nav {
+    .docs-side {
       position: static;
-      max-height: none;
       padding: 0 0 20px;
       border-right: 0;
       border-bottom: 1px solid var(--line);
+    }
+    .docs-nav {
+      max-height: none;
     }
   }
 </style>
