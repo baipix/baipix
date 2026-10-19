@@ -231,6 +231,39 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
     margin: 0;
   }
 
+  /* ---- Screenshots: one per theme, the one matching the site's shows ---- */
+  .docs-content :global(.shot) {
+    margin: 12px 0 28px;
+  }
+  .docs-content :global(.shot img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+  }
+  .docs-content :global(.shot figcaption) {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .docs-content :global(.shot .for-dark) {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .docs-content :global(.shot .for-light) {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .docs-content :global(.shot .for-dark) {
+      display: block;
+    }
+  }
+  :global(:root[data-theme='dark']) .docs-content :global(.shot .for-light) {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) .docs-content :global(.shot .for-dark) {
+    display: block;
+  }
+
   /* ---- Previous and next ---- */
   .docs-pager {
     display: grid;
