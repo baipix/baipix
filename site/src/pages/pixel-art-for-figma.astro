@@ -1,4 +1,5 @@
 ---
+import CopySvgButton from '../components/CopySvgButton.astro';
 import Cta from '../components/Cta.astro';
 import Faq from '../components/Faq.astro';
 import Footer from '../components/Footer.astro';
@@ -11,7 +12,7 @@ import '../styles/guide.css';
 import { galleryDoc } from '../gallery';
 import { toHex } from '../../../src/engine/color';
 import { flatten } from '../../../src/engine/composite';
-import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+import { renderGeometry, toLayeredSvg, toSvg } from '../../../src/engine/export/svg';
 
 const base = import.meta.env.BASE_URL;
 
@@ -25,6 +26,8 @@ const layers = [...doc.layers].reverse().map((layer) => {
   return { name: layer.name, colors: colors.map(toHex) };
 });
 const shapes = layers.reduce((n, l) => n + l.colors.length, 0);
+// What Copy as SVG gives for it, layers kept, at 8× so it lands at a comfortable size.
+const layered = toLayeredSvg(doc, renderGeometry(w, h, 8, 0));
 
 const faq = [
   {
@@ -104,6 +107,7 @@ const faq = [
         <p class="muted">
           {`Mount Fuji from the gallery, pasted in Figma: ${layers.length} groups named after its layers, and ${shapes} shapes, one per color in each layer.`}
         </p>
+        <CopySvgButton svg={layered} />
       </div>
     </section>
 

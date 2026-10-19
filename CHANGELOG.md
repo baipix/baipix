@@ -10,7 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
-- A Pixel art for Figma page: Mount Fuji from the gallery and the layers it gets once pasted in Figma, copy and paste, what Figma doesn't do for pixel art, what works like Figma, and common questions. The footer gets columns (Baipix, Guides, Project). The guides share their hero, copy-and-paste and questions parts. (#433)
+- A Pixel art for Figma page: Mount Fuji from the gallery and the layers it gets once pasted in Figma, with a button that copies its SVG to try it, copy and paste, what Figma doesn't do for pixel art, what works like Figma, and common questions. The footer gets columns (Baipix, Guides, Project). The guides share their hero, copy-and-paste and questions parts. (#433)
 - A Pixel art to SVG page: the gallery's starfighter as an example with its numbers measured at build time (18 paths instead of 1024 squares, 85% lighter), copy and paste straight into Figma, what's in the file, how to do it in three steps, and common questions, under the home page's animated background. It's in the footer, the sitemap and llms.txt. (#431)
 - baipix.app/llms.txt sums up Baipix for AI assistants: what it is, what it does, the current version and the links to read more. (#429)
 
