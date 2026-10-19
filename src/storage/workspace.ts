@@ -1,3 +1,4 @@
+import { normalizeComponents } from '../engine/components';
 import type { PixelDoc, ReferenceImage } from '../engine/document';
 import type { Preferences } from '../engine/editor';
 import type { Outside } from '../engine/outside';
@@ -73,7 +74,7 @@ export function fromStored(s: StoredWorkspace): Workspace | null {
   const documents: PixelDoc[] = [];
   for (const f of s.files ?? []) {
     try {
-      const doc = deserializeDocument(f);
+      const doc = deserializeDocument(f, true);
       const reference = readReference(f.reference);
       if (reference) doc.reference = reference;
       f.outside?.forEach((o, i) => {
@@ -86,6 +87,13 @@ export function fromStored(s: StoredWorkspace): Workspace | null {
     }
   }
   if (!documents.length) return null;
+  // Each file's components once all its boards are read: masters can be on another board.
+  const files = new Map<string, PixelDoc[]>();
+  for (const doc of documents) {
+    const file = doc.board?.file ?? doc.id;
+    files.set(file, [...(files.get(file) ?? []), doc]);
+  }
+  for (const docs of files.values()) normalizeComponents(docs);
   return { documents, activeId: s.activeId, preferences: s.preferences ?? {}, ui: s.ui ?? {} };
 }
 

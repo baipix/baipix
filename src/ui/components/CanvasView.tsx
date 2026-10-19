@@ -1200,15 +1200,6 @@ export function CanvasView() {
       const p = viewport.toPixel(local(e).x, local(e).y);
       const outside = p.x < 0 || p.y < 0 || p.x >= st.doc.width || p.y >= st.doc.height;
       const target = moving && outside ? boardAt(p) : null;
-      // A component and its instances stay on their board: let go off it, the drag goes back to
-      // where it started, and a message says why. Kept going, it would be lost past the board's edge.
-      const dragged = st.doc.layers[st.doc.activeLayer];
-      if (moving && outside && dragged && (dragged.component || dragged.instance)) {
-        editor.cancelStroke();
-        if (target) editor.moveLayerToBoard(dragged.id, target.id);
-        else if (isBoard(st.doc)) editor.moveLayerOut(dragged.id);
-        return;
-      }
       editor.endStroke();
       const { doc } = editor.getState();
       const id = doc.layers[doc.activeLayer].id;
@@ -1338,7 +1329,23 @@ export function CanvasView() {
         const canvas = canvasRef.current;
         if (component && canvas) {
           const r = canvas.getBoundingClientRect();
-          editor.addInstanceAt(component, viewport.toPixel(e.clientX - r.left, e.clientY - r.top));
+          let p = viewport.toPixel(e.clientX - r.left, e.clientY - r.top);
+          // Dropped on another board of the file: the instance goes there, the board becomes the
+          // active one. A component can have instances on any board.
+          const st = editor.getState();
+          const here = st.boards.find((b) => b.id === st.doc.id);
+          if (here && (p.x < 0 || p.y < 0 || p.x >= st.doc.width || p.y >= st.doc.height)) {
+            const fx = here.x + p.x;
+            const fy = here.y + p.y;
+            const target = st.boards.find(
+              (b) => b.id !== here.id && fx >= b.x && fx < b.x + b.width && fy >= b.y && fy < b.y + b.height,
+            );
+            if (target) {
+              editor.switchBoard(target.id);
+              p = { x: fx - target.x, y: fy - target.y };
+            }
+          }
+          editor.addInstanceAt(component, p);
           return;
         }
         const file = e.dataTransfer.files[0];

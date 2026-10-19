@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { findMaster, isLinkedInstance, masters, spritePixels } from '../../engine/components';
+import { fileMasters, findMaster, isLinkedInstance, spritePixels } from '../../engine/components';
 import { fileNameOf, isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
 import {
   groupChain,
@@ -150,20 +150,24 @@ function dropPlace(
 }
 
 /**
- * The document's components (their masters, top first): drag one onto the canvas to add an
- * instance, click one to select its master. Only shown once there's a component.
+ * The file's components (their masters, on every board, the active board's first, top first): drag
+ * one onto any board to add an instance, click one to select its master (on its board). Only shown
+ * once there's a component.
  */
 function ComponentsSection() {
   const t = useT();
   const editor = useEditor();
   const doc = useEditorState((s) => s.doc);
   const revision = useEditorState((s) => s.revision);
-  const list = masters(doc).reverse();
+  const list = fileMasters(doc)
+    .map(({ doc: on, layer }) => ({ on, m: layer }))
+    .reverse()
+    .sort((a, b) => Number(b.on === doc) - Number(a.on === doc));
   if (!list.length) return null;
   return (
     <Section id="components" title={t('section.components')} info={t('component.dragHint')}>
       <div className="item-list">
-        {list.map((m) => (
+        {list.map(({ on, m }) => (
           <div
             key={m.id}
             className="item component-item"
@@ -173,10 +177,13 @@ function ComponentsSection() {
               e.dataTransfer.setData(COMPONENT_MIME, m.id);
               e.dataTransfer.effectAllowed = 'copy';
             }}
-            onClick={() => editor.selectLayer(doc.layers.indexOf(m), 'single')}
+            onClick={() => {
+              if (on !== doc) editor.switchBoard(on.id);
+              editor.selectLayer(on.layers.indexOf(m), 'single');
+            }}
           >
             <Thumbnail
-              pixels={() => spritePixels(doc, m)}
+              pixels={() => spritePixels(on, m)}
               width={m.component!.w}
               height={m.component!.h}
               version={revision}

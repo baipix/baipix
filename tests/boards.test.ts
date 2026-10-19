@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
+import type { Layer } from '../src/engine/document';
 import { Editor } from '../src/engine/editor';
 import { fileFromJson, fileToJson } from '../src/storage/fileFormat';
 import { fromStored, toStored } from '../src/storage/workspace';
@@ -325,26 +326,116 @@ describe('boards', () => {
     expect(e.getState().doc.layers[0].id).not.toBe(layer.id);
   });
 
-  it('keeps components on their board', () => {
-    const e = twoBoards();
-    const [icons, small] = e.getState().boards;
-    e.switchBoard(icons.id);
-    e.createComponent();
-    const layer = e.getState().doc.layers[e.getState().doc.activeLayer];
-    expect(e.moveLayerToBoard(layer.id, small.id)).toBe(false);
-    expect(e.getState().doc.id).toBe(icons.id);
-  });
+  describe('components across boards', () => {
+    const BLUE = pack(0, 0, 255);
+    /** Icons (16×16) holds a 1×1 red component at (0, 0); Small (8×8) is beside it. */
+    function withComponent() {
+      const e = twoBoards();
+      const [icons, small] = e.getState().boards;
+      e.switchBoard(icons.id);
+      e.createComponent();
+      const master = e.getState().doc.layers[e.getState().doc.activeLayer];
+      return { e, icons, small, master };
+    }
+    const layerOn = (e: Editor, boardId: string, test: (l: Layer) => boolean) => {
+      e.switchBoard(boardId);
+      return e.getState().doc.layers.find(test);
+    };
+    /** Paints the master blue with the pencil, on its board. */
+    const repaint = (e: Editor, boardId: string, masterId: string) => {
+      e.switchBoard(boardId);
+      e.setActiveLayer(e.getState().doc.layers.findIndex((l) => l.id === masterId));
+      e.setColor('primary', BLUE);
+      e.setTool('pencil');
+      e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+      e.endStroke();
+    };
 
-  it('keeps a component on its board when it is let go beside the boards, with no empty room made for it', () => {
-    const e = twoBoards();
-    e.switchBoard(e.getState().boards[0].id);
-    e.createComponent();
-    const layer = e.getState().doc.layers[e.getState().doc.activeLayer];
-    // The room outside the boards would be a document of its own, left empty.
-    const documents = e.getDocuments().length;
-    expect(e.moveLayerOut(layer.id)).toBe(false);
-    expect(e.getDocuments()).toHaveLength(documents);
-    expect(e.getState().doc.layers.some((l) => l.id === layer.id)).toBe(true);
+    it('places an instance on another board, which follows the component', () => {
+      const { e, icons, small, master } = withComponent();
+      e.switchBoard(small.id);
+      expect(e.addInstanceAt(master.id, { x: 3, y: 4 })).toBe(true);
+      const instance = e.getState().doc.layers[e.getState().doc.activeLayer];
+      expect(instance.instance?.of).toBe(master.id);
+      // The small board is 8 wide: the sprite lands at (3, 4) on it.
+      expect(instance.pixels[4 * 8 + 3]).toBe(RED);
+      repaint(e, icons.id, master.id);
+      expect(layerOn(e, small.id, (l) => l.id === instance.id)!.pixels[4 * 8 + 3]).toBe(BLUE);
+    });
+
+    it('moves an instance to another board, still linked', () => {
+      const { e, icons, small, master } = withComponent();
+      e.addInstanceAt(master.id, { x: 5, y: 5 });
+      const instance = e.getState().doc.layers[e.getState().doc.activeLayer];
+      expect(e.moveLayerToBoard(instance.id, small.id)).toBe(true);
+      // Icons is at (0, 0), Small at (24, 0): the sprite moves 24 to the left, off Small's canvas.
+      const moved = e.getState().doc.layers.find((l) => l.id === instance.id)!;
+      expect(moved.instance).toEqual({ of: master.id, x: 5 - 24, y: 5 });
+      expect(e.getState().doc.id).toBe(small.id);
+      repaint(e, icons.id, master.id);
+      expect(layerOn(e, small.id, (l) => l.id === instance.id)?.instance?.of).toBe(master.id);
+    });
+
+    it('moves a component to another board, its instances still following it', () => {
+      const { e, icons, small, master } = withComponent();
+      e.addInstanceAt(master.id, { x: 5, y: 5 });
+      const instance = e.getState().doc.layers[e.getState().doc.activeLayer];
+      e.switchBoard(icons.id);
+      expect(e.moveLayerToBoard(master.id, small.id)).toBe(true);
+      const moved = e.getState().doc.layers.find((l) => l.id === master.id)!;
+      expect(moved.component).toBeTruthy();
+      repaint(e, small.id, master.id);
+      const copy = layerOn(e, icons.id, (l) => l.id === instance.id)!;
+      expect(copy.instance?.of).toBe(master.id);
+      expect(copy.pixels.some((c) => c === BLUE)).toBe(true);
+    });
+
+    it('lets a component go outside the boards', () => {
+      const { e, master } = withComponent();
+      const documents = e.getDocuments().length;
+      expect(e.moveLayerOut(master.id)).toBe(true);
+      expect(e.getDocuments().length).toBe(documents + 1);
+      expect(e.getState().doc.layers.some((l) => l.id === master.id && l.component)).toBe(true);
+    });
+
+    it('keeps the link across boards in .baipix files and in the workspace', () => {
+      const { e, small, master } = withComponent();
+      e.switchBoard(small.id);
+      e.addInstanceAt(master.id, { x: 3, y: 4 });
+      const boards = e.fileBoards();
+      const back = fileFromJson(fileToJson(boards));
+      const [icons2, small2] = back;
+      const master2 = icons2.layers.find((l) => l.component)!;
+      const instance2 = small2.layers.find((l) => l.instance)!;
+      expect(instance2.instance?.of).toBe(master2.id);
+      // New ids: the file opened next to the one it came from shares none with it.
+      expect(master2.id).not.toBe(master.id);
+      expect(instance2.pixels[4 * 8 + 3]).toBe(RED);
+      // An older reader finds no master by index: the instance shows as its pixels.
+      const json = JSON.parse(fileToJson(boards));
+      expect(json.boards[1].layers.find((l: { instance?: unknown }) => l.instance).instance.of).toBe(-1);
+      const restored = fromStored(
+        toStored({ documents: e.getDocuments(), activeId: icons2.id, preferences: {}, ui: {} }),
+      )!;
+      const s2 = restored.documents.find((d) => d.id === small.id)!;
+      const i2 = s2.layers.find((l) => l.instance)!;
+      expect(
+        restored.documents.some((d) => d.layers.some((l) => l.id === i2.instance!.of && l.component)),
+      ).toBe(true);
+    });
+
+    it('copies a file with its instances pointing at the copied components', () => {
+      const { e, small, master } = withComponent();
+      e.switchBoard(small.id);
+      e.addInstanceAt(master.id, { x: 3, y: 4 });
+      const file = e.getState().activeId;
+      e.duplicateFile(file);
+      const copies = e.fileBoards();
+      const copyMaster = copies.flatMap((d) => d.layers).find((l) => l.component)!;
+      const copyInstance = copies.flatMap((d) => d.layers).find((l) => l.instance)!;
+      expect(copyMaster.id).not.toBe(master.id);
+      expect(copyInstance.instance?.of).toBe(copyMaster.id);
+    });
   });
 
   it('brings back with Align a drawing moved off the board', () => {

@@ -80,7 +80,7 @@ describe('components', () => {
     expect(at(doc, 1, 4, 4)).toBe(RED);
     // The master goes: its other instance keeps its pixels as a plain layer.
     doc.layers.splice(0, 1);
-    normalizeComponents(doc);
+    normalizeComponents([doc]);
     expect(doc.layers.every((l) => !l.instance && !l.component)).toBe(true);
     expect(at(doc, 1, 10, 5)).toBe(RED);
   });
@@ -91,7 +91,7 @@ describe('components', () => {
     addInstance(doc, doc.layers[0].id, 10, 5);
     const file = serializeDocument(doc);
     expect(file.layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 2 });
-    expect(file.layers[1].instance).toEqual({ of: 0, x: 10, y: 5 });
+    expect(file.layers[1].instance).toEqual({ of: 0, master: doc.layers[0].id, x: 10, y: 5 });
     // The instance's pixels are saved too, for a version without components.
     expect(file.layers[1].runs.length).toBeGreaterThan(2);
     const back = documentFromJson(documentToJson(doc));
