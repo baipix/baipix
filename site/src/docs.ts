@@ -47,6 +47,23 @@ export const DOCS: DocSection[] = [
     ],
   },
   {
+    title: 'Layers',
+    intro: 'Layers and groups, blend modes and effects, and moving, resizing and rotating.',
+    pages: [
+      { slug: 'layers/layers-and-groups', title: 'Layers and groups' },
+      { slug: 'layers/blend-modes-and-effects', title: 'Blend modes and effects' },
+      { slug: 'layers/move-resize-rotate', title: 'Move, resize and rotate' },
+    ],
+  },
+  {
+    title: 'Components and boards',
+    intro: 'A sprite drawn once and used everywhere, and several boards in one file.',
+    pages: [
+      { slug: 'components/components', title: 'Components' },
+      { slug: 'boards/boards', title: 'Boards' },
+    ],
+  },
+  {
     title: 'Reference',
     intro: 'Every keyboard shortcut, read from the editor itself.',
     pages: [{ slug: 'reference/shortcuts', title: 'Keyboard shortcuts' }],

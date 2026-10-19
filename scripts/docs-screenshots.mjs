@@ -78,6 +78,38 @@ const SHOTS = [
     frame: ['.menu'],
   },
   { name: 'adjustments', setup: `ui.openAdjust('layer', 'colors');`, frame: ['.adjust-panel'] },
+  // Layers, components and boards.
+  {
+    name: 'layer-menu',
+    setup: `const row = document.querySelectorAll('.panel-left .item')[1];
+      const r = row.getBoundingClientRect();
+      row.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 60, clientY: r.top + r.height / 2 }));`,
+    frame: ['.panel-left', '.menu'],
+  },
+  {
+    name: 'groups',
+    setup: `ui.uiStore.set({ preview: { ...ui.uiStore.get().preview, open: false } }); __ed.selectLayer(3, 'single'); __ed.selectLayer(2, 'toggle'); __ed.groupSelection();`,
+    frame: ['.panel-left'],
+  },
+  {
+    name: 'effects',
+    setup: `__ed.addEffect('shadow'); __ed.addEffect('outline');`,
+    frame: ['.panel-right'],
+  },
+  {
+    name: 'components',
+    setup: `ui.uiStore.set({ preview: { ...ui.uiStore.get().preview, open: false } }); __ed.setActiveLayer(1); __ed.createComponent();`,
+    frame: ['.panel-left'],
+  },
+  {
+    name: 'boards',
+    setup: `ui.uiStore.set({ preview: { ...ui.uiStore.get().preview, open: false } }); __ed.addDocuments(ff.fileFromJson(await (await fetch('/site/src/art/hobbit-house.baipix')).text()));
+      await wait(300);
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      // All four boards: the file's middle, from the first board's corner.
+      vp.zoomTo(2.8);
+      vp.centerOn(115, 98);`,
+  },
 ];
 
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe' });
