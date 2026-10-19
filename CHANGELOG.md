@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
+
 ### Website
 
 - baipix.app/llms.txt sums up Baipix for AI assistants: what it is, what it does, the current version and the links to read more. (#429)

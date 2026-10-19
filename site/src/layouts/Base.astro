@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { ANALYTICS_SNIPPET } from '../../../src/analytics';
 
 interface Props {
   title: string;
@@ -42,15 +43,8 @@ const favicon =
     <link rel="sitemap" href={`${base}sitemap.xml`} />
     <link rel="icon" href={favicon} />
     {
-      /* Cloudflare Web Analytics: page views only, no cookies. */
-      analytics && (
-        <script
-          is:inline
-          defer
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "c751710cc6a54b69a0442aec83131356"}'
-        ></script>
-      )
+      /* Cloudflare Web Analytics: page views only, no cookies; ?notrack stops it for this browser. */
+      analytics && <script is:inline set:html={ANALYTICS_SNIPPET} />
     }
     <script is:inline>
       // Theme before the first paint: the visitor's choice (ThemeToggle), otherwise the OS setting.

@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from 'vite';
+import { ANALYTICS_SNIPPET } from './src/analytics';
 import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import pkg from './package.json';
@@ -10,11 +11,7 @@ import pkg from './package.json';
 const analytics = (): Plugin => ({
   name: 'baipix-analytics',
   apply: 'build',
-  transformIndexHtml: (html) =>
-    html.replace(
-      '</body>',
-      `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "c751710cc6a54b69a0442aec83131356"}'></script></body>`,
-    ),
+  transformIndexHtml: (html) => html.replace('</body>', `<script>${ANALYTICS_SNIPPET}</script></body>`),
 });
 
 // `npm run build:single` produces one self-contained index.html (handy for sharing or embedding).
