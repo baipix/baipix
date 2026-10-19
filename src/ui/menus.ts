@@ -19,7 +19,7 @@ import { CHANGELOG_URL, DOCS_URL, GITHUB_URL } from './links';
  * report comes with the version and the browser already written in, which are always asked for.
  * The person sees it all before sending, on GitHub, with their account.
  */
-function newIssueUrl(kind: 'bug' | 'idea'): string {
+export function newIssueUrl(kind: 'bug' | 'idea'): string {
   const body =
     kind === 'bug'
       ? [

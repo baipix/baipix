@@ -728,6 +728,20 @@ function SurfacesBlock() {
           <TabsDemo />
         </Specimen>
         <Specimen
+          label="Help card"
+          use="A link to somewhere else, with an icon, a title and a line (the files screen: the docs, a bug report)."
+        >
+          <a className="home-help-card" href="#help-card">
+            <span className="home-help-icon">
+              <Icon name="docs" size={18} />
+            </span>
+            <span className="home-help-text">
+              <span className="home-help-title">Learn Baipix</span>
+              <span className="muted">Every tool and shortcut, explained in the docs.</span>
+            </span>
+          </a>
+        </Specimen>
+        <Specimen
           label="Pill tabs"
           use="A choice of what to show in a dialog (the Code dialog's languages). The current one is filled in violet."
         >

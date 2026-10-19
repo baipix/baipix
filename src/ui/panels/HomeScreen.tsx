@@ -10,9 +10,10 @@ import { HomeGlow } from '../components/HomeGlow';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
-import { fileMenu } from '../menus';
+import { fileMenu, newIssueUrl } from '../menus';
 import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
+import { DOCS_URL } from '../links';
 import { openDialog } from '../uiStore';
 
 const DAY = 86_400_000;
@@ -193,6 +194,27 @@ export function HomeScreen() {
             </div>
           </section>
         )}
+        {/* Under the drawings: where to learn more, and where to say something is wrong. */}
+        <section className="home-help" aria-label={t('home.helpTitle')}>
+          <a className="home-help-card" href={DOCS_URL} target="_blank" rel="noopener">
+            <span className="home-help-icon">
+              <Icon name="docs" size={18} />
+            </span>
+            <span className="home-help-text">
+              <span className="home-help-title">{t('home.docsTitle')}</span>
+              <span className="muted">{t('home.docsText')}</span>
+            </span>
+          </a>
+          <a className="home-help-card" href={newIssueUrl('bug')} target="_blank" rel="noopener">
+            <span className="home-help-icon">
+              <Icon name="bug" size={18} />
+            </span>
+            <span className="home-help-text">
+              <span className="home-help-title">{t('home.bugTitle')}</span>
+              <span className="muted">{t('home.bugText')}</span>
+            </span>
+          </a>
+        </section>
       </div>
     </div>
   );
