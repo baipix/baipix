@@ -5,6 +5,8 @@
  * the OS setting, or [data-theme] on <html> once the visitor picks one (see Base.astro).
  */
 :root {
+  /* The sticky header's height: the bars stuck under it and the anchors make room for it. */
+  --header-height: 72px;
   color-scheme: light dark;
   --bg: light-dark(#ffffff, #0f0f11);
   --surface: light-dark(#f6f6f5, #18181b);
@@ -46,6 +48,8 @@
   box-sizing: border-box;
 }
 html {
+  /* Links to a section (#gallery, #how…) land under the sticky header, not behind it. */
+  scroll-padding-top: var(--header-height);
   -webkit-text-size-adjust: 100%;
 }
 body {

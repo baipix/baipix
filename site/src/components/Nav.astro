@@ -15,30 +15,38 @@ const links = [
 const here = Astro.url.pathname;
 ---
 
-<header class="nav container">
-  <a class="brand" href={base} aria-label="Baipix home">
-    <Logo size={18} />
-    <span>Baipix</span>
-  </a>
-  <nav class="nav-links">
-    {links.map((l) => (
-      <a href={l.href} aria-current={here === l.href ? 'page' : undefined}>
-        {l.label}
-      </a>
-    ))}
-  </nav>
-  <a class="btn btn-small star" href={REPO_URL} aria-label="Star Baipix on GitHub">
-    <PixelIcon rows={STAR} size={13} />
-    <span>Star</span>
-    <span class="star-count" data-stars></span>
-  </a>
-  <ThemeToggle />
-  <a class="btn btn-dark btn-small" href={APP_URL}>
-    Open the editor
-  </a>
+<header class="site-header">
+  <div class="nav container">
+    <a class="brand" href={base} aria-label="Baipix home">
+      <Logo size={18} />
+      <span>Baipix</span>
+    </a>
+    <nav class="nav-links">
+      {links.map((l) => (
+        <a href={l.href} aria-current={here === l.href ? 'page' : undefined}>
+          {l.label}
+        </a>
+      ))}
+    </nav>
+    <a class="btn btn-small star" href={REPO_URL} aria-label="Star Baipix on GitHub">
+      <PixelIcon rows={STAR} size={13} />
+      <span>Star</span>
+      <span class="star-count" data-stars></span>
+    </a>
+    <ThemeToggle />
+    <a class="btn btn-dark btn-small" href={APP_URL}>
+      Open the editor
+    </a>
+  </div>
 </header>
 
 <script>
+  // The header stays at the top; once the page has scrolled, a line sets it apart from what's under it.
+  const header = document.querySelector<HTMLElement>('.site-header')!;
+  const edge = () => header.classList.toggle('is-scrolled', scrollY > 0);
+  addEventListener('scroll', edge, { passive: true });
+  edge();
+
   // Star count from the GitHub API; the button works without it.
   fetch('https://api.github.com/repos/baipix/baipix')
     .then((r) => (r.ok ? r.json() : null))
@@ -51,11 +59,24 @@ const here = Astro.url.pathname;
 </script>
 
 <style>
+  /* Stays at the top while the page scrolls, see-through enough to hint at what passes under it. */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    border-bottom: 1px solid transparent;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.15s;
+  }
+  .site-header.is-scrolled {
+    border-bottom-color: var(--line);
+  }
   .nav {
     display: flex;
     align-items: center;
     gap: 32px;
-    height: 72px;
+    height: var(--header-height);
   }
   .brand {
     display: inline-flex;

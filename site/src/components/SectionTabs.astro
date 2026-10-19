@@ -65,7 +65,8 @@ const { items, label } = Astro.props;
 <style>
   .section-tabs {
     position: sticky;
-    top: 0;
+    /* Right under the site's sticky header. */
+    top: var(--header-height);
     z-index: 20;
     margin-top: 0;
     border-block: 1px solid var(--line);

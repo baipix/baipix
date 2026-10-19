@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- The site's header stays at the top as you scroll, over a light blur, with a line under it once the page has moved. The Draw page's section bar sits right under it, and links to a section land below both. (#435)
 - A Pixel art for Figma page: the gallery's game icons in an app's inventory screen, the named groups they get once pasted in Figma, a button that copies their SVG to try it, copy and paste, what Figma doesn't do for pixel art, what works like Figma, and common questions. The gallery's gem is redrawn as a cut gem, without the bar across it. The footer gets columns (Baipix, Guides, Project). The guides share their hero, copy-and-paste and questions parts. (#433)
 - A Pixel art to SVG page: the gallery's starfighter as an example with its numbers measured at build time (18 paths instead of 1024 squares, 85% lighter), copy and paste straight into Figma, what's in the file, how to do it in three steps, and common questions, under the home page's animated background. It's in the footer, the sitemap and llms.txt. (#431)
 - baipix.app/llms.txt sums up Baipix for AI assistants: what it is, what it does, the current version and the links to read more. (#429)
