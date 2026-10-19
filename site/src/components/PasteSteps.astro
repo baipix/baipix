@@ -1,0 +1,37 @@
+---
+/** Copy as SVG in Baipix, paste in Figma: the two keys, and what lands. */
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<section id="paste" class="paste container">
+  <SectionHead label="Copy and paste" />
+  <h2>{title}</h2>
+  <div class="paste-grid">
+    <div class="paste-step">
+      <p class="keys">
+        <kbd>Ctrl</kbd>
+        <kbd>Shift</kbd>
+        <kbd>C</kbd>
+      </p>
+      <h3>Copy as SVG in Baipix</h3>
+      <p class="muted">The drawing goes to the clipboard as SVG. On a Mac, it's Cmd+Shift+C.</p>
+    </div>
+    <div class="paste-step">
+      <p class="keys">
+        <kbd>Ctrl</kbd>
+        <kbd>V</kbd>
+      </p>
+      <h3>Paste in Figma</h3>
+      <p class="muted">
+        It lands as vector, not as an image: one shape per color, your layers as named groups, ready to
+        recolor or resize. The same works in Illustrator, and in any app or code editor that takes SVG.
+      </p>
+    </div>
+  </div>
+  <p class="muted paste-note">Copy as PNG is next to it, for apps that only take images.</p>
+</section>

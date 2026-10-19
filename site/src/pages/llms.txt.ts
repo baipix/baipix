@@ -32,6 +32,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - [Home page](${url('')}): features, screenshots and a gallery of drawings made with Baipix.
 - [Draw](${url('draw/')}): every tool explained, with the key that picks it.
 - [Pixel art to SVG](${url('pixel-art-to-svg/')}): how Baipix turns pixel art into clean vector, with a measured example.
+- [Pixel art for Figma](${url('pixel-art-for-figma/')}): drawing pixel art in Baipix and pasting it into Figma as vector.
 - [Source code on GitHub](${REPO_URL}): README, how to run it locally, how to contribute.
 - [Changelog](${REPO_URL}/blob/main/CHANGELOG.md): what each version brought.
 `;

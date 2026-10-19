@@ -1,0 +1,244 @@
+---
+import Cta from '../components/Cta.astro';
+import Faq from '../components/Faq.astro';
+import Footer from '../components/Footer.astro';
+import GuideHero from '../components/GuideHero.astro';
+import Nav from '../components/Nav.astro';
+import PasteSteps from '../components/PasteSteps.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Base from '../layouts/Base.astro';
+import '../styles/guide.css';
+import { galleryDoc } from '../gallery';
+import { toHex } from '../../../src/engine/color';
+import { flatten } from '../../../src/engine/composite';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+
+const base = import.meta.env.BASE_URL;
+
+// Mount Fuji from the gallery, and what lands in Figma when it's pasted: its layers as groups, each
+// with its shapes, one per color. Read from the file at build time.
+const doc = galleryDoc('mount-fuji.baipix');
+const { width: w, height: h } = doc;
+const svg = toSvg(flatten(doc), w, h, renderGeometry(w, h, 1, 0));
+const layers = [...doc.layers].reverse().map((layer) => {
+  const colors = [...new Set([...layer.pixels].filter((c) => c >>> 24))];
+  return { name: layer.name, colors: colors.map(toHex) };
+});
+const shapes = layers.reduce((n, l) => n + l.colors.length, 0);
+
+const faq = [
+  {
+    q: 'Can you draw pixel art in Figma?',
+    a: 'You can, with a grid of small squares, but Figma has no tools for it: no pencil that fills whole pixels, no palette, no dithering or symmetry, and hundreds of squares to manage. Drawing in a pixel art editor and pasting the result is much faster.',
+  },
+  {
+    q: 'Is there a Baipix plugin for Figma?',
+    a: 'Not yet. Copy as SVG in Baipix and paste in Figma works today, with nothing to install.',
+  },
+  {
+    q: 'Can I edit the pixel art once it is in Figma?',
+    a: 'You can recolor it, resize it and move its groups. To change the pixels themselves, edit the drawing in Baipix and paste it again.',
+  },
+  {
+    q: 'Is Baipix free?',
+    a: 'Yes. Baipix is free and open source (MIT). It runs in your browser, with no account, and your drawings stay on your device.',
+  },
+  {
+    q: 'Can I start from a Figma design?',
+    a: 'Yes. Export it from Figma as a PNG and import it in Baipix. If it was exported larger than its pixels, Baipix finds the pixel grid and gets the original pixels back.',
+  },
+];
+---
+
+<Base
+  title="Pixel art for Figma · Draw it, paste it as vector | Baipix"
+  description="Figma has no pixel art tools. Draw your pixel art in Baipix, a free editor that works like a design tool, then paste it into Figma as clean vector: one shape per color, layers as named groups."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main class="guide" data-tone="layers">
+    <GuideHero
+      eyebrow="Pixel art for Figma"
+      title="Pixel art for Figma"
+      more={{ href: '#paste', text: 'How it works' }}
+    >
+      Figma has no tools for pixel art. Draw it in Baipix instead: a free pixel art editor that works like the
+      design tools you know. Then paste it into Figma as vector you can edit.
+    </GuideHero>
+
+    <section class="demo container" aria-label="A drawing, and what lands in Figma">
+      <figure class="frame demo-art">
+        <div
+          class="pix"
+          set:html={svg}
+          role="img"
+          aria-label="Mount Fuji at dawn, a 128 by 80 pixel landscape"
+        />
+      </figure>
+      <div class="demo-facts">
+        <div class="layers-panel" aria-label="The layers it gets in Figma">
+          <p class="layers-title">{doc.name}</p>
+          <ul>
+            {layers.map((l) => (
+              <li>
+                <span class="layer-name">{l.name}</span>
+                <span class="swatches" aria-label={`${l.colors.length} shapes`}>
+                  {l.colors.slice(0, 8).map((c) => (
+                    <i style={`background:${c}`} />
+                  ))}
+                  {l.colors.length > 8 && <span class="more">+{l.colors.length - 8}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p class="muted">
+          {`Mount Fuji from the gallery, pasted in Figma: ${layers.length} groups named after its layers, and ${shapes} shapes, one per color in each layer.`}
+        </p>
+      </div>
+    </section>
+
+    <PasteSteps title="Copy in Baipix, paste in Figma." />
+
+    <section id="why" class="cards container">
+      <SectionHead label="Why not in Figma" />
+      <h2>What Figma doesn't do.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Whole pixels</h3>
+          <p class="muted">
+            Baipix's pencil fills whole pixels, with no doubled corners on curves. In Figma, each pixel is a
+            square you place.
+          </p>
+        </article>
+        <article class="card">
+          <h3>A palette</h3>
+          <p class="muted">
+            Classic palettes, shades along a ramp, and a drawing moved to another palette in one step.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Pixel art tools</h3>
+          <p class="muted">
+            Dithering, symmetry, seamless tiles, isometric volumes, and a fill that stays in the lines.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Light files</h3>
+          <p class="muted">
+            What you paste is a shape per color, not a square per pixel: Figma stays fast, and no thin lines
+            show between pixels.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="familiar" class="steps container">
+      <SectionHead label="Familiar" />
+      <h2>It works like Figma.</h2>
+      <ol class="step-list familiar">
+        <li>
+          <div>
+            <h3>Layers and boards</h3>
+            <p class="muted">
+              A layers panel with groups and blend modes, and several boards side by side in one file, like
+              frames.
+            </p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Components</h3>
+            <p class="muted">
+              Draw a sprite once, place instances of it, and they follow when you change it.
+            </p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>The same habits</h3>
+            <p class="muted">
+              V to move, Space to pan, Ctrl+K for every command, Shift-click to select several, and Export at
+              the top right.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <p class="muted guide-more">
+        More on the export itself in <a href={`${base}pixel-art-to-svg/`}>Pixel art to SVG</a>, and every tool
+        on the <a href={`${base}draw/`}>Draw</a> page.
+      </p>
+    </section>
+
+    <Faq items={faq} />
+
+    <Cta />
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  /* A Figma-like layers panel: each layer of the drawing, and its shapes as color swatches. */
+  .layers-panel {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 14px;
+  }
+  .layers-title {
+    margin: 0;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 600;
+  }
+  .layers-panel ul {
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+  }
+  .layers-panel li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 16px 8px 28px;
+  }
+  .swatches {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .swatches i {
+    width: 12px;
+    height: 12px;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  }
+  .more {
+    margin-left: 4px;
+    font: 400 12px/1 var(--mono);
+    color: var(--muted);
+  }
+  .demo-art :global(.pix) {
+    width: 100%;
+  }
+  .familiar li {
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .guide-more {
+    margin-top: 32px;
+  }
+  .guide-more a {
+    color: var(--text);
+    text-decoration: underline;
+  }
+</style>
