@@ -270,6 +270,8 @@ export const fr: Record<MessageKey, string> = {
   'menu.select': 'Sélection',
   'menu.view': 'Affichage',
   'menu.help': 'Aide',
+  'menu.docs': 'Documentation',
+  'shortcuts.docs': 'Tous les raccourcis, et chaque outil en détail, dans la documentation ↗',
   'menu.recent': 'Récents',
   'menu.reference': 'Image de référence…',
   'menu.duplicateFile': 'Dupliquer le fichier',

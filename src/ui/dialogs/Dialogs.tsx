@@ -20,6 +20,7 @@ import { Icon } from '../components/Icon';
 import { createFromTemplate, type Template } from '../templates';
 import { SHORTCUT_GROUPS } from './shortcuts';
 import { ExportOptions } from '../panels/RightPanel';
+import { DOCS_URL } from '../links';
 import { CodeDialog } from './CodeDialog';
 
 /** The sizes of the files changed last, different ones only, newest first. */
@@ -318,6 +319,11 @@ function ShortcutsDialog() {
           </div>
         ))}
       </div>
+      <p className="shortcuts-docs">
+        <a href={`${DOCS_URL}reference/shortcuts/`} target="_blank" rel="noopener">
+          {t('shortcuts.docs')}
+        </a>
+      </p>
     </Dialog>
   );
 }

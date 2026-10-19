@@ -12,8 +12,7 @@ import { viewport } from './viewport';
 import { ALIGNS } from './components/ToolOptionsBar';
 import { SELECTS } from './tools';
 
-const GITHUB_URL = 'https://github.com/baipix/baipix';
-const CHANGELOG_URL = `${GITHUB_URL}/blob/main/CHANGELOG.md`;
+import { CHANGELOG_URL, DOCS_URL, GITHUB_URL } from './links';
 
 /**
  * A new GitHub issue, filled in like the repository's templates (.github/ISSUE_TEMPLATE). A bug
@@ -472,6 +471,8 @@ export const MENU_BAR: MenuBarMenu[] = [
   {
     id: 'help',
     items: () => [
+      { label: t('menu.docs'), onSelect: () => window.open(DOCS_URL, '_blank', 'noopener') },
+      '-',
       {
         label: t('menu.commandPalette'),
         shortcut: 'Ctrl+K',

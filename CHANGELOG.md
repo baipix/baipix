@@ -4,15 +4,20 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-10-19
+
+Components that belong to the file: their instances on any board, or outside the boards, all following them. The reference image framed like a layer, a drawing opened from a link, and the docs, with three guides on the site.
+
 ### Added
 
+- The docs from the editor: Help › Documentation opens them, and the keyboard shortcuts dialog (the ? button) links to every shortcut and tool there. (#458)
 - Components belong to the file, not to a board: an instance can be on any board of the file, or outside the boards, and follows its component wherever it is. Drag a component from the Components section onto any board, move a component or an instance to another board with the Move tool, and they stay linked; Go to component opens the component's board. The Components section lists the components of the whole file. (#456)
 - Open a drawing from a link: the editor opens a .baipix file of baipix.app given as `?open=…`, straight in the editor. The guides' Open the editor buttons open their example, and each gallery piece has an Open link. Only files from the site itself are opened. (#433)
 - Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
 
 ### Fixed
 
-- A component or an instance let go off its board goes back where it was, with the message that it stays on its board, instead of staying out of sight past the edge; no empty room is made outside the boards for it. And Align, with nothing selected, counts what's past the board's edges, so it brings back a drawing moved off the board. (#452)
+- Align, with nothing selected, counts what's past the board's edges, so it brings back a drawing moved off the board, a component included. (#452)
 - The selected reference image gets the same frame as a layer: handles on its sides too, its size under it, and the resize cursors over the handles. A side stretches it one way; a corner still keeps its proportions. (#451)
 
 ### Website
@@ -367,7 +372,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.1...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.2...main
+[0.7.2]: https://github.com/baipix/baipix/releases/tag/v0.7.2
 [0.7.1]: https://github.com/baipix/baipix/releases/tag/v0.7.1
 [0.7.0]: https://github.com/baipix/baipix/releases/tag/v0.7.0
 [0.6.0]: https://github.com/baipix/baipix/releases/tag/v0.6.0
