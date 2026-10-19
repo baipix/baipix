@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- A Pixel art to SVG page: what makes Baipix's SVG clean, the gallery's starfighter as an example with its numbers measured at build time (18 paths instead of 1024 squares, 85% smaller), how to do it in three steps, and the common questions. It's in the footer, the sitemap and llms.txt. (#431)
 - baipix.app/llms.txt sums up Baipix for AI assistants: what it is, what it does, the current version and the links to read more. (#429)
 
 ## [0.7.1] - 2026-10-17
