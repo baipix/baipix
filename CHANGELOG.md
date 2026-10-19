@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Not counted in the page views: open any page of baipix.app once with `?notrack`, and this browser stops sending them, on the site and in the editor, until a page is opened with `?track`. (#427)
 
+### Website
+
+- baipix.app/llms.txt sums up Baipix for AI assistants: what it is, what it does, the current version and the links to read more. (#429)
+
 ## [0.7.1] - 2026-10-17
 
 The drawing as code: a </> button next to Export gives it as a React component, SVG, CSS, JSON or ASCII, to copy or download. Dialogs stand out from the editor, and the background's hex field shows all six characters.
