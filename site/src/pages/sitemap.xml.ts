@@ -8,6 +8,7 @@ export const GET: APIRoute = ({ site }) => {
     `${base}draw/`,
     `${base}pixel-art-to-svg/`,
     `${base}pixel-art-for-figma/`,
+    `${base}isometric-pixel-art/`,
     `${base}app/`,
   ];
   const urls = pages.map((p) => `  <url><loc>${new URL(p, site).href}</loc></url>`).join('\n');

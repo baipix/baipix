@@ -1,0 +1,278 @@
+---
+import Cta from '../components/Cta.astro';
+import Faq from '../components/Faq.astro';
+import Footer from '../components/Footer.astro';
+import GuideHero from '../components/GuideHero.astro';
+import Nav from '../components/Nav.astro';
+import PixelPlay from '../components/PixelPlay.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Base from '../layouts/Base.astro';
+import '../styles/guide.css';
+import { animations as anim } from '../animations';
+import { flatten } from '../../../src/engine/composite';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+import { fileFromJson } from '../../../src/storage/fileFormat';
+import hobbitFile from '../art/hobbit-house.baipix?raw';
+import hobbitUrl from '../art/hobbit-house.baipix?url';
+
+const base = import.meta.env.BASE_URL;
+
+// The hobbit house in four seasons: one file, four boards, each rendered here at build time.
+const boards = fileFromJson(hobbitFile).map((doc) => ({
+  name: doc.name,
+  svg: toSvg(flatten(doc), doc.width, doc.height, renderGeometry(doc.width, doc.height, 1, 0)),
+  width: doc.width,
+  height: doc.height,
+}));
+
+const faq = [
+  {
+    q: 'What is isometric pixel art?',
+    a: 'Pixel art drawn at an angle that shows the top and two sides of things at once, as in many strategy and simulation games. Its lines go two pixels across for one up, which keeps them clean.',
+  },
+  {
+    q: 'What angle is isometric pixel art?',
+    a: 'Lines go 2 pixels across for 1 pixel up or down, about 26.6°, instead of the 30° of true isometric. At that slope every step is the same, so edges stay even.',
+  },
+  {
+    q: 'Can I make isometric tiles for a game?',
+    a: 'Yes. The tile preview repeats an isometric tile staggered, the way they fit together, and Export › Tileset cuts a drawing into tiles for Godot or Tiled.',
+  },
+  {
+    q: 'Do I have to draw every face by hand?',
+    a: 'No. Boxes, cylinders, pyramids, stairs and ramps come out shaded from one color in one drag, with an outline if you want. You add the details on top.',
+  },
+  {
+    q: 'Is it free?',
+    a: 'Yes. Baipix is free and open source (MIT). It runs in your browser, with no account, and your drawings stay on your device.',
+  },
+];
+---
+
+<Base
+  title="Isometric pixel art · Draw it with a 2:1 grid and shaded volumes | Baipix"
+  description="Draw isometric pixel art in your browser, for free: a 2:1 isometric grid, lines that snap to it, and boxes, cylinders, pyramids and stairs that come out shaded in one drag. Then finish by hand."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main class="guide" data-tone="isometric">
+    <GuideHero
+      eyebrow="Isometric pixel art"
+      title="Isometric pixel art"
+      open={hobbitUrl}
+      more={{ href: '#volumes', text: 'The tools' }}
+    >
+      Baipix has a 2:1 isometric grid, lines that snap to it, and volumes that come out shaded in one drag:
+      boxes, cylinders, pyramids, stairs. You block out the scene in minutes, then finish it pixel by pixel.
+    </GuideHero>
+
+    <section class="seasons container" aria-label="A hobbit house in four seasons">
+      <figure class="frame seasons-art">
+        <div class="seasons-grid">
+          {boards.map((b) => (
+            <div class="season">
+              <span class="season-name">{b.name}</span>
+              <div
+                class="pix"
+                set:html={b.svg}
+                role="img"
+                aria-label={`The hobbit house, ${b.name.toLowerCase()}`}
+              />
+            </div>
+          ))}
+        </div>
+        <figcaption class="muted">
+          A hobbit house drawn in Baipix, in four seasons: one file, four boards, the same house recolored.
+          Open the editor to see how it's made.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="volumes" class="cards container">
+      <SectionHead label="The tools" />
+      <h2>Volumes in one drag.</h2>
+      <div class="iso-block">
+        <figure class="frame">
+          <PixelPlay
+            animation={anim.isometric}
+            label="A little courtyard built volume by volume on the isometric grid: a grass tile, stone stairs, a crate, a log and a pillar."
+          />
+        </figure>
+        <div class="card-grid iso-cards">
+          <article class="card">
+            <h3>The isometric grid</h3>
+            <p class="muted">
+              Diamonds of the size you pick, in the Board section. Lines snap to 2:1 with Shift, and shapes
+              lie on the ground or stand on a wall.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Box and pyramid</h3>
+            <p class="muted">
+              Drag across the top, set the height. The sides come out darker from the palette, with an
+              outline, a light edge and bevels if you want.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Cylinder, stairs, ramps</h3>
+            <p class="muted">
+              A cylinder upright or lying down, a slope or a staircase of even steps, rising toward the corner
+              you pick.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Faces and tiles</h3>
+            <p class="muted">
+              Pick the top, left and right colors by hand, and choose which edges of a floor tile get the
+              outline.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="steps container">
+      <SectionHead label="How to start" />
+      <h2>From blocks to details.</h2>
+      <ol class="step-list">
+        <li>
+          <span class="step-n">1</span>
+          <div>
+            <h3>Start a scene</h3>
+            <p class="muted">
+              New file › Isometric scene, or turn on the isometric grid in the Board section of any drawing.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div>
+            <h3>Block it out</h3>
+            <p class="muted">
+              Lay the ground, then the walls, roofs and props with the volume tools, one object per layer.
+              Layer › Sort by depth puts the closest in front.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div>
+            <h3>Finish by hand</h3>
+            <p class="muted">
+              Windows, plants, wear and light with the pencil. Shade and Lighten step along the palette's
+              ramps, so the faces keep their colors.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="tips" class="cards container">
+      <SectionHead label="Tips" />
+      <h2>Clean isometric pixel art.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Keep to 2:1</h3>
+          <p class="muted">
+            Two pixels across for one up, everywhere. Other slopes make uneven steps that read as jagged.
+          </p>
+        </article>
+        <article class="card">
+          <h3>One light</h3>
+          <p class="muted">
+            Light from one side for the whole scene: the top lightest, one side in between, the other darkest.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Outline the outside</h3>
+          <p class="muted">
+            A dark outline around each object, lighter lines or none between its faces, so shapes stay
+            readable.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Few colors</h3>
+          <p class="muted">
+            A small palette with a ramp per material keeps the scene together. Change the season by changing
+            the palette.
+          </p>
+        </article>
+      </div>
+      <p class="muted guide-more">
+        Every tool is on the <a href={`${base}draw/#isometric`}>Draw</a> page. To bring the scene into a
+        design, see <a href={`${base}pixel-art-to-svg/`}>Pixel art to SVG</a>.
+      </p>
+    </section>
+
+    <Faq items={faq} />
+
+    <Cta />
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .seasons {
+    margin-top: 64px;
+  }
+  /* The four boards two by two, each with its name above, like on the editor's canvas. */
+  .seasons-art {
+    gap: 20px;
+  }
+  .seasons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+    width: min(100%, 880px);
+  }
+  .season {
+    display: grid;
+    gap: 6px;
+  }
+  .season-name {
+    font-size: 13px;
+    color: var(--tint-ink, var(--muted));
+  }
+  .seasons-art figcaption {
+    max-width: 640px;
+    text-align: center;
+    font-size: 14px;
+  }
+  .iso-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    margin-top: 40px;
+    align-items: start;
+  }
+  .guide .iso-cards {
+    margin-top: 0;
+  }
+  .guide-more {
+    margin-top: 32px;
+  }
+  .guide-more a {
+    color: var(--text);
+    text-decoration: underline;
+  }
+  @media (max-width: 760px) {
+    .iso-block {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .seasons-grid {
+      gap: 14px;
+    }
+  }
+</style>
