@@ -4,8 +4,10 @@
  * itself, then the previous and next pages. Markdown pages use it through their `layout`, .astro
  * pages wrap their content in it.
  */
+import ArrowIcon from '../components/ArrowIcon.astro';
 import Footer from '../components/Footer.astro';
 import Nav from '../components/Nav.astro';
+import PixelIcon from '../components/PixelIcon.astro';
 import { DOC_PAGES, DOCS } from '../docs';
 import Base from './Base.astro';
 
@@ -25,6 +27,8 @@ const path = Astro.url.pathname.replace(/\/?$/, '/');
 const index = DOC_PAGES.findIndex((p) => href(p.slug) === path);
 const prev = index > 0 ? DOC_PAGES[index - 1] : null;
 const next = index >= 0 && index < DOC_PAGES.length - 1 ? DOC_PAGES[index + 1] : null;
+/** The pixel arrow of the site's buttons, turned to point back. */
+const LEFT = ['...#...', '..#....', '.#.....', '#######', '.#.....', '..#....', '...#...'];
 const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
 ---
 
@@ -59,18 +63,26 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
       {(prev || next) && (
         <nav class="docs-pager" aria-label="Previous and next pages">
           {prev ? (
-            <a href={href(prev.slug)}>
-              <span>Previous</span>
-              {prev.title}
-            </a>
+            <div class="pager-side">
+              <span class="pager-label">Previous</span>
+              <a class="btn" href={href(prev.slug)}>
+                <span class="pager-arrow" aria-hidden="true">
+                  <PixelIcon rows={LEFT} size={12} />
+                </span>
+                {prev.title}
+              </a>
+            </div>
           ) : (
             <span />
           )}
           {next && (
-            <a class="next" href={href(next.slug)}>
-              <span>Next</span>
-              {next.title}
-            </a>
+            <div class="pager-side next">
+              <span class="pager-label">Next</span>
+              <a class="btn" href={href(next.slug)}>
+                {next.title}
+                <ArrowIcon />
+              </a>
+            </div>
           )}
         </nav>
       )}
@@ -365,31 +377,34 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
     display: block;
   }
 
-  /* ---- Previous and next ---- */
+  /* ---- Previous and next: the site's pixel buttons, the page's name on them ---- */
   .docs-pager {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
     margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
   }
-  .docs-pager a {
+  .pager-side {
     display: grid;
-    gap: 4px;
-    padding: 16px 18px;
-    border: 1px solid var(--line);
-    font-weight: 500;
+    justify-items: start;
+    gap: 10px;
   }
-  .docs-pager a:hover {
-    border-color: var(--line-strong);
+  .pager-side.next {
+    justify-items: end;
+    margin-left: auto;
   }
-  .docs-pager a span {
-    font-size: 13px;
-    font-weight: 400;
+  .pager-label {
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
     color: var(--muted);
+    text-transform: uppercase;
   }
-  .docs-pager .next {
-    text-align: right;
-    grid-column: 2;
+  .pager-arrow {
+    display: inline-flex;
   }
 
   @media (max-width: 860px) {
