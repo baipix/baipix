@@ -3,7 +3,8 @@
 /* The home page's background, behind the title, fading out before the example. */
 .guide .hero {
   position: relative;
-  padding-top: 72px;
+  /* Room under the buttons for their side, which the hero would otherwise clip with its background. */
+  padding: 72px 0 16px;
   overflow: hidden;
 }
 .guide .hero-glow {
