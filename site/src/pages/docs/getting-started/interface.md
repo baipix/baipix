@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: The interface
-description: "A tour of the Baipix editor: the menu bar, the Layers panel, the toolbar and its options, the right panel, and the floating preview."
+description: 'A tour of the Baipix editor: the menu bar, the Layers panel, the toolbar and its options, the right panel, and the floating preview.'
 ---
 
 Baipix is laid out like a design tool. The canvas fills the window, and everything else floats around it.

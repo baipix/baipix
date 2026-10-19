@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Create and open files
-description: "Start a new pixel art file from a size or a template, import an image, recover the real pixels of upscaled pixel art, and open .baipix files."
+description: 'Start a new pixel art file from a size or a template, import an image, recover the real pixels of upscaled pixel art, and open .baipix files.'
 ---
 
 ## A new file

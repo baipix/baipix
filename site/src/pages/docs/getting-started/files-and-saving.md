@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Files and saving
-description: "Where Baipix keeps your pixel art (in your browser, saved as you draw), how undo survives a reload, and how to keep a copy as a .baipix file."
+description: 'Where Baipix keeps your pixel art (in your browser, saved as you draw), how undo survives a reload, and how to keep a copy as a .baipix file.'
 ---
 
 ## Saved as you draw
