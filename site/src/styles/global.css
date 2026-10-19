@@ -90,6 +90,11 @@ h2 {
   width: min(var(--container), 100% - 32px);
   margin-inline: auto;
 }
+/* The docs, laid out like software docs: the whole screen, up to a point. */
+.container-wide {
+  width: min(1600px, 100% - 48px);
+  margin-inline: auto;
+}
 
 .muted {
   color: var(--muted);

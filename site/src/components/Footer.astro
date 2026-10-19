@@ -5,6 +5,8 @@ import Logo from './Logo.astro';
 import PixelIcon from './PixelIcon.astro';
 
 const base = import.meta.env.BASE_URL;
+/** As wide as the docs, instead of the pages' column. */
+const { wide = false } = Astro.props as { wide?: boolean };
 /** BAIPIX in 5×7 letters, with the logo's pixel escaping past the X. */
 const WORDMARK = [
   '....................................#',
@@ -48,7 +50,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
 ];
 ---
 
-<footer class="footer container">
+<footer class:list={['footer', wide ? 'container-wide' : 'container']}>
   <div class="footer-about">
     <a class="brand" href={base}>
       <Logo size={14} />
