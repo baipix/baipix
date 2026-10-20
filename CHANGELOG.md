@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Two cards under the drawings on the files screen: Learn Baipix opens the docs, Something not working? a bug report on GitHub with the version and browser already filled in. (#460)
 
+### Fixed
+
+- A file's only board is selected by a click on its name, like the others, to resize it by its sides; before, only files of several boards (or the Board tool) let it be. (#462)
+
 ## [0.7.2] - 2026-10-19
 
 Components that belong to the file: their instances on any board, or outside the boards, all following them. The reference image framed like a layer, a drawing opened from a link, and the docs, with three guides on the site.
