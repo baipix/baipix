@@ -109,6 +109,8 @@ export interface Scene {
   boards?: SceneBoard[];
   /** A board being drawn with the board tool, relative to the active board, in art pixels. */
   boardDraft?: Rect | null;
+  /** The draft is the active board being resized, not a new board. */
+  boardResizing?: boolean;
   /** The boards selected as boards, relative to the active one: a blue frame, handles if one. */
   selectedBoards?: Rect[];
   /** What layers being moved push off the board, drawn where it is so they follow the pointer. */
@@ -257,6 +259,49 @@ export function labelRect(ctx: CanvasRenderingContext2D, label: string, camera: 
   return { x: X - pad, y: Y - h - pad, w: w + pad * 2, h: h + pad };
 }
 
+/** A board being drawn or resized: its outline, dashed, and its size where its name will go. */
+function drawBoardDraft(
+  ctx: CanvasRenderingContext2D,
+  draft: Rect,
+  X: number,
+  Y: number,
+  s: number,
+  lw: number,
+  dpr: number,
+  theme: Theme,
+  /** Resizing a board: its size goes under it, in a badge, its name staying where it is. */
+  below = false,
+): void {
+  const dx = X + draft.x * s;
+  const dy = Y + draft.y * s;
+  ctx.save();
+  ctx.strokeStyle = theme.highlight;
+  ctx.lineWidth = lw;
+  ctx.setLineDash([4 * dpr, 3 * dpr]);
+  ctx.strokeRect(dx - lw / 2, dy - lw / 2, draft.w * s + lw, draft.h * s + lw);
+  ctx.restore();
+  if (below) {
+    const label = `${draft.w} × ${draft.h}`;
+    ctx.font = `600 ${Math.round(11 * dpr)}px ${FONT}`;
+    const pw = Math.round(ctx.measureText(label).width + 10 * dpr);
+    const ph = Math.round(18 * dpr);
+    const bx = Math.round(dx + (draft.w * s) / 2 - pw / 2);
+    const by = Math.round(dy + draft.h * s + 10 * dpr);
+    ctx.fillStyle = theme.highlightFill;
+    ctx.fillRect(bx, by, pw, ph);
+    ctx.fillStyle = theme.highlightInk;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, bx + pw / 2, by + ph / 2 + Math.round(dpr / 2));
+    ctx.textAlign = 'start';
+    return;
+  }
+  ctx.font = labelFont(dpr);
+  ctx.fillStyle = theme.highlight;
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(`${draft.w} × ${draft.h}`, dx, dy - Math.round(LABEL.gap * dpr));
+}
+
 export function drawScene(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -331,22 +376,10 @@ export function drawScene(
       ctx.strokeRect(cx + 0.5, cy + 0.5, k - 1, k - 1);
     }
   }
-  // A board being drawn: its outline, and its size where its name will go.
+  // A board being drawn: its outline and its size. Drawn here when there's no board to draw (the
+  // canvas is empty); otherwise after the board, so a board shrunk shows it over its own pixels.
   const draft = scene.boardDraft;
-  if (draft) {
-    const dx = X + draft.x * s;
-    const dy = Y + draft.y * s;
-    ctx.save();
-    ctx.strokeStyle = theme.highlight;
-    ctx.lineWidth = lw;
-    ctx.setLineDash([4 * dpr, 3 * dpr]);
-    ctx.strokeRect(dx - lw / 2, dy - lw / 2, draft.w * s + lw, draft.h * s + lw);
-    ctx.restore();
-    ctx.font = labelFont(dpr);
-    ctx.fillStyle = theme.highlight;
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(`${draft.w} × ${draft.h}`, dx, dy - Math.round(LABEL.gap * dpr));
-  }
+  if (draft && isEmptyBoard(doc)) drawBoardDraft(ctx, draft, X, Y, s, lw, dpr, theme);
   // A file with no board: only the others' outlines and a board being drawn (the canvas says to make one).
   if (isEmptyBoard(doc)) return;
 
@@ -547,6 +580,29 @@ export function drawScene(
     ctx.fillRect(X - ext, y, cw + ext * 2, lw);
     ctx.fillRect(X - ext, Math.round(ay - grip / 2), ext - Math.round(3 * dpr), grip);
     ctx.fillRect(X + cw + Math.round(3 * dpr), Math.round(ay - grip / 2), ext - Math.round(3 * dpr), grip);
+  }
+
+  // The active board being resized (or a new board drawn over it): the part a shrink would cut is
+  // dimmed, and the new outline goes on top of the board.
+  if (draft && !isEmptyBoard(doc)) {
+    const bw = doc.width * s;
+    const bh = doc.height * s;
+    const dx = X + draft.x * s;
+    const dy = Y + draft.y * s;
+    const dw = draft.w * s;
+    const dh = draft.h * s;
+    ctx.save();
+    // Within the board only: growing it dims nothing.
+    ctx.beginPath();
+    ctx.rect(X, Y, bw, bh);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.rect(X, Y, bw, bh);
+    ctx.rect(dx, dy, dw, dh);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fill('evenodd');
+    ctx.restore();
+    drawBoardDraft(ctx, draft, X, Y, s, lw, dpr, theme, scene.boardResizing);
   }
 
   // Selected reference, or the active layer with the Move tool: a blue frame with white corner
