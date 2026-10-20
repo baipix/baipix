@@ -6,9 +6,9 @@ description: 'Find your way around a pixel art drawing in Baipix: zoom and pan, 
 
 ## Zoom and pan
 
-- **Zoom** with the wheel or a pinch, toward the pointer, or with <kbd>+</kbd> and <kbd>−</kbd>. **Shift+1** fits the drawing to the window, **Shift+0** shows it at 100%.
+- **Zoom** with a pinch on a trackpad, the mouse wheel, or <kbd>Ctrl</kbd> with either, toward the pointer, or with <kbd>+</kbd> and <kbd>−</kbd>. **Shift+1** fits the drawing to the window, **Shift+0** shows it at 100%.
 - The zoom level is at the top right: click it for the levels, double-click it to fit.
-- **Pan** with the Hand tool (<kbd>H</kbd>), or hold <kbd>Space</kbd> and drag with any tool.
+- **Pan** with two fingers on a trackpad, <kbd>Shift</kbd> with the mouse wheel for sideways, the Hand tool (<kbd>H</kbd>), or hold <kbd>Space</kbd> and drag with any tool.
 - **Hide the interface** (<kbd>Tab</kbd>) to see only the drawing.
 
 ## The display options

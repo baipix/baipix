@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Two cards under the drawings on the files screen: Learn Baipix opens the docs, Something not working? a bug report on GitHub with the version and browser already filled in. (#460)
 
+### Fixed
+
+- Two fingers on a trackpad pan the canvas in any direction, like in Figma; a pinch, or Cmd/Ctrl with the wheel, zooms. A mouse wheel still zooms, Shift with it pans sideways. Before, only a sideways swipe panned, and an up, down or diagonal one zoomed. (#466)
+
 ## [0.7.2] - 2026-10-19
 
 Components that belong to the file: their instances on any board, or outside the boards, all following them. The reference image framed like a layer, a drawing opened from a link, and the docs, with three guides on the site.
