@@ -1238,6 +1238,8 @@ export function CanvasView() {
     let wheelAccumulator = 0;
     /** Until when wheel events are taken for a trackpad gesture (see onWheel). */
     let trackpadUntil = 0;
+    /** Lands a pinch on a whole zoom once the fingers stop. */
+    let settleTimer = 0;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const l = local(e);
@@ -1257,8 +1259,17 @@ export function CanvasView() {
       }
       if (e.shiftKey && !zoomKey) return viewport.panBy(-(e.deltaY || e.deltaX), 0);
       if (!zoomKey && Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.2) return viewport.panBy(-e.deltaX, 0);
+      // A pinch, or Cmd/Ctrl with two fingers: a continuous zoom that follows the fingers, landing
+      // on a whole zoom (crisp pixels) once they stop.
+      if (zoomKey && trackpad) {
+        viewport.zoomBy(Math.exp(-e.deltaY * 0.012), l.x, l.y);
+        clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(() => viewport.settle(l.x, l.y, true), 140);
+        return;
+      }
+      // A mouse wheel: one zoom level per notch, gliding there.
       wheelAccumulator += e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY;
-      const threshold = e.ctrlKey ? 12 : 50;
+      const threshold = 50;
       while (Math.abs(wheelAccumulator) >= threshold) {
         viewport.step(wheelAccumulator < 0 ? 1 : -1, l.x, l.y);
         wheelAccumulator -= Math.sign(wheelAccumulator) * threshold;

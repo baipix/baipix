@@ -9,6 +9,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - A gradient stop takes any color: its popover has the colors' picker (the square, hue and opacity bars, hex and opacity), above the palette and the drawing's colors. (#470)
 - Two cards under the drawings on the files screen: Learn Baipix opens the docs, Something not working? a bug report on GitHub with the version and browser already filled in. (#460)
 
+### Changed
+
+- Zooming is smooth: a pinch on a trackpad follows your fingers and lands on a whole zoom when they stop, and the wheel and keyboard steps glide to the next level (#474).
+
 ### Fixed
 
 - Resizing a board shows its new size when it shrinks too: the dashed outline goes over the board, the part that would be cut is dimmed, and the new size shows in a badge under it instead of over the board's name. (#472)
