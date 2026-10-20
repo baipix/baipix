@@ -473,6 +473,7 @@ export function CanvasView() {
           loupe,
           label: renamingRef.current ? '' : live.doc.name,
           boards: otherBoards(),
+          boardResizing: !!boardResize,
           boardDraft: boardResize
             ? relative(boardResize.rect)
             : boardDraft && relative(draftRect(boardDraft)),
