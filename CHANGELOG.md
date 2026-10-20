@@ -9,6 +9,13 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - A gradient stop takes any color: its popover has the colors' picker (the square, hue and opacity bars, hex and opacity), above the palette and the drawing's colors. (#470)
 - Two cards under the drawings on the files screen: Learn Baipix opens the docs, Something not working? a bug report on GitHub with the version and browser already filled in. (#460)
 
+### Fixed
+
+- Layer thumbnails in the Layers panel show what's drawn on the layer, fitted, instead of the whole board: a small character on a big board can be told apart. (#468)
+- Two fingers on a trackpad pan the canvas in any direction, like in Figma; a pinch, or Cmd/Ctrl with the wheel, zooms. A mouse wheel still zooms, Shift with it pans sideways. Before, only a sideways swipe panned, and an up, down or diagonal one zoomed. (#466)
+- Dragging a number field's label (a board's W or H, an opacity…) no longer leaves the ↔ cursor stuck: the end of the drag is caught anywhere, also when the panel is redrawn under it or the window loses the focus. (#464)
+- A file's only board is selected by a click on its name, like the others, to resize it by its sides; before, only files of several boards (or the Board tool) let it be. (#462)
+
 ## [0.7.2] - 2026-10-19
 
 Components that belong to the file: their instances on any board, or outside the boards, all following them. The reference image framed like a layer, a drawing opened from a link, and the docs, with three guides on the site.

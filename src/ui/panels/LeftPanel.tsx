@@ -551,6 +551,7 @@ function LayersSection() {
                 width={doc.width}
                 height={doc.height}
                 version={revision}
+                fit
               />
               {row.layer.component && (
                 <span className="component-icon" title={t('component.master')}>
@@ -693,6 +694,7 @@ function LayersSection() {
                         width={free.width}
                         height={free.height}
                         version={revision}
+                        fit
                       />
                       <span className="item-name">{layer.name}</span>
                     </div>
