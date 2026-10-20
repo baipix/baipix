@@ -2880,7 +2880,7 @@ body.is-dragging-swatch * {
 .gradient-pop {
   position: fixed;
   z-index: 60;
-  width: 200px;
+  width: 220px;
   padding: 8px;
   border-radius: var(--radius-lg);
   background: var(--panel);
@@ -2901,6 +2901,18 @@ body.is-dragging-swatch * {
 }
 .gradient-swatch.is-active {
   box-shadow: 0 0 0 2px var(--glow-line);
+}
+/* The color fields above the swatches, spaced like in the colors' picker. */
+.gradient-pop-fields {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.color-choices-add {
+  width: 100%;
+  margin-top: 8px;
 }
 .gradient-pop-row {
   display: flex;

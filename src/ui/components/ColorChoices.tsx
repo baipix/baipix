@@ -14,11 +14,14 @@ export function ColorChoices({
   color,
   onPick,
   allowClear = false,
+  hexField = true,
 }: {
   color: Color;
   onPick: (c: Color) => void;
   /** Offer transparent too (a gradient fading out). */
   allowClear?: boolean;
+  /** The hex field, left out next to a full picker that has its own. */
+  hexField?: boolean;
 }) {
   const t = useT();
   const editor = useEditor();
@@ -76,30 +79,37 @@ export function ColorChoices({
           <div className="gradient-swatches">{others.map((c, i) => swatch(c, `r${i}`))}</div>
         </>
       )}
-      <div className="color-choices-hex">
-        <label className="field">
-          <span className="field-label">#</span>
-          <input
-            value={hex}
-            maxLength={6}
-            spellCheck={false}
-            aria-label={t('colorChoices.hex')}
-            onChange={(e) => setHex(e.target.value.replace(/[^0-9a-f]/gi, ''))}
-            onBlur={typed}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === 'Enter') typed();
-            }}
-          />
-        </label>
-        {!inPalette && (
-          <IconButton
-            icon="plus"
-            label={t('colorChoices.addToPalette')}
-            onClick={() => editor.addToPalette(color)}
-          />
-        )}
-      </div>
+      {!hexField && !inPalette && (
+        <button type="button" className="btn color-choices-add" onClick={() => editor.addToPalette(color)}>
+          {t('colorChoices.addToPalette')}
+        </button>
+      )}
+      {hexField && (
+        <div className="color-choices-hex">
+          <label className="field">
+            <span className="field-label">#</span>
+            <input
+              value={hex}
+              maxLength={6}
+              spellCheck={false}
+              aria-label={t('colorChoices.hex')}
+              onChange={(e) => setHex(e.target.value.replace(/[^0-9a-f]/gi, ''))}
+              onBlur={typed}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') typed();
+              }}
+            />
+          </label>
+          {!inPalette && (
+            <IconButton
+              icon="plus"
+              label={t('colorChoices.addToPalette')}
+              onClick={() => editor.addToPalette(color)}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

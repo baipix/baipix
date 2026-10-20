@@ -25,7 +25,7 @@ The lasso fill (<kbd>K</kbd>) draws a shape freehand and fills it with the color
 The gradient (<kbd>D</kbd>) shares a button with the bucket. Drag from where it starts to where it ends (Shift: by 45°). It fills the area of the same color under the first click, or the selection.
 
 - **Shape**: linear, radial, angular or diamond.
-- **Stops**: the bar in its options shows the colors. Click it to add a stop, drag a stop to move it, click a stop to change its color, which can be transparent. It starts from your two colors.
+- **Stops**: the bar in its options shows the colors. Click it to add a stop, drag a stop to move it, click a stop to change its color: any color, with the same square, hue and opacity as your colors' picker, or one of the palette's, or transparent. It starts from your two colors.
 - **Dithering**: between two colors, pixels alternate in a pattern instead of a new color: **smooth** (an ordered pattern, the classic Bayer), **checker**, or **bands** with no dithering at all.
-- The gradient only uses its stops' colors, so it stays within your palette.
+- The gradient only uses its stops' colors: pick them from the palette, and it stays within it.
 - Change the options right after drawing: the last gradient follows them.

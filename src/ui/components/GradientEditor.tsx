@@ -6,6 +6,7 @@ import { stopsOf } from '../../engine/tools/gradient';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { ColorChoices } from './ColorChoices';
+import { ColorFields } from './ColorPicker';
 
 /** The bar's preview, in art pixels: dithered as the canvas will be. */
 const PREVIEW_W = 48;
@@ -134,9 +135,18 @@ export function GradientEditor() {
             aria-label={t('gradient.stopColor')}
             style={{ left: at.left, bottom: at.bottom }}
           >
+            {/* Any color, not only the palette's: the same fields as the colors' picker, then the palette. */}
+            <div className="gradient-pop-fields">
+              <ColorFields
+                key={open}
+                color={stop.color}
+                onChange={(c) => save(stops.map((s, k) => (k === open ? { ...s, color: c } : s)))}
+              />
+            </div>
             <ColorChoices
               color={stop.color}
               allowClear
+              hexField={false}
               onPick={(c) => save(stops.map((s, k) => (k === open ? { ...s, color: c } : s)))}
             />
             <div className="gradient-pop-row">
