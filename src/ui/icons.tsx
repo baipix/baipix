@@ -17,7 +17,6 @@ import {
   ChevronRight,
   ChevronUp,
   Circle,
-  CircleHelp,
   Component,
   Copy,
   Crop,
@@ -100,6 +99,13 @@ function drawn(children: JSX.Element): Glyph {
 // Lucide's square has rounded corners: the rectangle tool gets a sharp one, the rounded one rounder.
 const Rect = drawn(<rect x="3" y="3" width="18" height="18" />);
 const RoundRect = drawn(<rect x="3" y="3" width="18" height="18" rx="6" />);
+// Help: a question mark on its own, the button around it is its frame.
+const QuestionMark = drawn(
+  <>
+    <path d="M8 8.5a4 4 0 1 1 5.6 3.66c-.98.43-1.6 1.2-1.6 2.24V15" />
+    <path d="M12 19.5h.01" />
+  </>,
+);
 // Stairs and ramps: steps climbing to the right.
 const Ramp = drawn(<path d="M3 20h5v-5h5v-5h5V5h3" />);
 
@@ -164,7 +170,7 @@ export const ICONS = {
   panelLeft: PanelLeft,
   close: X,
   info: Info,
-  help: CircleHelp,
+  help: QuestionMark,
   docs: BookOpen,
   bug: Bug,
   search: Search,

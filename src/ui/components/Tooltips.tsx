@@ -35,7 +35,7 @@ export function Tooltips() {
           text: el.dataset.tip,
           shortcut: el.dataset.kbd,
           anchor: el.getBoundingClientRect(),
-          above: !!el.closest('.toolbar'),
+          above: !!el.closest('.toolbar, .help-corner'),
         });
       }, 500);
     };
