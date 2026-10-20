@@ -902,8 +902,9 @@ export function CanvasView() {
         boardResize = { from, sides, rect: from };
         return;
       }
-      // With several boards (or the board tool), a board's name moves it; a click selects it.
-      if (e.button === 0 && (st.boards.length > 1 || st.tool === 'board')) {
+      // A board's name moves it, and a click selects it, to resize it by its sides: even when it's
+      // the file's only board.
+      if (e.button === 0) {
         const named = boardLabelAt(l);
         if (named) {
           boardDrag = {
@@ -1234,11 +1235,27 @@ export function CanvasView() {
     };
 
     let wheelAccumulator = 0;
+    /** Until when wheel events are taken for a trackpad gesture (see onWheel). */
+    let trackpadUntil = 0;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const l = local(e);
-      if (e.shiftKey && !e.ctrlKey) return viewport.panBy(-(e.deltaY || e.deltaX), 0);
-      if (!e.ctrlKey && Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.2) return viewport.panBy(-e.deltaX, 0);
+      // Like Figma: two fingers on a trackpad pan, in any direction; a pinch (which the browser
+      // sends with Ctrl) or Cmd/Ctrl with the wheel zooms; a mouse wheel zooms, Shift with it pans
+      // sideways. A trackpad is told apart by its events: pixel deltas, small or sideways ones, in a
+      // gesture that's remembered for a moment, so a fast swipe isn't taken for a wheel.
+      const zoomKey = e.ctrlKey || e.metaKey;
+      const now = performance.now();
+      const looksTrackpad =
+        e.deltaMode === 0 && (e.deltaX !== 0 || !Number.isInteger(e.deltaY) || Math.abs(e.deltaY) < 40);
+      if (looksTrackpad) trackpadUntil = now + 400;
+      const trackpad = looksTrackpad || now < trackpadUntil;
+      if (!zoomKey && trackpad) {
+        trackpadUntil = now + 400;
+        return viewport.panBy(-e.deltaX, -e.deltaY);
+      }
+      if (e.shiftKey && !zoomKey) return viewport.panBy(-(e.deltaY || e.deltaX), 0);
+      if (!zoomKey && Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.2) return viewport.panBy(-e.deltaX, 0);
       wheelAccumulator += e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY;
       const threshold = e.ctrlKey ? 12 : 50;
       while (Math.abs(wheelAccumulator) >= threshold) {

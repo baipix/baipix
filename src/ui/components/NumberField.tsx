@@ -42,8 +42,6 @@ export function NumberField({
 
   const startScrub = (e: React.PointerEvent<HTMLSpanElement>) => {
     e.preventDefault();
-    const el = e.currentTarget;
-    el.setPointerCapture(e.pointerId);
     const x0 = e.clientX;
     const v0 = value;
     let last = v0;
@@ -56,16 +54,20 @@ export function NumberField({
         onChange(next, false);
       }
     };
+    // On the window, not the label: the change can redraw the panel and replace the label (a
+    // board's size does), and the label's own events would then never come, leaving the cursor stuck.
     const up = () => {
-      el.removeEventListener('pointermove', move);
-      el.removeEventListener('pointerup', up);
-      el.removeEventListener('pointercancel', up);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      window.removeEventListener('blur', up);
       document.body.classList.remove('is-scrubbing');
       onChange(last, true);
     };
-    el.addEventListener('pointermove', move);
-    el.addEventListener('pointerup', up);
-    el.addEventListener('pointercancel', up);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    window.addEventListener('blur', up);
   };
 
   return (
