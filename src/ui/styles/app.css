@@ -99,7 +99,7 @@ body.is-resizing * {
 .app.ui-hidden .tool-options,
 .app.ui-hidden .coordinates,
 .app.ui-hidden .resizer,
-.app.ui-hidden .shortcuts-help-button {
+.app.ui-hidden .help-corner {
   display: none;
 }
 
@@ -1225,13 +1225,33 @@ body.is-dragging-swatch * {
   background: var(--line);
 }
 
-.shortcuts-help-button {
+.help-corner {
   position: absolute;
-  top: 44px;
   right: 12px;
+  bottom: var(--toolbar-bottom);
   z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.help-button {
   background: var(--panel);
   box-shadow: var(--shadow);
+}
+/* Quiet, like a status line: the version, which opens what's new. */
+.app-version {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.app-version:hover {
+  color: var(--text);
 }
 
 .coordinates i {
@@ -2030,9 +2050,13 @@ body.is-dragging-swatch * {
       inset 0 0 0 2px var(--glow),
       inset 0 0 0 4px var(--panel);
   }
-  .shortcuts-help-button {
+  /* On a phone the bottom belongs to the tools: the shortcuts' button goes to the top, alone. */
+  .help-corner {
     top: 56px;
-    right: 12px;
+    bottom: auto;
+  }
+  .app-version {
+    display: none;
   }
   :root {
     --toolbar-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
@@ -2125,7 +2149,7 @@ body.is-dragging-swatch * {
 .popover,
 .dialog,
 .coordinates,
-.shortcuts-help-button,
+.help-button,
 .toast,
 .menu,
 .command-palette,
@@ -2160,10 +2184,11 @@ body.is-dragging-swatch * {
     margin: 12px 0 14px 12px;
   }
   /* As tall as what it shows, like the left one: it only holds what depends on the selection. */
+  /* It stops short of the bottom corner, for the version and the shortcuts' button. */
   .panel-right {
     grid-column: 3;
     align-self: start;
-    max-height: calc(100% - 26px);
+    max-height: calc(100% - 26px - 48px);
     margin: 12px 12px 14px 0;
   }
   /* The handle lines up with the panel's inner edge, between its rounded corners, so the highlight
@@ -2183,7 +2208,7 @@ body.is-dragging-swatch * {
     margin: 30px 0 14px 30px;
   }
   .app.has-rulers .panel-right {
-    max-height: calc(100% - 44px);
+    max-height: calc(100% - 44px - 48px);
     margin-top: 30px;
   }
   .app.has-rulers .resizer {
@@ -2198,8 +2223,7 @@ body.is-dragging-swatch * {
   .resizer-right::after {
     right: 2px;
   }
-  .coordinates,
-  .shortcuts-help-button {
+  .coordinates {
     right: calc(var(--right-width) + 16px);
   }
 }
@@ -2631,9 +2655,6 @@ body.is-dragging-swatch * {
 /* Rulers shown: the floating badges move below the top ruler. */
 .app.has-rulers .coordinates {
   top: 30px;
-}
-.app.has-rulers .shortcuts-help-button {
-  top: 62px;
 }
 .app.has-rulers .mobile-bar {
   top: 26px;

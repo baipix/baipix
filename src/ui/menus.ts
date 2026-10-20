@@ -496,6 +496,10 @@ export const MENU_BAR: MenuBarMenu[] = [
   },
 ];
 
+/** The Help menu, also opened from the button in the window's bottom right corner. */
+export const helpMenu = (editor: Editor, actions: Actions): MenuItem[] =>
+  MENU_BAR.find((m) => m.id === 'help')!.items(editor, actions);
+
 export const togglePreview = () => uiStore.set((u) => ({ preview: { ...u.preview, open: !u.preview.open } }));
 
 /** Starts editing the file name in the menu bar. */
