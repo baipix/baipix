@@ -64,6 +64,7 @@ import {
   detachInstance,
   findMaster,
   growFrame,
+  shiftInstances,
   isLinkedInstance,
   linkBoards,
   makeComponent,
@@ -832,8 +833,15 @@ export class Editor {
     if (step.palette) current.palette = this.savedPalette();
     if (step.resized) current.resized = true;
     if (step.linked) current.linked = step.linked;
+    if (step.shifted) current.shifted = step.shifted;
     this.forgetDeletedLayer();
     this.restore(step);
+    if (step.shifted) {
+      const { master, dx, dy } = step.shifted;
+      const sign = way === 'undo' ? -1 : 1;
+      this.linkFiles();
+      shiftInstances(this.doc, master, sign * dx, sign * dy);
+    }
     this.touch();
     return true;
   }
@@ -4135,17 +4143,25 @@ export class Editor {
 
   private applyGroupMove(dx: number, dy: number): void {
     const { width, height } = this.doc;
+    // Only what moved is drawn again: the moved instances, and those of a moved master (its sprite
+    // changes where it goes past the canvas's edge). The other boards follow when the move ends.
+    const instancesOf = new Set<string>();
+    const mastersMoved = new Set<string>();
     for (const { layer, base, outside, at, frame } of this.groupMove!.items) {
       if (at && layer.instance) {
         layer.instance = { ...layer.instance, x: at.x + dx, y: at.y + dy };
+        instancesOf.add(layer.instance.of);
         continue;
       }
       const r = reframe(base, width, height, outside, dx, dy, width, height);
       layer.pixels.set(r.pixels);
       layer.outside = r.outside;
-      if (frame) layer.component = { ...frame, x: frame.x + dx, y: frame.y + dy };
+      if (frame) {
+        layer.component = { ...frame, x: frame.x + dx, y: frame.y + dy };
+        mastersMoved.add(layer.id);
+      }
     }
-    syncInstances(this.doc);
+    for (const id of new Set([...instancesOf, ...mastersMoved])) syncInstances(this.doc, id);
     this.pixelsChanged();
   }
 
@@ -4213,7 +4229,12 @@ export class Editor {
       return;
     }
     // Drawn on a component, outside its frame: the frame takes it in, so instances show it too.
-    if (s.layer.component && id !== 'move') growFrame(this.doc, s.layer, s.base);
+    if (s.layer.component && id !== 'move') {
+      const grown = growFrame(this.doc, s.layer, s.base);
+      const step = this.active.history.top();
+      // Its instances on the other boards moved too: the step takes them back on undo.
+      if (grown && step && (grown.dx || grown.dy)) step.shifted = { master: s.layer.id, ...grown };
+    }
     if (STRAIGHT_LINES.includes(id)) this.lastPainted = { doc: s.doc, layer: s.layer, at: s.last };
     if (VOLUMES.includes(id)) {
       // The options bar shows the size the drag gave a box, and changing an option redraws it.
@@ -4248,12 +4269,8 @@ export class Editor {
       return;
     }
     if (this.groupMove) {
-      for (const { layer, base, outside } of this.groupMove.items) {
-        layer.pixels.set(base);
-        layer.outside = outside;
-      }
       this.groupMove = null;
-      this.active.history.discardLast();
+      this.rollBack();
       this.commit(false);
       return;
     }
@@ -4262,13 +4279,20 @@ export class Editor {
     if (!s || !id) return;
     this.stroke = null;
     this.strokeTool = null;
-    if (TOOLS[id].editsPixels) {
-      s.layer.pixels.set(s.base);
-      s.layer.outside = s.baseOutside;
-      this.active.history.discardLast();
-    }
+    if (TOOLS[id].editsPixels) this.rollBack();
     this.active.selection = s.selection;
     this.commit(false);
+  }
+
+  /**
+   * Back to the state the last checkpoint saved, which is dropped: a move or a stroke cancelled
+   * leaves nothing behind, instances, frames and Alt-drag copies included.
+   */
+  private rollBack(): void {
+    const step = this.active.history.top();
+    if (!step) return;
+    this.active.history.discardLast();
+    this.restore(step);
   }
 }
 

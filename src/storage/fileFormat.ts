@@ -406,8 +406,13 @@ const parseJson = (text: string): unknown => {
   }
 };
 
-export function documentFromJson(text: string): PixelDoc {
-  return renewLayerIds([deserializeDocument(parseJson(text))])[0];
+export const documentFromJson = (text: string): PixelDoc => openedDocument(parseJson(text));
+
+/** A one-board file read for opening: new ids, so it never mixes with a copy already open. */
+function openedDocument(data: unknown): PixelDoc {
+  const doc = deserializeDocument(data);
+  doc.id = newId('doc');
+  return renewLayerIds([doc])[0];
 }
 
 /**
@@ -436,7 +441,7 @@ function renewLayerIds(docs: PixelDoc[]): PixelDoc[] {
 export function fileFromJson(text: string): PixelDoc[] {
   const data = parseJson(text) as Partial<BaipixBoards> | null;
   if (!data || typeof data !== 'object' || data.format !== FILE_FORMAT || data.version !== 2)
-    return [deserializeDocument(data)];
+    return [openedDocument(data)];
   if (!Array.isArray(data.boards) || !data.boards.length) throw new FileFormatError('No boards');
   const file = newId('doc');
   const fileName = (typeof data.name === 'string' && data.name.trim()) || 'Untitled';

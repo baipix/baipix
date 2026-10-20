@@ -13,7 +13,7 @@ import {
 import { flatten } from '../src/engine/composite';
 import { Editor } from '../src/engine/editor';
 import { cloneDocument, createDocument, resizeDocument, type PixelDoc } from '../src/engine/document';
-import { documentFromJson, documentToJson, serializeDocument } from '../src/storage/fileFormat';
+import { documentFromJson, documentToJson, fileFromJson, serializeDocument } from '../src/storage/fileFormat';
 
 const RED = pack(255, 0, 0);
 const BLUE = pack(0, 0, 255);
@@ -98,6 +98,23 @@ describe('components', () => {
     expect(back.layers[1].instance).toEqual({ of: back.layers[0].id, x: 10, y: 5 });
     expect(back.layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 2 });
     expect(at(back, 1, 11, 6)).toBe(BLUE);
+  });
+
+  it('keeps a frame that reaches past the canvas edge where it is, saved and opened', () => {
+    const doc = withSprite();
+    makeComponent(doc, 0, { x: 1, y: 1, w: 2, h: 2 });
+    // Moved one pixel past the left edge: the sprite's left column is off the canvas.
+    doc.layers[0].component = { x: -1, y: 1, w: 2, h: 2 };
+    const opened = documentFromJson(documentToJson(doc));
+    expect(opened.layers[0].component).toEqual({ x: -1, y: 1, w: 2, h: 2 });
+  });
+
+  it('gives a file opened twice its own ids, so the copies never mix', () => {
+    const json = documentToJson(withSprite());
+    const [a] = fileFromJson(json);
+    const [b] = fileFromJson(json);
+    expect(a.id).not.toBe(b.id);
+    expect(a.layers[0].id).not.toBe(b.layers[0].id);
   });
 
   it('opens files without components, and fixes broken references', () => {
@@ -271,6 +288,28 @@ describe('components in the editor', () => {
     e.undo();
     expect(doc().layers[1].instance).toMatchObject({ x: 9, y: 10 });
     expect(px(1, 0, 0)).toBe(0);
+  });
+
+  it('leaves nothing moved when a move is cancelled, an instance or a master', () => {
+    const { e, doc, px } = setup();
+    e.createComponent();
+    e.addInstanceAt(doc().layers[0].id, { x: 10, y: 10 });
+    e.setTool('move');
+    e.beginStroke({ x: 9, y: 10 }, false, { shift: false });
+    e.moveStroke({ x: 3, y: 2 }, { shift: false });
+    e.cancelStroke();
+    expect(doc().layers[1].instance).toMatchObject({ x: 9, y: 10 });
+    expect(px(1, 9, 10)).toBe(RED);
+    e.setActiveLayer(0);
+    e.beginStroke({ x: 1, y: 1 }, false, { shift: false });
+    e.moveStroke({ x: 5, y: 5 }, { shift: false });
+    e.cancelStroke();
+    expect(doc().layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 1 });
+    expect(px(0, 1, 1)).toBe(RED);
+    expect(px(1, 9, 10)).toBe(RED);
+    // The cancelled moves left no step: one undo takes the instance away.
+    e.undo();
+    expect(doc().layers).toHaveLength(1);
   });
 
   it('grows the frame when drawing outside it on the component', () => {

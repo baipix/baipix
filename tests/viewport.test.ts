@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { viewport } from '../src/ui/viewport';
 
 describe('viewport', () => {
@@ -34,5 +34,25 @@ describe('viewport', () => {
     expect((x0 + x1) / 2).toBeCloseTo(50);
     expect((y0 + y1) / 2).toBeCloseTo(40);
     viewport.covered = () => ({ left: 0, right: 0 });
+  });
+
+  it('glides to the next zoom level, and a fit or a view set meanwhile wins', () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (f: FrameRequestCallback) => frames.push(f));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    const flush = () => {
+      for (let i = 0; i < 20 && frames.length; i++) frames.shift()!(performance.now() + 1000);
+    };
+    viewport.set({ zoom: 8, panX: 0, panY: 0 });
+    viewport.step(1);
+    // Quick notches add up from the level being reached.
+    viewport.step(1);
+    flush();
+    expect(viewport.zoom).toBe(12);
+    viewport.step(1);
+    viewport.set({ zoom: 4, panX: 0, panY: 0 });
+    flush();
+    expect(viewport.zoom).toBe(4);
+    vi.unstubAllGlobals();
   });
 });
