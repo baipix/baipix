@@ -175,13 +175,57 @@ class Viewport {
     this.emit();
   }
 
-  step(direction: 1 | -1, cx?: number, cy?: number): void {
-    const z = this.zoom;
+  /**
+   * One zoom level in or out, from the level being reached if a step is still animating (quick
+   * wheel notches add up), gliding there in a short ease unless `animate` is false.
+   */
+  step(direction: 1 | -1, cx?: number, cy?: number, animate = true): void {
+    const z = this.glide?.to ?? this.zoom;
     const next =
-      direction > 0
+      (direction > 0
         ? ZOOM_LEVELS.find((v) => v > z + 0.001)
-        : [...ZOOM_LEVELS].reverse().find((v) => v < z - 0.001);
-    this.zoomTo(next ?? (direction > 0 ? 96 : 1), cx, cy);
+        : [...ZOOM_LEVELS].reverse().find((v) => v < z - 0.001)) ?? (direction > 0 ? 96 : 1);
+    if (animate) this.glideTo(next, cx, cy);
+    else {
+      this.stopGlide();
+      this.zoomTo(next, cx, cy);
+    }
+  }
+
+  /** A zoom gliding to a level: where to, and the frame that moves it. */
+  private glide: { to: number; frame: number } | null = null;
+
+  private stopGlide(): void {
+    if (this.glide) cancelAnimationFrame(this.glide.frame);
+    this.glide = null;
+  }
+
+  /** Zooms to `zoom` in about 120 ms, keeping (cx, cy) fixed, easing out. */
+  glideTo(zoom: number, cx = this.width / 2, cy = this.height / 2, ms = 120): void {
+    this.stopGlide();
+    const from = this.zoom;
+    const to = clamp(zoom, 1, 96);
+    // Through the zoom's logarithm, so zooming in and out feel the same.
+    const a = Math.log(from);
+    const b = Math.log(to);
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / ms);
+      const eased = 1 - (1 - t) ** 3;
+      this.zoomTo(t >= 1 ? to : Math.exp(a + (b - a) * eased), cx, cy);
+      if (t < 1 && this.glide) this.glide.frame = requestAnimationFrame(tick);
+      else this.glide = null;
+    };
+    this.glide = { to, frame: requestAnimationFrame(tick) };
+  }
+
+  /**
+   * A continuous zoom by a factor (a pinch on a trackpad), keeping (cx, cy) fixed. Call `settle`
+   * when the gesture ends to land on a whole zoom, where pixels are crisp.
+   */
+  zoomBy(factor: number, cx: number, cy: number): void {
+    this.stopGlide();
+    this.zoomTo(this.zoom * factor, cx, cy);
   }
 
   /** The part of the drawing in view (not under the side panels), in art pixels. */
@@ -217,8 +261,11 @@ class Viewport {
     this.emit();
   }
 
-  settle(cx: number, cy: number): void {
-    this.zoomTo(Math.max(1, Math.round(this.zoom)), cx, cy);
+  settle(cx: number, cy: number, animate = false): void {
+    const whole = Math.max(1, Math.round(this.zoom));
+    if (whole === this.zoom) return;
+    if (animate) this.glideTo(whole, cx, cy, 100);
+    else this.zoomTo(whole, cx, cy);
   }
 
   /**
