@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Resizing a board shows its new size when it shrinks too: the dashed outline goes over the board, the part that would be cut is dimmed, and the new size shows in a badge under it instead of over the board's name. (#472)
 - Layer thumbnails in the Layers panel show what's drawn on the layer, fitted, instead of the whole board: a small character on a big board can be told apart. (#468)
 - Two fingers on a trackpad pan the canvas in any direction, like in Figma; a pinch, or Cmd/Ctrl with the wheel, zooms. A mouse wheel still zooms, Shift with it pans sideways. Before, only a sideways swipe panned, and an up, down or diagonal one zoomed. (#466)
 - Dragging a number field's label (a board's W or H, an opacity…) no longer leaves the ↔ cursor stuck: the end of the drag is caught anywhere, also when the panel is redrawn under it or the window loses the focus. (#464)
