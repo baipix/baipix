@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- A gradient stop takes any color: its popover has the colors' picker (the square, hue and opacity bars, hex and opacity), above the palette and the drawing's colors. (#470)
 - Two cards under the drawings on the files screen: Learn Baipix opens the docs, Something not working? a bug report on GitHub with the version and browser already filled in. (#460)
 
 ## [0.7.2] - 2026-10-19
