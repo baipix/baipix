@@ -72,7 +72,8 @@ What's selected, in four sections:
 ## The canvas
 
 - **Pan** with the Hand tool (<kbd>H</kbd>), or hold <kbd>Space</kbd> and drag with any tool.
-- **Zoom** with the wheel or a pinch, toward the pointer.
+- **Zoom** with a pinch on a trackpad, the mouse wheel, or <kbd>Ctrl</kbd> with either, toward the pointer.
+- On a trackpad, **two fingers pan** in any direction.
 - In the top right corner: the drawing's size, its number of layers and colors, and the pointer's coordinates.
 
 ## The preview
