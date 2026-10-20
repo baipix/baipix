@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-10-21
+
+Smooth zoom, a gradient stop in any color, and fixes: trackpad panning in any direction, layer thumbnails you can tell apart, a board's new size when it shrinks.
+
 ### Added
 
 - A gradient stop takes any color: its popover has the colors' picker (the square, hue and opacity bars, hex and opacity), above the palette and the drawing's colors. (#470)
@@ -11,7 +15,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
-- Zooming is smooth: a pinch on a trackpad follows your fingers and lands on a whole zoom when they stop, and the wheel and keyboard steps glide to the next level (#474).
+- Zooming is smooth: a pinch on a trackpad follows your fingers and lands on a whole zoom when they stop, and the wheel and keyboard steps glide to the next level. (#474)
 
 ### Fixed
 
@@ -389,7 +393,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.2...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.3...main
+[0.7.3]: https://github.com/baipix/baipix/releases/tag/v0.7.3
 [0.7.2]: https://github.com/baipix/baipix/releases/tag/v0.7.2
 [0.7.1]: https://github.com/baipix/baipix/releases/tag/v0.7.1
 [0.7.0]: https://github.com/baipix/baipix/releases/tag/v0.7.0
