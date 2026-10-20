@@ -211,6 +211,11 @@ export interface EditorState {
   canUndo: boolean;
   canRedo: boolean;
   revision: number;
+  /**
+   * Bumped by changes that are saved (not by selecting, picking a tool…): what shows the drawing
+   * outside the canvas, like the layers' thumbnails, only needs to look again then.
+   */
+  contentRevision: number;
 }
 
 /** Names the engine needs, injected by the UI so they can be translated. */
@@ -568,6 +573,7 @@ export class Editor {
   private brushes: CustomBrush[] = [];
   private myPalettes: MyPalette[] = [];
   private revision = 0;
+  private contentRevision = 0;
   private state!: EditorState;
 
   private listeners = new Set<Listener>();
@@ -666,6 +672,7 @@ export class Editor {
       canUndo: s.history.canUndo || this.fileSteps.length > 0,
       canRedo: s.history.canRedo || this.fileRedos.length > 0,
       revision: this.revision,
+      contentRevision: this.contentRevision,
     };
   }
 
@@ -675,6 +682,7 @@ export class Editor {
     // a board whose instances changed is dated, so its picture on the canvas is drawn again.
     this.linkFiles();
     for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
+    if (persist) this.contentRevision++;
     this.refresh();
     this.listeners.forEach((l) => l());
     this.pixelListeners.forEach((l) => l());

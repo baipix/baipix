@@ -20,15 +20,38 @@ const MAX_RATIO = 2;
 /** Canvas pixels per CSS pixel, so thumbnails stay sharp on 2× screens. */
 const DENSITY = 2;
 
+/** One canvas the pixels go through on their way to every thumbnail, drawn one after the other. */
+let scratch: HTMLCanvasElement | null = null;
+
+const sameContent = (a: Uint32Array, b: Uint32Array): boolean => {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+};
+
 /**
  * Small preview of a pixel buffer, with the drawing's proportions: a wide drawing gets a wide
  * thumbnail instead of a thin strip in a square. Very wide or tall ones are capped and fitted.
  */
 export function Thumbnail({ pixels, width, height, version, fit = false }: ThumbnailProps) {
   const ref = useRef<HTMLCanvasElement>(null);
+  /** What was drawn last, and how: a new version with the same pixels draws nothing. */
+  const drawn = useRef<{ pixels: Uint32Array; width: number; height: number; fit: boolean } | null>(null);
   useLayoutEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
+    const data = pixels();
+    const last = drawn.current;
+    if (
+      last &&
+      last.width === width &&
+      last.height === height &&
+      last.fit === fit &&
+      sameContent(last.pixels, data)
+    )
+      return;
+    const copy = data.slice();
+    drawn.current = { pixels: copy, width, height, fit };
     const ratio = Math.min(MAX_RATIO, Math.max(MIN_RATIO, width / height));
     const h = 20 * DENSITY;
     const w = Math.round(h * ratio);
@@ -36,13 +59,14 @@ export function Thumbnail({ pixels, width, height, version, fit = false }: Thumb
     canvas.height = h;
     canvas.style.width = `${w / DENSITY}px`;
     const ctx = canvas.getContext('2d')!;
-    const src = document.createElement('canvas');
-    src.width = width;
-    src.height = height;
+    const src = (scratch ??= document.createElement('canvas'));
+    if (src.width !== width || src.height !== height) {
+      src.width = width;
+      src.height = height;
+    }
     const sctx = src.getContext('2d')!;
-    const image = sctx.createImageData(width, height);
-    const data = pixels();
-    new Uint32Array(image.data.buffer).set(data);
+    // The kept copy, seen as bytes: no other buffer to fill.
+    const image = new ImageData(new Uint8ClampedArray(copy.buffer as ArrayBuffer), width, height);
     sctx.putImageData(image, 0, 0);
     const box = (fit && pixelBounds(data, width, height)) || { x: 0, y: 0, w: width, h: height };
     // Fitted, a pixel's margin around what's drawn, whole pixels when they're big enough.
