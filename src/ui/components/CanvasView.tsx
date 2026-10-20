@@ -902,8 +902,9 @@ export function CanvasView() {
         boardResize = { from, sides, rect: from };
         return;
       }
-      // With several boards (or the board tool), a board's name moves it; a click selects it.
-      if (e.button === 0 && (st.boards.length > 1 || st.tool === 'board')) {
+      // A board's name moves it, and a click selects it, to resize it by its sides: even when it's
+      // the file's only board.
+      if (e.button === 0) {
         const named = boardLabelAt(l);
         if (named) {
           boardDrag = {
