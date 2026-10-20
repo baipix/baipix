@@ -18,7 +18,7 @@ import { ColorAdjustPanel } from './components/ColorAdjustPanel';
 import { Coordinates } from './components/Coordinates';
 import { IconButton } from './components/IconButton';
 import { MenuBar } from './components/MenuBar';
-import { MenuHost } from './components/Menu';
+import { MenuHost, openMenu } from './components/Menu';
 import { MobileBar } from './components/MobileBar';
 import { MobileColors } from './components/MobileColors';
 import { PanelResizer } from './components/PanelResizer';
@@ -28,6 +28,8 @@ import { Toolbar } from './components/Toolbar';
 import { Tooltips } from './components/Tooltips';
 import { Dialogs } from './dialogs/Dialogs';
 import { EditorContext } from './EditorContext';
+import { CHANGELOG_URL } from './links';
+import { helpMenu } from './menus';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
@@ -35,7 +37,7 @@ import { leaveHome, showEmptyHome } from './home';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
 import { RightPanel } from './panels/RightPanel';
-import { openDialog, PANEL_LIMITS, toast, uiStore, type PreviewWindow, type UiState } from './uiStore';
+import { PANEL_LIMITS, toast, uiStore, type PreviewWindow, type UiState } from './uiStore';
 
 const editorLabels = () => ({
   layer: (n: number) => t('default.layer', { n }),
@@ -188,14 +190,24 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             <MobileBar />
             <MobileColors />
             {!noBoard && <Coordinates />}
-            <IconButton
-              className="icon-btn large shortcuts-help-button"
-              icon="help"
-              iconSize={18}
-              label={t('menu.shortcuts')}
-              shortcut="?"
-              onClick={() => openDialog({ type: 'shortcuts' })}
-            />
+            {/* The window's bottom right corner: the version, which opens what's new, and the Help menu. */}
+            <div className="help-corner">
+              <button
+                type="button"
+                className="app-version"
+                data-tip={t('menu.version', { version: __APP_VERSION__ })}
+                onClick={() => window.open(CHANGELOG_URL, '_blank', 'noopener')}
+              >
+                v{__APP_VERSION__}
+              </button>
+              <IconButton
+                className="icon-btn large help-button"
+                icon="help"
+                iconSize={18}
+                label={t('menu.help')}
+                onClick={(e) => openMenu(e.currentTarget, helpMenu(editor, actions))}
+              />
+            </div>
             {!noBoard && <FloatingPreview />}
             <ToolOptionsBar />
             <Toolbar />

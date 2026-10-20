@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- A Help button in the window's bottom right corner opens the Help menu (docs, shortcuts, tour, report a bug…), with the app's version beside it, which opens what's new. It replaces the ? button under the info badge, which only opened the shortcuts. (#478)
+
 ## [0.7.3] - 2026-10-21
 
 Smooth zoom, a gradient stop in any color, and fixes: trackpad panning in any direction, layer thumbnails you can tell apart, a board's new size when it shrinks.
