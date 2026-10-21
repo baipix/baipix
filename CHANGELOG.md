@@ -4,12 +4,13 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
-### Fixed
-
-- Five fixes: a one-board file opened twice no longer merges with its copy; a cancelled move (a second finger, a pointer cancel) puts instances and component frames back; undoing a stroke that grew a component's frame puts its instances on other boards back too; a frame past the canvas edge keeps its place when saved and opened; Fit or a board switch right after a wheel notch is no longer overridden by the zoom's glide. (#480)
 ### Changed
 
 - A Help button in the window's bottom right corner opens the Help menu (docs, shortcuts, tour, report a bug…), with the app's version beside it, which opens what's new. It replaces the ? button under the info badge, which only opened the shortcuts. (#478)
+
+### Fixed
+
+- Five fixes: a one-board file opened twice no longer merges with its copy; a cancelled move (a second finger, a pointer cancel) puts instances and component frames back; undoing a stroke that grew a component's frame puts its instances on other boards back too; a frame past the canvas edge keeps its place when saved and opened; Fit or a board switch right after a wheel notch is no longer overridden by the zoom's glide. (#480)
 
 ## [0.7.3] - 2026-10-21
 
