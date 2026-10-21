@@ -676,6 +676,8 @@ export function CanvasView() {
       editor.subscribe(() => {
         viewport.showDocument(editor.getState().doc);
         syncGap();
+        // A new selection, a layer picked: drawn again over the same pixels.
+        request();
       }),
     ];
     viewport.showDocument(editor.getState().doc);
