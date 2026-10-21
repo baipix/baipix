@@ -436,6 +436,35 @@ describe('boards', () => {
       expect(copyMaster.id).not.toBe(master.id);
       expect(copyInstance.instance?.of).toBe(copyMaster.id);
     });
+
+    it('puts instances on other boards back when undoing a frame that grew', () => {
+      const { e, icons, small, master } = withComponent();
+      // The master moved to (5, 5), so a stroke at (3, 3) grows its frame up and to the left.
+      e.setTool('move');
+      e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+      e.moveStroke({ x: 5, y: 5 }, { shift: false });
+      e.endStroke();
+      e.switchBoard(small.id);
+      e.addInstanceAt(master.id, { x: 3, y: 4 });
+      const id = e.getState().doc.layers[e.getState().doc.activeLayer].id;
+      const instance = () => layerOn(e, small.id, (l) => l.id === id)!;
+      e.switchBoard(icons.id);
+      e.setActiveLayer(e.getState().doc.layers.findIndex((l) => l.id === master.id));
+      e.setColor('primary', BLUE);
+      e.setTool('pencil');
+      e.beginStroke({ x: 3, y: 3 }, false, { shift: false });
+      e.endStroke();
+      expect(instance().instance).toMatchObject({ x: 1, y: 2 });
+      e.switchBoard(icons.id);
+      e.undo();
+      expect(instance().instance).toMatchObject({ x: 3, y: 4 });
+      expect(instance().pixels[4 * 8 + 3]).toBe(RED);
+      e.switchBoard(icons.id);
+      e.redo();
+      expect(instance().instance).toMatchObject({ x: 1, y: 2 });
+      expect(instance().pixels[4 * 8 + 3]).toBe(RED);
+      expect(instance().pixels[2 * 8 + 1]).toBe(BLUE);
+    });
   });
 
   it('brings back with Align a drawing moved off the board', () => {

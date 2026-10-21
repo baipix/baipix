@@ -80,12 +80,16 @@ export const findMaster = (doc: PixelDoc, id: string): Layer | undefined => mast
 export const instancesOf = (doc: PixelDoc, masterId: string): Layer[] =>
   doc.layers.filter((l) => l.instance?.of === masterId);
 
-/** A frame kept on whole pixels, at least 1×1, and within the canvas. */
+/**
+ * A frame kept on whole pixels, at least 1×1 and no bigger than the canvas, overlapping it. It may
+ * reach past an edge (a master moved partly off): it keeps its place, so the sprite does too, and
+ * what's past the edge shows empty in the instances.
+ */
 export function clampFrame(doc: PixelDoc, r: Rect): ComponentFrame {
-  const x = Math.max(0, Math.min(doc.width - 1, Math.round(r.x)));
-  const y = Math.max(0, Math.min(doc.height - 1, Math.round(r.y)));
-  const w = Math.max(1, Math.min(doc.width - x, Math.round(r.w)));
-  const h = Math.max(1, Math.min(doc.height - y, Math.round(r.h)));
+  const w = Math.max(1, Math.min(doc.width, Math.round(r.w)));
+  const h = Math.max(1, Math.min(doc.height, Math.round(r.h)));
+  const x = Math.max(1 - w, Math.min(doc.width - 1, Math.round(r.x)));
+  const y = Math.max(1 - h, Math.min(doc.height - 1, Math.round(r.y)));
   return { x, y, w, h };
 }
 
@@ -157,7 +161,12 @@ export function syncFileInstances(doc: PixelDoc, masterId?: string): PixelDoc[] 
 export function makeComponent(doc: PixelDoc, layerIndex: number, frame: Rect): boolean {
   const layer = doc.layers[layerIndex];
   if (!layer || isInstance(layer)) return false;
-  layer.component = clampFrame(doc, frame);
+  // A new frame is what's on the canvas of `frame`.
+  const x = Math.max(0, frame.x);
+  const y = Math.max(0, frame.y);
+  const w = Math.min(doc.width, frame.x + frame.w) - x;
+  const h = Math.min(doc.height, frame.y + frame.h) - y;
+  layer.component = clampFrame(doc, { x, y, w, h });
   syncInstances(doc, layer.id);
   return true;
 }
@@ -191,11 +200,16 @@ export function moveInstance(doc: PixelDoc, layer: Layer, x: number, y: number):
 
 /**
  * After a stroke on a master: its frame grows to take in what was just drawn outside it (pixels
- * that changed from `before` and aren't empty), like a component in Figma. Returns true if it grew.
+ * that changed from `before` and aren't empty), like a component in Figma. Returns how far its
+ * corner moved (and its instances with it), or null if it didn't grow.
  */
-export function growFrame(doc: PixelDoc, master: Layer, before: Uint32Array): boolean {
+export function growFrame(
+  doc: PixelDoc,
+  master: Layer,
+  before: Uint32Array,
+): { dx: number; dy: number } | null {
   const f = master.component;
-  if (!f) return false;
+  if (!f) return null;
   const W = doc.width;
   let x0 = f.x;
   let y0 = f.y;
@@ -211,7 +225,7 @@ export function growFrame(doc: PixelDoc, master: Layer, before: Uint32Array): bo
     if (y < y0) y0 = y;
     if (y > y1) y1 = y;
   }
-  if (x0 === f.x && y0 === f.y && x1 === f.x + f.w - 1 && y1 === f.y + f.h - 1) return false;
+  if (x0 === f.x && y0 === f.y && x1 === f.x + f.w - 1 && y1 === f.y + f.h - 1) return null;
   // The sprite keeps its place in its instances: they move by as much as the frame's corner.
   const dx = x0 - f.x;
   const dy = y0 - f.y;
@@ -220,7 +234,15 @@ export function growFrame(doc: PixelDoc, master: Layer, before: Uint32Array): bo
     for (const layer of instancesOf(d, master.id))
       layer.instance = { ...layer.instance!, x: layer.instance!.x + dx, y: layer.instance!.y + dy };
   syncFileInstances(doc, master.id);
-  return true;
+  return { dx, dy };
+}
+
+/** Moves a master's instances on the file's boards other than `doc` (see `Snapshot.shifted`). */
+export function shiftInstances(doc: PixelDoc, master: string, dx: number, dy: number): void {
+  for (const d of fileDocs(doc))
+    if (d !== doc)
+      for (const layer of instancesOf(d, master))
+        layer.instance = { ...layer.instance!, x: layer.instance!.x + dx, y: layer.instance!.y + dy };
 }
 
 /** Turns an instance back into a plain layer, keeping its pixels as they are. */

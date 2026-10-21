@@ -142,6 +142,7 @@ class Viewport {
   }
 
   fit(doc: PixelDoc): void {
+    this.stopGlide();
     if (!this.width) {
       this.pendingFit = doc;
       return;
@@ -209,14 +210,18 @@ class Viewport {
     const a = Math.log(from);
     const b = Math.log(to);
     const start = performance.now();
+    const glide = { to, frame: 0 };
     const tick = (now: number) => {
+      // Stopped, or another one started: this one is over.
+      if (this.glide !== glide) return;
       const t = Math.min(1, (now - start) / ms);
       const eased = 1 - (1 - t) ** 3;
       this.zoomTo(t >= 1 ? to : Math.exp(a + (b - a) * eased), cx, cy);
-      if (t < 1 && this.glide) this.glide.frame = requestAnimationFrame(tick);
+      if (t < 1) glide.frame = requestAnimationFrame(tick);
       else this.glide = null;
     };
-    this.glide = { to, frame: requestAnimationFrame(tick) };
+    glide.frame = requestAnimationFrame(tick);
+    this.glide = glide;
   }
 
   /**
@@ -242,6 +247,7 @@ class Viewport {
 
   /** Brings the art point (x, y) to the middle of the free part of the workspace. */
   centerOn(x: number, y: number): void {
+    this.stopGlide();
     const ez = this.effectiveZoom;
     const c = this.covered();
     this.panX = Math.round(c.left + (this.width - c.left - c.right) / 2 - x * ez);
@@ -257,6 +263,7 @@ class Viewport {
 
   /** Continuous zoom (pinch). Call `settle` when the gesture ends to snap to a whole zoom. */
   set(view: View): void {
+    this.stopGlide();
     Object.assign(this, view);
     this.emit();
   }
@@ -279,6 +286,7 @@ class Viewport {
     const y = doc.board?.y ?? 0;
     const was = this.place;
     if (this.docId === doc.id && was && was.x === x && was.y === y) return;
+    this.stopGlide();
     const ez = this.effectiveZoom;
     if (was?.file === file) {
       this.docId = doc.id;

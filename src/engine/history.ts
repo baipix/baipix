@@ -15,6 +15,11 @@ export interface Snapshot {
    * undoing it puts them back too (otherwise they stay as they are, outside the history).
    */
   resized?: boolean;
+  /**
+   * A master's frame that grew up or left (a stroke past its corner): its instances on the file's
+   * other boards moved by as much, outside this board's history. Undo moves them back, redo again.
+   */
+  shifted?: { master: string; dx: number; dy: number };
   /** One side of a step made on two boards at once (a layer moved across): undone together. */
   linked?: string;
 }
