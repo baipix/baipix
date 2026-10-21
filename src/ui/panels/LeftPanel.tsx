@@ -158,7 +158,10 @@ function ComponentsSection() {
   const t = useT();
   const editor = useEditor();
   const doc = useEditorState((s) => s.doc);
-  const revision = useEditorState((s) => s.revision);
+  // Names, order and selection change in place: every change shows. Thumbnails only redraw on saved
+  // changes (see `contentRevision`).
+  useEditorState((s) => s.revision);
+  const contentRevision = useEditorState((s) => s.contentRevision);
   const list = fileMasters(doc)
     .map(({ doc: on, layer }) => ({ on, m: layer }))
     .reverse()
@@ -186,7 +189,7 @@ function ComponentsSection() {
               pixels={() => spritePixels(on, m)}
               width={m.component!.w}
               height={m.component!.h}
-              version={revision}
+              version={contentRevision}
             />
             <span className="component-icon">
               <Icon name="component" size={12} />
@@ -204,7 +207,10 @@ function LayersSection() {
   const editor = useEditor();
   const actions = useActions();
   const doc = useEditorState((s) => s.doc);
-  const revision = useEditorState((s) => s.revision);
+  // Names, order and selection change in place: every change shows. Thumbnails only redraw on saved
+  // changes (see `contentRevision`).
+  useEditorState((s) => s.revision);
+  const contentRevision = useEditorState((s) => s.contentRevision);
   const selected = useEditorState((s) => s.selectedLayers);
   const referenceSelected = useEditorState((s) => s.referenceSelected);
   const reference = doc.reference;
@@ -550,7 +556,7 @@ function LayersSection() {
                 pixels={() => row.layer.pixels}
                 width={doc.width}
                 height={doc.height}
-                version={revision}
+                version={contentRevision}
                 fit
               />
               {row.layer.component && (
@@ -693,7 +699,7 @@ function LayersSection() {
                         pixels={() => layer.pixels}
                         width={free.width}
                         height={free.height}
-                        version={revision}
+                        version={contentRevision}
                         fit
                       />
                       <span className="item-name">{layer.name}</span>
