@@ -28,4 +28,6 @@ The **+** next to Effects adds one:
 - **Drop shadow**: a copy of the drawing in its color, shifted by X and Y pixels.
 - **Glow**: a halo around the drawing, of the size you set, that fades in dithering rather than in new shades: the pixel art way.
 
+Each effect's swatch opens its color: any color, and its **opacity**, above the palette's colors. A drop shadow in black at 30% darkens what's under it instead of covering it. Picking a palette color keeps the opacity you set, and an effect that isn't opaque shows its opacity beside its swatch.
+
 Each effect has an eye to hide it and a **−** to remove it. The … menu next to Effects can **apply the effects to the pixels**, to draw them into the layer for good.

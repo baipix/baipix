@@ -64,7 +64,7 @@ gradientEditor.setOption('gradientStops', [
 
 function PaletteColorDemo() {
   const [color, setColor] = useState(pack(239, 125, 87));
-  return <PaletteColorButton color={color} label="Outline color" onChange={setColor} />;
+  return <PaletteColorButton color={color} label="Outline color" onChange={(c) => setColor(c)} />;
 }
 
 function Specimen({
