@@ -18,7 +18,7 @@ import { referenceFromFile } from '../io/reference';
 import { zip } from '../io/zip';
 import { canvasToBlob, renderToCanvas } from '../io/png';
 import { FILE_EXTENSION, fileFromJson, fileToJson } from '../storage/fileFormat';
-import { layerClipFromHtml, layerClipHtml } from '../storage/layerClip';
+import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } from '../storage/layerClip';
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
@@ -401,7 +401,34 @@ export function createActions(editor: Editor) {
      * Paste event: layers copied in Baipix (this file, another one, another tab) come back whole;
      * images from the system clipboard go on a new layer; otherwise the internal clipboard.
      */
+    /**
+     * Copies (or cuts) the selected pixels, and puts them on the system clipboard too, as a picture
+     * with their id: a paste here then takes them, not what was on the clipboard before (a
+     * screenshot, layers copied earlier), and other apps get the picture.
+     */
+    copyPixels(cut = false) {
+      if (!(cut ? editor.cut() : editor.copy())) return false;
+      toast(t(cut ? 'toast.cut' : 'toast.selectionCopied'));
+      const copied = editor.copiedPixels();
+      if (!copied) return true;
+      const { block, id } = copied;
+      const d = doc();
+      const geometry = renderGeometry(block.width, block.height, d.render.pixelSize, d.render.gap);
+      // Not awaited: the browser may refuse (no focus, no permission); the copy here still works.
+      void copyHtmlAndPng(
+        pixelClipHtml(id),
+        canvasToBlob(renderToCanvas(block.pixels, block.width, block.height, geometry, 0)),
+      );
+      return true;
+    },
+
     async pasteFromClipboard(files: File[], html = '') {
+      // Pixels copied here last: the system clipboard holds their picture too, but they paste exact.
+      const pixels = html ? pixelClipIdFromHtml(html) : null;
+      if (pixels && editor.isCopiedPixels(pixels)) {
+        editor.paste();
+        return true;
+      }
       const layers = html ? layerClipFromHtml(html) : null;
       if (layers && !editor.isOlderCopy(layers)) return editor.pasteLayers(layers);
       const image = files.find((f) => f.type.startsWith('image/'));
