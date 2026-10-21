@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Faster on big files: picking a layer, selecting, or panning and zooming no longer works the drawing out again; the canvas and the preview only do when its pixels change. (#486)
 - Faster with many layers: the Layers and Components thumbnails are only drawn again when the drawing changes, and only the ones whose pixels did. (#482)
 - A Help button in the window's bottom right corner opens the Help menu (docs, shortcuts, tour, report a bug…), with the app's version beside it, which opens what's new. It replaces the ? button under the info badge, which only opened the shortcuts. (#478)
 

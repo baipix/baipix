@@ -676,16 +676,30 @@ export class Editor {
     };
   }
 
-  /** Publishes a change. `persist` is false for pure UI changes that don't need saving. */
-  private commit(persist = true): void {
-    // Instances show their master as it is now, whatever changed it, on every board of the file:
-    // a board whose instances changed is dated, so its picture on the canvas is drawn again.
-    this.linkFiles();
-    for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
-    if (persist) this.contentRevision++;
+  /**
+   * Publishes a change of what's selected or picked only (layers, boards, the selection, a color):
+   * nothing to save, and no pixel changed, so the canvas and the instances aren't worked out again.
+   */
+  private select(): void {
     this.refresh();
     this.listeners.forEach((l) => l());
-    this.pixelListeners.forEach((l) => l());
+  }
+
+  /**
+   * Publishes a change. `persist` is false for pure UI changes that don't need saving; `pixels` is
+   * false for a change that's saved but leaves every pixel as it was (the active layer).
+   */
+  private commit(persist = true, pixels = true): void {
+    if (pixels) {
+      // Instances show their master as it is now, whatever changed it, on every board of the file:
+      // a board whose instances changed is dated, so its picture on the canvas is drawn again.
+      this.linkFiles();
+      for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
+      if (persist) this.contentRevision++;
+    }
+    this.refresh();
+    this.listeners.forEach((l) => l());
+    if (pixels) this.pixelListeners.forEach((l) => l());
     if (persist) this.persistListeners.forEach((l) => l());
   }
 
@@ -1184,7 +1198,7 @@ export class Editor {
     this.boardSelection = next;
     const last = next.at(-1);
     if (last && last !== this.doc.id) this.switchBoard(last);
-    else this.commit(false);
+    else this.select();
   }
 
   /**
@@ -1663,14 +1677,14 @@ export class Editor {
     if (!this.doc.reference || (this.active.referencePicked && this.tool === 'move')) return;
     this.active.referencePicked = true;
     this.tool = 'move';
-    this.commit(false);
+    this.select();
   }
 
   /** Back to the active layer. */
   deselectReference(): void {
     if (!this.active.referencePicked) return;
     this.active.referencePicked = false;
-    this.commit(false);
+    this.select();
   }
 
   /**
@@ -1852,7 +1866,7 @@ export class Editor {
     this.doc.activeLayer = index;
     this.active.picked = [id];
     this.active.anchor = id;
-    this.commit();
+    this.commit(true, false);
   }
 
   /**
@@ -1888,7 +1902,7 @@ export class Editor {
       this.active.picked = layers.slice(lo, hi + 1).map((l) => l.id);
       this.doc.activeLayer = index;
     }
-    this.commit(false);
+    this.select();
   }
 
   /** Selected layers, bottom to top. */
@@ -2081,7 +2095,7 @@ export class Editor {
     s.picked = layers.map((l) => l.id);
     s.anchor = layers[layers.length - 1].id;
     this.doc.activeLayer = this.doc.layers.indexOf(layers[layers.length - 1]);
-    this.commit(false);
+    this.select();
   }
 
   /**
@@ -2929,7 +2943,7 @@ export class Editor {
     if (Array.isArray(p.recent))
       this.recent = p.recent.filter((c) => typeof c === 'number').slice(0, RECENT_COLORS);
     // The palette used to be saved here, for every file; it belongs to each file now.
-    this.commit(false);
+    this.select();
   }
 
   /* ------------------------------------------------------------------ custom brushes */
@@ -2985,13 +2999,13 @@ export class Editor {
 
   selectAll(): void {
     this.active.selection = { x: 0, y: 0, w: this.doc.width, h: this.doc.height };
-    this.commit(false);
+    this.select();
   }
 
   deselect(): void {
     if (!this.active.selection) return;
     this.active.selection = null;
-    this.commit(false);
+    this.select();
   }
 
   /** Selects what wasn't, and lets go of what was (nothing selected: everything). */
@@ -3000,7 +3014,7 @@ export class Editor {
     const mask = toCanvasMask(this.active.selection, width, height);
     for (let i = 0; i < mask.length; i++) mask[i] = 1 - mask[i];
     this.active.selection = fromCanvasMask(mask, width, height);
-    this.commit(false);
+    this.select();
   }
 
   /**
@@ -3015,7 +3029,7 @@ export class Editor {
     delete s.pickedGroup;
     s.picked = [activeLayer(this.doc).id];
     s.unframed = true;
-    this.commit(false);
+    this.select();
     return true;
   }
 
@@ -3939,7 +3953,7 @@ export class Editor {
       s.picked = [activeLayer(this.doc).id];
       s.unframed = true;
     }
-    this.commit(false);
+    this.select();
   }
 
   /**
@@ -3982,7 +3996,7 @@ export class Editor {
       },
       setColor: (slot, color) => {
         this[slot] = color;
-        this.commit(false);
+        this.select();
       },
       setSelection: (rect) => {
         this.active.selection = rect;
@@ -4006,7 +4020,7 @@ export class Editor {
     // Drawing, or moving pixels, goes back to the active layer.
     if (tool.editsPixels && this.active.referencePicked) {
       this.active.referencePicked = false;
-      this.commit(false);
+      this.select();
     }
     if (id === 'move' && !this.active.selection) {
       // Beside every layer (and outside the active one's frame), a click lets go of the layers
@@ -4098,7 +4112,7 @@ export class Editor {
     this.doc.activeLayer = k;
     s.picked = [layer.id];
     s.anchor = layer.id;
-    this.commit(false);
+    this.select();
     return true;
   }
 
@@ -4119,7 +4133,7 @@ export class Editor {
     const active = remove ? s.picked[s.picked.length - 1] : layer.id;
     this.doc.activeLayer = this.doc.layers.findIndex((l) => l.id === active);
     s.anchor = active;
-    this.commit(false);
+    this.select();
     return !remove;
   }
 
@@ -4215,7 +4229,7 @@ export class Editor {
     if (unpick && !unpick.moved) this.togglePicked(unpick.ids, true, activeLayer(this.doc));
     if (this.marquee) {
       this.marquee = null;
-      this.commit(false);
+      this.select();
       return;
     }
     if (this.groupMove) {
@@ -4273,7 +4287,7 @@ export class Editor {
     this.unpick = null;
     if (this.marquee) {
       this.marquee = null;
-      this.commit(false);
+      this.select();
       return;
     }
     if (this.groupMove) {

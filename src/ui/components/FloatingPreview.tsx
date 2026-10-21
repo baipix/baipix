@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { alpha, toCss } from '../../engine/color';
 import { flatten } from '../../engine/composite';
+import type { PixelDoc } from '../../engine/document';
 import type { Point } from '../../engine/math';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -183,6 +184,9 @@ function PreviewCanvas({
   const fitScale = useRef(1);
   // Where the drawing was drawn (device px) and whether the canvas shows only part of it.
   const drawn = useRef({ x: 0, y: 0, f: 1, framed: false });
+  /** The drawing flattened, and as an image: kept until its pixels change. */
+  const flat = useRef<{ doc: PixelDoc; pixels: Uint32Array; image: HTMLCanvasElement } | null>(null);
+  const pixelsDirty = useRef(true);
   view.current = { zoom, center };
 
   useEffect(() => {
@@ -225,7 +229,19 @@ function PreviewCanvas({
         ctx.fillRect(x, y, w, h);
       }
       const { gap, pixelSize } = doc.render;
-      const pixels = flatten(doc, { includeBackground: false });
+      // Flattened again only when the pixels changed, not when the view or the selection did.
+      if (!flat.current || flat.current.doc !== doc || pixelsDirty.current) {
+        const pixels = flatten(doc, { includeBackground: false });
+        const image = document.createElement('canvas');
+        image.width = doc.width;
+        image.height = doc.height;
+        const data = new ImageData(doc.width, doc.height);
+        new Uint32Array(data.data.buffer).set(pixels);
+        image.getContext('2d')!.putImageData(data, 0, 0);
+        flat.current = { doc, pixels, image };
+        pixelsDirty.current = false;
+      }
+      const { pixels, image } = flat.current;
       const k = Math.floor(f);
       if (gap > 0 && k >= 3 && k === f && doc.width * doc.height <= 16384) {
         // The render gap, as it will be exported.
@@ -239,14 +255,7 @@ function PreviewCanvas({
             ctx.fillRect(x + px * k, y + py * k, size, size);
           }
       } else {
-        const src = document.createElement('canvas');
-        src.width = doc.width;
-        src.height = doc.height;
-        const sctx = src.getContext('2d')!;
-        const image = sctx.createImageData(doc.width, doc.height);
-        new Uint32Array(image.data.buffer).set(pixels);
-        sctx.putImageData(image, 0, 0);
-        ctx.drawImage(src, x, y, w, h);
+        ctx.drawImage(image, x, y, w, h);
       }
       // Minimap: when the canvas shows only part of the drawing, a frame around that part.
       const v = viewport.visibleArea();
@@ -284,7 +293,10 @@ function PreviewCanvas({
       if (!frame) frame = requestAnimationFrame(draw);
     };
     request();
-    const offPixels = editor.onPixels(request);
+    const offPixels = editor.onPixels(() => {
+      pixelsDirty.current = true;
+      request();
+    });
     const offState = editor.subscribe(request);
     const offView = viewport.subscribe(request);
     const ro = new ResizeObserver(request);
