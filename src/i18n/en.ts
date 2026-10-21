@@ -692,6 +692,7 @@ export const en = {
   'toast.deleted': '“{name}” deleted.',
   'toast.layersDeleted': '{count} layers deleted.',
   'toast.selectionCopied': 'Selection copied.',
+  'toast.pickBackground': 'Click the canvas to pick the background color. Esc cancels.',
   'toast.layerCopied': 'Layer copied.',
   'toast.layersCopied': '{count} layers copied. Paste them here or in another file.',
   'toast.layerCut': 'Layer cut.',

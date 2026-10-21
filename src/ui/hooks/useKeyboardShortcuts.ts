@@ -106,6 +106,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
       if (e.key === 'Escape') {
         if (editor.getState().selectedBoards.length) return editor.selectBoards([]);
         if (uiStore.get().picker) uiStore.set({ picker: null });
+        else if (editor.getState().pickingBackground && !editor.isStroking) editor.cancelBackgroundPick();
         else if (editor.getState().referenceSelected) editor.deselectReference();
         else if (editor.isStroking) editor.cancelStroke();
         // The pixel selection first, then up to the group around (like Figma), then the layer.

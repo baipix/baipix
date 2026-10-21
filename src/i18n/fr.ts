@@ -700,6 +700,7 @@ export const fr: Record<MessageKey, string> = {
   'toast.deleted': '« {name} » supprimé.',
   'toast.layersDeleted': '{count} calques supprimés.',
   'toast.selectionCopied': 'Sélection copiée.',
+  'toast.pickBackground': 'Clique le canevas pour prendre la couleur du fond. Échap annule.',
   'toast.layersCopied': '{count} calques copiés. Colle-les ici ou dans un autre fichier.',
   'toast.layerCut': 'Calque coupé.',
   'toast.layersCut': '{count} calques coupés.',

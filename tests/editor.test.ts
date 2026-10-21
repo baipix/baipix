@@ -1048,3 +1048,27 @@ describe('Fresh files', () => {
     expect(ids(e)).not.toContain(a);
   });
 });
+
+describe('picking the background color', () => {
+  it('takes a color from the canvas once, as one step, and goes back to the tool', () => {
+    const e = new Editor();
+    e.newFile(4, 4, 'Bg');
+    const RED = pack(255, 0, 0);
+    e.getState().doc.layers[0].pixels[0] = RED;
+    e.setTool('pencil');
+    e.pickBackground();
+    expect(e.getState()).toMatchObject({ tool: 'picker', pickingBackground: true });
+    e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+    e.endStroke();
+    expect(e.getState().doc.background).toBe(RED);
+    expect(e.getState()).toMatchObject({ tool: 'pencil', pickingBackground: false });
+    // The primary color stays.
+    expect(e.getState().primary).not.toBe(RED);
+    e.undo();
+    expect(e.getState().doc.background).not.toBe(RED);
+    // Escape, or another tool: nothing picked, the color as it was.
+    e.pickBackground();
+    e.cancelBackgroundPick();
+    expect(e.getState()).toMatchObject({ tool: 'pencil', pickingBackground: false });
+  });
+});

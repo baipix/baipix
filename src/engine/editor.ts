@@ -185,6 +185,8 @@ export interface EditorState {
   doc: PixelDoc;
   selection: Selection | null;
   tool: ToolId;
+  /** The eyedropper picks the background's color, once (see `pickBackground`). */
+  pickingBackground: boolean;
   options: ToolOptions;
   primary: Color;
   secondary: Color;
@@ -490,6 +492,8 @@ export class Editor {
   private layerClipId: string | null = null;
   /** The pixels copied last (see `copy`), so the system clipboard can tell a paste it holds them. */
   private pixelClipId: string | null = null;
+  /** The eyedropper picking the background's color: the tool to go back to, and the color before. */
+  private backgroundPick: { tool: ToolId; before: Color } | null = null;
   private stroke: Stroke | null = null;
   /** Shift+press on a layer already selected: it leaves the selection on release, unless dragged. */
   private unpick: { ids: string[]; start: Point; moved: boolean } | null = null;
@@ -657,6 +661,7 @@ export class Editor {
       doc: s.doc,
       selection: s.selection,
       tool: this.tool,
+      pickingBackground: !!this.backgroundPick,
       options: this.options,
       primary: this.primary,
       secondary: this.secondary,
@@ -1703,6 +1708,38 @@ export class Editor {
   }
 
   /** Live background color edits (color picker drags) without an undo step per move. */
+  /**
+   * The eyedropper, once, for the background's color: a click (or a drag, shown live) on the canvas
+   * picks it, as one undo step, and the tool used before comes back.
+   */
+  pickBackground(): void {
+    if (this.stroke) this.endStroke();
+    if (!this.backgroundPick) this.backgroundPick = { tool: this.tool, before: this.doc.background };
+    this.tool = 'picker';
+    this.commit(false);
+  }
+
+  /** Stops picking the background's color, which goes back as it was; `restore`: the tool too. */
+  cancelBackgroundPick(restore = true): void {
+    const pick = this.backgroundPick;
+    if (!pick) return;
+    this.backgroundPick = null;
+    this.doc.background = pick.before;
+    if (restore) this.tool = pick.tool;
+    this.commit(false);
+  }
+
+  /** The color picked for the background, kept as one step. */
+  private endBackgroundPick(): void {
+    const pick = this.backgroundPick!;
+    this.backgroundPick = null;
+    const color = this.doc.background;
+    this.doc.background = pick.before;
+    this.tool = pick.tool;
+    if (color === pick.before) return this.commit(false);
+    this.setBackground(color, true);
+  }
+
   previewBackground(color: Color): void {
     this.doc.background = color;
     this.commit();
@@ -2771,6 +2808,7 @@ export class Editor {
 
   setTool(tool: ToolId): void {
     if (this.stroke) this.endStroke();
+    if (this.backgroundPick) this.cancelBackgroundPick(false);
     this.tool = tool;
     this.commit();
   }
@@ -4008,6 +4046,11 @@ export class Editor {
         return alpha(c) ? c : 0;
       },
       setColor: (slot, color) => {
+        // Picking the background's color: shown as it goes, kept on release.
+        if (this.backgroundPick) {
+          this.doc.background = color;
+          return this.pixelsChanged();
+        }
         this[slot] = color;
         this.select();
       },
@@ -4237,6 +4280,11 @@ export class Editor {
   }
 
   endStroke(): void {
+    if (this.backgroundPick && this.strokeTool === 'picker') {
+      this.stroke = null;
+      this.strokeTool = null;
+      return this.endBackgroundPick();
+    }
     const unpick = this.unpick;
     this.unpick = null;
     if (unpick && !unpick.moved) this.togglePicked(unpick.ids, true, activeLayer(this.doc));
@@ -4298,6 +4346,13 @@ export class Editor {
 
   cancelStroke(): void {
     this.unpick = null;
+    // Picking the background's color: what the drag showed goes, the eyedropper stays.
+    if (this.backgroundPick && this.strokeTool === 'picker') {
+      this.stroke = null;
+      this.strokeTool = null;
+      this.doc.background = this.backgroundPick.before;
+      return this.commit(false);
+    }
     if (this.marquee) {
       this.marquee = null;
       this.select();

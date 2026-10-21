@@ -17,7 +17,7 @@ import { clamp } from '../../engine/math';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { checkerPattern, readTheme } from '../render/theme';
-import { uiStore, type ColorSlot } from '../uiStore';
+import { toast, uiStore, type ColorSlot } from '../uiStore';
 import { IconButton } from './IconButton';
 import { PaletteGrid } from './PaletteGrid';
 
@@ -268,14 +268,13 @@ export function ColorPicker() {
           key={slot}
           color={color}
           onChange={apply}
-          onEyedropper={
-            slot === 'background'
-              ? undefined
-              : () => {
-                  editor.setTool('picker');
-                  uiStore.set({ picker: null });
-                }
-          }
+          onEyedropper={() => {
+            if (slot === 'background') {
+              editor.pickBackground();
+              toast(t('toast.pickBackground'));
+            } else editor.setTool('picker');
+            uiStore.set({ picker: null });
+          }}
         />
         <div className="popover-section">
           <span className="muted">{t('section.palette')}</span>
