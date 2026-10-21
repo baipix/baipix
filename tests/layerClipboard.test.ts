@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
-import { layerClipFromHtml, layerClipHtml } from '../src/storage/layerClip';
+import {
+  layerClipFromHtml,
+  layerClipHtml,
+  pixelClipHtml,
+  pixelClipIdFromHtml,
+} from '../src/storage/layerClip';
 
 const RED = pack(255, 0, 0);
 const BLUE = pack(0, 0, 255);
@@ -115,5 +120,24 @@ describe('copy and paste whole layers', () => {
     e.copy(); // pixels copied since
     expect(e.isOlderCopy(back)).toBe(true);
     expect(layerClipFromHtml('<b>hello</b>')).toBeNull();
+  });
+});
+
+describe('copied pixels on the system clipboard', () => {
+  it('pastes the pixels copied last, not an older copy the system clipboard held', () => {
+    const e = new Editor();
+    e.newFile(8, 8, 'P');
+    const doc = () => e.getState().doc;
+    doc().layers[0].pixels[0] = pack(255, 0, 0);
+    e.selectAll();
+    expect(e.copy()).toBe(true);
+    const copied = e.copiedPixels()!;
+    const html = pixelClipHtml(copied.id);
+    expect(pixelClipIdFromHtml(html)).toBe(copied.id);
+    expect(e.isCopiedPixels(copied.id)).toBe(true);
+    // Copied again: the earlier id is an older copy.
+    e.copy();
+    expect(e.isCopiedPixels(copied.id)).toBe(false);
+    expect(pixelClipIdFromHtml('<p>hello</p>')).toBeNull();
   });
 });

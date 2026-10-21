@@ -488,6 +488,8 @@ export class Editor {
   private lastPainted: { doc: PixelDoc; layer: Layer; at: Point } | null = null;
   /** The id of the last layers copied here, even if pixels were copied since. */
   private layerClipId: string | null = null;
+  /** The pixels copied last (see `copy`), so the system clipboard can tell a paste it holds them. */
+  private pixelClipId: string | null = null;
   private stroke: Stroke | null = null;
   /** Shift+press on a layer already selected: it leaves the selection on release, unless dragged. */
   private unpick: { ids: string[]; start: Point; moved: boolean } | null = null;
@@ -3815,8 +3817,19 @@ export class Editor {
     // A selection of any shape copies its own pixels only.
     const block = extractBlock(activeLayer(this.doc).pixels, width, height, r);
     this.clipboard = sel ? maskBlock(block, sel) : block;
+    this.pixelClipId = newId('clip');
     this.layerClip = null;
     return true;
+  }
+
+  /** The pixels copied last, and their id: what goes on the system clipboard. */
+  copiedPixels(): { id: string; block: PixelBlock } | null {
+    return this.clipboard && this.pixelClipId ? { id: this.pixelClipId, block: this.clipboard } : null;
+  }
+
+  /** Whether `id`, found on the system clipboard, is the pixels copied last here. */
+  isCopiedPixels(id: string): boolean {
+    return id === this.pixelClipId && this.clipboard !== null;
   }
 
   /** Copies the selected layers whole (or the selected group), for `pasteLayers` here or in another file. */

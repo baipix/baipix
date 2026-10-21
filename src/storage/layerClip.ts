@@ -120,6 +120,19 @@ const fromBase64 = (b: string): string =>
 export const layerClipHtml = (f: LayerFragment): string =>
   `<meta charset="utf-8"><span ${ATTRIBUTE}="${toBase64(encodeLayerClip(f))}"></span>`;
 
+const PIXELS_ATTRIBUTE = 'data-baipix-pixels';
+
+/**
+ * The clipboard's HTML for copied pixels (a selection): only their id, the pixels staying in the
+ * app. It tells a paste that the system clipboard holds them, and not an older copy or a screenshot.
+ */
+export const pixelClipHtml = (id: string): string =>
+  `<meta charset="utf-8"><span ${PIXELS_ATTRIBUTE}="${id}"></span>`;
+
+export function pixelClipIdFromHtml(html: string): string | null {
+  return html.match(new RegExp(`${PIXELS_ATTRIBUTE}="([\\w-]+)"`))?.[1] ?? null;
+}
+
 /** Copied layers from the clipboard's HTML, or null if it holds none. */
 export function layerClipFromHtml(html: string): LayerFragment | null {
   const m = html.match(new RegExp(`${ATTRIBUTE}="([A-Za-z0-9+/=]+)"`));

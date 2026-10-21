@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import type { Editor } from '../../engine/editor';
-import { t } from '../../i18n';
 import type { Actions } from '../actions';
 import { isMenuOpen } from '../components/Menu';
 import { renameFile, togglePreview } from '../menus';
 import { keyState } from '../keyState';
 import { TOOL_LIST } from '../tools';
-import { openAdjust, openDialog, toast, toggleLayersPanel, uiStore } from '../uiStore';
+import { openAdjust, openDialog, toggleLayersPanel, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
 
 const isTyping = (target: EventTarget | null) =>
@@ -67,13 +66,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
             (e.target instanceof HTMLElement && !!e.target.closest('.item-list')) ||
             !editor.getState().selection;
           if ((key === 'c' || key === 'x') && wholeLayers) return (actions.copyLayers(key === 'x'), true);
-          if (key === 'c')
-            return (
-              editor.copy() &&
-                toast(t(editor.getState().selection ? 'toast.selectionCopied' : 'toast.layerCopied')),
-              true
-            );
-          if (key === 'x') return (editor.cut() && toast(t('toast.cut')), true);
+          if (key === 'c' || key === 'x') return (actions.copyPixels(key === 'x'), true);
           if (key === 'i' && e.shiftKey) return (editor.invertSelection(), true);
           if (key === 'a') return (editor.selectAll(), true);
           if (key === 'd') return (editor.deselect(), true);

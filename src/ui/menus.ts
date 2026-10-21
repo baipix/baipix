@@ -186,13 +186,12 @@ export const MENU_BAR: MenuBarMenu[] = [
         {
           label: t('menu.cut'),
           shortcut: 'Ctrl+X',
-          onSelect: () => (s.selection ? editor.cut() && toast(t('toast.cut')) : actions.copyLayers(true)),
+          onSelect: () => (s.selection ? actions.copyPixels(true) : actions.copyLayers(true)),
         },
         {
           label: t('menu.copy'),
           shortcut: 'Ctrl+C',
-          onSelect: () =>
-            s.selection ? editor.copy() && toast(t('toast.selectionCopied')) : actions.copyLayers(),
+          onSelect: () => (s.selection ? actions.copyPixels() : actions.copyLayers()),
         },
         { label: t('menu.paste'), shortcut: 'Ctrl+V', onSelect: () => void paste(editor, actions) },
         { label: t('menu.copyPng'), onSelect: () => void actions.copyPng() },
