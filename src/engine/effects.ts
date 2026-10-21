@@ -143,7 +143,7 @@ export function withEffects(pixels: Uint32Array, w: number, h: number, effects: 
     const steps = e.corners ? 'all' : 'sides';
     if (e.place === 'outside') {
       const d = distances(mask, w, h, size, steps);
-      for (let i = 0; i < d.length; i++) if (d[i] && d[i] <= size) out[i] = e.color;
+      for (let i = 0; i < d.length; i++) if (d[i] && d[i] <= size) out[i] = blendOver(e.color, out[i]);
     } else {
       // Inside: the drawn pixels within `size` steps of an empty one (or the canvas edge).
       const empty = new Uint8Array(mask.length);
@@ -154,7 +154,8 @@ export function withEffects(pixels: Uint32Array, w: number, h: number, effects: 
         const x = i % w;
         const y = (i / w) | 0;
         const edge = Math.min(x + 1, y + 1, w - x, h - y);
-        if (d[i] <= size || edge <= size) out[i] = e.color;
+        // Over the drawing: a see-through outline tints its edge instead of cutting into it.
+        if (d[i] <= size || edge <= size) out[i] = blendOver(e.color, out[i]);
       }
     }
   }

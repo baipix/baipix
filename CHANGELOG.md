@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- An effect's color can be any color, with its opacity: its swatch opens the colors' fields (the square, hue and opacity bars, hex and opacity) above the palette. A drop shadow in black at 30% darkens what's under it; a palette color picked keeps the opacity, and an effect that isn't opaque shows it beside its swatch. (#484)
+
 ### Changed
 
 - Faster with many layers: the Layers and Components thumbnails are only drawn again when the drawing changes, and only the ones whose pixels did. (#482)

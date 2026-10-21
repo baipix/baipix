@@ -18,6 +18,21 @@ const at = (p: Uint32Array, x: number, y: number) => p[y * W + x];
 const count = (p: Uint32Array, c: number) => p.filter((x) => x === c).length;
 
 describe('effects', () => {
+  it('draws a see-through effect blended: a 30% shadow darkens, a 30% inside outline tints', () => {
+    const SHADE = pack(0, 0, 0, 77);
+    const shadow = withEffects(dot(), W, W, [{ ...newEffect('shadow', SHADE) }]);
+    // Under nothing, the shadow is the 30% black itself; the drawing stays on top.
+    expect(at(shadow, 4, 4)).toBe(SHADE);
+    expect(at(shadow, 3, 3)).toBe(RED);
+    const inside = withEffects(dot(), W, W, [
+      { ...newEffect('outline', SHADE), place: 'inside' } as LayerEffect,
+    ]);
+    // The red pixel darkened by 30%, still opaque: not replaced by a hole of 30% black.
+    expect(inside[3 * W + 3] >>> 24).toBe(255);
+    expect(inside[3 * W + 3] & 0xff).toBeGreaterThan(150);
+    expect(inside[3 * W + 3] & 0xff).toBeLessThan(200);
+  });
+
   it('outlines around the drawing, with or without corners, thicker, or inside', () => {
     const outline = (patch: Partial<LayerEffect>) =>
       withEffects(dot(), W, W, [{ ...newEffect('outline', INK), ...patch } as LayerEffect]);
