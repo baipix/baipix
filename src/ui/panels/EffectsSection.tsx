@@ -95,7 +95,7 @@ export function EffectsSection() {
             <PaletteColorButton
               color={effect.color}
               label={t('effects.color')}
-              onChange={(color) => set(k, { color })}
+              onChange={(color, final) => set(k, { color }, final)}
             />
             <IconButton icon="minus" label={t('effects.remove')} onClick={() => editor.removeEffect(k)} />
           </div>
