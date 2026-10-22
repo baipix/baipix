@@ -328,6 +328,13 @@ const DEFAULT_LABELS: EditorLabels = {
   board: (n) => `Board ${n}`,
 };
 
+/** The palette a new file starts with, like its two colors: to pick from at once, changed anytime. */
+const DEFAULT_PALETTE = 'sweetie16';
+const withDefaultPalette = (doc: PixelDoc): PixelDoc => {
+  doc.palette = { key: DEFAULT_PALETTE, colors: presetColors(DEFAULT_PALETTE) };
+  return doc;
+};
+
 /** Freehand tools the stabilizer smooths (shapes, selections and fills don't need it). */
 const STABILIZED_TOOLS: ToolId[] = [
   'pencil',
@@ -588,10 +595,10 @@ export class Editor {
   private noticeListeners = new Set<(n: Notice) => void>();
 
   constructor(private labels: EditorLabels = DEFAULT_LABELS) {
-    const colors = presetColors('sweetie16');
+    const colors = presetColors(DEFAULT_PALETTE);
     this.primary = colors[0];
     this.secondary = colors[12];
-    this.addSession(createDocument(labels.untitled(1), 32, 32, labels.layer(1)));
+    this.addSession(withDefaultPalette(createDocument(labels.untitled(1), 32, 32, labels.layer(1))));
     this.refresh();
   }
 
@@ -908,7 +915,7 @@ export class Editor {
     this.cancelStroke();
     const w = clamp(Math.round(width), 1, MAX_SIZE);
     const h = clamp(Math.round(height), 1, MAX_SIZE);
-    this.addSession(createDocument(name, w, h, this.labels.layer(1)));
+    this.addSession(withDefaultPalette(createDocument(name, w, h, this.labels.layer(1))));
     this.dropFresh();
     this.markFresh();
     this.commit();

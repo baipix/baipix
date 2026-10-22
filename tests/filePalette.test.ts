@@ -15,8 +15,10 @@ const dot = (e: Editor, x: number, color: number) => {
 };
 
 describe('the palette belongs to the file', () => {
-  it('starts as the colors of the drawing, which follow what is drawn', () => {
+  it('starts on Sweetie 16, and the colors of the drawing follow what is drawn', () => {
     const e = new Editor();
+    expect(e.getState().palette).toMatchObject({ key: 'sweetie16', colors: presetColors('sweetie16') });
+    e.setPalettePreset('drawing');
     expect(e.getState().palette).toMatchObject({ key: 'drawing', colors: [] });
     dot(e, 0, RED);
     dot(e, 1, BLUE);
@@ -30,8 +32,9 @@ describe('the palette belongs to the file', () => {
     e.setPalettePreset('pico8');
     const first = e.getState().activeId;
     e.newFile(16, 16);
-    expect(e.getState().palette.key).toBe('drawing');
-    e.setPalettePreset('sweetie16');
+    // A new file starts on the default palette, whatever the others use.
+    expect(e.getState().palette.key).toBe('sweetie16');
+    e.setPalettePreset('drawing');
     e.switchFile(first);
     expect(e.getState().palette).toMatchObject({ key: 'pico8', colors: presetColors('pico8') });
   });
@@ -73,7 +76,7 @@ describe('the palette belongs to the file', () => {
     expect(e.getState().palette.key).toBe('custom');
     e.undo();
     e.undo(); // the choice of the preset
-    expect(e.getState().palette.key).toBe('drawing');
+    expect(e.getState().palette.key).toBe('sweetie16');
   });
 
   it('undoes an added or removed color', () => {
@@ -90,6 +93,7 @@ describe('the palette belongs to the file', () => {
 
   it('sorting the colors of the drawing does nothing: they are sorted already, and follow the drawing', () => {
     const e = new Editor();
+    e.setPalettePreset('drawing');
     dot(e, 0, RED);
     e.sortPalette();
     expect(e.getState().palette.key).toBe('drawing');
@@ -97,6 +101,7 @@ describe('the palette belongs to the file', () => {
 
   it('a color adjustment leaves the colors of the drawing in that mode', () => {
     const e = new Editor();
+    e.setPalettePreset('drawing');
     dot(e, 0, RED);
     e.beginAdjust(true);
     e.applyAdjust({ hue: 120, saturation: 100, brightness: 100 }, true);
