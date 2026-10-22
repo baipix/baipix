@@ -11,13 +11,22 @@ function paint(s: Stroke, p: Point, fill = s.options.lassoFill): void {
   if (s.options.pixelPerfect && s.options.size === 1 && !s.customBrush) {
     const n = s.trail.length;
     if (n && s.trail[n - 1].x === p.x && s.trail[n - 1].y === p.y) return;
+    // How many times the stroke went through each pixel: a corner it drew earlier too (a scribble
+    // crossing itself) stays, instead of leaving a hole in what it drew.
+    const passes = (s.scratch.passes ??= new Uint16Array(s.doc.width * s.doc.height)) as Uint16Array;
+    const at = (q: Point) =>
+      q.x >= 0 && q.y >= 0 && q.x < s.doc.width && q.y < s.doc.height ? q.y * s.doc.width + q.x : -1;
     if (n >= 2 && isDoubledCorner(s.trail[n - 2], s.trail[n - 1], p)) {
       const corner = s.trail.pop()!;
-      for (const m of mirrorsOf(s, corner.x, corner.y)) {
-        const i = pixelIndex(s, m.x, m.y);
-        if (i >= 0) s.layer.pixels[i] = s.base[i];
-      }
+      const k = at(corner);
+      if (k < 0 || --passes[k] === 0)
+        for (const m of mirrorsOf(s, corner.x, corner.y)) {
+          const i = pixelIndex(s, m.x, m.y);
+          if (i >= 0) s.layer.pixels[i] = s.base[i];
+        }
     }
+    const k = at(p);
+    if (k >= 0) passes[k]++;
     s.trail.push(p);
   }
   if (s.customBrush) stampBrush(s, p, c1, c2);
