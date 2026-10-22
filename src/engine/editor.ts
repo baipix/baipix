@@ -2411,7 +2411,11 @@ export class Editor {
       return;
     }
     this.edit((doc) => {
-      // The image as shown, groups included, in the bottom layer.
+      // The image as shown, groups included, in the bottom layer, which keeps nothing of what it
+      // was: an instance would be drawn again from its master over the image.
+      detachInstance(bottom);
+      delete bottom.component;
+      delete bottom.effects;
       bottom.pixels.set(flatten(doc, { includeBackground: false }));
       bottom.opacity = 1;
       delete bottom.blendMode;
@@ -3833,7 +3837,7 @@ export class Editor {
       if (!r.locked) this.updateReference({ x: r.x + dx, y: r.y + dy });
       return;
     }
-    if (this.stroke || this.groupMove) return;
+    if (this.stroke || this.groupMove || this.scaling) return;
     // Several layers selected (a group), no selection: they all move.
     if (!this.active.selection && this.state.selectedLayers.length > 1) {
       if (!this.beginGroupMove({ x: 0, y: 0 })) return;
@@ -3914,8 +3918,9 @@ export class Editor {
 
   cut(): boolean {
     if (this.activeLocked() || !this.copy()) return false;
-    if (!this.active.selection) this.selectAll();
-    this.clearSelection();
+    // The selection, or the whole layer, cleared; no selection left over.
+    const sel = this.active.selection ?? { x: 0, y: 0, w: this.doc.width, h: this.doc.height };
+    this.edit((doc) => fillSelection(activeLayer(doc).pixels, doc.width, doc.height, sel, 0));
     return true;
   }
 
@@ -4313,7 +4318,16 @@ export class Editor {
     tool.onUp?.(s);
     this.stroke = null;
     this.strokeTool = null;
-    if (tool.editsPixels && !changed(s.base, s.layer.pixels) && id !== 'move') {
+    // Nothing changed (a click without a drag, say): no step for it. A move also counts what's
+    // off the canvas and an instance's position, which change without the pixels.
+    const move = s.scratch.move as { instance?: { x: number; y: number } } | undefined;
+    const unmoved =
+      id !== 'move' ||
+      (s.layer.outside === s.baseOutside &&
+        (!s.layer.instance ||
+          !move?.instance ||
+          (move.instance.x === s.layer.instance.x && move.instance.y === s.layer.instance.y)));
+    if (tool.editsPixels && unmoved && !changed(s.base, s.layer.pixels)) {
       this.active.history.discardLast();
       this.commit(false);
       return;

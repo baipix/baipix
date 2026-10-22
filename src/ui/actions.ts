@@ -2,7 +2,7 @@ import { alpha, type Color } from '../engine/color';
 import { flatten } from '../engine/composite';
 import { createDocument, fileNameOf, hasBackground, MAX_SIZE, type PixelDoc } from '../engine/document';
 import type { Editor } from '../engine/editor';
-import type { PixelBlock } from '../engine/region';
+import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
@@ -154,7 +154,10 @@ export function createActions(editor: Editor) {
         let data: Uint8Array;
         if (format === 'aseprite')
           data = await toAseprite(d, {
-            palette: d.palette?.colors ?? [],
+            // The file's palette, or the drawing's colors when that's its palette (stored empty).
+            palette: d.palette?.colors.length
+              ? d.palette.colors
+              : uniqueColors(flatten(d, { includeBackground: false })),
             background: withBackground(d) ? d.background : undefined,
           });
         else if (format === 'svg') data = new TextEncoder().encode(toLayeredSvg(d, geometry, background));

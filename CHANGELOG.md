@@ -18,6 +18,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Eight small fixes: Flatten image keeps every layer when the bottom one is a component instance; a click with the Move tool, or on a field's label, without a drag no longer records an empty undo step; typing 0 in a shadow's X or Y gives 0; exporting every board as Aseprite keeps the drawing's colors as the palette; the arrow keys and Delete wait while a scale handle is held; merging a hidden layer down keeps what it holds; cutting a whole layer leaves no selection behind. (#496)
 - Drawing fast with the pencil no longer leaves transparent holes: Pixel perfect only takes away a corner the stroke drew once, not one it had already drawn earlier (a scribble crossing itself). (#492)
 - Copying a selection (magic wand, rectangle, lasso) puts it on the system clipboard too, so pasting brings it back instead of what the clipboard held before (a screenshot, layers copied earlier), and other apps get its picture. (#488)
 - Five fixes: a one-board file opened twice no longer merges with its copy; a cancelled move (a second finger, a pointer cancel) puts instances and component frames back; undoing a stroke that grew a component's frame puts its instances on other boards back too; a frame past the canvas edge keeps its place when saved and opened; Fit or a board switch right after a wheel notch is no longer overridden by the zoom's glide. (#480)

@@ -35,7 +35,8 @@ export function NumberField({
   }, [value]);
 
   const commit = (raw: string) => {
-    const n = clamp(Math.round(Number(raw)) || min, min, max);
+    const typed = Math.round(Number(raw));
+    const n = clamp(Number.isFinite(typed) ? typed : min, min, max);
     setDraft(String(n));
     onChange(n, true);
   };
@@ -62,7 +63,8 @@ export function NumberField({
       window.removeEventListener('pointercancel', up);
       window.removeEventListener('blur', up);
       document.body.classList.remove('is-scrubbing');
-      onChange(last, true);
+      // A click without a drag changes nothing: no step for it.
+      if (last !== v0) onChange(last, true);
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
