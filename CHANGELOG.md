@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-10-23
+
+Effects with an opacity, an eyedropper for the background, a Help button with the version, and a round of fixes from testers and a code review: the pencil's holes, copied selections that paste back, and faster selecting on big files.
+
 ### Added
 
 - The background color's picker has an eyedropper too: click the canvas (or drag, shown live) to take the background's color from the drawing, in one undo step, then the tool used before comes back. Esc cancels. (#490)
@@ -412,7 +416,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.3...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.4...main
+[0.7.4]: https://github.com/baipix/baipix/releases/tag/v0.7.4
 [0.7.3]: https://github.com/baipix/baipix/releases/tag/v0.7.3
 [0.7.2]: https://github.com/baipix/baipix/releases/tag/v0.7.2
 [0.7.1]: https://github.com/baipix/baipix/releases/tag/v0.7.1
