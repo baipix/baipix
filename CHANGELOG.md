@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The background color's picker has an eyedropper too: click the canvas (or drag, shown live) to take the background's color from the drawing, in one undo step, then the tool used before comes back. Esc cancels. (#490)
 - An effect's color can be any color, with its opacity: its swatch opens the colors' fields (the square, hue and opacity bars, hex and opacity) above the palette. A drop shadow in black at 30% darkens what's under it; a palette color picked keeps the opacity, and an effect that isn't opaque shows it beside its swatch. (#484)
 
 ### Changed

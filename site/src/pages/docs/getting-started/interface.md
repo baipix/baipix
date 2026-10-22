@@ -64,7 +64,7 @@ Undo and redo are at the right end of the toolbar.
 
 What's selected, in four sections:
 
-- **Board**: the width and height, the gap between pixels, the isometric grid, and the background color.
+- **Board**: the width and height, the gap between pixels, the isometric grid, and the background color. Its picker has an eyedropper: click the canvas to take the background's color from the drawing.
 - **Colors**: the two colors you draw with, as overlapping chips, and the file's palette. Click the front chip to change it, the one behind to bring it to the front, or press <kbd>X</kbd> to swap them.
 - **Layer**: the active layer's name, visibility, blend mode and opacity.
 - **Effects**: an outline, a shadow or a glow on the layer.
