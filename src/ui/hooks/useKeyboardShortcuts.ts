@@ -164,6 +164,8 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         if (e.key === 'ArrowDown' && doc.activeLayer > 0) editor.moveLayer(-1);
         return;
       }
+      // A handle held (a scale or a rotation under way): the keys that edit wait for its end.
+      if (editor.isScaling) return;
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         if (editor.getState().referenceSelected) return actions.removeReference();

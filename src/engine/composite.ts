@@ -167,7 +167,7 @@ function composeNodes(
  */
 export function mergeLayerInto(top: Layer, bottom: Layer, width: number, height: number): void {
   bakeEffects(bottom, width, height);
-  if (!top.visible) return;
+  // A hidden layer merges too: what it holds isn't lost, it's shown (like merging in Aseprite).
   const mode = top.blendMode ?? 'normal';
   const pixels = withEffects(top.pixels, width, height, top.effects);
   for (let i = 0; i < pixels.length; i++) {
