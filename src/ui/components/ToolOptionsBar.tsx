@@ -325,6 +325,19 @@ export function ToolOptionsBar() {
     );
   }
 
+  const deselect = (
+    <button
+      type="button"
+      className="btn"
+      disabled={!hasSelection}
+      data-tip={t('menu.deselect')}
+      data-kbd="Ctrl+D"
+      onClick={() => editor.deselect()}
+    >
+      {t('menu.deselect')}
+    </button>
+  );
+
   let body: ReactNode;
   switch (tool) {
     case 'pencil':
@@ -901,12 +914,16 @@ export function ToolOptionsBar() {
             />
           )}
           <div className="button-row">
-            <button type="button" className="btn" onClick={() => editor.selectAll()}>
+            <button
+              type="button"
+              className="btn"
+              data-tip={t('menu.selectAll')}
+              data-kbd="Ctrl+A"
+              onClick={() => editor.selectAll()}
+            >
               {t('menu.selectAll')}
             </button>
-            <button type="button" className="btn" disabled={!hasSelection} onClick={() => editor.deselect()}>
-              {t('menu.deselect')}
-            </button>
+            {deselect}
           </div>
           {flips}
           <div className="toolbar-divider" />
@@ -918,6 +935,13 @@ export function ToolOptionsBar() {
       info = hasSelection ? t('hint.moveSelection') : t('hint.moveLayer');
       body = (
         <>
+          {/* Moving a selection: letting go of it is at hand too. */}
+          {hasSelection && (
+            <>
+              {deselect}
+              <div className="toolbar-divider" />
+            </>
+          )}
           {flips}
           <div className="toolbar-divider" />
           {aligns}
