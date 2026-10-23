@@ -164,7 +164,8 @@ export function HomeScreen() {
         if (file) void importFile(file);
       }}
     >
-      <HomeGlow />
+      {/* The ambient grid is the welcome's; the drawings screen stays plain, like a files app. */}
+      {shown.length === 0 && <HomeGlow />}
       <header className="home-top">
         <Icon name="logo" size={16} />
         <span className="home-brand">Baipix</span>
