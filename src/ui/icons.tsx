@@ -11,6 +11,7 @@ import {
   AlignStartVertical,
   ArrowDownToLine,
   ArrowLeft,
+  ArrowUpDown,
   ArrowLeftRight,
   Blend,
   Box,
@@ -36,6 +37,8 @@ import {
   Frame,
   Grid3x3,
   Grid2x2,
+  LayoutGrid,
+  LayoutList,
   Hand,
   Heart,
   Image,
@@ -166,6 +169,10 @@ export const ICONS = {
   more: Ellipsis,
   swap: ArrowLeftRight,
   back: ArrowLeft,
+  grid: Grid3x3,
+  sort: ArrowUpDown,
+  gridView: LayoutGrid,
+  list: LayoutList,
   menu: Menu,
   layers: Layers,
   panel: SlidersHorizontal,
@@ -194,7 +201,6 @@ export const ICONS = {
   crop: Crop,
   download: Download,
   code: CodeXml,
-  grid: Grid3x3,
 } satisfies Record<string, Glyph>;
 
 export type IconName = keyof typeof ICONS | 'logo';

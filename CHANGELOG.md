@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Recently deleted: a deleted file waits 30 days behind the last card of the files screen, a folder that opens the deleted ones, each with a Restore button that brings it back as it was. (#504)
 
+### Changed
+
+- The files screen is a plain list once there are files: the title at the left, and at the right a sort menu (alphabetical or last modified, oldest or newest first), grid and list views, and the Import and New buttons. The welcome with the templates stays for the first time only. (#506)
+
 ### Fixed
 
 - A drawing made in one tab is no longer lost when another tab of Baipix saves: each board is saved as its own record, a tab only writes what it changed and only removes what it removed, and a drawing made in another tab shows up when you come back. (#502)

@@ -14,7 +14,7 @@ import { fileMenu, newIssueUrl } from '../menus';
 import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
 import { DOCS_URL } from '../links';
-import { openDialog, toast } from '../uiStore';
+import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 import { TRASH_DAYS } from '../../storage/indexedDb';
 
@@ -82,10 +82,42 @@ export function HomeScreen() {
   };
   const [dropping, setDropping] = useState(false);
   const docs = editor.getDocuments();
+  const sort = uiStore.use((s) => s.homeSort);
+  const order = uiStore.use((s) => s.homeOrder);
+  const view = uiStore.use((s) => s.homeView);
   // Neither the blank starter nor a new file left untouched: they'd be empty cards.
   const shown = files
     .filter((f) => !isUntouchedStarter(f) && !editor.isFresh(f.id))
-    .sort((a, b) => b.updatedAt - a.updatedAt);
+    .sort((a, b) => {
+      const by = sort === 'name' ? a.name.localeCompare(b.name) : a.updatedAt - b.updatedAt;
+      return order === 'asc' ? by : -by;
+    });
+  const sortMenu = (anchor: HTMLElement) =>
+    openMenu(anchor, [
+      { label: t('home.sort'), disabled: true, onSelect: () => {} },
+      {
+        label: t('home.sortName'),
+        checked: sort === 'name',
+        onSelect: () => uiStore.set({ homeSort: 'name' }),
+      },
+      {
+        label: t('home.sortModified'),
+        checked: sort === 'modified',
+        onSelect: () => uiStore.set({ homeSort: 'modified' }),
+      },
+      '-',
+      { label: t('home.order'), disabled: true, onSelect: () => {} },
+      {
+        label: t('home.oldestFirst'),
+        checked: order === 'asc',
+        onSelect: () => uiStore.set({ homeOrder: 'asc' }),
+      },
+      {
+        label: t('home.newestFirst'),
+        checked: order === 'desc',
+        onSelect: () => uiStore.set({ homeOrder: 'desc' }),
+      },
+    ]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -126,48 +158,92 @@ export function HomeScreen() {
         <span className="home-brand">Baipix</span>
       </header>
       <div className="home-inner">
-        <section className="home-hero">
-          {/* The logo, its pixel hopping like a loader: waiting for you to start a file. */}
-          <span className="home-mark">
-            <Icon name="logo" size={72} />
-          </span>
-          <h1>{t('home.title')}</h1>
-          <p className="home-tagline">{shown.length ? t('home.taglineBack') : t('home.tagline')}</p>
-          <div className="home-actions">
-            <button
-              type="button"
-              className="action-btn is-primary"
-              onClick={() => openDialog({ type: 'newFile' })}
-            >
-              <Icon name="plus" size={12} />
-              {t('common.create')}
-            </button>
-            <button type="button" className="action-btn" onClick={() => void importFile()}>
-              {t('home.import')}
-            </button>
-          </div>
-          <p className="home-formats muted">{t('home.formats')}</p>
-          {/* First launch: a click on a template and the canvas is ready, palette and all. */}
-          {shown.length === 0 && (
-            <div className="home-templates">
-              <p className="muted">{t('template.start')}</p>
-              <SizeList
-                onPick={(choice) => {
-                  if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
-                  leaveHome(editor);
-                }}
-                onCreate={(choice) => {
-                  if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
-                  leaveHome(editor);
-                }}
-              />
+        {shown.length > 0 && !showDeleted && (
+          /* Files already: no welcome, a toolbar like a files app's, the files under it. */
+          <div className="home-toolbar">
+            <h2 className="home-toolbar-title">{t('file.recent')}</h2>
+            <div className="home-toolbar-tools">
+              <button
+                type="button"
+                className="btn home-sort"
+                aria-haspopup="menu"
+                onClick={(e) => sortMenu(e.currentTarget)}
+              >
+                {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                <Icon name="caret" size={12} />
+              </button>
+              <div className="home-view" role="group">
+                <IconButton
+                  icon="gridView"
+                  label={t('home.viewGrid')}
+                  pressed={view === 'grid'}
+                  onClick={() => uiStore.set({ homeView: 'grid' })}
+                />
+                <IconButton
+                  icon="list"
+                  label={t('home.viewList')}
+                  pressed={view === 'list'}
+                  onClick={() => uiStore.set({ homeView: 'list' })}
+                />
+              </div>
+              <button type="button" className="action-btn" onClick={() => void importFile()}>
+                {t('home.import')}
+              </button>
+              <button
+                type="button"
+                className="action-btn is-primary"
+                onClick={() => openDialog({ type: 'newFile' })}
+              >
+                <Icon name="plus" size={12} />
+                {t('home.new')}
+              </button>
             </div>
-          )}
-        </section>
+          </div>
+        )}
+        {shown.length === 0 && (
+          <section className="home-hero">
+            {/* The logo, its pixel hopping like a loader: waiting for you to start a file. */}
+            <span className="home-mark">
+              <Icon name="logo" size={72} />
+            </span>
+            <h1>{t('home.title')}</h1>
+            <p className="home-tagline">{t('home.tagline')}</p>
+            <div className="home-actions">
+              <button
+                type="button"
+                className="action-btn is-primary"
+                onClick={() => openDialog({ type: 'newFile' })}
+              >
+                <Icon name="plus" size={12} />
+                {t('common.create')}
+              </button>
+              <button type="button" className="action-btn" onClick={() => void importFile()}>
+                {t('home.import')}
+              </button>
+            </div>
+            <p className="home-formats muted">{t('home.formats')}</p>
+            {/* First launch: a click on a template and the canvas is ready, palette and all. */}
+            {
+              <div className="home-templates">
+                <p className="muted">{t('template.start')}</p>
+                <SizeList
+                  onPick={(choice) => {
+                    if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
+                    leaveHome(editor);
+                  }}
+                  onCreate={(choice) => {
+                    if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
+                    leaveHome(editor);
+                  }}
+                />
+              </div>
+            }
+          </section>
+        )}
 
         {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
         {showDeleted && (
-          <section className="home-files">
+          <section className={`home-files${view === 'list' ? ' is-list' : ''}`}>
             <h2>
               <button type="button" className="home-back" onClick={() => setShowDeleted(false)}>
                 <Icon name="back" size={14} />
@@ -201,8 +277,7 @@ export function HomeScreen() {
           </section>
         )}
         {shown.length > 0 && !showDeleted && (
-          <section className="home-files">
-            <h2>{t('home.recent')}</h2>
+          <section className={`home-files${view === 'list' ? ' is-list' : ''}`}>
             <div className="home-grid">
               {shown.map((f) => {
                 // The file's first board as its thumbnail.

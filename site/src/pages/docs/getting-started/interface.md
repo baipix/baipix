@@ -88,8 +88,8 @@ A small floating window with the whole drawing at a fixed size, so you see it as
 ## The files screen
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/files-light.webp" width="1440" height="900" alt="The files screen: the logo, Create and Import, and recent drawings as cards." loading="lazy" />
-  <img class="for-dark" src="../../shots/files-dark.webp" width="1440" height="900" alt="The files screen: the logo, Create and Import, and recent drawings as cards." loading="lazy" />
+  <img class="for-light" src="../../shots/files-light.webp" width="1440" height="900" alt="The files screen: the drawings as cards, with a sort menu, grid and list views, and Import and New buttons at the top right." loading="lazy" />
+  <img class="for-dark" src="../../shots/files-dark.webp" width="1440" height="900" alt="The files screen: the drawings as cards, with a sort menu, grid and list views, and Import and New buttons at the top right." loading="lazy" />
 </figure>
 
-Baipix opens on your files, newest first, with Create and Import buttons. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).
+Baipix opens on your files, with New and Import at the top right, a menu to sort them (alphabetically or by last change, oldest or newest first) and a grid or a list view. The first time, before any file, it welcomes you with Create, Import and the templates instead. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).

@@ -2573,6 +2573,74 @@ body.is-dragging-swatch * {
   font-size: 12px;
   font-weight: 600;
 }
+/* Files already: a toolbar like a files app's, the title at the left, the tools at the right. */
+.home-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0 20px;
+}
+.home-toolbar-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.home-toolbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-toolbar .action-btn {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+.home-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px 0 12px;
+}
+/* The two views, a segmented control. */
+.home-view {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+/* The list: one row per file, the picture small at its left. */
+.home-files.is-list .home-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.home-files.is-list .home-card {
+  grid-template-columns: 80px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  padding: 6px 8px 6px 6px;
+}
+.home-files.is-list .home-thumb,
+.home-files.is-list .home-folder {
+  grid-column: 1;
+  width: 80px;
+  margin: 0;
+}
+.home-files.is-list .home-card-info {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 12px;
+  padding: 0;
+}
+.home-files.is-list .home-card-action,
+.home-files.is-list .home-card-restore {
+  margin-right: 0;
+}
+
 /* The deleted files: a folder card at the end of the files, and their own list behind it. */
 .home-folder {
   grid-column: 1 / -1;
