@@ -27,6 +27,7 @@ import { Toolbar } from './components/Toolbar';
 import { Tooltips } from './components/Tooltips';
 import { Dialogs } from './dialogs/Dialogs';
 import { EditorContext } from './EditorContext';
+import { refreshTrash, StorageContext } from './StorageContext';
 import { CHANGELOG_URL } from './links';
 import { helpMenu } from './menus';
 import { useAutosave } from './hooks/useAutosave';
@@ -138,6 +139,7 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
       }
       if (cancelled) return;
       if (firstRun) showEmptyHome(editor);
+      refreshTrash(storage);
       setReady(true);
       // A link from the site with a drawing to open (?open=…): straight into the editor with it. After
       // ready, so that autosave keeps it; on a first run, the blank starter file makes way for it, as for
@@ -178,51 +180,53 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
 
   return (
     <EditorContext.Provider value={editor}>
-      <ActionsContext.Provider value={actions}>
-        <div className={classes} style={style}>
-          <MenuBar />
-          <LeftPanel />
-          <main className="workspace">
-            <CanvasView />
-            <PanelResizer side="left" />
-            <PanelResizer side="right" />
-            <MobileBar />
-            <MobileColors />
-            {!noBoard && <Coordinates />}
-            {/* The window's bottom right corner: the version, which opens what's new, and the Help menu. */}
-            <div className="help-corner">
-              <button
-                type="button"
-                className="app-version"
-                data-tip={t('menu.version', { version: __APP_VERSION__ })}
-                onClick={() => window.open(CHANGELOG_URL, '_blank', 'noopener')}
-              >
-                v{__APP_VERSION__}
-              </button>
-              <IconButton
-                className="icon-btn large help-button"
-                icon="help"
-                iconSize={18}
-                label={t('menu.help')}
-                onClick={(e) => openMenu(e.currentTarget, helpMenu(editor, actions))}
-              />
-            </div>
-            {!noBoard && <FloatingPreview />}
-            <ToolOptionsBar />
-            <Toolbar />
-          </main>
-          <RightPanel />
-        </div>
-        {home && <HomeScreen />}
-        <ColorPicker />
-        <ColorAdjustPanel />
-        <MenuHost />
-        <CommandPalette />
-        <Tour />
-        <Dialogs />
-        <Tooltips />
-        <Toasts />
-      </ActionsContext.Provider>
+      <StorageContext.Provider value={storage}>
+        <ActionsContext.Provider value={actions}>
+          <div className={classes} style={style}>
+            <MenuBar />
+            <LeftPanel />
+            <main className="workspace">
+              <CanvasView />
+              <PanelResizer side="left" />
+              <PanelResizer side="right" />
+              <MobileBar />
+              <MobileColors />
+              {!noBoard && <Coordinates />}
+              {/* The window's bottom right corner: the version, which opens what's new, and the Help menu. */}
+              <div className="help-corner">
+                <button
+                  type="button"
+                  className="app-version"
+                  data-tip={t('menu.version', { version: __APP_VERSION__ })}
+                  onClick={() => window.open(CHANGELOG_URL, '_blank', 'noopener')}
+                >
+                  v{__APP_VERSION__}
+                </button>
+                <IconButton
+                  className="icon-btn large help-button"
+                  icon="help"
+                  iconSize={18}
+                  label={t('menu.help')}
+                  onClick={(e) => openMenu(e.currentTarget, helpMenu(editor, actions))}
+                />
+              </div>
+              {!noBoard && <FloatingPreview />}
+              <ToolOptionsBar />
+              <Toolbar />
+            </main>
+            <RightPanel />
+          </div>
+          {home && <HomeScreen />}
+          <ColorPicker />
+          <ColorAdjustPanel />
+          <MenuHost />
+          <CommandPalette />
+          <Tour />
+          <Dialogs />
+          <Tooltips />
+          <Toasts />
+        </ActionsContext.Provider>
+      </StorageContext.Provider>
     </EditorContext.Provider>
   );
 }

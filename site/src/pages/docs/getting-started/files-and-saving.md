@@ -16,6 +16,8 @@ Each board keeps its last 50 steps of undo and redo along with the drawing. Relo
 
 ## Keep a copy
 
+Deleted a file by mistake? It waits in **Recently deleted**, the last card of the files screen, for as long as you like: **Restore** brings it back as it was, and its … menu deletes it for good.
+
 Your browser's storage is safe from one day to the next, but it isn't a backup: it goes away if you clear the site's data, and a private window forgets everything once it's closed. To keep a drawing for good, or to move it to another computer:
 
 - **File › Download as .baipix** saves the whole file: its boards, layers, groups, components and palette.

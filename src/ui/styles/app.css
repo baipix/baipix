@@ -2474,7 +2474,7 @@ body.is-dragging-swatch * {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 4px;
-  padding: 6px 6px 8px;
+  padding: 6px 6px 10px;
   border: 0;
   border-radius: var(--radius-lg);
   background: var(--panel);
@@ -2557,15 +2557,71 @@ body.is-dragging-swatch * {
 .home-card .home-thumb {
   grid-column: 1 / -1;
 }
+/* The name and the actions sit in from the card's edge, farther than the picture. */
 .home-card-info {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 2px 0 0 8px;
+}
+.home-card-action,
+.home-card-restore {
+  margin-right: 6px;
 }
 .home-card-name {
   font-size: 12px;
   font-weight: 600;
+}
+/* The deleted files: a folder card at the end of the files, and their own list behind it. */
+.home-folder {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 6px;
+  border-radius: var(--radius);
+  background: var(--canvas);
+  color: var(--muted);
+}
+.home-card-folder:hover .home-folder {
+  color: var(--text);
+}
+.home-card.is-deleted {
+  cursor: default;
+}
+.home-card.is-deleted .home-thumb {
+  opacity: 0.5;
+}
+.home-card-restore {
+  flex: none;
+}
+.home-files h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.home-back:hover {
+  color: var(--text);
+}
+.home-h2-sep {
+  font-weight: 400;
+}
+.home-h2-hint {
+  font-weight: 400;
 }
 .home-card-meta {
   font-size: 11px;

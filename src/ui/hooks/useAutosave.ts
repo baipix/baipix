@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { Editor } from '../../engine/editor';
 import { getLocale, t } from '../../i18n';
 import type { StorageAdapter } from '../../storage/workspace';
+import { refreshTrash } from '../StorageContext';
 import { toast, uiStore } from '../uiStore';
 
 /** Saves the workspace (debounced) whenever the document, preferences or UI settings change. */
@@ -39,6 +40,7 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
             locale: getLocale(),
           },
         })
+        .then(() => refreshTrash(storage))
         .catch(() => {
           if (!warned) toast(t('toast.saveFailed'));
           warned = true;

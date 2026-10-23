@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Recently deleted: a deleted file waits behind the last card of the files screen, a folder that opens the deleted ones, each with a Restore button that brings it back as it was, and a menu to delete it for good. (#504)
+
 ### Fixed
 
 - A drawing made in one tab is no longer lost when another tab of Baipix saves: each board is saved as its own record, a tab only writes what it changed and only removes what it removed, and a drawing made in another tab shows up when you come back. (#502)

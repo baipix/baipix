@@ -178,4 +178,26 @@ describe('IndexedDbStorage', () => {
     await storage.save(workspace([doc, fresh]));
     expect(await names(new IndexedDbStorage(chrome))).toEqual(['New', 'Old']);
   });
+
+  it('keeps a deleted file for a while, to restore or to delete for good', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    await tab.save(workspace([a, b]));
+    await tab.save(workspace([a]));
+    const trash = await tab.listTrash();
+    expect(trash.map((f) => f.name)).toEqual(['B']);
+    expect(trash[0].boards[0].id).toBe(b.id);
+    // Restored: back among the files, gone from the trash, and known to this tab (a save leaves it).
+    expect((await tab.restoreTrashed(b.id)).map((d) => d.name)).toEqual(['B']);
+    expect(await tab.listTrash()).toEqual([]);
+    await tab.save(workspace([a, b]));
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['A', 'B']);
+    // Deleted for good: nowhere.
+    await tab.save(workspace([a]));
+    await tab.discardTrashed(b.id);
+    expect(await tab.listTrash()).toEqual([]);
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
+  });
 });
