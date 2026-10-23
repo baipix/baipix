@@ -2373,6 +2373,11 @@ body.is-dragging-swatch * {
   /* The menu bar's border, unseen, so the logo lines up to the pixel. */
   border-bottom: 1px solid transparent;
 }
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .home-brand {
   font-size: 14px;
   font-weight: 700;
@@ -3389,12 +3394,12 @@ button.home-help-card {
   transform-origin: 50% 100%;
 }
 .menubar-logo:hover .logo-pixel,
-.home-top:hover .logo-pixel {
+.home-logo:hover .logo-pixel {
   animation: logo-hop 0.6s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .menubar-logo:hover .logo-pixel,
-  .home-top:hover .logo-pixel {
+  .home-logo:hover .logo-pixel {
     animation: none;
   }
 }

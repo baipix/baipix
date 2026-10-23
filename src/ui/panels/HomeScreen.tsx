@@ -167,8 +167,11 @@ export function HomeScreen() {
       {/* The ambient grid is the welcome's; the drawings screen stays plain, like a files app. */}
       {shown.length === 0 && <HomeGlow />}
       <header className="home-top">
-        <Icon name="logo" size={16} />
-        <span className="home-brand">Baipix</span>
+        {/* The logo and the name: the pixel hops when they're hovered, not the whole bar. */}
+        <span className="home-logo">
+          <Icon name="logo" size={16} />
+          <span className="home-brand">Baipix</span>
+        </span>
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
         {shown.length > 0 && (
           <div className="home-top-actions">
