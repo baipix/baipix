@@ -155,6 +155,22 @@ export function HomeScreen() {
       <header className="home-top">
         <Icon name="logo" size={16} />
         <span className="home-brand">Baipix</span>
+        {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
+        {shown.length > 0 && (
+          <div className="home-top-actions">
+            <button type="button" className="action-btn" onClick={() => void importFile()}>
+              {t('home.import')}
+            </button>
+            <button
+              type="button"
+              className="action-btn is-primary"
+              onClick={() => openDialog({ type: 'newFile' })}
+            >
+              <Icon name="plus" size={12} />
+              {t('common.create')}
+            </button>
+          </div>
+        )}
       </header>
       <div className="home-inner">
         {shown.length > 0 && !showDeleted && (
@@ -185,17 +201,6 @@ export function HomeScreen() {
                   onClick={() => uiStore.set({ homeView: 'list' })}
                 />
               </div>
-              <button type="button" className="action-btn" onClick={() => void importFile()}>
-                {t('home.import')}
-              </button>
-              <button
-                type="button"
-                className="action-btn is-primary"
-                onClick={() => openDialog({ type: 'newFile' })}
-              >
-                <Icon name="plus" size={12} />
-                {t('common.create')}
-              </button>
             </div>
           </div>
         )}
