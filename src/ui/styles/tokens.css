@@ -30,6 +30,8 @@
   --axis: #ff4d8d;
   /* Guides dragged out of the rulers: red-orange, apart from the pink symmetry axes. */
   --guide: light-dark(#e5402a, #ff6a4d);
+  /* What takes something away (Delete): a red that reads on both themes. */
+  --danger: light-dark(#d93025, #ff6b6b);
   /* The isometric grid: a soft blue, apart from the pixel grid and the guides. */
   --iso-grid: light-dark(rgba(20, 110, 220, 0.7), rgba(110, 180, 255, 0.7));
   --check-a: light-dark(#ffffff, #3a3a3a);

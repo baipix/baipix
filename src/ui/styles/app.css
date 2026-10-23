@@ -2623,32 +2623,75 @@ body.is-dragging-swatch * {
   background: var(--panel);
   box-shadow: var(--shadow);
 }
-/* The list: one row per file, the picture small at its left. */
-.home-files.is-list .home-grid {
+/* The list: a table, one row per file, each row a card of its own. */
+.home-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  margin-top: -6px;
+  font-size: 12px;
+}
+.home-table th {
+  padding: 0 24px 2px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: left;
+}
+.home-table td {
+  padding: 6px 24px;
+  background: var(--panel);
+  white-space: nowrap;
+}
+.home-table td:first-child {
+  padding-left: 6px;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+.home-table td:last-child {
+  padding-right: 8px;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.home-table tbody tr {
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.12s ease;
+}
+.home-table tbody tr:hover {
+  box-shadow: var(--shadow-pop);
+}
+.home-table tbody tr:focus-visible {
+  outline: 2px solid var(--glow-line);
+  outline-offset: 2px;
+}
+.home-td-name {
+  width: 100%;
+  font-weight: 600;
+}
+.home-td-name > span {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
-.home-files.is-list .home-card {
-  grid-template-columns: 80px minmax(0, 1fr) auto;
-  column-gap: 12px;
-  padding: 6px 8px 6px 6px;
-}
-.home-files.is-list .home-thumb,
-.home-files.is-list .home-folder {
-  grid-column: 1;
-  width: 80px;
+.home-table .home-thumb,
+.home-table .home-folder {
+  flex: none;
+  width: 64px;
   margin: 0;
 }
-.home-files.is-list .home-card-info {
-  flex-direction: row;
-  align-items: baseline;
-  gap: 12px;
-  padding: 0;
+.home-table .muted {
+  font-weight: 400;
 }
-.home-files.is-list .home-card-action,
-.home-files.is-list .home-card-restore {
-  margin-right: 0;
+.home-td-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+/* Delete: like the others until the pointer is on it, then red, the one action that takes something away. */
+.icon-btn.is-danger:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
 }
 
 /* The deleted files: a folder card at the end of the files, and their own list behind it. */

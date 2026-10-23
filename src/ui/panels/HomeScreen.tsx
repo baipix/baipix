@@ -14,6 +14,7 @@ import { fileMenu, newIssueUrl } from '../menus';
 import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
+import { PALETTE_PRESETS } from '../../engine/palette';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 
@@ -91,6 +92,14 @@ export function HomeScreen() {
       const by = sort === 'name' ? a.name.localeCompare(b.name) : a.updatedAt - b.updatedAt;
       return order === 'asc' ? by : -by;
     });
+  /** The name of a file's palette: a preset's, Custom, or the drawing's colors. */
+  const paletteName = (doc: PixelDoc | undefined) => {
+    const key = doc?.palette?.key;
+    if (!key || key === 'drawing') return t('palette.drawing');
+    return PALETTE_PRESETS[key]?.name ?? t('palette.custom');
+  };
+  const format = (f: { width: number; height: number; boards: number }) =>
+    `${f.width} × ${f.height}${f.boards > 1 ? ` · ${t('home.boards', { count: f.boards })}` : ''}`;
   const sortMenu = (anchor: HTMLElement) =>
     openMenu(anchor, [
       { label: t('home.sort'), disabled: true, onSelect: () => {} },
@@ -247,55 +256,180 @@ export function HomeScreen() {
 
         {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
         {showDeleted && (
-          <section className={`home-files${view === 'list' ? ' is-list' : ''}`}>
+          <section className="home-files">
             <h2>
               <button type="button" className="home-back" onClick={() => setShowDeleted(false)}>
                 <Icon name="back" size={14} />
-                {t('home.recent')}
+                {t('home.drawings')}
               </button>
               <span className="home-h2-sep">/</span>
-              {t('home.deleted')}{' '}
+              {t('home.deleted')}
             </h2>
-            <div className="home-grid">
-              {deleted.map((f) => (
-                <div key={f.id} className="home-card is-deleted">
-                  <HomeThumb doc={f.boards[0]} />
-                  <span className="home-card-info">
-                    <span className="home-card-name truncate">{f.name}</span>
-                    <span className="home-card-meta muted truncate">
-                      {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
-                      {f.boards[0].height}
+            {view === 'list' ? (
+              <table className="home-table">
+                <thead>
+                  <tr>
+                    <th>{t('home.colName')}</th>
+                    <th>{t('home.colFormat')}</th>
+                    <th>{t('home.colPalette')}</th>
+                    <th>{t('home.colDeleted')}</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {deleted.map((f) => (
+                    <tr key={f.id}>
+                      <td className="home-td-name">
+                        <span>
+                          <HomeThumb doc={f.boards[0]} />
+                          <span className="truncate">{f.name}</span>
+                        </span>
+                      </td>
+                      <td className="muted">{format({ ...f.boards[0], boards: f.boards.length })}</td>
+                      <td className="muted">{paletteName(f.boards[0])}</td>
+                      <td className="muted">{formatUpdated(f.deletedAt, t('home.justNow'))}</td>
+                      <td>
+                        <span className="home-td-actions">
+                          <button type="button" className="btn" onClick={() => void restore(f.id, f.name)}>
+                            {t('file.restore')}
+                          </button>
+                          <IconButton
+                            icon="trash"
+                            className="icon-btn is-danger"
+                            label={t('file.deleteForGood')}
+                            onClick={() =>
+                              void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage))
+                            }
+                          />
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="home-grid">
+                {deleted.map((f) => (
+                  <div key={f.id} className="home-card is-deleted">
+                    <HomeThumb doc={f.boards[0]} />
+                    <span className="home-card-info">
+                      <span className="home-card-name truncate">{f.name}</span>
+                      <span className="home-card-meta muted truncate">
+                        {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
+                        {f.boards[0].height}
+                      </span>
                     </span>
-                  </span>
-                  <button
-                    type="button"
-                    className="btn home-card-restore"
-                    onClick={() => void restore(f.id, f.name)}
-                  >
-                    {t('file.restore')}
-                  </button>
-                  <IconButton
-                    icon="more"
-                    className="icon-btn home-card-action"
-                    label={t('file.actions')}
-                    aria-haspopup="menu"
-                    onClick={(e) =>
-                      openMenu(e.currentTarget, [
-                        {
-                          label: t('file.deleteForGood'),
-                          onSelect: () =>
-                            void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
-                        },
-                      ])
-                    }
-                  />
-                </div>
-              ))}
-            </div>
+                    <button
+                      type="button"
+                      className="btn home-card-restore"
+                      onClick={() => void restore(f.id, f.name)}
+                    >
+                      {t('file.restore')}
+                    </button>
+                    <IconButton
+                      icon="more"
+                      className="icon-btn home-card-action"
+                      label={t('file.actions')}
+                      aria-haspopup="menu"
+                      onClick={(e) =>
+                        openMenu(e.currentTarget, [
+                          {
+                            label: t('file.deleteForGood'),
+                            onSelect: () =>
+                              void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
+                          },
+                        ])
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
-        {shown.length > 0 && !showDeleted && (
-          <section className={`home-files${view === 'list' ? ' is-list' : ''}`}>
+        {shown.length > 0 && !showDeleted && view === 'list' && (
+          <section className="home-files">
+            <table className="home-table">
+              <thead>
+                <tr>
+                  <th>{t('home.colName')}</th>
+                  <th>{t('home.colFormat')}</th>
+                  <th>{t('home.colPalette')}</th>
+                  <th>{t('home.sortModified')}</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((f) => {
+                  const doc = docs.find((d) => fileIdOf(d) === f.id);
+                  if (!doc) return null;
+                  return (
+                    <tr
+                      key={f.id}
+                      tabIndex={0}
+                      onClick={() => open(f.id)}
+                      onKeyDown={(e) => {
+                        if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+                        e.preventDefault();
+                        open(f.id);
+                      }}
+                    >
+                      <td className="home-td-name">
+                        <span>
+                          <HomeThumb doc={doc} />
+                          <span className="truncate">{f.name}</span>
+                        </span>
+                      </td>
+                      <td className="muted">{format(f)}</td>
+                      <td className="muted">{paletteName(doc)}</td>
+                      <td className="muted">{formatUpdated(f.updatedAt, t('home.justNow'))}</td>
+                      <td>
+                        <span className="home-td-actions" onClick={(e) => e.stopPropagation()}>
+                          <IconButton
+                            icon="duplicate"
+                            label={t('file.duplicate')}
+                            onClick={() => editor.duplicateFile(f.id)}
+                          />
+                          <IconButton
+                            icon="download"
+                            label={t('file.download')}
+                            onClick={() => (editor.switchFile(f.id), void actions.saveDocument())}
+                          />
+                          <IconButton
+                            icon="trash"
+                            className="icon-btn is-danger"
+                            label={t('common.delete')}
+                            onClick={() => actions.deleteFile(f.id, f.name)}
+                          />
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {deleted.length > 0 && (
+                  <tr tabIndex={0} onClick={() => setShowDeleted(true)}>
+                    <td className="home-td-name">
+                      <span>
+                        <span className="home-folder">
+                          <Icon name="trash" size={18} />
+                        </span>
+                        <span className="truncate">{t('home.deleted')}</span>
+                      </span>
+                    </td>
+                    <td className="muted" colSpan={3}>
+                      {deleted.length === 1
+                        ? t('home.deletedOne')
+                        : t('home.deletedMany', { count: deleted.length })}
+                    </td>
+                    <td />
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </section>
+        )}
+        {shown.length > 0 && !showDeleted && view !== 'list' && (
+          <section className="home-files">
             <div className="home-grid">
               {shown.map((f) => {
                 // The file's first board as its thumbnail.
