@@ -736,6 +736,8 @@ export const en = {
   'home.justNow': 'Just now',
   'home.deleted': 'Recently deleted',
   'home.deletedHint': 'Kept {days} days',
+  'home.deletedOne': '1 file',
+  'home.deletedMany': '{count} files',
   'file.restore': 'Restore',
   'toast.fileRestored': '“{name}” is back.',
   'toast.saveFailed': 'Unable to save in this browser: remember to download your files.',

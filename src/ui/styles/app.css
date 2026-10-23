@@ -2567,7 +2567,21 @@ body.is-dragging-swatch * {
   font-size: 12px;
   font-weight: 600;
 }
-/* A deleted file: its picture dimmed, Restore at hand. */
+/* The deleted files: a folder card at the end of the files, and their own list behind it. */
+.home-folder {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 6px;
+  border-radius: var(--radius);
+  background: var(--canvas);
+  color: var(--muted);
+}
+.home-card-folder:hover .home-folder {
+  color: var(--text);
+}
 .home-card.is-deleted {
   cursor: default;
 }
@@ -2577,10 +2591,31 @@ body.is-dragging-swatch * {
 .home-card-restore {
   flex: none;
 }
-.home-deleted h2 .muted {
-  margin-left: 8px;
+.home-files h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.home-back:hover {
+  color: var(--text);
+}
+.home-h2-sep {
   font-weight: 400;
-  font-size: 13px;
+}
+.home-h2-hint {
+  font-weight: 400;
 }
 .home-card-meta {
   font-size: 11px;

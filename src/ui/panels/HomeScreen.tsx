@@ -68,6 +68,11 @@ export function HomeScreen() {
   const storage = useStorage();
   const files = useEditorState((s) => s.files);
   const deleted = trashStore.use((s) => s.files);
+  const [showDeleted, setShowDeleted] = useState(false);
+  // Nothing deleted any more (the last one restored): back to the files.
+  useEffect(() => {
+    if (!deleted.length) setShowDeleted(false);
+  }, [deleted.length]);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
     if (!boards.length) return;
@@ -160,7 +165,42 @@ export function HomeScreen() {
           )}
         </section>
 
-        {shown.length > 0 && (
+        {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
+        {showDeleted && (
+          <section className="home-files">
+            <h2>
+              <button type="button" className="home-back" onClick={() => setShowDeleted(false)}>
+                <Icon name="back" size={14} />
+                {t('home.recent')}
+              </button>
+              <span className="home-h2-sep">/</span>
+              {t('home.deleted')}{' '}
+              <span className="home-h2-hint">{t('home.deletedHint', { days: TRASH_DAYS })}</span>
+            </h2>
+            <div className="home-grid">
+              {deleted.map((f) => (
+                <div key={f.id} className="home-card is-deleted">
+                  <HomeThumb doc={f.boards[0]} />
+                  <span className="home-card-info">
+                    <span className="home-card-name truncate">{f.name}</span>
+                    <span className="home-card-meta muted truncate">
+                      {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
+                      {f.boards[0].height}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className="btn home-card-restore"
+                    onClick={() => void restore(f.id, f.name)}
+                  >
+                    {t('file.restore')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        {shown.length > 0 && !showDeleted && (
           <section className="home-files">
             <h2>{t('home.recent')}</h2>
             <div className="home-grid">
@@ -202,35 +242,27 @@ export function HomeScreen() {
                   </div>
                 );
               })}
-            </div>
-          </section>
-        )}
-        {/* Deleted files, kept a while: a click on Delete is never the end of a drawing. */}
-        {deleted.length > 0 && (
-          <section className="home-files home-deleted">
-            <h2>
-              {t('home.deleted')} <span className="muted">{t('home.deletedHint', { days: TRASH_DAYS })}</span>
-            </h2>
-            <div className="home-grid">
-              {deleted.map((f) => (
-                <div key={f.id} className="home-card is-deleted">
-                  <HomeThumb doc={f.boards[0]} />
+              {/* The last card: the deleted files, like a folder. */}
+              {deleted.length > 0 && (
+                <button
+                  type="button"
+                  className="home-card home-card-folder"
+                  onClick={() => setShowDeleted(true)}
+                >
+                  <span className="home-folder">
+                    <Icon name="trash" size={28} />
+                  </span>
                   <span className="home-card-info">
-                    <span className="home-card-name truncate">{f.name}</span>
+                    <span className="home-card-name truncate">{t('home.deleted')}</span>
                     <span className="home-card-meta muted truncate">
-                      {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
-                      {f.boards[0].height}
+                      {deleted.length === 1
+                        ? t('home.deletedOne')
+                        : t('home.deletedMany', { count: deleted.length })}{' '}
+                      · {t('home.deletedHint', { days: TRASH_DAYS })}
                     </span>
                   </span>
-                  <button
-                    type="button"
-                    className="btn home-card-restore"
-                    onClick={() => void restore(f.id, f.name)}
-                  >
-                    {t('file.restore')}
-                  </button>
-                </div>
-              ))}
+                </button>
+              )}
             </div>
           </section>
         )}

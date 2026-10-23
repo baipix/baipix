@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Recently deleted, at the bottom of the files screen: a deleted file waits there 30 days, with a Restore button that brings it back as it was. (#504)
+- Recently deleted: a deleted file waits 30 days behind the last card of the files screen, a folder that opens the deleted ones, each with a Restore button that brings it back as it was. (#504)
 
 ### Fixed
 

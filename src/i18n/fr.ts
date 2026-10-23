@@ -744,6 +744,8 @@ export const fr: Record<MessageKey, string> = {
   'home.justNow': "À l'instant",
   'home.deleted': 'Supprimés récemment',
   'home.deletedHint': 'Gardés {days} jours',
+  'home.deletedOne': '1 fichier',
+  'home.deletedMany': '{count} fichiers',
   'file.restore': 'Restaurer',
   'toast.fileRestored': '« {name} » est de retour.',
   'toast.saveFailed': 'Impossible de sauvegarder dans ce navigateur : pense à télécharger tes fichiers.',
