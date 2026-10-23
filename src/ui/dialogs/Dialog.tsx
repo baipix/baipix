@@ -1,4 +1,11 @@
-import { useEffect, useRef, type FormEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
 import { useT } from '../../i18n';
 import { IconButton } from '../components/IconButton';
 
@@ -55,13 +62,32 @@ export function Dialog({
     el.addEventListener('cancel', onCancel);
     return () => el.removeEventListener('cancel', onCancel);
   }, [onClose]);
+  // A click on the backdrop closes it, like Escape. Only a click that starts and ends there: a drag
+  // from a field (selecting its text) that ends outside keeps it open. What the dialog holds (a menu
+  // opened from it, a toast) is its child, never the dialog itself, so it never counts.
+  const downOutside = useRef(false);
+  const outside = (e: ReactPointerEvent | ReactMouseEvent) => {
+    const el = ref.current!;
+    if (e.target !== el) return false;
+    const r = el.getBoundingClientRect();
+    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+  };
   const submit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit?.();
     onClose();
   };
   return (
-    <dialog ref={ref} className={`dialog ${className}`} tabIndex={-1}>
+    <dialog
+      ref={ref}
+      className={`dialog ${className}`}
+      tabIndex={-1}
+      onPointerDown={(e) => (downOutside.current = outside(e))}
+      onClick={(e) => {
+        if (downOutside.current && outside(e)) onClose();
+        downOutside.current = false;
+      }}
+    >
       <form onSubmit={submit}>
         <div className="dialog-header">
           <span>{title}</span>
