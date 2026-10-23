@@ -741,7 +741,7 @@ export const fr: Record<MessageKey, string> = {
   'home.bugText': 'Dis-le-nous sur GitHub : ta version et ton navigateur sont déjà remplis.',
   'home.drop': 'Dépose pour ouvrir',
   'home.justNow': "À l'instant",
-  'home.deleted': 'Supprimés récemment',
+  'home.deleted': 'Corbeille',
   'file.deleteForGood': 'Supprimer définitivement',
   'home.deletedOne': '1 fichier',
   'home.drawings': 'Dessins',

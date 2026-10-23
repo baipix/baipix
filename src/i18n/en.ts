@@ -733,7 +733,7 @@ export const en = {
   'home.bugText': 'Tell us on GitHub: your version and browser are already filled in.',
   'home.drop': 'Drop to open',
   'home.justNow': 'Just now',
-  'home.deleted': 'Recently deleted',
+  'home.deleted': 'Trash',
   'file.deleteForGood': 'Delete for good',
   'home.deletedOne': '1 file',
   'home.drawings': 'Drawings',
