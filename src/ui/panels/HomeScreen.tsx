@@ -6,15 +6,14 @@ import { getLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
-import { HomeGlow } from '../components/HomeGlow';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
-import { SizeList } from '../components/SizeList';
-import { createFromTemplate } from '../templates';
+import { createFromTemplate, TEMPLATES, type Template } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
-import { PALETTE_PRESETS } from '../../engine/palette';
+import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
+import { toCss } from '../../engine/color';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 
@@ -36,6 +35,23 @@ function formatUpdated(time: number, justNow: string): string {
     month: 'short',
     ...(!sameYear && { year: 'numeric' }),
   });
+}
+
+/** A template as a board of its shape, striped with its palette's colors. */
+function TemplatePreview({ template }: { template: Template }) {
+  const colors = presetColors(template.palette).slice(0, 8);
+  // Fitted in the 16:9 picture, at most 80% of its width and 64% of its height.
+  const k = Math.min(80 / template.width, (0.64 * 56.25) / template.height);
+  const size = { width: `${template.width * k}%`, height: `${((template.height * k) / 56.25) * 100}%` };
+  return (
+    <span className="home-thumb home-template-preview" aria-hidden="true">
+      <span className="home-template-board" style={size}>
+        {colors.map((c, i) => (
+          <span key={i} style={{ background: toCss(c) }} />
+        ))}
+      </span>
+    </span>
+  );
 }
 
 /** The drawing at a whole scale, about 320 px on its long side; CSS crops it to the card. */
@@ -150,7 +166,7 @@ export function HomeScreen() {
 
   return (
     <div
-      className={`home${shown.length ? ' has-files' : ' is-empty'}${dropping ? ' is-dropping' : ''}`}
+      className={`home${dropping ? ' is-dropping' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
         e.preventDefault();
@@ -164,8 +180,6 @@ export function HomeScreen() {
         if (file) void importFile(file);
       }}
     >
-      {/* The ambient grid is the welcome's; the drawings screen stays plain, like a files app. */}
-      {shown.length === 0 && <HomeGlow />}
       <header className="home-top">
         {/* The logo and the name: the pixel hops when they're hovered, not the whole bar. */}
         <span className="home-logo">
@@ -173,7 +187,7 @@ export function HomeScreen() {
           <span className="home-brand">Baipix</span>
         </span>
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
-        {shown.length > 0 && (
+        {
           <div className="home-top-actions">
             <button type="button" className="btn btn-secondary" onClick={() => void importFile()}>
               <Icon name="upload" size={16} />
@@ -184,99 +198,11 @@ export function HomeScreen() {
               {t('common.create')}
             </button>
           </div>
-        )}
+        }
       </header>
       <div className="home-inner">
-        {shown.length === 0 && (
-          <section className="home-hero">
-            {/* The logo, its pixel hopping like a loader: waiting for you to start a file. */}
-            <span className="home-mark">
-              <Icon name="logo" size={72} />
-            </span>
-            <h1>{t('home.title')}</h1>
-            <p className="home-tagline">{t('home.tagline')}</p>
-            <div className="home-actions">
-              <button
-                type="button"
-                className="action-btn is-primary"
-                onClick={() => openDialog({ type: 'newFile' })}
-              >
-                <Icon name="plus" size={12} />
-                {t('common.create')}
-              </button>
-              <button type="button" className="action-btn" onClick={() => void importFile()}>
-                {t('home.import')}
-              </button>
-            </div>
-            <p className="home-formats muted">{t('home.formats')}</p>
-            {/* First launch: a click on a template and the canvas is ready, palette and all. */}
-            {
-              <div className="home-templates">
-                <p className="muted">{t('template.start')}</p>
-                <SizeList
-                  onPick={(choice) => {
-                    if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
-                    leaveHome(editor);
-                  }}
-                  onCreate={(choice) => {
-                    if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
-                    leaveHome(editor);
-                  }}
-                />
-              </div>
-            }
-          </section>
-        )}
         {/* Under the welcome: where to learn more, and where to say something is wrong. */}
-        {shown.length === 0 && (
-          <section className="home-help" aria-label={t('home.helpTitle')}>
-            <a className="home-help-card" href={DOCS_URL} target="_blank" rel="noopener">
-              <span className="home-help-icon">
-                <Icon name="docs" size={18} />
-              </span>
-              <span className="home-help-text">
-                <span className="home-help-title">{t('home.docsTitle')}</span>
-                <span className="muted">{t('home.docsText')}</span>
-              </span>
-            </a>
-            {/* One card for both: a menu picks the GitHub form, a bug's or an idea's. */}
-            <button
-              type="button"
-              className="home-help-card"
-              aria-haspopup="menu"
-              onClick={(e) =>
-                openMenu(e.currentTarget, [
-                  {
-                    label: t('menu.reportBug'),
-                    onSelect: () => window.open(newIssueUrl('bug'), '_blank', 'noopener'),
-                  },
-                  {
-                    label: t('menu.suggestIdea'),
-                    onSelect: () => window.open(newIssueUrl('idea'), '_blank', 'noopener'),
-                  },
-                ])
-              }
-            >
-              <span className="home-help-icon">
-                <Icon name="bug" size={18} />
-              </span>
-              <span className="home-help-text">
-                <span className="home-help-title">{t('home.bugTitle')}</span>
-                <span className="muted">{t('home.bugText')}</span>
-              </span>
-            </button>
-            <a className="home-help-card" href={CHANGELOG_URL} target="_blank" rel="noopener">
-              <span className="home-help-icon">
-                <Icon name="news" size={18} />
-              </span>
-              <span className="home-help-text">
-                <span className="home-help-title">{t('home.newsTitle', { version: __APP_VERSION__ })}</span>
-                <span className="muted">{t('home.newsText')}</span>
-              </span>
-            </a>
-          </section>
-        )}
-        {shown.length > 0 && (
+        {
           <div className="home-body">
             {/* A sidebar like a files app's: the sections, and at the bottom where to get help. */}
             <nav className="home-nav" aria-label={t('home.drawings')}>
@@ -319,7 +245,7 @@ export function HomeScreen() {
             </nav>
             <main className="home-main">
               {/* A toolbar like a files app's: the section's title, how to sort and how to show. */}
-              {
+              {(shown.length > 0 || showDeleted) && (
                 <div className="home-toolbar">
                   <h2 className="home-toolbar-title">
                     {showDeleted ? t('home.deleted') : t('home.drawings')}
@@ -352,8 +278,41 @@ export function HomeScreen() {
                     </div>
                   </div>
                 </div>
-              }
+              )}
               {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
+              {/* No drawing yet: a welcome, and the templates to start from in one click. */}
+              {shown.length === 0 && !showDeleted && (
+                <section className="home-welcome">
+                  <span className="home-mark">
+                    <Icon name="logo" size={48} />
+                  </span>
+                  <h1>{t('home.title')}</h1>
+                  <p className="home-tagline">{t('home.tagline')}</p>
+                  <h2 className="home-welcome-title">{t('template.startTitle')}</h2>
+                  <div className="home-templates-grid">
+                    {TEMPLATES.map((tpl) => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        className="home-card home-template"
+                        onClick={() => {
+                          createFromTemplate(editor, tpl, t('default.untitled'));
+                          leaveHome(editor);
+                        }}
+                      >
+                        <TemplatePreview template={tpl} />
+                        <span className="home-card-info">
+                          <span className="home-card-name truncate">{t(tpl.label)}</span>
+                          <span className="home-card-meta muted truncate">
+                            {tpl.width} × {tpl.height}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="home-formats muted">{t('home.formats')}</p>
+                </section>
+              )}
               {showDeleted && (
                 <section className="home-files">
                   {deleted.length === 0 && <p className="home-empty muted">{t('home.trashEmpty')}</p>}
@@ -443,7 +402,7 @@ export function HomeScreen() {
                   )}
                 </section>
               )}
-              {!showDeleted && view === 'list' && (
+              {shown.length > 0 && !showDeleted && view === 'list' && (
                 <section className="home-files">
                   <table className="home-table">
                     <thead>
@@ -507,7 +466,7 @@ export function HomeScreen() {
                   </table>
                 </section>
               )}
-              {!showDeleted && view !== 'list' && (
+              {shown.length > 0 && !showDeleted && view !== 'list' && (
                 <section className="home-files">
                   <div className="home-grid">
                     {shown.map((f) => {
@@ -553,7 +512,7 @@ export function HomeScreen() {
               )}
             </main>
           </div>
-        )}
+        }
       </div>
     </div>
   );

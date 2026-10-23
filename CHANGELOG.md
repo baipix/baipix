@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- The welcome, before the first drawing, is the drawings screen's: the same header and sidebar, and in the middle the templates as cards, each a board of its shape striped with its palette, one click to start. (#510)
 - The files screen is a plain list once there are files: the title at the left, and at the right a sort menu (alphabetical or last modified, oldest or newest first), grid and list views, and the Import and New buttons. The welcome with the templates stays for the first time only. (#506)
 
 ### Fixed
