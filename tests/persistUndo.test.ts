@@ -72,9 +72,9 @@ describe('the undo history after a reload', () => {
   it('is saved and read back from the browser’s storage', async () => {
     const e = drawn();
     const storage = new IndexedDbStorage();
-    await storage.saveHistory(packHistories(e.histories()));
+    await storage.saveHistory(e.histories());
     const again = reopened(e);
-    again.restoreHistories(unpackHistories(await storage.loadHistory()));
+    again.restoreHistories(await storage.loadHistory());
     again.undo();
     expect(top(again)[3 * 16 + 8]).toBe(0);
   });

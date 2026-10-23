@@ -2,7 +2,7 @@ import { normalizeComponents } from '../engine/components';
 import type { PixelDoc, ReferenceImage } from '../engine/document';
 import type { Preferences } from '../engine/editor';
 import type { Outside } from '../engine/outside';
-import type { StoredHistory } from './history';
+import type { BoardHistory } from '../engine/editor';
 import {
   decodePixels,
   deserializeDocument,
@@ -50,21 +50,43 @@ export interface StoredWorkspace {
  */
 export interface StorageAdapter {
   load(): Promise<Workspace | null>;
+  /** Saves what changed since `load` or the last `save` here; see `IndexedDbStorage`. */
   save(workspace: Workspace): Promise<void>;
+  /** The boards another tab of the app added or changed meanwhile, to take in. */
+  changedElsewhere?(): Promise<PixelDoc[]>;
   /** The boards' undo histories, kept apart from the workspace (they're bigger and change less). */
-  loadHistory?(): Promise<StoredHistory | null>;
-  saveHistory?(history: StoredHistory): Promise<void>;
+  loadHistory?(): Promise<BoardHistory[]>;
+  saveHistory?(histories: BoardHistory[]): Promise<void>;
+}
+
+/** A board as stored in the browser. */
+export const storeFile = (d: PixelDoc): StoredFile => ({
+  ...serializeDocument(d),
+  ...(d.reference && { reference: d.reference }),
+  ...(d.layers.some((l) => l.outside) && {
+    outside: d.layers.map((l) => (l.outside ? storeOutside(l.outside) : null)),
+  }),
+});
+
+/** A stored board read back, or null when it can't be: one unreadable board never costs the others. */
+export function readStoredFile(f: StoredFile): PixelDoc | null {
+  try {
+    const doc = deserializeDocument(f, true);
+    const reference = readReference(f.reference);
+    if (reference) doc.reference = reference;
+    f.outside?.forEach((o, i) => {
+      const outside = readOutside(o);
+      if (outside && doc.layers[i]) doc.layers[i].outside = outside;
+    });
+    return doc;
+  } catch {
+    return null;
+  }
 }
 
 export const toStored = (w: Workspace): StoredWorkspace => ({
   version: 1,
-  files: w.documents.map((d) => ({
-    ...serializeDocument(d),
-    ...(d.reference && { reference: d.reference }),
-    ...(d.layers.some((l) => l.outside) && {
-      outside: d.layers.map((l) => (l.outside ? storeOutside(l.outside) : null)),
-    }),
-  })),
+  files: w.documents.map(storeFile),
   activeId: w.activeId,
   preferences: w.preferences,
   ui: w.ui,
@@ -73,18 +95,8 @@ export const toStored = (w: Workspace): StoredWorkspace => ({
 export function fromStored(s: StoredWorkspace): Workspace | null {
   const documents: PixelDoc[] = [];
   for (const f of s.files ?? []) {
-    try {
-      const doc = deserializeDocument(f, true);
-      const reference = readReference(f.reference);
-      if (reference) doc.reference = reference;
-      f.outside?.forEach((o, i) => {
-        const outside = readOutside(o);
-        if (outside && doc.layers[i]) doc.layers[i].outside = outside;
-      });
-      documents.push(doc);
-    } catch {
-      /* skip unreadable files rather than losing the whole workspace */
-    }
+    const doc = readStoredFile(f);
+    if (doc) documents.push(doc);
   }
   if (!documents.length) return null;
   // Each file's components once all its boards are read: masters can be on another board.

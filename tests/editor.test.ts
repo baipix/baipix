@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
+import { createDocument } from '../src/engine/document';
 import { DEFAULT_TILE_OPACITY, Editor } from '../src/engine/editor';
 import { documentFromJson, documentToJson } from '../src/storage/fileFormat';
 
@@ -1070,5 +1071,22 @@ describe('picking the background color', () => {
     e.pickBackground();
     e.cancelBackgroundPick();
     expect(e.getState()).toMatchObject({ tool: 'pencil', pickingBackground: false });
+  });
+});
+
+describe('boards from another tab', () => {
+  it('joins new ones, replaces known ones, and leaves the active board alone', () => {
+    const e = new Editor();
+    e.newFile(4, 4, 'Mine');
+    const mine = e.getState().doc;
+    const other = createDocument('Theirs', 4, 4);
+    e.adoptDocuments([other]);
+    expect(e.getState().files.map((f) => f.name)).toContain('Theirs');
+    expect(e.getState().doc.id).toBe(mine.id);
+    // Known elsewhere as renamed: taken as stored, unless it's the board being worked on here.
+    const renamed = { ...other, name: 'Theirs renamed' };
+    e.adoptDocuments([renamed, { ...mine, name: 'Not here' }]);
+    expect(e.getState().files.map((f) => f.name)).toContain('Theirs renamed');
+    expect(e.getState().doc.name).toBe('Mine');
   });
 });

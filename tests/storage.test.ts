@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { createDocument } from '../src/engine/document';
@@ -10,6 +11,7 @@ import {
   FileFormatError,
 } from '../src/storage/fileFormat';
 import { IndexedDbStorage } from '../src/storage/indexedDb';
+import { toStored } from '../src/storage/workspace';
 
 describe('.baipix format', () => {
   it('run-length encodes pixels losslessly', () => {
@@ -52,9 +54,12 @@ describe('.baipix format', () => {
   });
 });
 
+/** A browser of its own for each test: its storage starts empty. */
+const browser = () => new IDBFactory();
+
 describe('IndexedDbStorage', () => {
   it('saves and loads a workspace', async () => {
-    const storage = new IndexedDbStorage();
+    const storage = new IndexedDbStorage(browser());
     const doc = createDocument('A', 4, 4);
     doc.layers[0].pixels[0] = pack(255, 0, 0);
     await storage.save({ documents: [doc], activeId: doc.id, preferences: {}, ui: { lang: 'fr' } });
@@ -65,7 +70,7 @@ describe('IndexedDbStorage', () => {
   });
 
   it('keeps pixels outside the canvas in the workspace, not in .baipix files', async () => {
-    const storage = new IndexedDbStorage();
+    const storage = new IndexedDbStorage(browser());
     const doc = createDocument('A', 4, 4);
     doc.layers[0].outside = { x: 5, y: -2, w: 2, h: 1, pixels: Uint32Array.from([pack(1, 2, 3), 0]) };
     await storage.save({ documents: [doc], activeId: doc.id, preferences: {}, ui: {} });
@@ -76,7 +81,7 @@ describe('IndexedDbStorage', () => {
   });
 
   it('keeps the reference image in the workspace, never in .baipix files', async () => {
-    const storage = new IndexedDbStorage();
+    const storage = new IndexedDbStorage(browser());
     const doc = createDocument('A', 4, 4);
     const reference = {
       src: 'data:image/webp;base64,AAAA',
@@ -95,5 +100,82 @@ describe('IndexedDbStorage', () => {
     expect((await storage.load())?.documents[0].reference).toEqual(reference);
     expect(documentToJson(doc)).not.toContain('reference');
     expect(documentFromJson(documentToJson(doc)).reference).toBeUndefined();
+  });
+
+  const workspace = (docs: ReturnType<typeof createDocument>[]) => ({
+    documents: docs,
+    activeId: docs[0].id,
+    preferences: {},
+    ui: {},
+  });
+  const names = async (s: IndexedDbStorage) => (await s.load())?.documents.map((d) => d.name).sort();
+
+  it('never lets one tab wipe what another drew: each only writes its own boards', async () => {
+    const chrome = browser();
+    const tabA = new IndexedDbStorage(chrome);
+    const castle = createDocument('Castle', 4, 4);
+    castle.updatedAt = 1;
+    await tabA.save(workspace([castle]));
+    // A second tab, opened later, draws Pokemon.
+    const tabB = new IndexedDbStorage(chrome);
+    const loaded = (await tabB.load())!;
+    const pokemon = createDocument('Pokemon', 4, 4);
+    pokemon.updatedAt = 2;
+    await tabB.save(workspace([...loaded.documents, pokemon]));
+    // The first tab saves again (closed, say), knowing nothing of Pokemon: it stays.
+    await tabA.save(workspace([castle]));
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['Castle', 'Pokemon']);
+    // Back on the first tab, Pokemon is there to take in; Castle, unchanged, isn't.
+    expect((await tabA.changedElsewhere()).map((d) => d.name)).toEqual(['Pokemon']);
+    expect(await tabA.changedElsewhere()).toEqual([]);
+  });
+
+  it('removes a board only when the tab that had it drops it', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    await tab.save(workspace([a, b]));
+    await tab.save(workspace([a]));
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
+  });
+
+  it('writes only the boards that changed', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+    const a = createDocument('A', 4, 4);
+    a.updatedAt = 1;
+    await tab.save(workspace([a]));
+    // Changed elsewhere (a newer date), and not here: a save here leaves the stored one.
+    const other = new IndexedDbStorage(chrome);
+    const theirs = (await other.load())!.documents[0];
+    theirs.name = 'A renamed';
+    theirs.updatedAt = 2;
+    await other.save(workspace([theirs]));
+    await tab.save(workspace([a]));
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['A renamed']);
+  });
+
+  it('brings a version 1 workspace (one record for all) into records per board', async () => {
+    const chrome = browser();
+    const doc = createDocument('Old', 4, 4);
+    await new Promise<void>((resolve, reject) => {
+      const req = chrome.open('baipix', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('workspace');
+      req.onsuccess = () => {
+        const db = req.result;
+        const tx = db.transaction('workspace', 'readwrite');
+        tx.objectStore('workspace').put(toStored(workspace([doc])), 'current');
+        tx.oncomplete = () => (db.close(), resolve());
+        tx.onerror = () => reject(tx.error);
+      };
+      req.onerror = () => reject(req.error);
+    });
+    const storage = new IndexedDbStorage(chrome);
+    expect(await names(storage)).toEqual(['Old']);
+    // Saved again as records per board: a fresh adapter reads them, not the old record.
+    const fresh = createDocument('New', 4, 4);
+    await storage.save(workspace([doc, fresh]));
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['New', 'Old']);
   });
 });

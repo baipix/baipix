@@ -5,7 +5,6 @@ import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import { setLocale, t, useT, type Locale } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
-import { unpackHistories } from '../storage/history';
 import type { StorageAdapter } from '../storage/workspace';
 import { ActionsContext } from './ActionsContext';
 import { createActions } from './actions';
@@ -117,7 +116,7 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           // The undo history, as it was: a failed read only loses the undo steps.
           try {
             const history = await storage.loadHistory?.();
-            if (history && !cancelled) editor.restoreHistories(unpackHistories(history));
+            if (history?.length && !cancelled) editor.restoreHistories(history);
           } catch {
             /* no history to restore */
           }
