@@ -238,6 +238,9 @@ function TypeBlock() {
     >
       <div className="ds-type">
         <div style={{ font: '700 32px/40px var(--font)' }}>Welcome to Baipix · 32 Bold</div>
+        <div style={{ font: '800 22px/28px var(--font)', letterSpacing: '-0.02em' }}>
+          Drawings · 22 Extra bold, the files screen's title
+        </div>
         <div style={{ font: '600 16px/24px var(--font)' }}>
           Insert coin, drop your first pixel · 16 Semibold
         </div>
@@ -317,6 +320,9 @@ function ButtonsBlock() {
           </button>
         </Specimen>
         <Specimen label="Primary button" use="The one main action of a panel or dialog. Blue at rest.">
+          <button type="button" className="btn btn-secondary">
+            Secondary
+          </button>
           <button type="button" className="btn btn-primary">
             Create
           </button>

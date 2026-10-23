@@ -30,12 +30,16 @@
   --axis: #ff4d8d;
   /* Guides dragged out of the rulers: red-orange, apart from the pink symmetry axes. */
   --guide: light-dark(#e5402a, #ff6a4d);
+  /* What takes something away (Delete): a red that reads on both themes. */
+  --danger: light-dark(#d93025, #ff6b6b);
   /* The isometric grid: a soft blue, apart from the pixel grid and the guides. */
   --iso-grid: light-dark(rgba(20, 110, 220, 0.7), rgba(110, 180, 255, 0.7));
   --check-a: light-dark(#ffffff, #3a3a3a);
   --check-b: light-dark(#e3e3e3, #2e2e2e);
   --grid: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
   --frame: light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.12));
+  /* A line that stands out a little more: a hovered card's. */
+  --frame-strong: light-dark(rgba(0, 0, 0, 0.24), rgba(255, 255, 255, 0.24));
   /* Selection corners and color picker knobs: white with a dark edge, visible on any color. */
   --handle: #ffffff;
   --shadow-handle: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.3);

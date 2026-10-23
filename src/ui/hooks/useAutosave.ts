@@ -30,6 +30,9 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
           ui: {
             panelWidths: ui.panelWidths,
             layersFolded: ui.layersFolded,
+            homeSort: ui.homeSort,
+            homeOrder: ui.homeOrder,
+            homeView: ui.homeView,
             exportFormat: ui.exportFormat,
             exportCode: ui.exportCode,
             exportActiveLayer: ui.exportActiveLayer,

@@ -6,7 +6,11 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Recently deleted: a deleted file waits behind the last card of the files screen, a folder that opens the deleted ones, each with a Restore button that brings it back as it was, and a menu to delete it for good. (#504)
+- A trash: a deleted file waits in the Trash, in the files screen's sidebar, with a Restore button that brings it back as it was, and a way to delete it for good. (#504)
+
+### Changed
+
+- The files screen is a plain list once there are files: the title at the left, and at the right a sort menu (alphabetical or last modified, oldest or newest first), grid and list views, and the Import and New buttons. The welcome with the templates stays for the first time only. (#506)
 
 ### Fixed
 

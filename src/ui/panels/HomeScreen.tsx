@@ -13,8 +13,9 @@ import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
 import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
-import { DOCS_URL } from '../links';
-import { openDialog, toast } from '../uiStore';
+import { CHANGELOG_URL, DOCS_URL } from '../links';
+import { PALETTE_PRESETS } from '../../engine/palette';
+import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 
 const DAY = 86_400_000;
@@ -68,10 +69,6 @@ export function HomeScreen() {
   const files = useEditorState((s) => s.files);
   const deleted = trashStore.use((s) => s.files);
   const [showDeleted, setShowDeleted] = useState(false);
-  // Nothing deleted any more (the last one restored): back to the files.
-  useEffect(() => {
-    if (!deleted.length) setShowDeleted(false);
-  }, [deleted.length]);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
     if (!boards.length) return;
@@ -81,10 +78,58 @@ export function HomeScreen() {
   };
   const [dropping, setDropping] = useState(false);
   const docs = editor.getDocuments();
+  const sort = uiStore.use((s) => s.homeSort);
+  const order = uiStore.use((s) => s.homeOrder);
+  const view = uiStore.use((s) => s.homeView);
   // Neither the blank starter nor a new file left untouched: they'd be empty cards.
   const shown = files
     .filter((f) => !isUntouchedStarter(f) && !editor.isFresh(f.id))
-    .sort((a, b) => b.updatedAt - a.updatedAt);
+    .sort((a, b) => {
+      const by = sort === 'name' ? a.name.localeCompare(b.name) : a.updatedAt - b.updatedAt;
+      return order === 'asc' ? by : -by;
+    });
+  /** The name of a file's palette: a preset's, Custom, or the drawing's colors. */
+  const paletteName = (doc: PixelDoc | undefined) => {
+    const key = doc?.palette?.key;
+    if (!key || key === 'drawing') return t('palette.drawing');
+    return PALETTE_PRESETS[key]?.name ?? t('palette.custom');
+  };
+  const format = (f: { width: number; height: number; boards: number }) =>
+    `${f.width} × ${f.height}${f.boards > 1 ? ` · ${t('home.boards', { count: f.boards })}` : ''}`;
+  const bugMenu = (anchor: HTMLElement) =>
+    openMenu(anchor, [
+      { label: t('menu.reportBug'), onSelect: () => window.open(newIssueUrl('bug'), '_blank', 'noopener') },
+      {
+        label: t('menu.suggestIdea'),
+        onSelect: () => window.open(newIssueUrl('idea'), '_blank', 'noopener'),
+      },
+    ]);
+  const sortMenu = (anchor: HTMLElement) =>
+    openMenu(anchor, [
+      { label: t('home.sort'), disabled: true, onSelect: () => {} },
+      {
+        label: t('home.sortName'),
+        checked: sort === 'name',
+        onSelect: () => uiStore.set({ homeSort: 'name' }),
+      },
+      {
+        label: t('home.sortModified'),
+        checked: sort === 'modified',
+        onSelect: () => uiStore.set({ homeSort: 'modified' }),
+      },
+      '-',
+      { label: t('home.order'), disabled: true, onSelect: () => {} },
+      {
+        label: t('home.oldestFirst'),
+        checked: order === 'asc',
+        onSelect: () => uiStore.set({ homeOrder: 'asc' }),
+      },
+      {
+        label: t('home.newestFirst'),
+        checked: order === 'desc',
+        onSelect: () => uiStore.set({ homeOrder: 'desc' }),
+      },
+    ]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -105,7 +150,7 @@ export function HomeScreen() {
 
   return (
     <div
-      className={`home${shown.length ? '' : ' is-empty'}${dropping ? ' is-dropping' : ''}`}
+      className={`home${shown.length ? ' has-files' : ' is-empty'}${dropping ? ' is-dropping' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
         e.preventDefault();
@@ -119,186 +164,396 @@ export function HomeScreen() {
         if (file) void importFile(file);
       }}
     >
-      <HomeGlow />
+      {/* The ambient grid is the welcome's; the drawings screen stays plain, like a files app. */}
+      {shown.length === 0 && <HomeGlow />}
       <header className="home-top">
-        <Icon name="logo" size={16} />
-        <span className="home-brand">Baipix</span>
-      </header>
-      <div className="home-inner">
-        <section className="home-hero">
-          {/* The logo, its pixel hopping like a loader: waiting for you to start a file. */}
-          <span className="home-mark">
-            <Icon name="logo" size={72} />
-          </span>
-          <h1>{t('home.title')}</h1>
-          <p className="home-tagline">{shown.length ? t('home.taglineBack') : t('home.tagline')}</p>
-          <div className="home-actions">
-            <button
-              type="button"
-              className="action-btn is-primary"
-              onClick={() => openDialog({ type: 'newFile' })}
-            >
-              <Icon name="plus" size={12} />
-              {t('common.create')}
-            </button>
-            <button type="button" className="action-btn" onClick={() => void importFile()}>
+        {/* The logo and the name: the pixel hops when they're hovered, not the whole bar. */}
+        <span className="home-logo">
+          <Icon name="logo" size={16} />
+          <span className="home-brand">Baipix</span>
+        </span>
+        {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
+        {shown.length > 0 && (
+          <div className="home-top-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => void importFile()}>
+              <Icon name="upload" size={16} />
               {t('home.import')}
             </button>
+            <button type="button" className="btn btn-primary" onClick={() => openDialog({ type: 'newFile' })}>
+              <Icon name="plus" size={16} />
+              {t('common.create')}
+            </button>
           </div>
-          <p className="home-formats muted">{t('home.formats')}</p>
-          {/* First launch: a click on a template and the canvas is ready, palette and all. */}
-          {shown.length === 0 && (
-            <div className="home-templates">
-              <p className="muted">{t('template.start')}</p>
-              <SizeList
-                onPick={(choice) => {
-                  if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
-                  leaveHome(editor);
-                }}
-                onCreate={(choice) => {
-                  if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
-                  leaveHome(editor);
-                }}
-              />
-            </div>
-          )}
-        </section>
-
-        {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
-        {showDeleted && (
-          <section className="home-files">
-            <h2>
-              <button type="button" className="home-back" onClick={() => setShowDeleted(false)}>
-                <Icon name="back" size={14} />
-                {t('home.recent')}
+        )}
+      </header>
+      <div className="home-inner">
+        {shown.length === 0 && (
+          <section className="home-hero">
+            {/* The logo, its pixel hopping like a loader: waiting for you to start a file. */}
+            <span className="home-mark">
+              <Icon name="logo" size={72} />
+            </span>
+            <h1>{t('home.title')}</h1>
+            <p className="home-tagline">{t('home.tagline')}</p>
+            <div className="home-actions">
+              <button
+                type="button"
+                className="action-btn is-primary"
+                onClick={() => openDialog({ type: 'newFile' })}
+              >
+                <Icon name="plus" size={12} />
+                {t('common.create')}
               </button>
-              <span className="home-h2-sep">/</span>
-              {t('home.deleted')}{' '}
-            </h2>
-            <div className="home-grid">
-              {deleted.map((f) => (
-                <div key={f.id} className="home-card is-deleted">
-                  <HomeThumb doc={f.boards[0]} />
-                  <span className="home-card-info">
-                    <span className="home-card-name truncate">{f.name}</span>
-                    <span className="home-card-meta muted truncate">
-                      {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
-                      {f.boards[0].height}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    className="btn home-card-restore"
-                    onClick={() => void restore(f.id, f.name)}
-                  >
-                    {t('file.restore')}
-                  </button>
-                  <IconButton
-                    icon="more"
-                    className="icon-btn home-card-action"
-                    label={t('file.actions')}
-                    aria-haspopup="menu"
-                    onClick={(e) =>
-                      openMenu(e.currentTarget, [
-                        {
-                          label: t('file.deleteForGood'),
-                          onSelect: () =>
-                            void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
-                        },
-                      ])
-                    }
-                  />
-                </div>
-              ))}
+              <button type="button" className="action-btn" onClick={() => void importFile()}>
+                {t('home.import')}
+              </button>
             </div>
+            <p className="home-formats muted">{t('home.formats')}</p>
+            {/* First launch: a click on a template and the canvas is ready, palette and all. */}
+            {
+              <div className="home-templates">
+                <p className="muted">{t('template.start')}</p>
+                <SizeList
+                  onPick={(choice) => {
+                    if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
+                    leaveHome(editor);
+                  }}
+                  onCreate={(choice) => {
+                    if (choice.template) createFromTemplate(editor, choice.template, t('default.untitled'));
+                    leaveHome(editor);
+                  }}
+                />
+              </div>
+            }
           </section>
         )}
-        {shown.length > 0 && !showDeleted && (
-          <section className="home-files">
-            <h2>{t('home.recent')}</h2>
-            <div className="home-grid">
-              {shown.map((f) => {
-                // The file's first board as its thumbnail.
-                const doc = docs.find((d) => fileIdOf(d) === f.id);
-                if (!doc) return null;
-                return (
-                  <div
-                    key={f.id}
-                    className="home-card"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => open(f.id)}
-                    onKeyDown={(e) => {
-                      if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
-                      e.preventDefault();
-                      open(f.id);
-                    }}
-                  >
-                    <HomeThumb doc={doc} />
-                    <span className="home-card-info">
-                      <span className="home-card-name truncate">{f.name}</span>
-                      <span className="home-card-meta muted truncate">
-                        {formatUpdated(f.updatedAt, t('home.justNow'))} · {f.width} × {f.height}
-                      </span>
-                    </span>
-                    <IconButton
-                      icon="more"
-                      className="icon-btn home-card-action"
-                      label={t('file.actions')}
-                      aria-haspopup="menu"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openMenu(e.currentTarget, fileMenu(editor, actions, f));
-                      }}
-                      onKeyDown={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                );
-              })}
-              {/* The last card: the deleted files, like a folder. */}
-              {deleted.length > 0 && (
+        {/* Under the welcome: where to learn more, and where to say something is wrong. */}
+        {shown.length === 0 && (
+          <section className="home-help" aria-label={t('home.helpTitle')}>
+            <a className="home-help-card" href={DOCS_URL} target="_blank" rel="noopener">
+              <span className="home-help-icon">
+                <Icon name="docs" size={18} />
+              </span>
+              <span className="home-help-text">
+                <span className="home-help-title">{t('home.docsTitle')}</span>
+                <span className="muted">{t('home.docsText')}</span>
+              </span>
+            </a>
+            {/* One card for both: a menu picks the GitHub form, a bug's or an idea's. */}
+            <button
+              type="button"
+              className="home-help-card"
+              aria-haspopup="menu"
+              onClick={(e) =>
+                openMenu(e.currentTarget, [
+                  {
+                    label: t('menu.reportBug'),
+                    onSelect: () => window.open(newIssueUrl('bug'), '_blank', 'noopener'),
+                  },
+                  {
+                    label: t('menu.suggestIdea'),
+                    onSelect: () => window.open(newIssueUrl('idea'), '_blank', 'noopener'),
+                  },
+                ])
+              }
+            >
+              <span className="home-help-icon">
+                <Icon name="bug" size={18} />
+              </span>
+              <span className="home-help-text">
+                <span className="home-help-title">{t('home.bugTitle')}</span>
+                <span className="muted">{t('home.bugText')}</span>
+              </span>
+            </button>
+            <a className="home-help-card" href={CHANGELOG_URL} target="_blank" rel="noopener">
+              <span className="home-help-icon">
+                <Icon name="news" size={18} />
+              </span>
+              <span className="home-help-text">
+                <span className="home-help-title">{t('home.newsTitle', { version: __APP_VERSION__ })}</span>
+                <span className="muted">{t('home.newsText')}</span>
+              </span>
+            </a>
+          </section>
+        )}
+        {shown.length > 0 && (
+          <div className="home-body">
+            {/* A sidebar like a files app's: the sections, and at the bottom where to get help. */}
+            <nav className="home-nav" aria-label={t('home.drawings')}>
+              <button
+                type="button"
+                className={`home-nav-item${showDeleted ? '' : ' is-active'}`}
+                onClick={() => setShowDeleted(false)}
+              >
+                <Icon name="image" size={16} />
+                {t('home.drawings')}
+              </button>
+              <button
+                type="button"
+                className={`home-nav-item${showDeleted ? ' is-active' : ''}`}
+                onClick={() => setShowDeleted(true)}
+              >
+                <Icon name="trash" size={16} />
+                {t('home.deleted')}
+                {deleted.length > 0 && <span className="home-nav-count">{deleted.length}</span>}
+              </button>
+              <div className="home-nav-bottom">
+                <a className="home-nav-link" href={DOCS_URL} target="_blank" rel="noopener">
+                  <Icon name="docs" size={14} />
+                  {t('home.docsTitle')}
+                </a>
                 <button
                   type="button"
-                  className="home-card home-card-folder"
-                  onClick={() => setShowDeleted(true)}
+                  className="home-nav-link"
+                  aria-haspopup="menu"
+                  onClick={(e) => bugMenu(e.currentTarget)}
                 >
-                  <span className="home-folder">
-                    <Icon name="trash" size={28} />
-                  </span>
-                  <span className="home-card-info">
-                    <span className="home-card-name truncate">{t('home.deleted')}</span>
-                    <span className="home-card-meta muted truncate">
-                      {deleted.length === 1
-                        ? t('home.deletedOne')
-                        : t('home.deletedMany', { count: deleted.length })}
-                    </span>
-                  </span>
+                  <Icon name="bug" size={14} />
+                  {t('home.bugTitle')}
                 </button>
+                <a className="home-nav-link" href={CHANGELOG_URL} target="_blank" rel="noopener">
+                  <Icon name="news" size={14} />
+                  {t('home.newsTitle', { version: __APP_VERSION__ })}
+                </a>
+              </div>
+            </nav>
+            <main className="home-main">
+              {/* A toolbar like a files app's: the section's title, how to sort and how to show. */}
+              {
+                <div className="home-toolbar">
+                  <h2 className="home-toolbar-title">
+                    {showDeleted ? t('home.deleted') : t('home.drawings')}
+                  </h2>
+                  <div className="home-toolbar-tools">
+                    {!showDeleted && (
+                      <button
+                        type="button"
+                        className="field field-menu home-sort"
+                        aria-haspopup="menu"
+                        onClick={(e) => sortMenu(e.currentTarget)}
+                      >
+                        {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                        <Icon name="caret" size={12} />
+                      </button>
+                    )}
+                    <div className="home-view" role="group">
+                      <IconButton
+                        icon="gridView"
+                        label={t('home.viewGrid')}
+                        pressed={view === 'grid'}
+                        onClick={() => uiStore.set({ homeView: 'grid' })}
+                      />
+                      <IconButton
+                        icon="list"
+                        label={t('home.viewList')}
+                        pressed={view === 'list'}
+                        onClick={() => uiStore.set({ homeView: 'list' })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              }
+              {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
+              {showDeleted && (
+                <section className="home-files">
+                  {deleted.length === 0 && <p className="home-empty muted">{t('home.trashEmpty')}</p>}
+                  {view === 'list' ? (
+                    <table className="home-table">
+                      <thead>
+                        <tr>
+                          <th>{t('home.colName')}</th>
+                          <th>{t('home.colFormat')}</th>
+                          <th>{t('home.colPalette')}</th>
+                          <th>{t('home.colDeleted')}</th>
+                          <th />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deleted.map((f) => (
+                          <tr key={f.id}>
+                            <td className="home-td-name">
+                              <span>
+                                <HomeThumb doc={f.boards[0]} />
+                                <span className="truncate">{f.name}</span>
+                              </span>
+                            </td>
+                            <td>{format({ ...f.boards[0], boards: f.boards.length })}</td>
+                            <td>{paletteName(f.boards[0])}</td>
+                            <td>{formatUpdated(f.deletedAt, t('home.justNow'))}</td>
+                            <td>
+                              <span className="home-td-actions">
+                                <button
+                                  type="button"
+                                  className="btn"
+                                  onClick={() => void restore(f.id, f.name)}
+                                >
+                                  {t('file.restore')}
+                                </button>
+                                <IconButton
+                                  icon="trash"
+                                  className="icon-btn is-danger"
+                                  label={t('file.deleteForGood')}
+                                  onClick={() =>
+                                    void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage))
+                                  }
+                                />
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="home-grid">
+                      {deleted.map((f) => (
+                        <div key={f.id} className="home-card is-deleted">
+                          <HomeThumb doc={f.boards[0]} />
+                          <span className="home-card-info">
+                            <span className="home-card-name truncate">{f.name}</span>
+                            <span className="home-card-meta muted truncate">
+                              {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
+                              {f.boards[0].height}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            className="btn home-card-restore"
+                            onClick={() => void restore(f.id, f.name)}
+                          >
+                            {t('file.restore')}
+                          </button>
+                          <IconButton
+                            icon="more"
+                            className="icon-btn home-card-action"
+                            label={t('file.actions')}
+                            aria-haspopup="menu"
+                            onClick={(e) =>
+                              openMenu(e.currentTarget, [
+                                {
+                                  label: t('file.deleteForGood'),
+                                  onSelect: () =>
+                                    void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
+                                },
+                              ])
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
               )}
-            </div>
-          </section>
+              {!showDeleted && view === 'list' && (
+                <section className="home-files">
+                  <table className="home-table">
+                    <thead>
+                      <tr>
+                        <th>{t('home.colName')}</th>
+                        <th>{t('home.colFormat')}</th>
+                        <th>{t('home.colPalette')}</th>
+                        <th>{t('home.sortModified')}</th>
+                        <th />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shown.map((f) => {
+                        const doc = docs.find((d) => fileIdOf(d) === f.id);
+                        if (!doc) return null;
+                        return (
+                          <tr
+                            key={f.id}
+                            tabIndex={0}
+                            onClick={() => open(f.id)}
+                            onKeyDown={(e) => {
+                              if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' '))
+                                return;
+                              e.preventDefault();
+                              open(f.id);
+                            }}
+                          >
+                            <td className="home-td-name">
+                              <span>
+                                <HomeThumb doc={doc} />
+                                <span className="truncate">{f.name}</span>
+                              </span>
+                            </td>
+                            <td>{format(f)}</td>
+                            <td>{paletteName(doc)}</td>
+                            <td>{formatUpdated(f.updatedAt, t('home.justNow'))}</td>
+                            <td>
+                              <span className="home-td-actions" onClick={(e) => e.stopPropagation()}>
+                                <IconButton
+                                  icon="duplicate"
+                                  label={t('file.duplicate')}
+                                  onClick={() => editor.duplicateFile(f.id)}
+                                />
+                                <IconButton
+                                  icon="download"
+                                  label={t('file.download')}
+                                  onClick={() => (editor.switchFile(f.id), void actions.saveDocument())}
+                                />
+                                <IconButton
+                                  icon="trash"
+                                  className="icon-btn is-danger"
+                                  label={t('common.delete')}
+                                  onClick={() => actions.deleteFile(f.id, f.name)}
+                                />
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </section>
+              )}
+              {!showDeleted && view !== 'list' && (
+                <section className="home-files">
+                  <div className="home-grid">
+                    {shown.map((f) => {
+                      // The file's first board as its thumbnail.
+                      const doc = docs.find((d) => fileIdOf(d) === f.id);
+                      if (!doc) return null;
+                      return (
+                        <div
+                          key={f.id}
+                          className="home-card"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => open(f.id)}
+                          onKeyDown={(e) => {
+                            if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+                            e.preventDefault();
+                            open(f.id);
+                          }}
+                        >
+                          <HomeThumb doc={doc} />
+                          <span className="home-card-info">
+                            <span className="home-card-name truncate">{f.name}</span>
+                            <span className="home-card-meta muted truncate">
+                              {formatUpdated(f.updatedAt, t('home.justNow'))} · {f.width} × {f.height}
+                            </span>
+                          </span>
+                          <IconButton
+                            icon="more"
+                            className="icon-btn home-card-action"
+                            label={t('file.actions')}
+                            aria-haspopup="menu"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openMenu(e.currentTarget, fileMenu(editor, actions, f));
+                            }}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </main>
+          </div>
         )}
-        {/* Under the drawings: where to learn more, and where to say something is wrong. */}
-        <section className="home-help" aria-label={t('home.helpTitle')}>
-          <a className="home-help-card" href={DOCS_URL} target="_blank" rel="noopener">
-            <span className="home-help-icon">
-              <Icon name="docs" size={18} />
-            </span>
-            <span className="home-help-text">
-              <span className="home-help-title">{t('home.docsTitle')}</span>
-              <span className="muted">{t('home.docsText')}</span>
-            </span>
-          </a>
-          <a className="home-help-card" href={newIssueUrl('bug')} target="_blank" rel="noopener">
-            <span className="home-help-icon">
-              <Icon name="bug" size={18} />
-            </span>
-            <span className="home-help-text">
-              <span className="home-help-title">{t('home.bugTitle')}</span>
-              <span className="muted">{t('home.bugText')}</span>
-            </span>
-          </a>
-        </section>
       </div>
     </div>
   );
