@@ -374,9 +374,9 @@ export function HomeScreen() {
                                 <span className="truncate">{f.name}</span>
                               </span>
                             </td>
-                            <td className="muted">{format({ ...f.boards[0], boards: f.boards.length })}</td>
-                            <td className="muted">{paletteName(f.boards[0])}</td>
-                            <td className="muted">{formatUpdated(f.deletedAt, t('home.justNow'))}</td>
+                            <td>{format({ ...f.boards[0], boards: f.boards.length })}</td>
+                            <td>{paletteName(f.boards[0])}</td>
+                            <td>{formatUpdated(f.deletedAt, t('home.justNow'))}</td>
                             <td>
                               <span className="home-td-actions">
                                 <button
@@ -474,9 +474,9 @@ export function HomeScreen() {
                                 <span className="truncate">{f.name}</span>
                               </span>
                             </td>
-                            <td className="muted">{format(f)}</td>
-                            <td className="muted">{paletteName(doc)}</td>
-                            <td className="muted">{formatUpdated(f.updatedAt, t('home.justNow'))}</td>
+                            <td>{format(f)}</td>
+                            <td>{paletteName(doc)}</td>
+                            <td>{formatUpdated(f.updatedAt, t('home.justNow'))}</td>
                             <td>
                               <span className="home-td-actions" onClick={(e) => e.stopPropagation()}>
                                 <IconButton

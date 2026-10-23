@@ -2627,54 +2627,47 @@ button.home-help-card {
   border-radius: var(--radius);
   background: var(--input);
 }
-/* The list: a table, one row per file, each row a card of its own. */
+/* The list: a plain table, like Figma's: no boxes, the row lit under the pointer, its actions
+   showing then. */
 .home-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 12px;
-  margin-top: -12px;
+  border-collapse: collapse;
   font-size: 12px;
 }
 .home-table th {
-  padding: 0 24px 0;
+  height: 32px;
+  padding: 0 16px;
   white-space: nowrap;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--muted);
   text-align: left;
 }
 .home-table td {
-  padding: 6px 24px;
-  background: var(--panel);
+  height: 48px;
+  padding: 0 16px;
   white-space: nowrap;
 }
+.home-table th:first-child,
 .home-table td:first-child {
-  padding-left: 6px;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  padding-left: 8px;
+}
+.home-table td:first-child {
+  border-radius: var(--radius) 0 0 var(--radius);
 }
 .home-table td:last-child {
-  padding-right: 8px;
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 .home-table tbody tr {
   cursor: pointer;
 }
-.home-table td {
-  border-block: 1px solid var(--line);
-  transition: border-color 0.12s ease;
-}
-.home-table td:first-child {
-  border-left: 1px solid var(--line);
-}
-.home-table td:last-child {
-  border-right: 1px solid var(--line);
-}
-.home-table tbody tr:hover td {
-  border-color: var(--frame-strong);
+.home-table tbody tr:hover td,
+.home-table tbody tr:focus-within td {
+  background: var(--hover);
 }
 .home-table tbody tr:focus-visible {
   outline: 2px solid var(--glow-line);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 .home-td-name {
   width: 100%;
@@ -2688,16 +2681,19 @@ button.home-help-card {
 }
 .home-table .home-thumb {
   flex: none;
-  width: 64px;
+  width: 48px;
   margin: 0;
-}
-.home-table .muted {
-  font-weight: 400;
+  border-radius: 3px;
 }
 .home-td-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   justify-content: flex-end;
+  opacity: 0;
+}
+.home-table tbody tr:hover .home-td-actions,
+.home-table tbody tr:focus-within .home-td-actions {
+  opacity: 1;
 }
 /* Delete: like the others until the pointer is on it, then red, the one action that takes something away. */
 .icon-btn.is-danger:hover {
