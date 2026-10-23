@@ -48,12 +48,25 @@ export interface StoredWorkspace {
  * Where workspaces are kept. The app only talks to this interface, so a cloud backend
  * (Supabase, Google Drive…) can be plugged in later without touching the editor.
  */
+/** A deleted file, kept a while (see `IndexedDbStorage.listTrash`). */
+export interface TrashedFile {
+  /** The file's id (its first board's, for a file of one). */
+  id: string;
+  name: string;
+  deletedAt: number;
+  boards: PixelDoc[];
+}
+
 export interface StorageAdapter {
   load(): Promise<Workspace | null>;
   /** Saves what changed since `load` or the last `save` here; see `IndexedDbStorage`. */
   save(workspace: Workspace): Promise<void>;
   /** The boards another tab of the app added or changed meanwhile, to take in. */
   changedElsewhere?(): Promise<PixelDoc[]>;
+  /** Deleted files, newest first, kept 30 days; restoring one gives its boards back to take in. */
+  listTrash?(): Promise<TrashedFile[]>;
+  restoreTrashed?(fileId: string): Promise<PixelDoc[]>;
+  discardTrashed?(fileId: string): Promise<void>;
   /** The boards' undo histories, kept apart from the workspace (they're bigger and change less). */
   loadHistory?(): Promise<BoardHistory[]>;
   saveHistory?(histories: BoardHistory[]): Promise<void>;

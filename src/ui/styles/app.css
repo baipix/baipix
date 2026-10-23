@@ -2567,6 +2567,21 @@ body.is-dragging-swatch * {
   font-size: 12px;
   font-weight: 600;
 }
+/* A deleted file: its picture dimmed, Restore at hand. */
+.home-card.is-deleted {
+  cursor: default;
+}
+.home-card.is-deleted .home-thumb {
+  opacity: 0.5;
+}
+.home-card-restore {
+  flex: none;
+}
+.home-deleted h2 .muted {
+  margin-left: 8px;
+  font-weight: 400;
+  font-size: 13px;
+}
 .home-card-meta {
   font-size: 11px;
 }

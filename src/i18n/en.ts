@@ -734,6 +734,10 @@ export const en = {
   'home.bugText': 'Tell us on GitHub: your version and browser are already filled in.',
   'home.drop': 'Drop to open',
   'home.justNow': 'Just now',
+  'home.deleted': 'Recently deleted',
+  'home.deletedHint': 'Kept {days} days',
+  'file.restore': 'Restore',
+  'toast.fileRestored': '“{name}” is back.',
   'toast.saveFailed': 'Unable to save in this browser: remember to download your files.',
 } as const;
 

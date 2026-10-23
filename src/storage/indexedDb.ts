@@ -1,5 +1,5 @@
 import type { BoardHistory } from '../engine/editor';
-import type { PixelDoc } from '../engine/document';
+import { fileIdOf, type PixelDoc } from '../engine/document';
 import { packHistories, unpackHistories, type StoredHistory } from './history';
 import {
   fromStored,
@@ -8,12 +8,16 @@ import {
   type StorageAdapter,
   type StoredFile,
   type StoredWorkspace,
+  type TrashedFile,
   type Workspace,
 } from './workspace';
 
 const DB_NAME = 'baipix';
-/** Version 1 kept the whole workspace as one record; version 2 keeps one record per board. */
-const DB_VERSION = 2;
+/**
+ * Version 1 kept the whole workspace as one record; version 2 keeps one record per board; version
+ * 3 adds the deleted boards, kept a while.
+ */
+const DB_VERSION = 3;
 /** Version 1's store: the workspace under `current`, the histories under `history`. */
 const LEGACY_STORE = 'workspace';
 const LEGACY_KEY = 'current';
@@ -24,6 +28,15 @@ const META = 'meta';
 const META_KEY = 'current';
 /** One record per board's undo history, by its id. */
 const HISTORIES = 'histories';
+/** Deleted boards, by id, with when: a file deleted by mistake comes back from here. */
+const TRASH = 'trash';
+/** How long a deleted file is kept. */
+export const TRASH_DAYS = 30;
+
+interface Trashed {
+  file: StoredFile;
+  deletedAt: number;
+}
 
 interface Meta {
   activeId: string;
@@ -36,7 +49,7 @@ function openDb(factory: IDBFactory): Promise<IDBDatabase> {
     const req = factory.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
-      for (const store of [LEGACY_STORE, FILES, META, HISTORIES])
+      for (const store of [LEGACY_STORE, FILES, META, HISTORIES, TRASH])
         if (!db.objectStoreNames.contains(store)) db.createObjectStore(store);
     };
     req.onsuccess = () => resolve(req.result);
@@ -137,10 +150,19 @@ export class IndexedDbStorage implements StorageAdapter {
     const changed = workspace.documents.filter((d) => this.known.get(d.id) !== (d.updatedAt ?? 0));
     const removed = [...this.known.keys()].filter((id) => !ids.has(id));
     const meta: Meta = { activeId: workspace.activeId, preferences: workspace.preferences, ui: workspace.ui };
-    await transact(db, [FILES, META], 'readwrite', (tx) => {
+    const deletedAt = Date.now();
+    await transact(db, [FILES, META, TRASH], 'readwrite', (tx) => {
       const files = tx.objectStore(FILES);
+      const trash = tx.objectStore(TRASH);
       for (const doc of changed) files.put(storeFile(doc), doc.id);
-      for (const id of removed) files.delete(id);
+      // A removed board goes to the trash, to come back if it was a mistake.
+      for (const id of removed) {
+        const req = files.get(id) as IDBRequest<StoredFile | undefined>;
+        req.onsuccess = () => {
+          if (req.result) trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          files.delete(id);
+        };
+      }
       tx.objectStore(META).put(meta, META_KEY);
     });
     for (const doc of changed) this.known.set(doc.id, doc.updatedAt ?? 0);
@@ -167,6 +189,67 @@ export class IndexedDbStorage implements StorageAdapter {
       docs.push(doc);
     }
     return docs;
+  }
+
+  /** The deleted files, newest first; those older than `TRASH_DAYS` go for good. */
+  async listTrash(): Promise<TrashedFile[]> {
+    const db = await this.connect();
+    const limit = Date.now() - TRASH_DAYS * 86_400_000;
+    const entries =
+      (await transact(db, [TRASH], 'readwrite', (tx) => {
+        const store = tx.objectStore(TRASH);
+        const req = store.openCursor();
+        const kept: Trashed[] = [];
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) return;
+          const entry = cursor.value as Trashed;
+          if (entry.deletedAt < limit) cursor.delete();
+          else kept.push(entry);
+          cursor.continue();
+        };
+        return {
+          get result() {
+            return kept;
+          },
+        } as unknown as IDBRequest<Trashed[]>;
+      })) ?? [];
+    const files = new Map<string, TrashedFile>();
+    for (const { file, deletedAt } of entries) {
+      const doc = readStoredFile(file);
+      if (!doc) continue;
+      const id = fileIdOf(doc);
+      const known = files.get(id);
+      if (known) {
+        known.boards.push(doc);
+        known.deletedAt = Math.max(known.deletedAt, deletedAt);
+      } else files.set(id, { id, name: doc.board?.fileName ?? doc.name, deletedAt, boards: [doc] });
+    }
+    return [...files.values()].sort((a, b) => b.deletedAt - a.deletedAt);
+  }
+
+  /** A deleted file back among the files; its boards are returned, known here from then on. */
+  async restoreTrashed(fileId: string): Promise<PixelDoc[]> {
+    const db = await this.connect();
+    const trashed = (await this.listTrash()).find((f) => f.id === fileId);
+    if (!trashed) return [];
+    await transact(db, [FILES, TRASH], 'readwrite', (tx) => {
+      for (const doc of trashed.boards) {
+        tx.objectStore(FILES).put(storeFile(doc), doc.id);
+        tx.objectStore(TRASH).delete(doc.id);
+      }
+    });
+    for (const doc of trashed.boards) this.known.set(doc.id, doc.updatedAt ?? 0);
+    return trashed.boards;
+  }
+
+  async discardTrashed(fileId: string): Promise<void> {
+    const db = await this.connect();
+    const trashed = (await this.listTrash()).find((f) => f.id === fileId);
+    if (!trashed) return;
+    await transact(db, [TRASH], 'readwrite', (tx) => {
+      for (const doc of trashed.boards) tx.objectStore(TRASH).delete(doc.id);
+    });
   }
 
   async loadHistory(): Promise<BoardHistory[]> {

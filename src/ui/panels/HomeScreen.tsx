@@ -14,7 +14,9 @@ import { fileMenu, newIssueUrl } from '../menus';
 import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
 import { DOCS_URL } from '../links';
-import { openDialog } from '../uiStore';
+import { openDialog, toast } from '../uiStore';
+import { refreshTrash, trashStore, useStorage } from '../StorageContext';
+import { TRASH_DAYS } from '../../storage/indexedDb';
 
 const DAY = 86_400_000;
 
@@ -63,7 +65,16 @@ export function HomeScreen() {
   const t = useT();
   const editor = useEditor();
   const actions = useActions();
+  const storage = useStorage();
   const files = useEditorState((s) => s.files);
+  const deleted = trashStore.use((s) => s.files);
+  const restore = async (id: string, name: string) => {
+    const boards = (await storage.restoreTrashed?.(id)) ?? [];
+    if (!boards.length) return;
+    editor.adoptDocuments(boards);
+    refreshTrash(storage);
+    toast(t('toast.fileRestored', { name }));
+  };
   const [dropping, setDropping] = useState(false);
   const docs = editor.getDocuments();
   // Neither the blank starter nor a new file left untouched: they'd be empty cards.
@@ -191,6 +202,35 @@ export function HomeScreen() {
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+        {/* Deleted files, kept a while: a click on Delete is never the end of a drawing. */}
+        {deleted.length > 0 && (
+          <section className="home-files home-deleted">
+            <h2>
+              {t('home.deleted')} <span className="muted">{t('home.deletedHint', { days: TRASH_DAYS })}</span>
+            </h2>
+            <div className="home-grid">
+              {deleted.map((f) => (
+                <div key={f.id} className="home-card is-deleted">
+                  <HomeThumb doc={f.boards[0]} />
+                  <span className="home-card-info">
+                    <span className="home-card-name truncate">{f.name}</span>
+                    <span className="home-card-meta muted truncate">
+                      {formatUpdated(f.deletedAt, t('home.justNow'))} · {f.boards[0].width} ×{' '}
+                      {f.boards[0].height}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className="btn home-card-restore"
+                    onClick={() => void restore(f.id, f.name)}
+                  >
+                    {t('file.restore')}
+                  </button>
+                </div>
+              ))}
             </div>
           </section>
         )}
