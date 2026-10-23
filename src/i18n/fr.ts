@@ -737,7 +737,7 @@ export const fr: Record<MessageKey, string> = {
   'home.helpTitle': 'Aide',
   'home.docsTitle': 'Apprendre Baipix',
   'home.docsText': 'Chaque outil et chaque raccourci, expliqués dans la documentation.',
-  'home.bugTitle': 'Quelque chose ne marche pas ?',
+  'home.bugTitle': 'Un bug, ou une idée ?',
   'home.bugText': 'Dis-le-nous sur GitHub : ta version et ton navigateur sont déjà remplis.',
   'home.drop': 'Dépose pour ouvrir',
   'home.justNow': "À l'instant",

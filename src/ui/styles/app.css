@@ -2503,7 +2503,13 @@ body.is-dragging-swatch * {
 .home-help-card {
   flex: 0 1 320px;
 }
-/* Like the file cards, flatter: a row with an icon, a title and a line. */
+/* Like the file cards, flatter: a row with an icon, a title and a line. A button or a link alike. */
+button.home-help-card {
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 .home-help-card {
   display: flex;
   align-items: flex-start;

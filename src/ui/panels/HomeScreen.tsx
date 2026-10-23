@@ -503,7 +503,24 @@ export function HomeScreen() {
               <span className="muted">{t('home.docsText')}</span>
             </span>
           </a>
-          <a className="home-help-card" href={newIssueUrl('bug')} target="_blank" rel="noopener">
+          {/* One card for both: a menu picks the GitHub form, a bug's or an idea's. */}
+          <button
+            type="button"
+            className="home-help-card"
+            aria-haspopup="menu"
+            onClick={(e) =>
+              openMenu(e.currentTarget, [
+                {
+                  label: t('menu.reportBug'),
+                  onSelect: () => window.open(newIssueUrl('bug'), '_blank', 'noopener'),
+                },
+                {
+                  label: t('menu.suggestIdea'),
+                  onSelect: () => window.open(newIssueUrl('idea'), '_blank', 'noopener'),
+                },
+              ])
+            }
+          >
             <span className="home-help-icon">
               <Icon name="bug" size={18} />
             </span>
@@ -511,7 +528,7 @@ export function HomeScreen() {
               <span className="home-help-title">{t('home.bugTitle')}</span>
               <span className="muted">{t('home.bugText')}</span>
             </span>
-          </a>
+          </button>
           <a className="home-help-card" href={CHANGELOG_URL} target="_blank" rel="noopener">
             <span className="home-help-icon">
               <Icon name="news" size={18} />

@@ -729,7 +729,7 @@ export const en = {
   'home.helpTitle': 'Help',
   'home.docsTitle': 'Learn Baipix',
   'home.docsText': 'Every tool and shortcut, explained in the docs.',
-  'home.bugTitle': 'Something not working?',
+  'home.bugTitle': 'A bug, or an idea?',
   'home.bugText': 'Tell us on GitHub: your version and browser are already filled in.',
   'home.drop': 'Drop to open',
   'home.justNow': 'Just now',
