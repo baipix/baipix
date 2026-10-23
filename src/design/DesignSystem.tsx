@@ -320,6 +320,9 @@ function ButtonsBlock() {
           </button>
         </Specimen>
         <Specimen label="Primary button" use="The one main action of a panel or dialog. Blue at rest.">
+          <button type="button" className="btn btn-secondary">
+            Secondary
+          </button>
           <button type="button" className="btn btn-primary">
             Create
           </button>

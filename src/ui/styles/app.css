@@ -530,6 +530,15 @@ body.is-resizing * {
   opacity: 0.4;
   background: transparent;
 }
+/* The secondary button: filled like a field (the blend mode's), no line until hovered. */
+.btn-secondary {
+  border-color: transparent;
+  background: var(--input);
+}
+.btn-secondary:hover {
+  border-color: var(--line);
+  background: var(--input);
+}
 .btn-primary {
   border-color: var(--accent);
   background: var(--accent);
@@ -2436,14 +2445,13 @@ body.is-dragging-swatch * {
   gap: 8px;
   border: 0;
   border-radius: var(--radius-lg);
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  background: var(--input);
   color: var(--text);
   font: 600 14px var(--font);
   cursor: pointer;
 }
 .action-btn:hover {
-  background: var(--hover);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .action-btn.is-primary {
   background: var(--glow);
@@ -2467,7 +2475,7 @@ body.is-dragging-swatch * {
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
 }
-/* Cards float like the panels: rounded, with a soft shadow that grows on hover. */
+/* Cards like the panels' sections: flat, a line around them that darkens on hover. */
 .home-card {
   min-width: 0;
   display: grid;
@@ -2475,18 +2483,17 @@ body.is-dragging-swatch * {
   align-items: center;
   column-gap: 4px;
   padding: 6px 6px 10px;
-  border: 0;
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--panel);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.12s ease;
+  transition: border-color 0.12s ease;
 }
 .home-card:hover {
-  box-shadow: var(--shadow-pop);
+  border-color: var(--frame-strong);
 }
 .home-card:focus-visible {
   outline: 2px solid var(--glow-line);
@@ -2516,14 +2523,14 @@ button.home-help-card {
   gap: 12px;
   padding: 14px 16px;
   border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
   background: var(--panel);
   color: inherit;
   text-decoration: none;
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.12s ease;
+  transition: border-color 0.12s ease;
 }
 .home-help-card:hover {
-  box-shadow: var(--shadow-pop);
+  border-color: var(--frame-strong);
 }
 .home-help-card:focus-visible {
   outline: 2px solid var(--glow-line);
@@ -2603,31 +2610,22 @@ button.home-help-card {
   gap: 8px;
   margin-left: auto;
 }
-/* Smaller than on the welcome, and squarer: the corners of the other controls beside them. */
-.home-top .action-btn {
-  height: 32px;
-  padding: 0 14px;
-  border-radius: var(--radius);
-  font-size: 12px;
+/* The editor's menu bar buttons: Export's size. */
+.home-top .btn {
+  height: 28px;
+  padding: 0 12px;
 }
 .home-sort {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 10px 0 12px;
-  border: 0;
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  width: auto;
+  min-width: 140px;
 }
 /* The two views, a segmented control. */
 .home-view {
   display: flex;
   gap: 2px;
-  padding: 2px;
+  padding: 1px;
   border-radius: var(--radius);
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  background: var(--input);
 }
 /* The list: a table, one row per file, each row a card of its own. */
 .home-table {
@@ -2660,11 +2658,19 @@ button.home-help-card {
 }
 .home-table tbody tr {
   cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.12s ease;
 }
-.home-table tbody tr:hover {
-  box-shadow: var(--shadow-pop);
+.home-table td {
+  border-block: 1px solid var(--line);
+  transition: border-color 0.12s ease;
+}
+.home-table td:first-child {
+  border-left: 1px solid var(--line);
+}
+.home-table td:last-child {
+  border-right: 1px solid var(--line);
+}
+.home-table tbody tr:hover td {
+  border-color: var(--frame-strong);
 }
 .home-table tbody tr:focus-visible {
   outline: 2px solid var(--glow-line);
@@ -2709,6 +2715,9 @@ button.home-help-card {
   background: var(--menubar);
   border-bottom-color: var(--menubar-line);
 }
+.home.has-files {
+  background: var(--panel);
+}
 .home.has-files .home-inner {
   max-width: none;
   padding: 0;
@@ -2751,8 +2760,7 @@ button.home-help-card {
 }
 .home-nav-item.is-active {
   color: var(--text);
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  background: var(--hover);
 }
 .home-nav-count {
   margin-left: auto;

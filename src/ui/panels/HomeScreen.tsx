@@ -172,15 +172,12 @@ export function HomeScreen() {
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
         {shown.length > 0 && (
           <div className="home-top-actions">
-            <button type="button" className="action-btn" onClick={() => void importFile()}>
+            <button type="button" className="btn btn-secondary" onClick={() => void importFile()}>
+              <Icon name="upload" size={16} />
               {t('home.import')}
             </button>
-            <button
-              type="button"
-              className="action-btn is-primary"
-              onClick={() => openDialog({ type: 'newFile' })}
-            >
-              <Icon name="plus" size={12} />
+            <button type="button" className="btn btn-primary" onClick={() => openDialog({ type: 'newFile' })}>
+              <Icon name="plus" size={16} />
               {t('common.create')}
             </button>
           </div>
@@ -328,7 +325,7 @@ export function HomeScreen() {
                     {!showDeleted && (
                       <button
                         type="button"
-                        className="btn home-sort"
+                        className="field field-menu home-sort"
                         aria-haspopup="menu"
                         onClick={(e) => sortMenu(e.currentTarget)}
                       >

@@ -73,6 +73,7 @@ import {
   Star,
   Sun,
   Trash2,
+  Upload,
   Triangle,
   Undo2,
   Unlink,
@@ -202,6 +203,7 @@ export const ICONS = {
   image: Image,
   crop: Crop,
   download: Download,
+  upload: Upload,
   code: CodeXml,
 } satisfies Record<string, Glyph>;
 
