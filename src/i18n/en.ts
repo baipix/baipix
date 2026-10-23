@@ -734,7 +734,7 @@ export const en = {
   'home.drop': 'Drop to open',
   'home.justNow': 'Just now',
   'home.deleted': 'Recently deleted',
-  'home.deletedHint': 'Kept {days} days',
+  'file.deleteForGood': 'Delete for good',
   'home.deletedOne': '1 file',
   'home.new': 'New',
   'home.sort': 'Sort by',

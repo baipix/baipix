@@ -15,7 +15,7 @@ import {
 const DB_NAME = 'baipix';
 /**
  * Version 1 kept the whole workspace as one record; version 2 keeps one record per board; version
- * 3 adds the deleted boards, kept a while.
+ * 3 adds the deleted boards.
  */
 const DB_VERSION = 3;
 /** Version 1's store: the workspace under `current`, the histories under `history`. */
@@ -28,10 +28,8 @@ const META = 'meta';
 const META_KEY = 'current';
 /** One record per board's undo history, by its id. */
 const HISTORIES = 'histories';
-/** Deleted boards, by id, with when: a file deleted by mistake comes back from here. */
+/** Deleted boards, by id, with when: a file deleted by mistake comes back from here, until deleted for good. */
 const TRASH = 'trash';
-/** How long a deleted file is kept. */
-export const TRASH_DAYS = 30;
 
 interface Trashed {
   file: StoredFile;
@@ -191,29 +189,11 @@ export class IndexedDbStorage implements StorageAdapter {
     return docs;
   }
 
-  /** The deleted files, newest first; those older than `TRASH_DAYS` go for good. */
+  /** The deleted files, newest first. They stay until deleted for good (`discardTrashed`). */
   async listTrash(): Promise<TrashedFile[]> {
     const db = await this.connect();
-    const limit = Date.now() - TRASH_DAYS * 86_400_000;
     const entries =
-      (await transact(db, [TRASH], 'readwrite', (tx) => {
-        const store = tx.objectStore(TRASH);
-        const req = store.openCursor();
-        const kept: Trashed[] = [];
-        req.onsuccess = () => {
-          const cursor = req.result;
-          if (!cursor) return;
-          const entry = cursor.value as Trashed;
-          if (entry.deletedAt < limit) cursor.delete();
-          else kept.push(entry);
-          cursor.continue();
-        };
-        return {
-          get result() {
-            return kept;
-          },
-        } as unknown as IDBRequest<Trashed[]>;
-      })) ?? [];
+      (await transact(db, [TRASH], 'readonly', (tx) => all<Trashed>(tx.objectStore(TRASH)))) ?? [];
     const files = new Map<string, TrashedFile>();
     for (const { file, deletedAt } of entries) {
       const doc = readStoredFile(file);

@@ -63,7 +63,7 @@ export interface StorageAdapter {
   save(workspace: Workspace): Promise<void>;
   /** The boards another tab of the app added or changed meanwhile, to take in. */
   changedElsewhere?(): Promise<PixelDoc[]>;
-  /** Deleted files, newest first, kept 30 days; restoring one gives its boards back to take in. */
+  /** Deleted files, newest first, kept until deleted for good; restoring one gives its boards back to take in. */
   listTrash?(): Promise<TrashedFile[]>;
   restoreTrashed?(fileId: string): Promise<PixelDoc[]>;
   discardTrashed?(fileId: string): Promise<void>;

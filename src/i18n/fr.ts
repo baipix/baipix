@@ -742,7 +742,7 @@ export const fr: Record<MessageKey, string> = {
   'home.drop': 'Dépose pour ouvrir',
   'home.justNow': "À l'instant",
   'home.deleted': 'Supprimés récemment',
-  'home.deletedHint': 'Gardés {days} jours',
+  'file.deleteForGood': 'Supprimer définitivement',
   'home.deletedOne': '1 fichier',
   'home.new': 'Nouveau',
   'home.sort': 'Trier par',
