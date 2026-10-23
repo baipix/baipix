@@ -2583,9 +2583,9 @@ body.is-dragging-swatch * {
 }
 .home-toolbar-title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 .home-toolbar-tools {
   display: flex;
