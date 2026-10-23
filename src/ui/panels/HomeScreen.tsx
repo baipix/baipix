@@ -16,7 +16,6 @@ import { createFromTemplate } from '../templates';
 import { DOCS_URL } from '../links';
 import { openDialog, toast } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
-import { TRASH_DAYS } from '../../storage/indexedDb';
 
 const DAY = 86_400_000;
 
@@ -175,7 +174,6 @@ export function HomeScreen() {
               </button>
               <span className="home-h2-sep">/</span>
               {t('home.deleted')}{' '}
-              <span className="home-h2-hint">{t('home.deletedHint', { days: TRASH_DAYS })}</span>
             </h2>
             <div className="home-grid">
               {deleted.map((f) => (
@@ -195,6 +193,21 @@ export function HomeScreen() {
                   >
                     {t('file.restore')}
                   </button>
+                  <IconButton
+                    icon="more"
+                    className="icon-btn home-card-action"
+                    label={t('file.actions')}
+                    aria-haspopup="menu"
+                    onClick={(e) =>
+                      openMenu(e.currentTarget, [
+                        {
+                          label: t('file.deleteForGood'),
+                          onSelect: () =>
+                            void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
+                        },
+                      ])
+                    }
+                  />
                 </div>
               ))}
             </div>
@@ -257,8 +270,7 @@ export function HomeScreen() {
                     <span className="home-card-meta muted truncate">
                       {deleted.length === 1
                         ? t('home.deletedOne')
-                        : t('home.deletedMany', { count: deleted.length })}{' '}
-                      · {t('home.deletedHint', { days: TRASH_DAYS })}
+                        : t('home.deletedMany', { count: deleted.length })}
                     </span>
                   </span>
                 </button>
