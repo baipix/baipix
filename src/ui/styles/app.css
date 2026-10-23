@@ -2700,22 +2700,35 @@ button.home-help-card {
 }
 
 /* With drawings, the page is a sidebar and a main area, like a files app. */
+/* The header like the editor's menu bar (its color and line), the sidebar like its panels: lines
+   between the parts, as in a files app. */
+.home.has-files .home-top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--menubar);
+  border-bottom-color: var(--menubar-line);
+}
+.home.has-files .home-inner {
+  max-width: none;
+  padding: 0;
+}
 .home-body {
   display: flex;
-  gap: 32px;
-  align-items: flex-start;
-  min-height: calc(100vh - 48px - 48px);
+  min-height: calc(100vh - 49px);
 }
 .home-nav {
   position: sticky;
-  top: 12px;
+  top: 49px;
   flex: none;
-  width: 200px;
+  width: 220px;
+  height: calc(100vh - 49px);
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: calc(100vh - 48px - 60px);
-  padding-top: 24px;
+  padding: 16px 12px;
+  border-right: 1px solid var(--menubar-line);
+  background: var(--menubar);
 }
 .home-nav-item {
   display: flex;
@@ -2752,7 +2765,8 @@ button.home-help-card {
   flex-direction: column;
   gap: 2px;
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--menubar-line);
 }
 .home-nav-link {
   display: flex;
@@ -2776,6 +2790,8 @@ button.home-help-card {
 .home-main {
   flex: 1;
   min-width: 0;
+  max-width: 1600px;
+  padding: 0 32px calc(48px + env(safe-area-inset-bottom, 0px));
 }
 .home-empty {
   margin: 8px 0;

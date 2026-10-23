@@ -150,7 +150,7 @@ export function HomeScreen() {
 
   return (
     <div
-      className={`home${shown.length ? '' : ' is-empty'}${dropping ? ' is-dropping' : ''}`}
+      className={`home${shown.length ? ' has-files' : ' is-empty'}${dropping ? ' is-dropping' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
         e.preventDefault();
