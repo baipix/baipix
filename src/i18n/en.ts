@@ -737,6 +737,7 @@ export const en = {
   'file.deleteForGood': 'Delete for good',
   'home.deletedOne': '1 file',
   'home.drawings': 'Drawings',
+  'home.trashEmpty': 'Nothing in the trash.',
   'home.colName': 'Name',
   'home.colFormat': 'Format',
   'home.colPalette': 'Palette',

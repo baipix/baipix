@@ -88,8 +88,8 @@ A small floating window with the whole drawing at a fixed size, so you see it as
 ## The files screen
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/files-light.webp" width="1440" height="900" alt="The files screen: the drawings as cards, with a sort menu, grid and list views, and Import and New buttons at the top right." loading="lazy" />
-  <img class="for-dark" src="../../shots/files-dark.webp" width="1440" height="900" alt="The files screen: the drawings as cards, with a sort menu, grid and list views, and Import and New buttons at the top right." loading="lazy" />
+  <img class="for-light" src="../../shots/files-light.webp" width="1440" height="900" alt="The files screen: a sidebar with Drawings and Trash, the drawings as cards, a sort menu, grid and list views, and Import and Create at the top right." loading="lazy" />
+  <img class="for-dark" src="../../shots/files-dark.webp" width="1440" height="900" alt="The files screen: a sidebar with Drawings and Trash, the drawings as cards, a sort menu, grid and list views, and Import and Create at the top right." loading="lazy" />
 </figure>
 
-Baipix opens on your files, with New and Import at the top right, a menu to sort them (alphabetically or by last change, oldest or newest first) and a grid or a list view. The first time, before any file, it welcomes you with Create, Import and the templates instead. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).
+Baipix opens on your drawings, laid out like a files app: a sidebar with Drawings and the Trash, and at its bottom the docs, a bug or idea form, and what's new; Import and Create at the top right; a menu to sort the drawings (alphabetically or by last change, oldest or newest first) and a grid or a list view. The first time, before any drawing, it welcomes you with Create, Import and the templates instead. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).

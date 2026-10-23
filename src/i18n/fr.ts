@@ -745,6 +745,7 @@ export const fr: Record<MessageKey, string> = {
   'file.deleteForGood': 'Supprimer définitivement',
   'home.deletedOne': '1 fichier',
   'home.drawings': 'Dessins',
+  'home.trashEmpty': 'La corbeille est vide.',
   'home.colName': 'Nom',
   'home.colFormat': 'Format',
   'home.colPalette': 'Palette',
