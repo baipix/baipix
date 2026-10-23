@@ -2603,6 +2603,9 @@ body.is-dragging-swatch * {
   gap: 6px;
   height: 32px;
   padding: 0 10px 0 12px;
+  border: 0;
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 /* The two views, a segmented control. */
 .home-view {

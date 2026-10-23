@@ -13,7 +13,7 @@ import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
 import { SizeList } from '../components/SizeList';
 import { createFromTemplate } from '../templates';
-import { DOCS_URL } from '../links';
+import { CHANGELOG_URL, DOCS_URL } from '../links';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 
@@ -160,7 +160,7 @@ export function HomeScreen() {
         {shown.length > 0 && !showDeleted && (
           /* Files already: no welcome, a toolbar like a files app's, the files under it. */
           <div className="home-toolbar">
-            <h2 className="home-toolbar-title">{t('file.recent')}</h2>
+            <h2 className="home-toolbar-title">{t('home.drawings')}</h2>
             <div className="home-toolbar-tools">
               <button
                 type="button"
@@ -194,7 +194,7 @@ export function HomeScreen() {
                 onClick={() => openDialog({ type: 'newFile' })}
               >
                 <Icon name="plus" size={12} />
-                {t('home.new')}
+                {t('common.create')}
               </button>
             </div>
           </div>
@@ -371,6 +371,15 @@ export function HomeScreen() {
             <span className="home-help-text">
               <span className="home-help-title">{t('home.bugTitle')}</span>
               <span className="muted">{t('home.bugText')}</span>
+            </span>
+          </a>
+          <a className="home-help-card" href={CHANGELOG_URL} target="_blank" rel="noopener">
+            <span className="home-help-icon">
+              <Icon name="news" size={18} />
+            </span>
+            <span className="home-help-text">
+              <span className="home-help-title">{t('home.newsTitle', { version: __APP_VERSION__ })}</span>
+              <span className="muted">{t('home.newsText')}</span>
             </span>
           </a>
         </section>
