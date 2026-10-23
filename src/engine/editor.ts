@@ -1018,6 +1018,22 @@ export class Editor {
     this.commit(false);
   }
 
+  /**
+   * Boards another tab of the app added or changed: new ones join the workspace (not active), known
+   * ones are replaced as stored, except the active board, being worked on here.
+   */
+  adoptDocuments(docs: PixelDoc[]): void {
+    let taken = false;
+    for (const doc of docs) {
+      const session = this.sessions.find((s) => s.doc.id === doc.id);
+      if (session === this.active) continue;
+      if (session) session.doc = doc;
+      else this.sessions.push({ doc, history: new History(), selection: null });
+      taken = true;
+    }
+    if (taken) this.commit(false);
+  }
+
   getDocuments(): PixelDoc[] {
     return this.sessions.map((s) => s.doc);
   }

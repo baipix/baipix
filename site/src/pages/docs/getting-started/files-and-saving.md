@@ -6,7 +6,7 @@ description: 'Where Baipix keeps your pixel art (in your browser, saved as you d
 
 ## Saved as you draw
 
-There's no Save button. Every change is saved a moment later, in your browser's storage on your device. Close the tab, come back tomorrow: your files are on the files screen, and the last one opens where you left it.
+There's no Save button. Every change is saved a moment later, in your browser's storage on your device. Close the tab, come back tomorrow: your files are on the files screen, and the last one opens where you left it. Baipix open in several tabs is fine: each saves what it changes, and a drawing made in one shows up in the others when you come back to them.
 
 Nothing is uploaded. Your drawings never leave your device, and there's no account to make.
 

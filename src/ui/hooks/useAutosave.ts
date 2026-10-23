@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import type { Editor } from '../../engine/editor';
 import { getLocale, t } from '../../i18n';
-import { packHistories } from '../../storage/history';
 import type { StorageAdapter } from '../../storage/workspace';
 import { toast, uiStore } from '../uiStore';
 
@@ -56,7 +55,7 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
           .filter((d) => !editor.isFresh(d.id))
           .map((d) => d.id),
       );
-      storage.saveHistory(packHistories(editor.histories().filter((h) => kept.has(h.id)))).catch(() => {
+      storage.saveHistory(editor.histories().filter((h) => kept.has(h.id))).catch(() => {
         /* the drawing is saved anyway; only the undo steps would be lost */
       });
     };
@@ -70,13 +69,27 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
       save();
       saveHistory();
     };
+    // Back on this tab: what another tab of Baipix drew or added meanwhile shows here too.
+    const sync = () => {
+      if (document.visibilityState === 'hidden' || !storage.changedElsewhere) return;
+      storage
+        .changedElsewhere()
+        .then((docs) => docs.length && editor.adoptDocuments(docs))
+        .catch(() => {
+          /* storage unavailable: nothing to take in */
+        });
+    };
     const offs = [editor.onPersist(schedule), editor.subscribe(schedule), uiStore.subscribe(schedule)];
     window.addEventListener('pagehide', leave);
+    window.addEventListener('focus', sync);
+    document.addEventListener('visibilitychange', sync);
     return () => {
       clearTimeout(timer);
       clearTimeout(historyTimer);
       offs.forEach((off) => off());
       window.removeEventListener('pagehide', leave);
+      window.removeEventListener('focus', sync);
+      document.removeEventListener('visibilitychange', sync);
     };
   }, [editor, storage, ready]);
 }

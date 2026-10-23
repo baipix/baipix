@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+
+- A drawing made in one tab is no longer lost when another tab of Baipix saves: each board is saved as its own record, a tab only writes what it changed and only removes what it removed, and a drawing made in another tab shows up when you come back. (#502)
+
 ## [0.7.4] - 2026-10-23
 
 Effects with an opacity, an eyedropper for the background, a Help button with the version, and a round of fixes from testers and a code review: the pencil's holes, copied selections that paste back, and faster selecting on big files.
