@@ -2592,9 +2592,11 @@ body.is-dragging-swatch * {
   align-items: center;
   gap: 8px;
 }
+/* Smaller than on the welcome, and squarer: the corners of the other controls beside them. */
 .home-toolbar .action-btn {
   height: 32px;
   padding: 0 14px;
+  border-radius: var(--radius);
   font-size: 12px;
 }
 .home-sort {
