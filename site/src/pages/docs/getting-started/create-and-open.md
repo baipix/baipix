@@ -13,7 +13,7 @@ description: 'Start a new pixel art file from a size or a template, import an im
   <img class="for-dark" src="../../shots/new-file-dark.webp" width="352" height="498" alt="The New file dialog: width and height, recent sizes, and the templates with their sizes." loading="lazy" />
 </figure>
 
-Or start from a **template**, each with a size and a palette that suit it:
+Or start from a **template**, each with a size and a palette that suit it. Before your first drawing, the files screen shows them as cards: one click and the canvas is ready.
 
 | Template         | Size      | Palette        | Comes with                   |
 | ---------------- | --------- | -------------- | ---------------------------- |
