@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Two fingers moving sideways on a trackpad pan the canvas both ways, instead of taking the browser back to the previous page. (#532)
 
+### Website
+
+- The docs catch up with the recent changes: the Help button and the version in the corner, dialogs that close with a click outside, Deselect and its shortcuts, copied selections on the system clipboard, the templates on the first files screen. (#534)
+
 ## [0.7.6] - 2026-10-24
 
 The stabilizer shows its string, the reference image can be removed from the interface, and the files screen stays on a reload.
