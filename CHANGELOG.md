@@ -16,6 +16,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The violet main button (Create, Export, a dialog's OK) gets deeper under the pointer, and deeper still when pressed, in both themes. (#512)
 - A drawing made in one tab is no longer lost when another tab of Baipix saves: each board is saved as its own record, a tab only writes what it changed and only removes what it removed, and a drawing made in another tab shows up when you come back. (#502)
 
 ## [0.7.4] - 2026-10-23
