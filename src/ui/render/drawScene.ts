@@ -50,6 +50,7 @@ function maskEdges(sel: Selection): Path2D {
   return path;
 }
 import { checkerPattern, type Theme } from './theme';
+import { referenceColorAt } from '../referenceColors';
 
 export interface Camera {
   dpr: number;
@@ -720,7 +721,7 @@ export function drawScene(
     ctx.strokeRect(mx + lw / 2, my + lw / 2, marquee.w * s - lw, marquee.h * s - lw);
     ctx.restore();
   }
-  if (scene.loupe) drawLoupe(ctx, width, scene.composite, scene.loupe, camera, theme, checker);
+  if (scene.loupe) drawLoupe(ctx, width, scene, scene.loupe, camera, theme, checker);
 }
 
 /**
@@ -731,7 +732,7 @@ export function drawScene(
 function drawLoupe(
   ctx: CanvasRenderingContext2D,
   width: number,
-  composite: CanvasImageSource,
+  scene: Scene,
   loupe: NonNullable<Scene['loupe']>,
   camera: Camera,
   theme: Theme,
@@ -756,8 +757,24 @@ function drawLoupe(
   ctx.clip();
   ctx.fillStyle = checker;
   ctx.fillRect(x, y, size, size);
+  // Under the drawing, as on the canvas: the background, then the reference image. The reference
+  // shows as the eyedropper picks it: one cell per art pixel, its color at the pixel's center, in full.
+  const { doc } = scene;
+  if (scene.reference) {
+    const ox = loupe.at.x - half;
+    const oy = loupe.at.y - half;
+    const background = hasBackground(doc) ? toCss(doc.background) : null;
+    for (let j = 0; j < LOUPE_PIXELS; j++)
+      for (let i = 0; i < LOUPE_PIXELS; i++) {
+        const c = referenceColorAt(doc, ox + i, oy + j);
+        const fill = c ? toCss(c) : background;
+        if (!fill) continue;
+        ctx.fillStyle = fill;
+        ctx.fillRect(x + i * cell, y + j * cell, cell, cell);
+      }
+  }
   ctx.drawImage(
-    composite,
+    scene.composite,
     loupe.at.x - half,
     loupe.at.y - half,
     LOUPE_PIXELS,

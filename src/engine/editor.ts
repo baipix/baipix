@@ -1,6 +1,7 @@
 import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
-import { flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
+import { blendOver, flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
+  hasBackground,
   activeLayer,
   centeredOffset,
   cloneDocument,
@@ -499,6 +500,7 @@ export class Editor {
   private layerClipId: string | null = null;
   /** The pixels copied last (see `copy`), so the system clipboard can tell a paste it holds them. */
   private pixelClipId: string | null = null;
+  private referenceSampler: ((doc: PixelDoc, x: number, y: number) => Color) | null = null;
   /** The eyedropper picking the background's color: the tool to go back to, and the color before. */
   private backgroundPick: { tool: ToolId; before: Color } | null = null;
   private stroke: Stroke | null = null;
@@ -626,6 +628,14 @@ export class Editor {
   /** Anything worth saving changed. */
   onPersist = (listener: Listener): (() => void) => this.on(this.persistListeners, listener);
   onNotice = (listener: (n: Notice) => void): (() => void) => this.on(this.noticeListeners, listener);
+
+  /**
+   * How to read the reference image's color under an art pixel (the image is decoded by the
+   * interface): the eyedropper takes it where nothing is drawn over it.
+   */
+  setReferenceSampler(sampler: ((doc: PixelDoc, x: number, y: number) => Color) | null): void {
+    this.referenceSampler = sampler;
+  }
 
   setLabels(labels: EditorLabels): void {
     this.labels = labels;
@@ -4069,8 +4079,13 @@ export class Editor {
       trail: [],
       scratch: {},
       sample: (q) => {
-        const flat = flatten(doc);
-        const c = flat[q.y * doc.width + q.x];
+        // What's drawn; where it lets through, the reference image (if shown), then the background.
+        const top = flatten(doc, { includeBackground: false })[q.y * doc.width + q.x];
+        if (alpha(top) === 255) return top;
+        const reference =
+          !alpha(top) && doc.reference?.visible ? (this.referenceSampler?.(doc, q.x, q.y) ?? 0) : 0;
+        const under = reference || (hasBackground(doc) ? doc.background : 0);
+        const c = alpha(top) && under ? blendOver(top, under) : top || under;
         return alpha(c) ? c : 0;
       },
       setColor: (slot, color) => {
