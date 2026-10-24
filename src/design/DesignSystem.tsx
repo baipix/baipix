@@ -327,12 +327,11 @@ function ButtonsBlock() {
             Create
           </button>
         </Specimen>
-        <Specimen label="Action button" use="Big actions on full screens (home). Chunkier, bold, deep side.">
-          <button type="button" className="action-btn is-primary">
-            <Icon name="plus" size={12} />
-            Create
-          </button>
-          <button type="button" className="action-btn">
+        <Specimen
+          label="Secondary button"
+          use="Beside a primary one (Import, beside Create). Filled like a field."
+        >
+          <button type="button" className="btn btn-secondary">
             Import
           </button>
         </Specimen>
@@ -734,18 +733,20 @@ function SurfacesBlock() {
           <TabsDemo />
         </Specimen>
         <Specimen
-          label="Help card"
-          use="A link to somewhere else, with an icon, a title and a line (the files screen: the docs, a bug report)."
+          label="Sidebar item"
+          use="The sections of the files screen, its sidebar: the current one filled, a count at the right."
         >
-          <a className="home-help-card" href="#help-card">
-            <span className="home-help-icon">
-              <Icon name="docs" size={18} />
-            </span>
-            <span className="home-help-text">
-              <span className="home-help-title">Learn Baipix</span>
-              <span className="muted">Every tool and shortcut, explained in the docs.</span>
-            </span>
-          </a>
+          <div style={{ width: 200 }}>
+            <button type="button" className="home-nav-item is-active">
+              <Icon name="image" size={16} />
+              Drawings
+            </button>
+            <button type="button" className="home-nav-item">
+              <Icon name="trash" size={16} />
+              Trash
+              <span className="home-nav-count">2</span>
+            </button>
+          </div>
         </Specimen>
         <Specimen
           label="Pill tabs"

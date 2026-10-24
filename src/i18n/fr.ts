@@ -602,6 +602,7 @@ export const fr: Record<MessageKey, string> = {
   'template.tiled': 'mosaïque',
   'dialog.swapSize': 'Inverser largeur et hauteur',
   'template.title': 'Modèles',
+  'template.startTitle': 'Partir d’un modèle',
   'template.start': 'Ou pars d’un modèle',
   'upscaled.title': 'Image en pixel art agrandie',
   'upscaled.hint':
