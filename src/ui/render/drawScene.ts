@@ -720,7 +720,7 @@ export function drawScene(
     ctx.strokeRect(mx + lw / 2, my + lw / 2, marquee.w * s - lw, marquee.h * s - lw);
     ctx.restore();
   }
-  if (scene.loupe) drawLoupe(ctx, width, scene.composite, scene.loupe, camera, theme, checker);
+  if (scene.loupe) drawLoupe(ctx, width, scene, scene.loupe, camera, theme, checker);
 }
 
 /**
@@ -731,7 +731,7 @@ export function drawScene(
 function drawLoupe(
   ctx: CanvasRenderingContext2D,
   width: number,
-  composite: CanvasImageSource,
+  scene: Scene,
   loupe: NonNullable<Scene['loupe']>,
   camera: Camera,
   theme: Theme,
@@ -756,8 +756,29 @@ function drawLoupe(
   ctx.clip();
   ctx.fillStyle = checker;
   ctx.fillRect(x, y, size, size);
+  // Under the drawing, as on the canvas: the background, then the reference image, in full there,
+  // as the eyedropper picks it (the composite leaves both out while a reference shows).
+  const ref = scene.reference;
+  if (ref) {
+    const { doc } = scene;
+    const ox = loupe.at.x - half;
+    const oy = loupe.at.y - half;
+    if (hasBackground(doc)) {
+      ctx.fillStyle = toCss(doc.background);
+      ctx.fillRect(x, y, size, size);
+    }
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(
+      ref.image,
+      x + (ref.rect.x - ox) * cell,
+      y + (ref.rect.y - oy) * cell,
+      ref.rect.w * cell,
+      ref.rect.h * cell,
+    );
+    ctx.imageSmoothingEnabled = false;
+  }
   ctx.drawImage(
-    composite,
+    scene.composite,
     loupe.at.x - half,
     loupe.at.y - half,
     LOUPE_PIXELS,
