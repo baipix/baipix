@@ -2698,6 +2698,15 @@ body.is-dragging-swatch * {
   font-weight: 800;
   letter-spacing: -0.02em;
 }
+.home-welcome-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+.home-welcome-actions .btn {
+  height: 32px;
+  padding: 0 14px;
+}
 .home-welcome-title {
   align-self: flex-start;
   margin: 40px 0 12px;

@@ -288,6 +288,22 @@ export function HomeScreen() {
                   </span>
                   <h1>{t('home.title')}</h1>
                   <p className="home-tagline">{t('home.tagline')}</p>
+                  {/* The three ways in: from scratch, from a file, or from a template below. */}
+                  <div className="home-welcome-actions">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => openDialog({ type: 'newFile' })}
+                    >
+                      <Icon name="plus" size={16} />
+                      {t('common.create')}
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={() => void importFile()}>
+                      <Icon name="upload" size={16} />
+                      {t('home.import')}
+                    </button>
+                  </div>
+                  <p className="home-formats muted">{t('home.formats')}</p>
                   <h2 className="home-welcome-title">{t('template.startTitle')}</h2>
                   <div className="home-templates-grid">
                     {TEMPLATES.map((tpl) => (
@@ -310,7 +326,6 @@ export function HomeScreen() {
                       </button>
                     ))}
                   </div>
-                  <p className="home-formats muted">{t('home.formats')}</p>
                 </section>
               )}
               {showDeleted && (
