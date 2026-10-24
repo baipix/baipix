@@ -14,6 +14,12 @@ body,
 #root {
   height: 100%;
 }
+/* No swipe to go back or forward, nor bounce: two fingers sideways on a trackpad pan the canvas,
+   and would otherwise take Chrome or Safari to the previous page, leaving the drawing. */
+html,
+body {
+  overscroll-behavior: none;
+}
 html {
   scroll-padding-top: env(safe-area-inset-top, 0px);
 }
