@@ -21,7 +21,7 @@ The pencil (<kbd>B</kbd>) and the eraser (<kbd>E</kbd>) share their size, tip an
 ## Clean lines
 
 - **Pixel perfect** (on by default) removes the doubled pixels a curve leaves at its corners, so a 1-pixel line stays 1 pixel thick.
-- **Stabilizer**: the line follows the pointer on a string this many pixels long, which smooths a shaky hand. 0 is off.
+- **Stabilizer**: the line follows the pointer on a string this many pixels long, which smooths a shaky hand. While you draw, the string shows from the pointer to the pixel being painted; on release, the line goes on to the pointer. 0 is off.
 - **Straight lines**: Shift-click draws a straight line from where the last stroke ended. Ctrl+Shift-click locks it to 0°, 45°, 90° or 2:1, the isometric slope.
 
 ## The … menu
