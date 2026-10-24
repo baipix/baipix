@@ -2247,6 +2247,10 @@ body.is-dragging-swatch * {
   /* Muted text on the violet (a hovered menu item): still above 4.5:1. */
   --glow-muted: rgba(255, 255, 255, 0.8);
   --glow-line: light-dark(#6e56cf, #9e8cfc);
+  /* The main button under the pointer, a deeper violet (lighter would lose the white text's 4.5:1 on
+     the dark theme); pressed, deeper still. */
+  --glow-hover: light-dark(#5e46bf, #6649c9);
+  --glow-press: light-dark(#5039ad, #5d41bd);
 }
 :focus-visible,
 .panel-tab:focus-visible {
@@ -2267,12 +2271,21 @@ body.is-dragging-swatch * {
   background: color-mix(in srgb, var(--glow) 16%, transparent);
 }
 /* The main button and the active tool are violet. */
-.btn-primary,
-.btn-primary:hover:not(:disabled) {
+.btn-primary {
   border-color: var(--glow);
   background: var(--glow);
   color: var(--glow-ink);
   filter: none;
+}
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--glow-hover);
+  background: var(--glow-hover);
+  color: var(--glow-ink);
+  filter: none;
+}
+.btn-primary:active:not(:disabled) {
+  border-color: var(--glow-press);
+  background: var(--glow-press);
 }
 /* A toggle that's on (symmetry, a folded panel, an open popover): the selection's violet tint. */
 .icon-btn[aria-pressed='true'],
