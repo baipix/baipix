@@ -225,13 +225,26 @@ function PaletteSection() {
 function ReferenceSection() {
   const t = useT();
   const editor = useEditor();
+  const actions = useActions();
   const reference = useEditorState((s) => s.doc.reference);
   if (!reference) return null;
   return (
     <Section
       id="layer"
       title={t('section.layer')}
-      aside={<span className="muted">{t('reference.title')}</span>}
+      aside={
+        <>
+          <span className="muted">{t('reference.title')}</span>
+          {/* Removed with an Undo in the toast, like a layer. */}
+          <IconButton
+            icon="trash"
+            className="icon-btn is-danger"
+            label={t('reference.remove')}
+            shortcut="Del"
+            onClick={() => actions.removeReference()}
+          />
+        </>
+      }
     >
       <div className="two-columns">
         <NumberField

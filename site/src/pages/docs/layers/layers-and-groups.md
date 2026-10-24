@@ -43,7 +43,7 @@ With nothing selected on the canvas, <kbd>Ctrl</kbd>+<kbd>C</kbd> in the Layers 
 
 ## Reference image
 
-**File › Reference image…**, or the image button next to Layers, places a picture under every layer, to trace over. It shows at the bottom of the panel: select it to move, resize or fade it. It's never exported.
+**File › Reference image…**, or the image button next to Layers, places a picture under every layer, to trace over. It shows at the bottom of the panel: select it to move, resize or fade it. It's never exported. To remove it, the trash next to its name in the right panel, its right-click menu, or Delete once it's selected (Undo in the toast).
 
 ## For isometric scenes
 

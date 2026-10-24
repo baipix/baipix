@@ -521,7 +521,7 @@ export const fr: Record<MessageKey, string> = {
   'reference.useInstead': 'Utiliser comme référence',
   'toast.imagePasted': 'Image collée sur un nouveau calque.',
   'reference.hint':
-    "Sous tous les calques, jamais exportée. Avec l'outil Déplacer, glisse-la pour la déplacer, ou un coin pour la redimensionner.",
+    "Sous tous les calques, jamais exportée. Avec l'outil Déplacer, glisse-la pour la déplacer, ou un coin pour la redimensionner. Suppr la retire.",
   'toast.referenceAdded':
     "Référence ajoutée sous les calques. Glisse-la, ou un coin pour la redimensionner. Elle n'est jamais exportée.",
   'toast.referenceRemoved': 'Référence retirée.',

@@ -617,6 +617,22 @@ function LayersSection() {
               listRef.current?.focus({ preventScroll: true });
               editor.selectReference();
             }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              editor.selectReference();
+              openMenu(e.currentTarget, [
+                {
+                  label: reference.visible ? t('reference.hide') : t('reference.show'),
+                  onSelect: () => editor.updateReference({ visible: !reference.visible }),
+                },
+                {
+                  label: reference.locked ? t('layer.unlock') : t('layer.lock'),
+                  onSelect: () => editor.updateReference({ locked: !reference.locked }),
+                },
+                '-',
+                { label: t('reference.remove'), shortcut: 'Del', onSelect: () => actions.removeReference() },
+              ]);
+            }}
           >
             <img className="thumb reference-thumb" src={reference.src} alt="" />
             <span className="item-name">{t('reference.title')}</span>
