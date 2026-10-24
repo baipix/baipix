@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-10-24
+
+A files screen like a files app, with a trash, and the drawings safe with Baipix open in several tabs.
+
 ### Added
 
 - A trash: a deleted file waits in the Trash, in the files screen's sidebar, with a Restore button that brings it back as it was, and a way to delete it for good. (#504)
@@ -13,7 +17,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - One secondary button everywhere, the export's: a line around it and a fill under the pointer. Import on the files screen takes it. (#514)
 - The welcome, before the first drawing, is the drawings screen's: the same header and sidebar, and in the middle the templates as cards, each a board of its shape striped with its palette, one click to start. (#510)
 - A click outside a dialog closes it, like Esc; a drag that starts inside and ends outside keeps it open. (#508)
-- The files screen is a plain list once there are files: the title at the left, and at the right a sort menu (alphabetical or last modified, oldest or newest first), grid and list views, and the Import and New buttons. The welcome with the templates stays for the first time only. (#506)
+- The files screen is laid out like a files app once there are drawings: a sidebar (Drawings, the Trash, and help at the bottom), a sort menu (alphabetical or last modified, oldest or newest first), grid or list views, and Import and Create on the logo's line. (#506)
 
 ### Fixed
 
@@ -444,7 +448,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.4...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.5...main
+[0.7.5]: https://github.com/baipix/baipix/releases/tag/v0.7.5
 [0.7.4]: https://github.com/baipix/baipix/releases/tag/v0.7.4
 [0.7.3]: https://github.com/baipix/baipix/releases/tag/v0.7.3
 [0.7.2]: https://github.com/baipix/baipix/releases/tag/v0.7.2
