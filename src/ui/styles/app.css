@@ -530,15 +530,6 @@ body.is-resizing * {
   opacity: 0.4;
   background: transparent;
 }
-/* The secondary button: filled like a field (the blend mode's), no line until hovered. */
-.btn-secondary {
-  border-color: transparent;
-  background: var(--input);
-}
-.btn-secondary:hover {
-  border-color: var(--line);
-  background: var(--input);
-}
 .btn-primary {
   border-color: var(--accent);
   background: var(--accent);

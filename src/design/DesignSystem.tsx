@@ -311,28 +311,26 @@ function ButtonsBlock() {
   return (
     <Block id="buttons" title="Buttons" intro="Hover and press them to see their states.">
       <div className="ds-grid">
-        <Specimen label="Button" use="Actions in panels and dialogs. Neutral, it only sinks on hover.">
+        <Specimen
+          label="Button"
+          use="Every action but the main one: a line around it, filled under the pointer (Import beside Create, Copy as SVG under Export)."
+        >
           <button type="button" className="btn">
-            Export
+            Import
           </button>
           <button type="button" className="btn" disabled>
             Disabled
           </button>
         </Specimen>
-        <Specimen label="Primary button" use="The one main action of a panel or dialog. Blue at rest.">
-          <button type="button" className="btn btn-secondary">
-            Secondary
+        <Specimen
+          label="Primary button"
+          use="The one main action of a screen, a panel or a dialog. Violet; deeper hovered and pressed."
+        >
+          <button type="button" className="btn">
+            Import
           </button>
           <button type="button" className="btn btn-primary">
             Create
-          </button>
-        </Specimen>
-        <Specimen
-          label="Secondary button"
-          use="Beside a primary one (Import, beside Create). Filled like a field."
-        >
-          <button type="button" className="btn btn-secondary">
-            Import
           </button>
         </Specimen>
         <Specimen
