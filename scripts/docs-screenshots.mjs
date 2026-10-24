@@ -42,7 +42,20 @@ const PARTS = [
   '.floating-preview',
 ];
 
-/** Each picture: what to set up first (in the page), and the part to frame (or the whole window). */
+/** The board on the screen, in CSS pixels: to frame the canvas around the drawing. */
+const BOARD = `const c = [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0].getBoundingClientRect();
+  const vp = (await import('/src/ui/viewport.ts')).viewport;
+  const d = __ed.getState().doc;
+  const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+  // Room above for the board's name, below for its size.
+  return JSON.stringify({ x, y: y - 22, right: x + d.width * z, bottom: y + d.height * z + 30 });`;
+/** The top of the window, down to `bottom`: a screen whose content stops early. */
+const TOP = (bottom) => `return JSON.stringify({ x: 0, y: 0, right: ${WIDTH}, bottom: ${bottom} });`;
+
+/**
+ * Each picture: what to set up first (in the page), and the part to frame: selectors, or `area`, code
+ * that returns a box; the whole window without either.
+ */
 const SHOTS = [
   { name: 'interface', badges: true },
   { name: 'layers', frame: ['.panel-left'] },
@@ -91,6 +104,48 @@ const SHOTS = [
   },
   { name: 'export', setup: `ui.openDialog({ type: 'export' });`, frame: ['.dialog'] },
   { name: 'code', setup: `ui.openDialog({ type: 'code' });`, frame: ['.dialog'] },
+  // Selections, moving, rework tools and palettes.
+  {
+    name: 'selection',
+    setup: `__ed.setTool('wand'); __ed.setOption('wandContiguous', false);
+      __ed.beginStroke({ x: 40, y: 60 }, false, { shift: false }); __ed.endStroke();`,
+    area: BOARD,
+  },
+  {
+    name: 'move-handles',
+    setup: `__ed.setTool('select');
+      __ed.beginStroke({ x: 56, y: 24 }, false, { shift: false });
+      __ed.moveStroke({ x: 104, y: 60 }, { shift: false });
+      __ed.endStroke();
+      __ed.setTool('move');`,
+    area: BOARD,
+  },
+  { name: 'spray', setup: `__ed.setTool('spray');`, frame: ['.tool-options', '.toolbar'] },
+  { name: 'shade', setup: `__ed.setTool('shade');`, frame: ['.tool-options', '.toolbar'] },
+  {
+    name: 'palette-manager',
+    setup: `__ed.savePalette('Sunset'); ui.openDialog({ type: 'paletteManager' }); await wait(300); document.activeElement?.blur();`,
+    frame: ['.dialog'],
+  },
+  // The files screen: the list view, and the trash.
+  {
+    name: 'files-list',
+    setup: `for (const f of ['starfighter', 'knight', 'mount-fuji', 'ramen-shop', 'starry-night']) {
+        __ed.addDocuments(ff.fileFromJson(await (await fetch('/gallery/' + f + '.baipix')).text()));
+      }
+      ui.uiStore.set({ home: true, homeView: 'list' });`,
+    area: TOP(470),
+  },
+  {
+    name: 'trash',
+    setup: `const docs = ff.fileFromJson(await (await fetch('/gallery/knight.baipix')).text());
+      (await import('/src/ui/StorageContext.tsx')).trashStore.set({
+        files: [{ id: docs[0].id, name: 'Knight', deletedAt: Date.now() - 3 * 86400000, boards: docs }],
+      });
+      ui.uiStore.set({ home: true, homeView: 'list' }); await wait(300);
+      document.querySelectorAll('.home-nav-item')[1].click();`,
+    area: TOP(300),
+  },
   // Layers, components and boards.
   {
     name: 'layer-menu',
@@ -234,11 +289,14 @@ for (const theme of ['dark', 'light']) {
     await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: WIDTH - 2, y: HEIGHT - 2 });
     await sleep(400);
     let clip = { x: 0, y: 0, width: WIDTH, height: HEIGHT, scale: 1 };
-    if (shot.frame) {
+    if (shot.frame || shot.area) {
       const box = JSON.parse(
-        await run(`const rects = ${JSON.stringify(shot.frame)}.map((s) => document.querySelector(s).getBoundingClientRect());
+        await run(
+          shot.area ??
+            `const rects = ${JSON.stringify(shot.frame)}.map((s) => document.querySelector(s).getBoundingClientRect());
           return JSON.stringify({ x: Math.min(...rects.map((r) => r.left)), y: Math.min(...rects.map((r) => r.top)),
-            right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) });`),
+            right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) });`,
+        ),
       );
       // Room around the part for its shadow, on the canvas behind it.
       const pad = 16;

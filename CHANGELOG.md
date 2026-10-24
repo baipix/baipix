@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Two fingers moving sideways on a trackpad pan the canvas both ways, instead of taking the browser back to the previous page. (#532)
 
+### Website
+
+- More pictures in the docs: a magic wand selection, the Move tool's frame, the Spray's and Shade's options, the Palettes dialog, the files list and the Trash. (#537)
+
 ## [0.7.6] - 2026-10-24
 
 The stabilizer shows its string, the reference image can be removed from the interface, and the files screen stays on a reload.

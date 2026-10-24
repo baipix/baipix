@@ -18,6 +18,11 @@ Each board keeps its last 50 steps of undo and redo along with the drawing. Relo
 
 Deleted a file by mistake? It waits in the **Trash**, in the files screen's sidebar, for as long as you like: **Restore** brings it back as it was, and its … menu deletes it for good.
 
+<figure class="shot">
+  <img class="for-light" src="../../shots/trash-light.webp" width="1440" height="316" alt="The Trash in the files screen’s sidebar, with a drawing deleted three days ago." loading="lazy" />
+  <img class="for-dark" src="../../shots/trash-dark.webp" width="1440" height="316" alt="The Trash in the files screen’s sidebar, with a drawing deleted three days ago." loading="lazy" />
+</figure>
+
 Your browser's storage is safe from one day to the next, but it isn't a backup: it goes away if you clear the site's data, and a private window forgets everything once it's closed. To keep a drawing for good, or to move it to another computer:
 
 - **File › Download as .baipix** saves the whole file: its boards, layers, groups, components and palette.
@@ -29,9 +34,14 @@ To use the drawing elsewhere, export it instead: see Export, or the code button 
 
 On the files screen, or in the File menu:
 
-- **Rename file** (<kbd>F2</kbd>), **Duplicate file**, **Delete file**. A deleted file comes back with Undo in the message that follows.
+- **Rename file** (<kbd>F2</kbd>), **Duplicate file**, **Delete file**. A deleted file goes to the Trash, and comes back with Undo in the message that follows.
 - **File › Recent** switches between your last files.
 - A new file you never drew in goes away when you open another one, so tries don't pile up.
+
+<figure class="shot">
+  <img class="for-light" src="../../shots/files-list-light.webp" width="1440" height="486" alt="The files screen as a list: each drawing with its picture, format, palette and last change, and its actions." loading="lazy" />
+  <img class="for-dark" src="../../shots/files-list-dark.webp" width="1440" height="486" alt="The files screen as a list: each drawing with its picture, format, palette and last change, and its actions." loading="lazy" />
+</figure>
 
 ## Page views
 

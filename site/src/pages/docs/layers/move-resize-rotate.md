@@ -8,6 +8,11 @@ description: 'Move, resize and rotate layers in Baipix with handles like a desig
 
 With the Move tool (<kbd>V</kbd>), the layer you'll move is framed, with handles around its pixels.
 
+<figure class="shot">
+  <img class="for-light" src="../../shots/move-handles-light.webp" width="832" height="534" alt="A selection with the Move tool: a dashed frame with handles on its corners and sides, and its size under it, 49 × 37." loading="lazy" />
+  <img class="for-dark" src="../../shots/move-handles-dark.webp" width="832" height="534" alt="A selection with the Move tool: a dashed frame with handles on its corners and sides, and its size under it, 49 × 37." loading="lazy" />
+</figure>
+
 - **Click a pixel** to grab its layer, and drag. Hold <kbd>Ctrl</kbd> to move the active layer wherever you click.
 - **Arrow keys** nudge it by 1 pixel, with <kbd>Shift</kbd> by 8.
 - **Click an empty spot**, or press <kbd>Escape</kbd>, to let go of the frame.

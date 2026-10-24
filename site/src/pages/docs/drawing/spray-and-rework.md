@@ -8,6 +8,11 @@ description: 'Spray pixels, then rework pixel art without new colors in Baipix: 
 
 The spray (<kbd>P</kbd>) drops random pixels in a circle, like a spray can. Hold still to keep spraying, right-click to spray the color behind. **Density** sets how many pixels each puff drops, and **Random opacity** varies their transparency.
 
+<figure class="shot">
+  <img class="for-light" src="../../shots/spray-light.webp" width="662" height="116" alt="The Spray’s options: its size, density and random opacity." loading="lazy" />
+  <img class="for-dark" src="../../shots/spray-dark.webp" width="662" height="116" alt="The Spray’s options: its size, density and random opacity." loading="lazy" />
+</figure>
+
 ## Rework without new colors
 
 Three tools share a button to reshape what's already drawn. Jumble and Liquify only move pixels around, so the drawing keeps its colors and its sharp edges.
