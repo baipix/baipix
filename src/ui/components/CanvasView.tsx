@@ -32,6 +32,7 @@ import {
 import { readTheme, type Theme } from '../render/theme';
 import { BRUSH_TOOLS, SHAPE_IDS } from '../tools';
 import { hoverStore, uiStore } from '../uiStore';
+import { referenceColorAt } from '../referenceColors';
 import { COMPONENT_MIME } from '../dragTypes';
 import { viewport } from '../viewport';
 
@@ -701,7 +702,9 @@ export function CanvasView() {
       }
       if (compositeDirty) updateComposite();
       const d = cctx.getImageData(p.x, p.y, 1, 1).data;
-      hoverStore.set({ x: p.x, y: p.y, color: d[3] ? pack(d[0], d[1], d[2], d[3]) : null });
+      // Nothing drawn there: the reference image's color, if it shows, as the eyedropper picks it.
+      const under = !d[3] && doc.reference?.visible ? referenceColorAt(doc, p.x, p.y) : 0;
+      hoverStore.set({ x: p.x, y: p.y, color: d[3] ? pack(d[0], d[1], d[2], d[3]) : under || null });
     };
 
     // Bounds of the layer the Move tool would take, cached until the drawing changes.

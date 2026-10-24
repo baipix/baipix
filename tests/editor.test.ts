@@ -1113,3 +1113,37 @@ describe('the stabilizer', () => {
     expect(e.stabilizerString()).toBeNull();
   });
 });
+
+describe('the eyedropper and the reference image', () => {
+  it('picks the reference where nothing is drawn, the drawing elsewhere', () => {
+    const e = new Editor();
+    e.newFile(8, 8, 'R');
+    const RED = pack(255, 0, 0);
+    const TEAL = pack(0, 128, 128);
+    e.getState().doc.layers[0].pixels[0] = RED;
+    e.setReference({
+      src: 'data:image/png;base64,',
+      width: 8,
+      height: 8,
+      x: 0,
+      y: 0,
+      w: 8,
+      h: 8,
+      opacity: 0.3,
+      visible: true,
+    });
+    e.setReferenceSampler(() => TEAL);
+    const pick = (x: number, y: number) => {
+      e.setTool('picker');
+      e.beginStroke({ x, y }, false, { shift: false });
+      e.endStroke();
+      return e.getState().primary;
+    };
+    expect(pick(0, 0)).toBe(RED);
+    // Its full color, whatever its opacity on screen.
+    expect(pick(3, 3)).toBe(TEAL);
+    // Hidden, it isn't picked: nothing is there.
+    e.updateReference({ visible: false });
+    expect(pick(3, 3)).toBe(0);
+  });
+});

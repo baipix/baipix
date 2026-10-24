@@ -5,6 +5,7 @@ import { getLocale } from './i18n';
 import { IndexedDbStorage } from './storage/indexedDb';
 import type { StorageAdapter } from './storage/workspace';
 import { App, editorLabels } from './ui/App';
+import { referenceColorAt } from './ui/referenceColors';
 import { initTheme } from './ui/theme';
 import { openScreenshotScene, prepareScreenshot, screenshotTheme } from './ui/screenshotMode';
 import './ui/styles/tokens.css';
@@ -25,6 +26,8 @@ if (shot) prepareScreenshot(shot);
 document.documentElement.lang = getLocale();
 initTheme();
 const editor = new Editor(editorLabels());
+// The eyedropper reads the reference image too, decoded here.
+editor.setReferenceSampler(referenceColorAt);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
