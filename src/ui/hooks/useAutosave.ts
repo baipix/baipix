@@ -33,6 +33,7 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
             homeSort: ui.homeSort,
             homeOrder: ui.homeOrder,
             homeView: ui.homeView,
+            home: ui.home,
             exportFormat: ui.exportFormat,
             exportCode: ui.exportCode,
             exportActiveLayer: ui.exportActiveLayer,

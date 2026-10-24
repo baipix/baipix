@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Fixed
+
+- Reloading the page on the files screen stays on it, instead of opening the editor. (#518)
+
 ## [0.7.5] - 2026-10-24
 
 A files screen like a files app, with a trash, and the drawings safe with Baipix open in several tabs.

@@ -117,6 +117,14 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           });
           editor.setPreferences(saved.preferences);
           editor.loadDocuments(saved.documents, saved.activeId);
+          // Left on the files screen: back on it. With nothing but a blank file, the welcome.
+          if (ui.home) {
+            const blank =
+              saved.documents.length === 1 &&
+              saved.documents[0].layers.every((l) => l.pixels.every((c) => !c));
+            if (blank) showEmptyHome(editor);
+            else uiStore.set({ home: true });
+          }
           // The undo history, as it was: a failed read only loses the undo steps.
           try {
             const history = await storage.loadHistory?.();
