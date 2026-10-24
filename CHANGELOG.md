@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Website
 
 - More pictures in the docs: a magic wand selection, the Move tool's frame, the Spray's and Shade's options, the Palettes dialog, the files list and the Trash. (#537)
+- The docs catch up with the recent changes: the Help button and the version in the corner, dialogs that close with a click outside, Deselect and its shortcuts, copied selections on the system clipboard, the templates on the first files screen. (#534)
 
 ## [0.7.6] - 2026-10-24
 
