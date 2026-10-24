@@ -277,22 +277,23 @@ describe('Editor', () => {
     const e = new Editor();
     e.setColor('primary', RED);
     e.setOption('stabilizer', 4);
-    // Wobbles shorter than the string never reach the drawing: only the starting pixel is painted.
+    // Wobbles shorter than the string never reach the drawing: the starting pixel is painted, and on
+    // release the stroke goes on to the pointer, one pixel away.
     drag(e, [
       [10, 10],
       [12, 11],
       [9, 12],
       [11, 9],
     ]);
-    expect(painted(e)).toBe(1);
+    expect(painted(e)).toBe(2);
     e.undo();
-    // A long stroke stops one string length behind the pointer.
+    // A long stroke follows one string length behind the pointer, and reaches it on release.
     drag(e, [
       [2, 20],
       [20, 20],
     ]);
     expect(layer(e)[20 * 32 + 16]).toBe(RED);
-    expect(layer(e)[20 * 32 + 17]).toBe(0);
+    expect(layer(e)[20 * 32 + 20]).toBe(RED);
     // Off, the stroke goes all the way.
     e.undo();
     e.setOption('stabilizer', 0);
@@ -1088,5 +1089,27 @@ describe('boards from another tab', () => {
     e.adoptDocuments([renamed, { ...mine, name: 'Not here' }]);
     expect(e.getState().files.map((f) => f.name)).toContain('Theirs renamed');
     expect(e.getState().doc.name).toBe('Mine');
+  });
+});
+
+describe('the stabilizer', () => {
+  it('shows its string while drawing, and goes on to the pointer on release', () => {
+    const e = new Editor();
+    e.newFile(16, 4, 'S');
+    const RED = pack(255, 0, 0);
+    e.setColor('primary', RED);
+    e.setTool('pencil');
+    e.setOption('pixelPerfect', false);
+    e.setOption('stabilizer', 3);
+    e.beginStroke({ x: 0, y: 1 }, false, { shift: false });
+    for (let x = 1; x <= 10; x++) e.moveStroke({ x, y: 1 }, { shift: false });
+    // The string: the pixel being painted lags 3 behind the pointer.
+    expect(e.stabilizerString()).toEqual({ at: { x: 7, y: 1 }, pointer: { x: 10, y: 1 } });
+    const px = () => e.getState().doc.layers[0].pixels;
+    expect(px()[1 * 16 + 10]).toBe(0);
+    e.endStroke();
+    // On release, the stroke reaches the pointer.
+    expect(px()[1 * 16 + 10]).toBe(RED);
+    expect(e.stabilizerString()).toBeNull();
   });
 });

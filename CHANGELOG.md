@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The stabilizer shows what it does: while drawing, a string goes from the pointer to the pixel being painted, where the brush shows; on release, the line goes on to the pointer instead of stopping a string's length short. (#522)
 - Reloading the page on the files screen stays on it, instead of opening the editor. (#518)
 
 ## [0.7.5] - 2026-10-24

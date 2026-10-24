@@ -96,6 +96,8 @@ export interface Scene {
   /** Animated selection outline offset, in CSS pixels. */
   selectionDashOffset: number;
   brush: BrushPreview | null;
+  /** The stabilizer's string while drawing: from the pointer to the pixel being painted. */
+  stabilizer?: { at: Point; pointer: Point } | null;
   /** Move tool: the bounds of the layer a click would move, outlined on hover. */
   moveTarget: Rect | null;
   /** Move tool: the bounds of the active layer's pixels, framed with handles and its size. */
@@ -497,6 +499,21 @@ export function drawScene(
     ctx.strokeStyle = theme.highlight;
     ctx.lineWidth = lw;
     ctx.strokeRect(X + r.x * s - lw / 2, Y + r.y * s - lw / 2, r.w * s - gap + lw, r.h * s - gap + lw);
+  }
+
+  // The stabilizer's string: a line from the pointer (a small ring) to the pixel being painted,
+  // where the brush is drawn below.
+  if (scene.stabilizer) {
+    const { at, pointer } = scene.stabilizer;
+    const px = X + (pointer.x + 0.5) * s;
+    const py = Y + (pointer.y + 0.5) * s;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(X + (at.x + 0.5) * s, Y + (at.y + 0.5) * s);
+    strokeTwoTone(ctx, lw, theme);
+    ctx.beginPath();
+    ctx.arc(px, py, 3 * lw, 0, Math.PI * 2);
+    strokeTwoTone(ctx, lw, theme);
   }
 
   // Brush footprint: one cell per pixel, shrunk by the gap so it matches what will be painted.

@@ -4295,6 +4295,7 @@ export class Editor {
     const s = this.stroke!;
     const length = s.options.stabilizer;
     if (!length || !STABILIZED_TOOLS.includes(this.strokeTool!)) return p;
+    s.scratch.pointer = p;
     const at = (s.scratch.string as Point | undefined) ?? { ...s.start };
     const dx = p.x - at.x;
     const dy = p.y - at.y;
@@ -4305,6 +4306,18 @@ export class Editor {
     }
     s.scratch.string = at;
     return { x: Math.round(at.x), y: Math.round(at.y) };
+  }
+
+  /**
+   * The stabilizer's string while a stroke follows it: the pixel being painted, and the pointer
+   * pulling it. Shown on the canvas, so the pixel under the pointer isn't taken for the one drawn.
+   */
+  stabilizerString(): { at: Point; pointer: Point } | null {
+    const s = this.stroke;
+    const at = s?.scratch.string as Point | undefined;
+    const pointer = s?.scratch.pointer as Point | undefined;
+    if (!s || !at || !pointer) return null;
+    return { at: { x: Math.round(at.x), y: Math.round(at.y) }, pointer };
   }
 
   endStroke(): void {
@@ -4331,6 +4344,10 @@ export class Editor {
     const id = this.strokeTool;
     if (!s || !id) return;
     const tool = TOOLS[id];
+    // The stabilizer lags behind the pointer: on release, the stroke goes on to where the pointer is.
+    const pointer = s.scratch.pointer as Point | undefined;
+    if (pointer && s.scratch.string && (pointer.x !== s.last.x || pointer.y !== s.last.y))
+      tool.onMove?.(s, pointer, { shift: false });
     tool.onUp?.(s);
     this.stroke = null;
     this.strokeTool = null;

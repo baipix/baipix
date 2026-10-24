@@ -401,6 +401,9 @@ export function CanvasView() {
       const picking =
         tool === 'picker' || live.stroking === 'picker' || (altHeld && DRAWING_TOOLS.includes(tool));
       let brush: BrushPreview | null = null;
+      // Drawing with the stabilizer: the brush shows on the pixel being painted, not the pointer's.
+      const string = live.stroking ? editor.stabilizerString() : null;
+      const brushAt = string?.at ?? hover;
       const shapeInProgress = live.stroking !== null && SHAPE_IDS.includes(live.stroking);
       if (
         hover &&
@@ -415,15 +418,15 @@ export function CanvasView() {
         brush =
           tool === 'spray' || tool === 'liquify'
             ? {
-                at: hover,
+                at: brushAt!,
                 size: 1,
                 color: null,
                 circle: tool === 'spray' ? state.options.spraySize : state.options.liquifySize,
               }
             : tool === 'jumble'
-              ? { at: hover, size: state.options.jumbleSize, color: null }
+              ? { at: brushAt!, size: state.options.jumbleSize, color: null }
               : {
-                  at: hover,
+                  at: brushAt!,
                   size: state.options.size,
                   color: paints ? state.primary : null,
                   round: state.options.roundTip,
@@ -467,6 +470,7 @@ export function CanvasView() {
           selection: live.selection,
           selectionDashOffset: reduceMotion ? 0 : (now / 80) % 8,
           brush,
+          stabilizer: string,
           moveTarget: editor.isStroking ? null : moveTargetAt(hover, lastMods),
           layerBox: activeLayerBox(),
           sizeNote: scaleNote,
