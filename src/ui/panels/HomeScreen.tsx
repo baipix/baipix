@@ -189,7 +189,7 @@ export function HomeScreen() {
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
         {
           <div className="home-top-actions">
-            <button type="button" className="btn btn-secondary" onClick={() => void importFile()}>
+            <button type="button" className="btn" onClick={() => void importFile()}>
               <Icon name="upload" size={16} />
               {t('home.import')}
             </button>
@@ -298,7 +298,7 @@ export function HomeScreen() {
                       <Icon name="plus" size={16} />
                       {t('common.create')}
                     </button>
-                    <button type="button" className="btn btn-secondary" onClick={() => void importFile()}>
+                    <button type="button" className="btn" onClick={() => void importFile()}>
                       <Icon name="upload" size={16} />
                       {t('home.import')}
                     </button>
