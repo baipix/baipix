@@ -10,6 +10,11 @@ Three tools share a button: the **rectangle** (<kbd>M</kbd>), the **lasso** (<kb
 - **Select › Select all**, **Invert selection** and **Deselect** are in the Select menu. Select all and Deselect are also in the selection tools' options, and Deselect in the Move tool's while something is selected.
 - <kbd>Ctrl</kbd>+<kbd>A</kbd> selects all, <kbd>Ctrl</kbd>+<kbd>D</kbd> or <kbd>Esc</kbd> deselects.
 
+<figure class="shot">
+  <img class="for-light" src="../../shots/selection-light.webp" width="832" height="534" alt="The magic wand’s selection on a sunset: every pixel of one color, in several areas, outlined with marching ants." loading="lazy" />
+  <img class="for-dark" src="../../shots/selection-dark.webp" width="832" height="534" alt="The magic wand’s selection on a sunset: every pixel of one color, in several areas, outlined with marching ants." loading="lazy" />
+</figure>
+
 ## Use it
 
 - Every tool keeps inside the selection: paint, fill, blur or erase without touching the rest.
