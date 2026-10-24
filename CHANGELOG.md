@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- The reference image can be removed from the interface: a trash next to its name in the right panel, a right-click menu on its row in the Layers panel (hide, lock, remove), Delete still works, with Undo in the toast. (#520)
+
 ### Fixed
 
 - Reloading the page on the files screen stays on it, instead of opening the editor. (#518)

@@ -515,7 +515,7 @@ export const en = {
   'reference.useInstead': 'Use as reference',
   'toast.imagePasted': 'Image pasted on a new layer.',
   'reference.hint':
-    'Under every layer, never exported. With the Move tool, drag it to move it, or a corner to resize it.',
+    'Under every layer, never exported. With the Move tool, drag it to move it, or a corner to resize it. Delete removes it.',
   'toast.referenceAdded':
     'Reference added under the layers. Drag it, or a corner to resize it. It is never exported.',
   'toast.referenceRemoved': 'Reference removed.',
