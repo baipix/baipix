@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.6] - 2026-10-24
+
+The stabilizer shows its string, the reference image can be removed from the interface, and the files screen stays on a reload.
+
 ### Added
 
 - The reference image can be removed from the interface: a trash next to its name in the right panel, a right-click menu on its row in the Layers panel (hide, lock, remove), Delete still works, with Undo in the toast. (#520)
@@ -457,7 +461,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.5...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.6...main
+[0.7.6]: https://github.com/baipix/baipix/releases/tag/v0.7.6
 [0.7.5]: https://github.com/baipix/baipix/releases/tag/v0.7.5
 [0.7.4]: https://github.com/baipix/baipix/releases/tag/v0.7.4
 [0.7.3]: https://github.com/baipix/baipix/releases/tag/v0.7.3
