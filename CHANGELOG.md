@@ -22,6 +22,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - More pictures in the docs: a magic wand selection, the Move tool's frame, the Spray's and Shade's options, the Palettes dialog, the files list and the Trash. (#537)
 - The docs catch up with the recent changes: the Help button and the version in the corner, dialogs that close with a click outside, Deselect and its shortcuts, copied selections on the system clipboard, the templates on the first files screen. (#534)
 
+### Thanks
+
+- [@mykola-lp](https://github.com/mykola-lp) for a test that checks every translation keeps the English placeholders, the first step toward more languages. (#544)
+
 ## [0.7.6] - 2026-10-24
 
 The stabilizer shows its string, the reference image can be removed from the interface, and the files screen stays on a reload.
