@@ -8,6 +8,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - The eyedropper picks colors from the reference image where nothing is drawn over it, in full whatever its opacity, and the loupe shows them. (#538)
 
+### Changed
+
+- In French, the Board tool is called Plan, like boards everywhere else; the magic wand's option reads Zone contiguë uniquement, like the bucket's. (#543)
+
 ### Fixed
 
 - Two fingers moving sideways on a trackpad pan the canvas both ways, instead of taking the browser back to the previous page. (#532)
