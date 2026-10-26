@@ -3,20 +3,23 @@ import { useSyncExternalStore } from 'react';
 import { en, type MessageKey } from './en';
 import { fr } from './fr';
 import { uk } from './uk';
+import { es } from './es';
 
-export type Locale = 'en' | 'fr' | 'uk';
+export type Locale = 'en' | 'fr' | 'uk' | 'es';
 export type { MessageKey };
 
 const dictionaries: Record<Locale, Record<MessageKey, string>> = {
   en,
   fr,
   uk,
+  es,
 };
 
 export const LOCALES: { id: Locale; label: string }[] = [
   { id: 'en', label: 'English' },
   { id: 'fr', label: 'Français' },
   { id: 'uk', label: 'Українська' },
+  { id: 'es', label: 'Español' },
 ];
 
 // English by default, whatever the browser's language; the choice in View › Language is saved.
