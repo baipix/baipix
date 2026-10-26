@@ -19,7 +19,7 @@ export const LOCALES: { id: Locale; label: string }[] = [
   { id: 'uk', label: 'Українська' },
 ];
 
-// English by default, whatever the browser's language; the choice in View › Language is saved.
+// Initialized to English until workspace restoration applies the saved or detected locale.
 let locale: Locale = 'en';
 let localePreference: LocalePreference = 'auto';
 
