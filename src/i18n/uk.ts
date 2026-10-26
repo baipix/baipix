@@ -111,7 +111,7 @@ export const uk: Record<MessageKey, string> = {
   'component.goTo': 'Перейти до компонента',
   'component.detach': 'Від’єднати екземпляр',
   'component.dragHint': 'Перетягніть на полотно, щоб додати екземпляр',
-  'section.preview': 'Попередній перегляд',
+  'section.preview': 'Перегляд',
   'section.colors': 'Кольори',
   'section.palette': 'Палітра',
   'section.layer': 'Шар',
@@ -301,7 +301,7 @@ export const uk: Record<MessageKey, string> = {
   'render.pixelSizeHint': 'Розмір одного пікселя в експортованому файлі',
   'render.scaleTip': 'Кожен піксель матиме розмір {size} × {size} px',
   'render.gap': 'Проміжок',
-  'canvas.gapAt': 'px при масштабі {size}×',
+  'canvas.gapAt': 'px при {size}×',
   'export.gap': 'Проміжок {gap} px',
 
   'options.size': 'Розмір',
