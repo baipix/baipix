@@ -1705,11 +1705,30 @@ export class Editor {
       this.active.referencePicked = true;
       this.tool = 'move';
     } else {
+      const removed = this.doc.reference;
       delete this.doc.reference;
       this.active.referencePicked = false;
+      // Undo brings it back (Ctrl+Z, like the toast's Undo), on the board it was on.
+      if (removed) this.recordReferenceRemoval(this.active, removed);
     }
     this.touch();
     this.commit();
+  }
+
+  private recordReferenceRemoval(session: Session, reference: ReferenceImage): void {
+    this.recordFileStep({
+      undo: () => {
+        // Its board gone, or the image back already (the toast's Undo): nothing to undo here.
+        if (!this.sessions.includes(session) || session.doc.reference) return false;
+        session.doc.reference = { ...reference };
+        if (session !== this.active) this.activate(session);
+        return true;
+      },
+      redo: () => {
+        delete session.doc.reference;
+        session.referencePicked = false;
+      },
+    });
   }
 
   /** Selects the reference image like a layer, with the Move tool to place it. */

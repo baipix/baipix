@@ -1147,3 +1147,35 @@ describe('the eyedropper and the reference image', () => {
     expect(pick(3, 3)).toBe(0);
   });
 });
+
+describe('removing the reference image', () => {
+  it('comes back with Undo, and goes again with Redo', () => {
+    const e = new Editor();
+    e.newFile(8, 8, 'R');
+    const reference = {
+      src: 'data:image/png;base64,',
+      width: 8,
+      height: 8,
+      x: 0,
+      y: 0,
+      w: 8,
+      h: 8,
+      opacity: 0.5,
+      visible: true,
+    };
+    e.setReference(reference);
+    e.setReference(null);
+    expect(e.getState().doc.reference).toBeUndefined();
+    expect(e.getState().canUndo).toBe(true);
+    e.undo();
+    expect(e.getState().doc.reference).toMatchObject({ opacity: 0.5 });
+    e.redo();
+    expect(e.getState().doc.reference).toBeUndefined();
+    // Brought back by the toast's Undo first: Ctrl+Z then has nothing of it to undo.
+    e.undo();
+    e.setReference(null);
+    e.setReference(reference);
+    e.undo();
+    expect(e.getState().doc.reference).toBeDefined();
+  });
+});

@@ -14,6 +14,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Ctrl+Z brings back a removed reference image, and Redo removes it again, not only the toast's Undo. (#557)
 - Two fingers moving sideways on a trackpad pan the canvas both ways, instead of taking the browser back to the previous page. (#532)
 
 ### Website
