@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The editor opens in the browser's language the first time, when Baipix speaks it, with a button to switch back to English. (#565)
 - The editor in Ukrainian (View › Language › Українська). (#551)
 - The eyedropper picks colors from the reference image where nothing is drawn over it, in full whatever its opacity, and the loupe shows them. (#538)
 
@@ -26,6 +27,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@mykola-lp](https://github.com/mykola-lp) for opening the editor in the browser's language. (#565)
 - [@mykola-lp](https://github.com/mykola-lp) for the Ukrainian translation, the editor's third language. (#551)
 - [@mykola-lp](https://github.com/mykola-lp) for a test that checks every translation keeps the English placeholders, the first step toward more languages. (#544)
 
