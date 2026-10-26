@@ -461,7 +461,7 @@ export const MENU_BAR: MenuBarMenu[] = [
           items: LOCALES.map((l) => ({
             label: l.label,
             checked: getLocale() === l.id,
-            onSelect: () => setLocale(l.id),
+            onSelect: () => setLocale(l.id, 'manual'),
           })),
         },
       ];
