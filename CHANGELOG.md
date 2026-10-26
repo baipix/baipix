@@ -17,6 +17,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- PNG exports, Copy as PNG and the export preview match the canvas with blend modes: a Multiply or Overlay layer mixes with the background instead of showing over it as is. ([#580](https://github.com/baipix/baipix/pull/580))
 - Ctrl+Z brings back a removed reference image, and Redo removes it again, not only the toast's Undo. ([#557](https://github.com/baipix/baipix/pull/557))
 - Two fingers moving sideways on a trackpad pan the canvas both ways, instead of taking the browser back to the previous page. ([#532](https://github.com/baipix/baipix/pull/532))
 
