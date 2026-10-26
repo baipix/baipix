@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: The view
-description: 'Find your way around a pixel art drawing in Baipix: zoom and pan, the pixel grid, tile preview for seamless textures, symmetry, rulers and guides, the preview window.'
+description: 'Find your way around a pixel art drawing in Baipix: zoom and pan, the pixel grid, tile preview for seamless textures, symmetry, rulers and guides, the preview window, and the language.'
 ---
 
 ## Zoom and pan
@@ -31,3 +31,11 @@ The two buttons at the right end of the options bar turn on **left-right** (<kbd
 ## The preview window
 
 **View › Preview window** (<kbd>Shift</kbd>+<kbd>P</kbd>) shows the whole drawing at a fixed size while you work up close. When the canvas shows only part of the drawing, a frame marks where you are: drag it to move around. Drag the window by its title, resize it by its corner, change its zoom, or fold it.
+
+## Language
+
+Baipix speaks English, French, Ukrainian and Spanish. The first time, it opens in your browser's language when it's one of them, and in English otherwise. A message then says which language it picked, with a button to switch back to English.
+
+Change it at any time in **View › Language**. Baipix keeps your choice for next time.
+
+Missing your language? Adding one is a good first contribution: see [Adding a language](https://github.com/baipix/baipix/blob/main/CONTRIBUTING.md#adding-a-language).

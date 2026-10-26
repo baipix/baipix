@@ -22,6 +22,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Website
 
+- The docs explain the language: the four languages, opening in the browser's language, and View › Language. ([#576](https://github.com/baipix/baipix/pull/576))
 - The design system page asks search engines not to list it. ([#540](https://github.com/baipix/baipix/pull/540))
 - More pictures in the docs: a magic wand selection, the Move tool's frame, the Spray's and Shade's options, the Palettes dialog, the files list and the Trash. ([#537](https://github.com/baipix/baipix/pull/537))
 - The docs catch up with the recent changes: the Help button and the version in the corner, dialogs that close with a click outside, Deselect and its shortcuts, copied selections on the system clipboard, the templates on the first files screen. ([#534](https://github.com/baipix/baipix/pull/534))
