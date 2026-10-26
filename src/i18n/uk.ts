@@ -729,6 +729,7 @@ export const uk: Record<MessageKey, string> = {
   'toast.noPaletteColors': 'У цьому файлі не знайдено кольорів. Використайте палітру .hex або .gpl.',
   'toast.colorsImported': 'Імпортовано кольорів: {count}.',
   'toast.restored': 'Попередній малюнок відновлено.',
+  'toast.languageDetected': 'Baipix відкрито українською.',
   'toast.filesRestored': 'Відновлено файлів: {count}.',
   'toast.legacyImported': 'Із попередньої версії відновлено малюнків: {count}.',
   'home.title': 'Вітаємо в Baipix',

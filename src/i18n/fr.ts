@@ -728,6 +728,7 @@ export const fr: Record<MessageKey, string> = {
   'toast.noPaletteColors': 'Aucune couleur trouvée dans ce fichier. Utilise une palette .hex ou .gpl.',
   'toast.colorsImported': '{count} couleurs importées.',
   'toast.restored': 'Ton dessin précédent a été restauré.',
+  'toast.languageDetected': 'Baipix est en français.',
   'toast.filesRestored': '{count} fichiers restaurés.',
   'toast.legacyImported': '{count} dessins récupérés depuis la version précédente.',
   'home.title': 'Bienvenue dans Baipix',

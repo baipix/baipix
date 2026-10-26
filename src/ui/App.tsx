@@ -3,7 +3,7 @@ import { openFromUrl } from './openFromUrl';
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
-import { setLocale, t, useT, type Locale } from '../i18n';
+import { resolveLocaleSelection, setLocale, t, useT } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
 import type { StorageAdapter } from '../storage/workspace';
 import { ActionsContext } from './ActionsContext';
@@ -73,19 +73,48 @@ const tileSide = (n: unknown): number =>
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */
 function useRestore(editor: Editor, storage: StorageAdapter): boolean {
   const [ready, setReady] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
+    let localeResolved = false;
+    let showLanguageNotice = false;
+
+    const languages =
+      typeof navigator === 'undefined'
+        ? []
+        : navigator.languages?.length
+          ? [...navigator.languages]
+          : navigator.language
+            ? [navigator.language]
+            : [];
+
+    const applyLocaleSelection = (savedLocale?: unknown, savedPreference?: unknown) => {
+      const selection = resolveLocaleSelection(savedLocale, savedPreference, languages);
+
+      setLocale(selection.locale, selection.preference);
+      editor.setLabels(editorLabels());
+
+      localeResolved = true;
+      showLanguageNotice = selection.notify;
+    };
+
     (async () => {
       let firstRun = true;
+
       try {
         const saved = await storage.load();
         if (cancelled) return;
+
         if (saved) {
           firstRun = false;
-          const ui = saved.ui as Partial<UiState> & { locale?: Locale };
-          if (ui.locale) setLocale(ui.locale);
-          editor.setLabels(editorLabels());
+          const ui = saved.ui as Partial<UiState> & {
+            locale?: unknown;
+            localePreference?: unknown;
+          };
+
+          applyLocaleSelection(ui.locale, ui.localePreference);
           const widths = ui.panelWidths;
+
           uiStore.set({
             exportFormat:
               ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' || ui.exportFormat === 'tileset'
@@ -138,7 +167,9 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
               : t('toast.restored'),
           );
         } else {
+          applyLocaleSelection();
           const legacy = await importLegacyWorkspace();
+
           if (legacy.length && !cancelled) {
             firstRun = false;
             editor.loadDocuments(legacy);
@@ -149,13 +180,27 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
         /* first run or storage unavailable: start fresh */
       }
       if (cancelled) return;
+
+      if (!localeResolved) applyLocaleSelection();
+
       if (firstRun) showEmptyHome(editor);
       refreshTrash(storage);
       setReady(true);
+
       // A link from the site with a drawing to open (?open=…): straight into the editor with it. After
       // ready, so that autosave keeps it; on a first run, the blank starter file makes way for it, as for
       // any file opened from the home screen.
       if (await openFromUrl(editor)) leaveHome(editor);
+
+      if (showLanguageNotice) {
+        toast(t('toast.languageDetected'), {
+          label: 'English',
+          run: () => {
+            setLocale('en', 'manual');
+            editor.setLabels(editorLabels());
+          },
+        });
+      }
     })();
     return () => {
       cancelled = true;

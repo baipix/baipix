@@ -720,6 +720,7 @@ export const en = {
   'toast.noPaletteColors': 'No colors found in this file. Use a .hex or .gpl palette.',
   'toast.colorsImported': '{count} colors imported.',
   'toast.restored': 'Your previous drawing was restored.',
+  'toast.languageDetected': 'Baipix is in English.',
   'toast.filesRestored': '{count} files restored.',
   'toast.legacyImported': '{count} drawings recovered from the previous version.',
   'home.title': 'Welcome to Baipix',
