@@ -43,7 +43,7 @@ With nothing selected on the canvas, <kbd>Ctrl</kbd>+<kbd>C</kbd> in the Layers 
 
 ## Reference image
 
-**File › Reference image…**, or the image button next to Layers, places a picture under every layer, to trace over. It shows at the bottom of the panel: select it to move, resize or fade it. It's never exported. The eyedropper picks its colors where nothing is drawn over it, in full whatever its opacity: a quick way to start a palette from a picture. To remove it, the trash next to its name in the right panel, its right-click menu, or Delete once it's selected (Undo in the toast).
+**File › Reference image…**, or the image button next to Layers, places a picture under every layer, to trace over. It shows at the bottom of the panel: select it to move, resize or fade it. It's never exported. The eyedropper picks its colors where nothing is drawn over it, in full whatever its opacity: a quick way to start a palette from a picture. To remove it, the trash next to its name in the right panel, its right-click menu, or Delete once it's selected. Undo (in the toast, or Ctrl+Z) brings it back.
 
 ## For isometric scenes
 
