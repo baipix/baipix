@@ -60,13 +60,18 @@ export function ExportPreview() {
       ctx.fillStyle = checkerPattern(ctx, Math.max(3, Math.round(5 * dpr)), theme.checkA, theme.checkB);
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
-      if (ui.exportBackground && !ui.exportActiveLayer && hasBackground(doc)) {
+      const withBackground = ui.exportBackground && !ui.exportActiveLayer && hasBackground(doc);
+      if (withBackground) {
         ctx.fillStyle = toCss(doc.background);
         ctx.fillRect(x, y, w, h);
       }
+      // With the background, the layers go over it, as on the canvas and in the PNG: blend modes
+      // mix with it.
       const pixels = flatten(
         doc,
-        ui.exportActiveLayer ? { onlyLayer: doc.layers[doc.activeLayer] } : { includeBackground: false },
+        ui.exportActiveLayer
+          ? { onlyLayer: doc.layers[doc.activeLayer] }
+          : { includeBackground: withBackground },
       );
       const step = (geometry.pixelSize + geometry.gap) * f;
       if (geometry.gap > 0 && step >= 3) {

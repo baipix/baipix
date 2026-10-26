@@ -45,6 +45,21 @@ export function createActions(editor: Editor) {
     return { d, pixels, geometry, background };
   }
 
+  /**
+   * The drawing as a picture (PNG). With the background, the layers are laid over it, as on the
+   * canvas: a blend mode mixes with it (a Multiply layer darkens it), instead of with nothing and
+   * then being put on it as is. The background still fills the gaps between pixels.
+   */
+  function pictureInput(onlyActiveLayer: boolean, quiet = false) {
+    const input = renderInput(onlyActiveLayer, quiet);
+    if (!alpha(input.background)) return input;
+    return {
+      ...input,
+      pixels: editor.flatten(),
+      background: input.geometry.gap > 0 ? input.background : 0,
+    };
+  }
+
   /** The drawing as SVG: its layers and groups kept apart, or the active layer alone. */
   function svgOf(onlyActiveLayer: boolean): string {
     const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
@@ -127,7 +142,7 @@ export function createActions(editor: Editor) {
         await report(filename, saveFile(filename, svgOf(onlyActiveLayer), 'image/svg+xml'));
         return;
       }
-      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
+      const { d, pixels, geometry, background } = pictureInput(onlyActiveLayer);
       const blob = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
       await report(filename, saveFile(filename, blob, 'image/png'));
     },
@@ -162,8 +177,12 @@ export function createActions(editor: Editor) {
           });
         else if (format === 'svg') data = new TextEncoder().encode(toLayeredSvg(d, geometry, background));
         else {
-          const pixels = flatten(d, { includeBackground: false });
-          const png = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
+          // Over the background when it's included, as on the canvas (see pictureInput).
+          const over = alpha(background) > 0;
+          const pixels = flatten(d, { includeBackground: over });
+          const png = await canvasToBlob(
+            renderToCanvas(pixels, d.width, d.height, geometry, over && geometry.gap > 0 ? background : 0),
+          );
           data = new Uint8Array(await png.arrayBuffer());
         }
         files.push({ name: nameOf(d), data });
@@ -239,7 +258,7 @@ export function createActions(editor: Editor) {
     },
 
     async copyPng(onlyActiveLayer = false) {
-      const { d, pixels, geometry, background } = renderInput(onlyActiveLayer);
+      const { d, pixels, geometry, background } = pictureInput(onlyActiveLayer);
       const canvas = renderToCanvas(pixels, d.width, d.height, geometry, background);
       if (await copyPng(await canvasToBlob(canvas))) toast(t('toast.pngCopied'));
       else
