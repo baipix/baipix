@@ -27,7 +27,7 @@ Put `Closes #123` in your commit message or pull request description: the issue 
 
 - **The engine stays pure.** Nothing in `src/engine` may touch the DOM, `window` or React. This keeps it testable and reusable. Browser-specific code goes in `src/io` or `src/ui`.
 - **The UI talks to the engine only through `Editor`.** Components read state with `useEditorState(selector)` and call editor methods. They never mutate documents directly.
-- **Every visible string is translated.** Add the key to `src/i18n/en.ts`, then to `src/i18n/fr.ts` (TypeScript will fail if a language misses a key).
+- **Every visible string is translated.** Add the key to `src/i18n/en.ts`, then to every other language in `src/i18n/` (TypeScript will fail if one misses a key). If you can't translate it, put the English text: a native speaker will fix it later.
 - **Test engine changes.** Tests live in `tests/`, next to the feature they cover.
 - Code is formatted with Prettier (`npm run format`), .astro files included. CI runs `npm run format:check`.
 - Add a line to `CHANGELOG.md`, under _Unreleased_, for anything people will notice.
@@ -58,7 +58,10 @@ Prettier, ESLint and TypeScript handle the form. For the rest:
 ## Adding a language
 
 1. Copy `src/i18n/fr.ts` to `src/i18n/xx.ts` and translate every value.
-2. Register it in `src/i18n/index.ts` (`dictionaries` and `LOCALES`).
+2. Register it in `src/i18n/index.ts` (`Locale`, `dictionaries` and `LOCALES`).
+3. Add it to the dictionaries in `tests/i18n.test.ts`, so the test checks it keeps every placeholder (`{count}`…).
+
+Baipix opens in the browser's language when it has it, so a new language reaches its speakers right away. Open translation issues are listed under [issues](https://github.com/baipix/baipix/issues?q=is%3Aissue+is%3Aopen+translation).
 
 ## Reporting bugs
 

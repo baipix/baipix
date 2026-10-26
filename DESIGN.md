@@ -23,8 +23,8 @@ The short version, for when you add or change something in the interface:
 - **Icons.** [Lucide](https://lucide.dev) line icons, through `Icon` (16 px in the panels, 18 px in
   the toolbar, a 1.75 stroke). When one is missing, draw it in Lucide's style (24×24, round line ends, no
   fill) with `drawn()` in `src/ui/icons.tsx`.
-- **Text.** Inter, 11 px in the interface. Copy is short and plain, in English and French
-  (`src/i18n`).
+- **Text.** Inter, 11 px in the interface. Copy is short and plain, written in English and
+  translated into every language in `src/i18n`.
 - **Accessibility.** Text contrast of at least 4.5:1 and lines of 3:1 in both themes (the design
   system page checks it), a label on every icon button, a visible focus, and “reduce motion” respected.
 - **The logo** is the 8×8 drawing in `src/ui/icons.tsx` (`LOGO`). Scale it by multiples of 8 px and never
