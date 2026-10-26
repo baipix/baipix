@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { Editor } from '../../engine/editor';
-import { getLocale, t } from '../../i18n';
+import { getLocale, getLocalePreference, subscribeLocale, t } from '../../i18n';
 import type { StorageAdapter } from '../../storage/workspace';
 import { refreshTrash } from '../StorageContext';
 import { toast, uiStore } from '../uiStore';
@@ -42,6 +42,7 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
             hiddenPalettes: ui.hiddenPalettes,
             preview: ui.preview,
             locale: getLocale(),
+            localePreference: getLocalePreference(),
           },
         })
         .then(() => refreshTrash(storage))
@@ -85,10 +86,19 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
           /* storage unavailable: nothing to take in */
         });
     };
-    const offs = [editor.onPersist(schedule), editor.subscribe(schedule), uiStore.subscribe(schedule)];
+    const offs = [
+      editor.onPersist(schedule),
+      editor.subscribe(schedule),
+      uiStore.subscribe(schedule),
+      subscribeLocale(schedule),
+    ];
+
+    schedule();
+
     window.addEventListener('pagehide', leave);
     window.addEventListener('focus', sync);
     document.addEventListener('visibilitychange', sync);
+
     return () => {
       clearTimeout(timer);
       clearTimeout(historyTimer);
