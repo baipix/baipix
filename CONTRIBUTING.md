@@ -35,6 +35,18 @@ Put `Closes #123` in your commit message or pull request description: the issue 
 - Follow the design system for anything in the interface: [DESIGN.md](DESIGN.md) sums up the rules, and the design system page (`npm run dev`, then `/design.html`) shows every token and component.
 - Changed how the editor looks? Run `npm run screenshots` (it needs Google Chrome): it takes the screenshots of the website and the README again from the current interface, in dark and light. Commit them with your change.
 
+## Code conventions
+
+Prettier, ESLint and TypeScript handle the form. For the rest:
+
+- **Follow the code around you.** When in doubt, do as the nearby files do.
+- **Name the logic.** A piece that computes something on its own (what to save, which board to open) goes in a named function, pure when possible, and tested when it lives in `src/engine` or `src/storage`.
+- **One effect per lifecycle.** Timers, listeners and their cleanup that start and stop together stay in the same effect.
+- **No magic numbers.** Delays, sizes and limits get a named constant at the top of the file (`SAVE_DEBOUNCE_MS`).
+- **Early returns** rather than nested conditions.
+- **Comments say why**, not what: short full sentences, only where the code can't say it itself.
+- **One change per pull request**: one fix, one feature or one refactor. A refactor doesn't change behavior.
+
 ## Adding a tool
 
 1. Create `src/engine/tools/myTool.ts` exporting a `Tool` (see `pencil.ts` for a freehand tool, `shapes.ts` for a previewed shape).
