@@ -67,4 +67,12 @@ describe('browser language selection', () => {
       notify: false,
     });
   });
+
+  it('selects Ukrainian when it is the first supported browser language', () => {
+    expect(resolveLocaleSelection(undefined, undefined, ['uk-UA', 'fr-FR'])).toEqual({
+      locale: 'uk',
+      preference: 'auto',
+      notify: true,
+    });
+  });
 });
