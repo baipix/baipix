@@ -4,10 +4,12 @@ import { matchBrowserLocale, resolveLocaleSelection, type Locale } from '../src/
 import { en, type MessageKey } from '../src/i18n/en';
 import { fr } from '../src/i18n/fr';
 import { uk } from '../src/i18n/uk';
+import { es } from '../src/i18n/es';
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
   uk,
+  es,
 };
 
 const getPlaceholders = (text: string): string[] =>
@@ -29,7 +31,7 @@ describe('browser language selection', () => {
   });
 
   it('falls back to English without a notice when no language is supported', () => {
-    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'es-ES'])).toEqual({
+    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'it-IT'])).toEqual({
       locale: 'en',
       preference: 'auto',
       notify: false,

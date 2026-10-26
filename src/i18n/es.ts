@@ -347,7 +347,8 @@ export const es: Record<MessageKey, string> = {
     'Dibuja una forma a mano alzada: al soltar, se cierra y se rellena con el color actual. Haz clic derecho para usar el color secundario.',
   'hint.eraser':
     'Borra hasta dejar los píxeles transparentes. Mayús+clic borra en línea recta desde el último punto; Cmd/Ctrl+Mayús+clic permite trazar líneas a 0°, 45°, 90° o en proporción 2:1.',
-  'hint.line': 'Mantén pulsada Mayús para limitar la línea a 0°, 45°, 90° o una proporción 2:1 en líneas isométricas.',
+  'hint.line':
+    'Mantén pulsada Mayús para limitar la línea a 0°, 45°, 90° o una proporción 2:1 en líneas isométricas.',
   'hint.shape': 'Mantén pulsada Mayús para crear una forma regular.',
   'hint.board':
     'Dibuja un rectángulo junto a los tableros para añadir uno. Arrastra un tablero por su nombre para moverlo y haz clic en él para trabajar en él. Cada tablero tiene su propio tamaño y sus propias capas.',
@@ -461,7 +462,8 @@ export const es: Record<MessageKey, string> = {
   'liquify.mode': 'Modo',
   'hint.picker': 'Clic izquierdo para elegir el color principal; clic derecho para el secundario.',
   'hint.select': 'Ctrl+C, Ctrl+X y Ctrl+V. Pulsa Supr para borrar la selección.',
-  'hint.moveSelection': 'Arrastra para mover la selección. Las flechas del teclado la desplazan 1 px; Mayús, 8 px.',
+  'hint.moveSelection':
+    'Arrastra para mover la selección. Las flechas del teclado la desplazan 1 px; Mayús, 8 px.',
   'hint.moveLayer':
     'Arrastra un píxel para mover su capa y haz clic fuera para quitar el marco. Cmd/Ctrl permite mover la capa activa. Las flechas del teclado desplazan 1 px; Mayús, 8 px.',
 
@@ -570,7 +572,8 @@ export const es: Record<MessageKey, string> = {
   'code.title': 'Código',
   'code.language': 'Lenguaje',
   'code.preview': 'El dibujo en {language}',
-  'code.cut': 'Se muestran las primeras {shown} líneas de {total}. Las opciones Copiar y Descargar incluyen todas.',
+  'code.cut':
+    'Se muestran las primeras {shown} líneas de {total}. Las opciones Copiar y Descargar incluyen todas.',
   'code.copy': 'Copiar',
   'code.download': 'Descargar el archivo .{ext}',
   'code.hint.react':
@@ -580,7 +583,8 @@ export const es: Record<MessageKey, string> = {
     'El dibujo se utiliza como imagen de fondo y sus colores se definen mediante propiedades personalizadas. Añade la clase a cualquier elemento.',
   'code.hint.json':
     'Incluye el tamaño, los colores con nombre y los píxeles organizados en filas de números de color (0 representa un píxel vacío).',
-  'code.hint.ascii': 'El dibujo se representa con caracteres y su leyenda aparece arriba: ideal para un README o un comentario.',
+  'code.hint.ascii':
+    'El dibujo se representa con caracteres y su leyenda aparece arriba: ideal para un README o un comentario.',
   'export.shrunk': 'reducido a {size}× (demasiado grande)',
 
   'coordinates.transparent': 'Transparente',
@@ -616,7 +620,8 @@ export const es: Record<MessageKey, string> = {
   'upscaled.result': '{w} × {h} px → {rw} × {rh} px',
   'resize.title': 'Tamaño del tablero',
   'resize.open': 'Tamaño del tablero…',
-  'resize.hint': 'Arrastra los tiradores del marco para cambiar el tamaño del tablero o el dibujo para moverlo.',
+  'resize.hint':
+    'Arrastra los tiradores del marco para cambiar el tamaño del tablero o el dibujo para moverlo.',
   'resize.anchor': 'Posición',
   'resize.result': '{w} × {h} px → {rw} × {rh} px',
   'anchor.topLeft': 'Arriba a la izquierda',
@@ -712,8 +717,7 @@ export const es: Record<MessageKey, string> = {
   'toast.layersPasted': '{count} capas pegadas.',
   'toast.pixelsRecovered': 'Píxeles recuperados: {w} × {h}, a partir de una imagen ampliada ×{scale}.',
   'toast.groupTooDeep': 'Los grupos admiten hasta cuatro niveles de profundidad.',
-  'toast.instanceLocked':
-    'Esto es una instancia: dibuja en su componente para modificar todas las copias.',
+  'toast.instanceLocked': 'Esto es una instancia: dibuja en su componente para modificar todas las copias.',
   'toast.layerToBoard': 'Movida a {board}.',
   'toast.componentCreated':
     'Componente creado. Arrástralo desde la lista de componentes para colocar copias.',
@@ -732,6 +736,7 @@ export const es: Record<MessageKey, string> = {
   'toast.noPaletteColors': 'No se han encontrado colores en este archivo. Utiliza una paleta .hex o .gpl.',
   'toast.colorsImported': '{count} colores importados.',
   'toast.restored': 'Se ha restaurado tu dibujo anterior.',
+  'toast.languageDetected': 'Baipix está en español.',
   'toast.filesRestored': '{count} archivos restaurados.',
   'toast.legacyImported': '{count} dibujos recuperados de la versión anterior.',
   'home.title': 'Te damos la bienvenida a Baipix',
@@ -769,6 +774,5 @@ export const es: Record<MessageKey, string> = {
   'home.deletedMany': '{count} archivos',
   'file.restore': 'Restaurar',
   'toast.fileRestored': '«{name}» se ha restaurado.',
-  'toast.saveFailed':
-    'No se puede guardar en este navegador. Recuerda descargar tus archivos.',
+  'toast.saveFailed': 'No se puede guardar en este navegador. Recuerda descargar tus archivos.',
 };
