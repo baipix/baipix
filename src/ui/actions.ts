@@ -6,7 +6,7 @@ import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
-import { renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
+import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
 import { composeLayerSpriteSheet, exportableLayers } from '../engine/export/layers';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
@@ -203,16 +203,18 @@ export function createActions(editor: Editor) {
 
       if (!layers.length) return;
 
+      const sheetWidth = d.width * layers.length;
+      const sheetGeometry = renderGeometry(sheetWidth, d.height, d.render.pixelSize, d.render.gap);
+
+      // renderGeometry stops shrinking at 1×, so the sheet may still exceed the limit.
+      // Check dimensions before allocating layer pixel buffers or the combined sprite sheet.
+      if (sheetGeometry.width > MAX_EXPORT_SIZE || sheetGeometry.height > MAX_EXPORT_SIZE) {
+        toast(t('toast.exportTooLarge', { size: MAX_EXPORT_SIZE }));
+        return;
+      }
+
       const layerPixels = layers.map((layer) => flatten(d, { onlyLayer: layer }));
       const sheetPixels = composeLayerSpriteSheet(layerPixels, d.width, d.height);
-
-      const sheetGeometry = renderGeometry(
-        d.width * layers.length,
-        d.height,
-        d.render.pixelSize,
-        d.render.gap,
-      );
-
       const layerGeometry = renderGeometry(d.width, d.height, sheetGeometry.pixelSize, sheetGeometry.gap);
 
       if (sheetGeometry.pixelSize !== d.render.pixelSize)
@@ -251,7 +253,7 @@ export function createActions(editor: Editor) {
         });
       }
 
-      const sheetCanvas = renderToCanvas(sheetPixels, d.width * layers.length, d.height, sheetGeometry);
+      const sheetCanvas = renderToCanvas(sheetPixels, sheetWidth, d.height, sheetGeometry);
       const sheetBlob = await canvasToBlob(sheetCanvas);
 
       files.push({

@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pack } from '../src/engine/color';
 import { createDocument, createLayer } from '../src/engine/document';
 import type { Editor } from '../src/engine/editor';
+import { renderToCanvas } from '../src/io/png';
 import { createActions } from '../src/ui/actions';
+import { toast } from '../src/ui/uiStore';
 
 const RED = pack(255, 0, 0);
 const BLUE = pack(0, 0, 255);
@@ -177,6 +179,26 @@ describe('exportLayers', () => {
       'Test Board-sprite-sheet 3.png',
       'Test Board-sprite-sheet.png',
     ]);
+  });
+
+  it('stops before rendering the sprite sheet when its dimensions exceed the export limit', async () => {
+    const doc = createDocument('Large Board', 512, 1, 'base');
+    doc.render.pixelSize = 1;
+    doc.render.gap = 0;
+
+    for (let index = 1; index < 17; index++) {
+      doc.layers.push(createLayer(`Layer ${index}`, doc.width, doc.height));
+    }
+
+    const editor = { getState: () => ({ doc }) } as unknown as Editor;
+    const actions = createActions(editor);
+
+    await actions.exportLayers();
+
+    expect(toast).toHaveBeenCalledOnce();
+    expect(renderToCanvas).not.toHaveBeenCalled();
+    expect(mocks.zipFiles).toHaveLength(0);
+    expect(mocks.savedFiles).toHaveLength(0);
   });
 
   it('does not create a ZIP when all layers are hidden', async () => {

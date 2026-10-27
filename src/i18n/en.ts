@@ -680,6 +680,8 @@ export const en = {
   'toast.downloadCancelled': 'Download cancelled.',
   'toast.downloadBusy': 'A download request is already open.',
   'toast.exportShrunk': 'Image too large: pixels reduced to {size} px.',
+  'toast.exportTooLarge':
+    'Cannot export: the sprite sheet exceeds the maximum export size of {size} px per side. Reduce the pixel gap or hide some layers and try again.',
   'toast.svgCopied': 'SVG copied. Paste it into Figma or Illustrator.',
   'toast.codeCopied': 'Code copied.',
   'output.copyCodeTitle': 'Copy the code',

@@ -695,6 +695,8 @@ export const es: Record<MessageKey, string> = {
   'toast.downloadCancelled': 'Descarga cancelada.',
   'toast.downloadBusy': 'Ya hay una solicitud de descarga abierta.',
   'toast.exportShrunk': 'La imagen es demasiado grande: los píxeles se han reducido a {size} px.',
+  'toast.exportTooLarge':
+    'No se puede exportar: la hoja de sprites supera el tamaño máximo de {size} px por lado. Reduce el espacio entre píxeles u oculta algunas capas y vuelve a intentarlo.',
   'toast.svgCopied': 'SVG copiado. Pégalo en Figma o Illustrator.',
   'toast.codeCopied': 'Código copiado.',
   'output.copyCodeTitle': 'Copiar el código',
