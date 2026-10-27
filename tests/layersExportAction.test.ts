@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
     data: Blob | string;
     mime: string;
   }>,
+  ui: { exportSheetColumns: null as number | null },
 }));
 
 vi.mock('../src/io/png', () => ({
@@ -70,7 +71,7 @@ vi.mock('../src/io/download', () => ({
 vi.mock('../src/ui/uiStore', () => ({
   openDialog: vi.fn(),
   toast: vi.fn(),
-  uiStore: { get: () => ({}) },
+  uiStore: { get: () => mocks.ui },
 }));
 
 interface MockPng {
@@ -112,6 +113,7 @@ beforeEach(() => {
   mocks.zipFiles = [];
   mocks.savedFiles = [];
   vi.clearAllMocks();
+  mocks.ui.exportSheetColumns = null;
 });
 
 describe('exportLayers', () => {
@@ -137,6 +139,18 @@ describe('exportLayers', () => {
       filename: 'Test Board.zip',
       mime: 'application/zip',
     });
+  });
+
+  it('puts the layers on as many rows as the columns ask', async () => {
+    const { actions } = setup();
+    mocks.ui.exportSheetColumns = 1;
+
+    await actions.exportLayers();
+
+    const sheet = decodePng(mocks.zipFiles[2].data);
+    expect(sheet.docWidth).toBe(2);
+    expect(sheet.docHeight).toBe(2);
+    expect(sheet.pixels).toEqual([RED, 0, 0, BLUE]);
   });
 
   it('does not export hidden layers', async () => {
