@@ -25,6 +25,9 @@ export function ExportPreview() {
   const onlyLayer = format !== 'layers' && activeLayerOnly;
   const includeBackground = uiStore.use((s) => s.exportBackground);
   const layerSheetPreview = useMemo(() => {
+    // The document may be mutated in place; revision invalidates this memo when pixels change.
+    void revision;
+
     if (format !== 'layers') return null;
 
     const layers = exportableLayers(doc);
