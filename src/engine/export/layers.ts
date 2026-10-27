@@ -1,3 +1,4 @@
+import { flatten } from '../composite';
 import type { Layer, PixelDoc } from '../document';
 import { groupChain, isShown } from '../groups';
 
@@ -31,4 +32,15 @@ export function composeLayerSpriteSheet(layers: Uint32Array[], width: number, he
   });
 
   return sheet;
+}
+
+/** Builds a sprite sheet from the visible layers, in bottom-to-top document order. */
+export function layerSpriteSheet(doc: PixelDoc, layers = exportableLayers(doc)) {
+  const pixels = composeLayerSpriteSheet(
+    layers.map((layer) => flatten(doc, { onlyLayer: layer })),
+    doc.width,
+    doc.height,
+  );
+
+  return { layers, pixels, width: doc.width * layers.length, height: doc.height };
 }

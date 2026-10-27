@@ -690,6 +690,7 @@ export const fr: Record<MessageKey, string> = {
   'toast.exportShrunk': 'Image trop grande : pixels réduits à {size} px.',
   'toast.exportTooLarge':
     'Export impossible : la planche de sprites dépasse la taille maximale de {size} px par côté. Réduis l’espacement des pixels ou masque des calques, puis réessaie.',
+  'toast.noVisibleLayers': 'Aucun calque visible à exporter.',
   'toast.svgCopied': 'SVG copié. Colle-le dans Figma ou Illustrator.',
   'toast.codeCopied': 'Code copié.',
   'output.copyCodeTitle': 'Copier le code',

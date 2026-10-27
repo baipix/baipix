@@ -690,6 +690,7 @@ export const uk: Record<MessageKey, string> = {
   'toast.exportShrunk': 'Зображення завелике: розмір пікселів зменшено до {size} px.',
   'toast.exportTooLarge':
     'Не вдалося експортувати: спрайт-лист перевищує максимальний розмір {size} px по кожній стороні. Зменште проміжок між пікселями або приховайте частину шарів і повторіть спробу.',
+  'toast.noVisibleLayers': 'Немає видимих шарів для експорту.',
   'toast.svgCopied': 'SVG скопійовано. Вставте його у Figma або Illustrator.',
   'toast.codeCopied': 'Код скопійовано.',
   'output.copyCodeTitle': 'Копіювати код',

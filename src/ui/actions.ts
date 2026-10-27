@@ -8,7 +8,7 @@ import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
-import { composeLayerSpriteSheet, exportableLayers } from '../engine/export/layers';
+import { exportableLayers, layerSpriteSheet } from '../engine/export/layers';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -201,7 +201,10 @@ export function createActions(editor: Editor) {
       const d = doc();
       const layers = exportableLayers(d);
 
-      if (!layers.length) return;
+      if (!layers.length) {
+        toast(t('toast.noVisibleLayers'));
+        return;
+      }
 
       const sheetWidth = d.width * layers.length;
       const sheetGeometry = renderGeometry(sheetWidth, d.height, d.render.pixelSize, d.render.gap);
@@ -213,8 +216,7 @@ export function createActions(editor: Editor) {
         return;
       }
 
-      const layerPixels = layers.map((layer) => flatten(d, { onlyLayer: layer }));
-      const sheetPixels = composeLayerSpriteSheet(layerPixels, d.width, d.height);
+      const sheet = layerSpriteSheet(d, layers);
       const layerGeometry = renderGeometry(d.width, d.height, sheetGeometry.pixelSize, sheetGeometry.gap);
 
       if (sheetGeometry.pixelSize !== d.render.pixelSize)
@@ -238,12 +240,13 @@ export function createActions(editor: Editor) {
 
       // Reserve the sprite sheet's name before assigning layer filenames.
       const sheetName = uniqueName(`${baseName()}-sprite-sheet.png`);
-      const layerNames = layers.map((layer) => `${safeFileName(layer.name)}.png`);
+      const layerNames = sheet.layers.map((layer) => `${safeFileName(layer.name)}.png`);
       const filenames = layerNames.map(uniqueName);
 
       const files: { name: string; data: Uint8Array }[] = [];
 
-      for (const [index, pixels] of layerPixels.entries()) {
+      for (const [index, layer] of sheet.layers.entries()) {
+        const pixels = flatten(d, { onlyLayer: layer });
         const canvas = renderToCanvas(pixels, d.width, d.height, layerGeometry);
         const blob = await canvasToBlob(canvas);
 
@@ -253,7 +256,7 @@ export function createActions(editor: Editor) {
         });
       }
 
-      const sheetCanvas = renderToCanvas(sheetPixels, sheetWidth, d.height, sheetGeometry);
+      const sheetCanvas = renderToCanvas(sheet.pixels, sheet.width, sheet.height, sheetGeometry);
       const sheetBlob = await canvasToBlob(sheetCanvas);
 
       files.push({

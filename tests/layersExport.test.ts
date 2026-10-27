@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { pack } from '../src/engine/color';
 import { createDocument, createLayer } from '../src/engine/document';
-import { exportableLayers } from '../src/engine/export/layers';
+import { exportableLayers, layerSpriteSheet } from '../src/engine/export/layers';
 
 function documentWithLayers(...names: string[]) {
   const doc = createDocument('Test', 4, 4);
@@ -61,6 +62,21 @@ describe('exportableLayers', () => {
     layers[1].group = 'transparent-group';
 
     expect(exportableLayers(doc)).toEqual([layers[0], layers[2]]);
+  });
+
+  it('builds a horizontal sprite sheet from visible layers', () => {
+    const { doc, layers } = documentWithLayers('Base', 'Details');
+    const red = pack(255, 0, 0);
+    const blue = pack(0, 0, 255);
+    layers[0].pixels[0] = red;
+    layers[1].pixels[0] = blue;
+
+    const sheet = layerSpriteSheet(doc);
+
+    expect(sheet.layers).toEqual(layers);
+    expect(sheet.width).toBe(doc.width * layers.length);
+    expect(sheet.height).toBe(doc.height);
+    expect(Array.from(sheet.pixels.slice(0, 8))).toEqual([red, 0, 0, 0, blue, 0, 0, 0]);
   });
 
   it('keeps visible layers that contain no pixels', () => {

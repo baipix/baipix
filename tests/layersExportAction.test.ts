@@ -212,5 +212,6 @@ describe('exportLayers', () => {
 
     expect(mocks.zipFiles).toHaveLength(0);
     expect(mocks.savedFiles).toHaveLength(0);
+    expect(toast).toHaveBeenCalledTimes(1);
   });
 });
