@@ -23,7 +23,9 @@ import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } 
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
-export type ExportFormat = 'png' | 'svg' | 'aseprite' | 'tileset' | 'layers';
+/** Every export format, also to check the one read back from a save. */
+export const EXPORT_FORMATS = ['png', 'svg', 'aseprite', 'tileset', 'layers'] as const;
+export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
 
