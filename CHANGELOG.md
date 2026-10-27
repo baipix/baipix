@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The Layers + sprite sheet export remembers its columns after a reload. ([#602](https://github.com/baipix/baipix/pull/602))
 - The Tileset export remembers its tile size and Leave out empty and repeated tiles after a reload. ([#600](https://github.com/baipix/baipix/pull/600))
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))
 

@@ -70,6 +70,10 @@ function readPreview(p: Partial<PreviewWindow>): PreviewWindow {
 const tileSide = (n: unknown): number =>
   typeof n === 'number' && Number.isFinite(n) ? Math.min(512, Math.max(1, Math.round(n))) : 16;
 
+/** Layers on a row of the sprite sheet, from a save: a whole number from 1, all of them when missing. */
+const sheetColumns = (n: unknown): number | null =>
+  typeof n === 'number' && Number.isFinite(n) && n >= 1 ? Math.round(n) : null;
+
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */
 function useRestore(editor: Editor, storage: StorageAdapter): boolean {
   const [ready, setReady] = useState(false);
@@ -130,6 +134,7 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
             exportTileWidth: tileSide(ui.exportTileWidth),
             exportTileHeight: tileSide(ui.exportTileHeight),
             exportTileDrop: ui.exportTileDrop !== false,
+            exportSheetColumns: sheetColumns(ui.exportSheetColumns),
             collapsed: Array.isArray(ui.collapsed) ? ui.collapsed.filter((x) => typeof x === 'string') : [],
             exportBackground: ui.exportBackground !== false,
             hiddenPalettes: Array.isArray(ui.hiddenPalettes)

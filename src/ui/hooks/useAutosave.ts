@@ -40,6 +40,7 @@ export function useAutosave(editor: Editor, storage: StorageAdapter, ready: bool
             exportTileWidth: ui.exportTileWidth,
             exportTileHeight: ui.exportTileHeight,
             exportTileDrop: ui.exportTileDrop,
+            exportSheetColumns: ui.exportSheetColumns,
             collapsed: ui.collapsed,
             exportBackground: ui.exportBackground,
             hiddenPalettes: ui.hiddenPalettes,
