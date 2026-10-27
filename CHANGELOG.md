@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- The Layers export downloads a ZIP with a PNG for each visible layer and a horizontal sprite sheet, using the current pixel size and gap; the export preview shows the same sheet. ([#581](https://github.com/baipix/baipix/pull/581))
+- Export the layers as separate PNGs and a sprite sheet, in a .zip (Export › Format › Layers + sprite sheet). ([#581](https://github.com/baipix/baipix/pull/581))
 - The editor in Spanish (View › Language › Español). ([#570](https://github.com/baipix/baipix/pull/570))
 - The editor opens in the browser's language the first time, when Baipix speaks it, with a button to switch back to English. ([#565](https://github.com/baipix/baipix/pull/565))
 - The editor in Ukrainian (View › Language › Українська). ([#551](https://github.com/baipix/baipix/pull/551))
@@ -32,6 +32,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Thanks
 
 - [@robertoponcepaniagua](https://github.com/robertoponcepaniagua) for the Spanish translation, the editor's fourth language. ([#570](https://github.com/baipix/baipix/pull/570))
+- [@mykola-lp](https://github.com/mykola-lp) for exporting the layers as separate PNGs and a sprite sheet. ([#581](https://github.com/baipix/baipix/pull/581))
 - [@mykola-lp](https://github.com/mykola-lp) for opening the editor in the browser's language. ([#565](https://github.com/baipix/baipix/pull/565))
 - [@mykola-lp](https://github.com/mykola-lp) for the Ukrainian translation, the editor's third language. ([#551](https://github.com/baipix/baipix/pull/551))
 - [@mykola-lp](https://github.com/mykola-lp) for a test that checks every translation keeps the English placeholders, the first step toward more languages. ([#544](https://github.com/baipix/baipix/pull/544))
