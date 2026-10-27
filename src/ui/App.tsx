@@ -7,7 +7,7 @@ import { resolveLocaleSelection, setLocale, t, useT } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
 import type { StorageAdapter } from '../storage/workspace';
 import { ActionsContext } from './ActionsContext';
-import { createActions } from './actions';
+import { createActions, EXPORT_FORMATS, type ExportFormat } from './actions';
 import { CanvasView } from './components/CanvasView';
 import { ColorPicker } from './components/ColorPicker';
 import { CommandPalette } from './components/CommandPalette';
@@ -116,10 +116,9 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           const widths = ui.panelWidths;
 
           uiStore.set({
-            exportFormat:
-              ui.exportFormat === 'svg' || ui.exportFormat === 'aseprite' || ui.exportFormat === 'tileset'
-                ? ui.exportFormat
-                : 'png',
+            exportFormat: EXPORT_FORMATS.includes(ui.exportFormat as ExportFormat)
+              ? (ui.exportFormat as ExportFormat)
+              : 'png',
             exportCode: CODE_LANGUAGES.includes(ui.exportCode as CodeLanguage)
               ? (ui.exportCode as CodeLanguage)
               : 'react',
