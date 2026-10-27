@@ -542,6 +542,9 @@ export const en = {
   'export.format': 'Format',
   'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
   'export.allBoards': 'All {count} boards, in a .zip',
+  'export.layers': 'Layers + sprite sheet (ZIP)',
+  'export.layersHint':
+    'A ZIP with one PNG per visible layer and a sprite sheet with the layers side by side. Uses the current pixel size and gap.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Tile width',
   'export.tileHeight': 'Tile height',

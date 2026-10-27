@@ -548,6 +548,9 @@ export const fr: Record<MessageKey, string> = {
   'export.format': 'Format',
   'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
   'export.allBoards': 'Les {count} plans dans un .zip',
+  'export.layers': 'Calques + planche de sprites (ZIP)',
+  'export.layersHint':
+    'Un ZIP contenant un PNG par calque visible et une planche de sprites avec les calques côte à côte. Utilise la taille des pixels et l’espacement actuels.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Largeur des tuiles',
   'export.tileHeight': 'Hauteur des tuiles',

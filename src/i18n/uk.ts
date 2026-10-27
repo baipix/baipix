@@ -547,6 +547,9 @@ export const uk: Record<MessageKey, string> = {
   'export.format': 'Формат',
   'export.asepriteHint': 'Наразі шари, групи, режими змішування й палітра зберігаються в одному кадрі.',
   'export.allBoards': 'Усі артборди ({count}) у ZIP-файлі',
+  'export.layers': 'Шари та спрайт-лист (ZIP)',
+  'export.layersHint':
+    'ZIP містить окремий PNG для кожного видимого шару та спрайт-лист із шарами поруч. Використовуються поточні розмір пікселя й проміжок.',
   'export.tileset': 'Набір тайлів (Godot, Tiled)',
   'export.tileWidth': 'Ширина тайла',
   'export.tileHeight': 'Висота тайла',

@@ -614,11 +614,11 @@ export function ExportOptions() {
   const doc = useEditorState((s) => s.doc);
   useEditorState((s) => s.revision);
   const format = uiStore.use((s) => s.exportFormat);
-  const onlyLayer = uiStore.use((s) => s.exportActiveLayer);
+  const onlyLayer = uiStore.use((s) => s.exportActiveLayer && s.exportFormat !== 'layers');
   const includeBackground = uiStore.use((s) => s.exportBackground);
   const boardCount = useEditorState((s) => s.boards.length);
   const allBoards = uiStore.use((s) => s.exportAllBoards);
-  const everyBoard = allBoards && boardCount > 1;
+  const everyBoard = allBoards && boardCount > 1 && format !== 'layers';
   const editor = useEditor();
   return (
     // Like Figma's: the file's preview, its pixel size, format and buttons.
@@ -643,7 +643,9 @@ export function ExportOptions() {
               }
             }}
           />
-          <span className="field-suffix">.{format === 'tileset' || everyBoard ? 'zip' : format}</span>
+          <span className="field-suffix">
+            .{format === 'tileset' || format === 'layers' || everyBoard ? 'zip' : format}
+          </span>
         </label>
       </Row>
       <Row label={t('export.format')}>
@@ -657,11 +659,12 @@ export function ExportOptions() {
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
+            <option value="layers">{t('export.layers')}</option>
           </select>
         </label>
       </Row>
       {/* A file of several boards: every board at once, one file each in a .zip. */}
-      {boardCount > 1 && format !== 'tileset' && (
+      {boardCount > 1 && format !== 'tileset' && format !== 'layers' && (
         <Checkbox
           checked={allBoards}
           onChange={(v) => uiStore.set({ exportAllBoards: v })}
@@ -669,7 +672,7 @@ export function ExportOptions() {
         />
       )}
       {/* Aseprite keeps every layer, as layers: that's what it's for. */}
-      {format !== 'aseprite' && !everyBoard && (
+      {format !== 'aseprite' && format !== 'layers' && !everyBoard && (
         <Checkbox
           checked={onlyLayer}
           onChange={(v) => uiStore.set({ exportActiveLayer: v })}
@@ -677,23 +680,27 @@ export function ExportOptions() {
         />
       )}
       {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
+      {format === 'layers' && <p className="hint">{t('export.layersHint')}</p>}
       {format === 'tileset' && <TilesetOptions />}
       {/* Tiles stay transparent: the background is the game's. */}
-      {hasBackground(doc) && format !== 'tileset' && (!onlyLayer || format === 'aseprite') && (
-        <Checkbox
-          checked={includeBackground}
-          onChange={(v) => uiStore.set({ exportBackground: v })}
-          label={t('export.includeBackground')}
-        />
-      )}
+      {hasBackground(doc) &&
+        format !== 'tileset' &&
+        format !== 'layers' &&
+        (!onlyLayer || format === 'aseprite') && (
+          <Checkbox
+            checked={includeBackground}
+            onChange={(v) => uiStore.set({ exportBackground: v })}
+            label={t('export.includeBackground')}
+          />
+        )}
       <button
         type="button"
         className="btn btn-primary btn-wide"
-        onClick={() =>
-          void (everyBoard && format !== 'tileset'
-            ? actions.exportAllBoards(format)
-            : actions.exportImage(format, onlyLayer && format !== 'aseprite'))
-        }
+        onClick={() => {
+          if (format === 'layers') void actions.exportLayers();
+          else if (everyBoard && format !== 'tileset') void actions.exportAllBoards(format);
+          else void actions.exportImage(format, onlyLayer && format !== 'aseprite');
+        }}
       >
         {t('export.button')}
       </button>

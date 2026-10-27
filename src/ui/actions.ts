@@ -23,7 +23,7 @@ import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } 
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
-export type ExportFormat = 'png' | 'svg' | 'aseprite' | 'tileset';
+export type ExportFormat = 'png' | 'svg' | 'aseprite' | 'tileset' | 'layers';
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
 
@@ -128,6 +128,7 @@ export function createActions(editor: Editor) {
   const actions = {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
       if (format === 'tileset') return actions.exportTileset(onlyActiveLayer);
+      if (format === 'layers') return actions.exportLayers();
       const filename = `${baseName()}.${format}`;
       // Aseprite: the layers as they are, to keep working on them there.
       if (format === 'aseprite') {
@@ -152,7 +153,7 @@ export function createActions(editor: Editor) {
      * Every board of the file in one .zip, each in `format` (PNG, SVG or Aseprite) and named after
      * it, as each would be exported on its own: its pixel size, the background if asked for.
      */
-    async exportAllBoards(format: Exclude<ExportFormat, 'tileset'>) {
+    async exportAllBoards(format: Exclude<ExportFormat, 'tileset' | 'layers'>) {
       const boards = editor.fileBoards();
       const used = new Set<string>();
       const nameOf = (d: PixelDoc) => {

@@ -19,10 +19,12 @@ export function ExportPreview() {
   const ref = useRef<HTMLCanvasElement>(null);
   const doc = useEditorState((s) => s.doc);
   useEditorState((s) => s.revision);
-  const onlyLayer = uiStore.use((s) => s.exportActiveLayer);
+  const format = uiStore.use((s) => s.exportFormat);
+  const activeLayerOnly = uiStore.use((s) => s.exportActiveLayer);
+  const onlyLayer = format !== 'layers' && activeLayerOnly;
   const includeBackground = uiStore.use((s) => s.exportBackground);
   const g = renderGeometry(doc.width, doc.height, doc.render.pixelSize, doc.render.gap);
-  const withBackground = includeBackground && !onlyLayer && hasBackground(doc);
+  const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
 
   useEffect(() => {
     let frame = 0;
@@ -60,7 +62,9 @@ export function ExportPreview() {
       ctx.fillStyle = checkerPattern(ctx, Math.max(3, Math.round(5 * dpr)), theme.checkA, theme.checkB);
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
-      const withBackground = ui.exportBackground && !ui.exportActiveLayer && hasBackground(doc);
+      const onlyLayer = ui.exportFormat !== 'layers' && ui.exportActiveLayer;
+      const withBackground =
+        ui.exportFormat !== 'layers' && ui.exportBackground && !onlyLayer && hasBackground(doc);
       if (withBackground) {
         ctx.fillStyle = toCss(doc.background);
         ctx.fillRect(x, y, w, h);
@@ -69,9 +73,7 @@ export function ExportPreview() {
       // mix with it.
       const pixels = flatten(
         doc,
-        ui.exportActiveLayer
-          ? { onlyLayer: doc.layers[doc.activeLayer] }
-          : { includeBackground: withBackground },
+        onlyLayer ? { onlyLayer: doc.layers[doc.activeLayer] } : { includeBackground: withBackground },
       );
       const step = (geometry.pixelSize + geometry.gap) * f;
       if (geometry.gap > 0 && step >= 3) {
