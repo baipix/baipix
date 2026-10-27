@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- The Layers + sprite sheet export lays the sheet out in a grid: Columns sets how many layers go on a row. ([#596](https://github.com/baipix/baipix/pull/596))
+
 ### Fixed
 
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))

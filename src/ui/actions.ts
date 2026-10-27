@@ -8,7 +8,7 @@ import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
-import { exportableLayers, layerSpriteSheet } from '../engine/export/layers';
+import { exportableLayers, layerSheetGrid, layerSpriteSheet } from '../engine/export/layers';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -196,7 +196,7 @@ export function createActions(editor: Editor) {
     },
 
     /**
-     * Exports visible layers as individual PNGs and a horizontal sprite sheet,
+     * Exports visible layers as individual PNGs and a sprite sheet (as many on a row as asked),
      * bundled into one .zip.
      */
     async exportLayers() {
@@ -208,8 +208,9 @@ export function createActions(editor: Editor) {
         return;
       }
 
-      const sheetWidth = d.width * layers.length;
-      const sheetGeometry = renderGeometry(sheetWidth, d.height, d.render.pixelSize, d.render.gap);
+      const columns = uiStore.get().exportSheetColumns;
+      const grid = layerSheetGrid(layers.length, columns, d.width, d.height);
+      const sheetGeometry = renderGeometry(grid.width, grid.height, d.render.pixelSize, d.render.gap);
 
       // renderGeometry stops shrinking at 1×, so the sheet may still exceed the limit.
       // Check dimensions before allocating layer pixel buffers or the combined sprite sheet.
@@ -218,7 +219,7 @@ export function createActions(editor: Editor) {
         return;
       }
 
-      const sheet = layerSpriteSheet(d, layers);
+      const sheet = layerSpriteSheet(d, layers, columns);
       const layerGeometry = renderGeometry(d.width, d.height, sheetGeometry.pixelSize, sheetGeometry.gap);
 
       if (sheetGeometry.pixelSize !== d.render.pixelSize)

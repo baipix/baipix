@@ -3,7 +3,7 @@ import { alpha, toCss } from '../../engine/color';
 import { flatten } from '../../engine/composite';
 import { hasBackground } from '../../engine/document';
 import { MAX_EXPORT_SIZE, renderGeometry } from '../../engine/export/svg';
-import { exportableLayers, layerSpriteSheet } from '../../engine/export/layers';
+import { exportableLayers, layerSheetGrid, layerSpriteSheet } from '../../engine/export/layers';
 import { useT } from '../../i18n';
 import { pixelsToCanvas } from '../../io/png';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -24,6 +24,7 @@ export function ExportPreview() {
   const activeLayerOnly = uiStore.use((s) => s.exportActiveLayer);
   const onlyLayer = format !== 'layers' && activeLayerOnly;
   const includeBackground = uiStore.use((s) => s.exportBackground);
+  const columns = uiStore.use((s) => s.exportSheetColumns);
   const layerSheetPreview = useMemo(() => {
     // The document may be mutated in place; revision invalidates this memo when pixels change.
     void revision;
@@ -33,14 +34,14 @@ export function ExportPreview() {
     const layers = exportableLayers(doc);
     if (!layers.length) return { status: 'empty' as const };
 
-    const width = doc.width * layers.length;
-    const geometry = renderGeometry(width, doc.height, doc.render.pixelSize, doc.render.gap);
+    const { width, height } = layerSheetGrid(layers.length, columns, doc.width, doc.height);
+    const geometry = renderGeometry(width, height, doc.render.pixelSize, doc.render.gap);
     if (geometry.width > MAX_EXPORT_SIZE || geometry.height > MAX_EXPORT_SIZE) {
-      return { status: 'tooLarge' as const, width, height: doc.height };
+      return { status: 'tooLarge' as const, width, height };
     }
 
-    return { status: 'ready' as const, ...layerSpriteSheet(doc, layers) };
-  }, [doc, format, revision]);
+    return { status: 'ready' as const, ...layerSpriteSheet(doc, layers, columns) };
+  }, [doc, format, revision, columns]);
   const layerSheet = layerSheetPreview?.status === 'ready' ? layerSheetPreview : null;
   const previewWidth = layerSheet ? layerSheet.width : doc.width;
   const previewHeight = layerSheet ? layerSheet.height : doc.height;
