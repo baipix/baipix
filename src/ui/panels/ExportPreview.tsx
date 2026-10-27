@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { alpha, toCss } from '../../engine/color';
 import { flatten } from '../../engine/composite';
 import { hasBackground } from '../../engine/document';
-import { renderGeometry } from '../../engine/export/svg';
+import { MAX_EXPORT_SIZE, renderGeometry } from '../../engine/export/svg';
+import { exportableLayers, layerSpriteSheet } from '../../engine/export/layers';
 import { useT } from '../../i18n';
 import { pixelsToCanvas } from '../../io/png';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -18,11 +19,33 @@ export function ExportPreview() {
   const editor = useEditor();
   const ref = useRef<HTMLCanvasElement>(null);
   const doc = useEditorState((s) => s.doc);
-  useEditorState((s) => s.revision);
-  const onlyLayer = uiStore.use((s) => s.exportActiveLayer);
+  const revision = useEditorState((s) => s.revision);
+  const format = uiStore.use((s) => s.exportFormat);
+  const activeLayerOnly = uiStore.use((s) => s.exportActiveLayer);
+  const onlyLayer = format !== 'layers' && activeLayerOnly;
   const includeBackground = uiStore.use((s) => s.exportBackground);
-  const g = renderGeometry(doc.width, doc.height, doc.render.pixelSize, doc.render.gap);
-  const withBackground = includeBackground && !onlyLayer && hasBackground(doc);
+  const layerSheetPreview = useMemo(() => {
+    // The document may be mutated in place; revision invalidates this memo when pixels change.
+    void revision;
+
+    if (format !== 'layers') return null;
+
+    const layers = exportableLayers(doc);
+    if (!layers.length) return { status: 'empty' as const };
+
+    const width = doc.width * layers.length;
+    const geometry = renderGeometry(width, doc.height, doc.render.pixelSize, doc.render.gap);
+    if (geometry.width > MAX_EXPORT_SIZE || geometry.height > MAX_EXPORT_SIZE) {
+      return { status: 'tooLarge' as const, width, height: doc.height };
+    }
+
+    return { status: 'ready' as const, ...layerSpriteSheet(doc, layers) };
+  }, [doc, format, revision]);
+  const layerSheet = layerSheetPreview?.status === 'ready' ? layerSheetPreview : null;
+  const previewWidth = layerSheet ? layerSheet.width : doc.width;
+  const previewHeight = layerSheet ? layerSheet.height : doc.height;
+  const g = renderGeometry(previewWidth, previewHeight, doc.render.pixelSize, doc.render.gap);
+  const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
 
   useEffect(() => {
     let frame = 0;
@@ -43,7 +66,10 @@ export function ExportPreview() {
 
       const { doc } = editor.getLive();
       const ui = uiStore.get();
-      const geometry = renderGeometry(doc.width, doc.height, doc.render.pixelSize, doc.render.gap);
+      const sheet = format === 'layers' ? layerSheet : null;
+      const previewWidth = sheet ? sheet.width : doc.width;
+      const previewHeight = sheet ? sheet.height : doc.height;
+      const geometry = renderGeometry(previewWidth, previewHeight, doc.render.pixelSize, doc.render.gap);
       const pad = Math.round(12 * dpr);
       let f = Math.min(
         (canvas.width - pad * 2) / geometry.width,
@@ -60,25 +86,28 @@ export function ExportPreview() {
       ctx.fillStyle = checkerPattern(ctx, Math.max(3, Math.round(5 * dpr)), theme.checkA, theme.checkB);
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
-      const withBackground = ui.exportBackground && !ui.exportActiveLayer && hasBackground(doc);
+      const onlyLayer = format !== 'layers' && ui.exportActiveLayer;
+      const withBackground = format !== 'layers' && ui.exportBackground && !onlyLayer && hasBackground(doc);
       if (withBackground) {
         ctx.fillStyle = toCss(doc.background);
         ctx.fillRect(x, y, w, h);
       }
       // With the background, the layers go over it, as on the canvas and in the PNG: blend modes
       // mix with it.
-      const pixels = flatten(
-        doc,
-        ui.exportActiveLayer
-          ? { onlyLayer: doc.layers[doc.activeLayer] }
-          : { includeBackground: withBackground },
-      );
+      const pixels =
+        sheet?.pixels ??
+        (format === 'layers'
+          ? new Uint32Array(previewWidth * previewHeight)
+          : flatten(
+              doc,
+              onlyLayer ? { onlyLayer: doc.layers[doc.activeLayer] } : { includeBackground: withBackground },
+            ));
       const step = (geometry.pixelSize + geometry.gap) * f;
       if (geometry.gap > 0 && step >= 3) {
         const size = Math.max(1, geometry.pixelSize * f);
-        for (let py = 0; py < doc.height; py++)
-          for (let px = 0; px < doc.width; px++) {
-            const c = pixels[py * doc.width + px];
+        for (let py = 0; py < previewHeight; py++)
+          for (let px = 0; px < previewWidth; px++) {
+            const c = pixels[py * previewWidth + px];
             if (!alpha(c)) continue;
             ctx.fillStyle = toCss(c);
             ctx.fillRect(
@@ -89,7 +118,7 @@ export function ExportPreview() {
             );
           }
       } else {
-        ctx.drawImage(pixelsToCanvas(pixels, doc.width, doc.height), x, y, w, h);
+        ctx.drawImage(pixelsToCanvas(pixels, previewWidth, previewHeight), x, y, w, h);
       }
       // Outline of the image, so a transparent export still shows its extent.
       ctx.strokeStyle = theme.frame;
@@ -114,7 +143,7 @@ export function ExportPreview() {
       mo.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [editor]);
+  }, [editor, format, layerSheet]);
 
   return (
     <div className="export-preview-wrap">
@@ -122,10 +151,18 @@ export function ExportPreview() {
         <canvas ref={ref} role="img" aria-label={t('export.previewLabel')} />
       </div>
       <p className="export-size">
-        {t('export.info', { w: g.width, h: g.height })}{' '}
-        {withBackground ? t('export.withBackground') : t('export.transparent')}
-        {doc.render.gap > 0 && <> · {t('export.gap', { gap: doc.render.gap })}</>}
-        {g.pixelSize !== doc.render.pixelSize && <> · {t('export.shrunk', { size: g.pixelSize })}</>}
+        {layerSheetPreview?.status === 'empty' ? (
+          t('toast.noVisibleLayers')
+        ) : layerSheetPreview?.status === 'tooLarge' ? (
+          t('toast.exportTooLarge', { size: MAX_EXPORT_SIZE })
+        ) : (
+          <>
+            {t('export.info', { w: g.width, h: g.height })}{' '}
+            {withBackground ? t('export.withBackground') : t('export.transparent')}
+            {doc.render.gap > 0 && <> · {t('export.gap', { gap: doc.render.gap })}</>}
+            {g.pixelSize !== doc.render.pixelSize && <> · {t('export.shrunk', { size: g.pixelSize })}</>}
+          </>
+        )}
       </p>
     </div>
   );

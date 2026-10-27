@@ -542,6 +542,9 @@ export const en = {
   'export.format': 'Format',
   'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
   'export.allBoards': 'All {count} boards, in a .zip',
+  'export.layers': 'Layers + sprite sheet (ZIP)',
+  'export.layersHint':
+    'A ZIP with one PNG per visible layer and a sprite sheet with the layers side by side. Uses the current pixel size and gap.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Tile width',
   'export.tileHeight': 'Tile height',
@@ -677,6 +680,9 @@ export const en = {
   'toast.downloadCancelled': 'Download cancelled.',
   'toast.downloadBusy': 'A download request is already open.',
   'toast.exportShrunk': 'Image too large: pixels reduced to {size} px.',
+  'toast.exportTooLarge':
+    'Cannot export: the sprite sheet exceeds the maximum export size of {size} px per side. Reduce the pixel gap or hide some layers and try again.',
+  'toast.noVisibleLayers': 'No visible layers to export.',
   'toast.svgCopied': 'SVG copied. Paste it into Figma or Illustrator.',
   'toast.codeCopied': 'Code copied.',
   'output.copyCodeTitle': 'Copy the code',

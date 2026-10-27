@@ -6,8 +6,9 @@ import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
-import { renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
+import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
+import { exportableLayers, layerSpriteSheet } from '../engine/export/layers';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -22,7 +23,7 @@ import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } 
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
-export type ExportFormat = 'png' | 'svg' | 'aseprite' | 'tileset';
+export type ExportFormat = 'png' | 'svg' | 'aseprite' | 'tileset' | 'layers';
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
 
@@ -127,6 +128,7 @@ export function createActions(editor: Editor) {
   const actions = {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
       if (format === 'tileset') return actions.exportTileset(onlyActiveLayer);
+      if (format === 'layers') return actions.exportLayers();
       const filename = `${baseName()}.${format}`;
       // Aseprite: the layers as they are, to keep working on them there.
       if (format === 'aseprite') {
@@ -151,7 +153,7 @@ export function createActions(editor: Editor) {
      * Every board of the file in one .zip, each in `format` (PNG, SVG or Aseprite) and named after
      * it, as each would be exported on its own: its pixel size, the background if asked for.
      */
-    async exportAllBoards(format: Exclude<ExportFormat, 'tileset'>) {
+    async exportAllBoards(format: Exclude<ExportFormat, 'tileset' | 'layers'>) {
       const boards = editor.fileBoards();
       const used = new Set<string>();
       const nameOf = (d: PixelDoc) => {
@@ -188,6 +190,82 @@ export function createActions(editor: Editor) {
         files.push({ name: nameOf(d), data });
       }
       const filename = `${safeFileName(fileNameOf(doc()))}.zip`;
+      await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
+    },
+
+    /**
+     * Exports visible layers as individual PNGs and a horizontal sprite sheet,
+     * bundled into one .zip.
+     */
+    async exportLayers() {
+      const d = doc();
+      const layers = exportableLayers(d);
+
+      if (!layers.length) {
+        toast(t('toast.noVisibleLayers'));
+        return;
+      }
+
+      const sheetWidth = d.width * layers.length;
+      const sheetGeometry = renderGeometry(sheetWidth, d.height, d.render.pixelSize, d.render.gap);
+
+      // renderGeometry stops shrinking at 1×, so the sheet may still exceed the limit.
+      // Check dimensions before allocating layer pixel buffers or the combined sprite sheet.
+      if (sheetGeometry.width > MAX_EXPORT_SIZE || sheetGeometry.height > MAX_EXPORT_SIZE) {
+        toast(t('toast.exportTooLarge', { size: MAX_EXPORT_SIZE }));
+        return;
+      }
+
+      const sheet = layerSpriteSheet(d, layers);
+      const layerGeometry = renderGeometry(d.width, d.height, sheetGeometry.pixelSize, sheetGeometry.gap);
+
+      if (sheetGeometry.pixelSize !== d.render.pixelSize)
+        toast(t('toast.exportShrunk', { size: sheetGeometry.pixelSize }));
+
+      const usedNames = new Set<string>();
+
+      const uniqueName = (filename: string): string => {
+        const dot = filename.lastIndexOf('.');
+        const stem = dot > 0 ? filename.slice(0, dot) : filename;
+        const extension = dot > 0 ? filename.slice(dot) : '';
+        let name = filename;
+
+        for (let n = 2; usedNames.has(name); n++) {
+          name = `${stem} ${n}${extension}`;
+        }
+
+        usedNames.add(name);
+        return name;
+      };
+
+      // Reserve the sprite sheet's name before assigning layer filenames.
+      const sheetName = uniqueName(`${baseName()}-sprite-sheet.png`);
+      const layerNames = sheet.layers.map((layer) => `${safeFileName(layer.name)}.png`);
+      const filenames = layerNames.map(uniqueName);
+
+      const files: { name: string; data: Uint8Array }[] = [];
+
+      for (const [index, layer] of sheet.layers.entries()) {
+        const pixels = flatten(d, { onlyLayer: layer });
+        const canvas = renderToCanvas(pixels, d.width, d.height, layerGeometry);
+        const blob = await canvasToBlob(canvas);
+
+        files.push({
+          name: filenames[index],
+          data: new Uint8Array(await blob.arrayBuffer()),
+        });
+      }
+
+      const sheetCanvas = renderToCanvas(sheet.pixels, sheet.width, sheet.height, sheetGeometry);
+      const sheetBlob = await canvasToBlob(sheetCanvas);
+
+      files.push({
+        name: sheetName,
+        data: new Uint8Array(await sheetBlob.arrayBuffer()),
+      });
+
+      const filename = `${baseName()}.zip`;
+
       await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
     },
 

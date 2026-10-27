@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The Layers export downloads a ZIP with a PNG for each visible layer and a horizontal sprite sheet, using the current pixel size and gap; the export preview shows the same sheet. ([#581](https://github.com/baipix/baipix/pull/581))
 - The editor in Spanish (View › Language › Español). ([#570](https://github.com/baipix/baipix/pull/570))
 - The editor opens in the browser's language the first time, when Baipix speaks it, with a button to switch back to English. ([#565](https://github.com/baipix/baipix/pull/565))
 - The editor in Ukrainian (View › Language › Українська). ([#551](https://github.com/baipix/baipix/pull/551))

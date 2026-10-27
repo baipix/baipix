@@ -1,0 +1,41 @@
+import { flatten } from '../composite';
+import type { Layer, PixelDoc } from '../document';
+import { isShown } from '../groups';
+
+/** Layers eligible for export, in the document's bottom-to-top order. */
+export function exportableLayers(doc: PixelDoc): Layer[] {
+  return doc.layers.filter((layer) => isShown(doc, layer));
+}
+
+/**
+ * Places layer pixel buffers side by side, preserving their order.
+ * Every layer has the same dimensions as the document.
+ */
+export function composeLayerSpriteSheet(layers: Uint32Array[], width: number, height: number): Uint32Array {
+  const layerSize = width * height;
+
+  if (layers.some((pixels) => pixels.length !== layerSize))
+    throw new RangeError('Layer pixel buffer does not match document dimensions');
+
+  const sheetWidth = width * layers.length;
+  const sheet = new Uint32Array(sheetWidth * height);
+
+  layers.forEach((pixels, index) => {
+    for (let y = 0; y < height; y++) {
+      sheet.set(pixels.subarray(y * width, (y + 1) * width), y * sheetWidth + index * width);
+    }
+  });
+
+  return sheet;
+}
+
+/** Builds a sprite sheet from the visible layers, in bottom-to-top document order. */
+export function layerSpriteSheet(doc: PixelDoc, layers = exportableLayers(doc)) {
+  const pixels = composeLayerSpriteSheet(
+    layers.map((layer) => flatten(doc, { onlyLayer: layer })),
+    doc.width,
+    doc.height,
+  );
+
+  return { layers, pixels, width: doc.width * layers.length, height: doc.height };
+}

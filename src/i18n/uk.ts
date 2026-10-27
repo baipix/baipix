@@ -547,6 +547,9 @@ export const uk: Record<MessageKey, string> = {
   'export.format': 'Формат',
   'export.asepriteHint': 'Наразі шари, групи, режими змішування й палітра зберігаються в одному кадрі.',
   'export.allBoards': 'Усі артборди ({count}) у ZIP-файлі',
+  'export.layers': 'Шари та спрайт-лист (ZIP)',
+  'export.layersHint':
+    'ZIP містить окремий PNG для кожного видимого шару та спрайт-лист із шарами поруч. Використовуються поточні розмір пікселя й проміжок.',
   'export.tileset': 'Набір тайлів (Godot, Tiled)',
   'export.tileWidth': 'Ширина тайла',
   'export.tileHeight': 'Висота тайла',
@@ -685,6 +688,9 @@ export const uk: Record<MessageKey, string> = {
   'toast.downloadCancelled': 'Завантаження скасовано.',
   'toast.downloadBusy': 'Запит на завантаження вже відкрито.',
   'toast.exportShrunk': 'Зображення завелике: розмір пікселів зменшено до {size} px.',
+  'toast.exportTooLarge':
+    'Не вдалося експортувати: спрайт-лист перевищує максимальний розмір {size} px по кожній стороні. Зменште проміжок між пікселями або приховайте частину шарів і повторіть спробу.',
+  'toast.noVisibleLayers': 'Немає видимих шарів для експорту.',
   'toast.svgCopied': 'SVG скопійовано. Вставте його у Figma або Illustrator.',
   'toast.codeCopied': 'Код скопійовано.',
   'output.copyCodeTitle': 'Копіювати код',

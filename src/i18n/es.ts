@@ -551,6 +551,9 @@ export const es: Record<MessageKey, string> = {
   'export.asepriteHint':
     'Por ahora, las capas, los grupos, los modos de fusión y la paleta se exportan en una sola imagen.',
   'export.allBoards': 'Los {count} tableros en un archivo .zip',
+  'export.layers': 'Capas + hoja de sprites (ZIP)',
+  'export.layersHint':
+    'Un ZIP con un PNG por cada capa visible y una hoja de sprites con las capas una al lado de otra. Usa el tamaño de píxel y el espacio actuales.',
   'export.tileset': 'Conjunto de baldosas (Godot, Tiled)',
   'export.tileWidth': 'Ancho de las baldosas',
   'export.tileHeight': 'Alto de las baldosas',
@@ -692,6 +695,9 @@ export const es: Record<MessageKey, string> = {
   'toast.downloadCancelled': 'Descarga cancelada.',
   'toast.downloadBusy': 'Ya hay una solicitud de descarga abierta.',
   'toast.exportShrunk': 'La imagen es demasiado grande: los píxeles se han reducido a {size} px.',
+  'toast.exportTooLarge':
+    'No se puede exportar: la hoja de sprites supera el tamaño máximo de {size} px por lado. Reduce el espacio entre píxeles u oculta algunas capas y vuelve a intentarlo.',
+  'toast.noVisibleLayers': 'No hay capas visibles para exportar.',
   'toast.svgCopied': 'SVG copiado. Pégalo en Figma o Illustrator.',
   'toast.codeCopied': 'Código copiado.',
   'output.copyCodeTitle': 'Copiar el código',
