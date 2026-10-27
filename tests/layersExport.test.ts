@@ -45,14 +45,10 @@ describe('exportableLayers', () => {
     const { doc, layers } = documentWithLayers('Background', 'Transparent', 'Details');
     layers[1].opacity = 0;
 
-    expect(exportableLayers(doc)).toEqual([
-      layers[0],
-      layers[1],
-      layers[2],
-    ]);
+    expect(exportableLayers(doc)).toEqual([layers[0], layers[1], layers[2]]);
   });
 
-  it('skips layers inside groups with zero opacity', () => {
+  it('includes layers inside groups with zero opacity', () => {
     const { doc, layers } = documentWithLayers('Background', 'Transparent group layer', 'Details');
     doc.groups = [
       {
@@ -65,7 +61,7 @@ describe('exportableLayers', () => {
     ];
     layers[1].group = 'transparent-group';
 
-    expect(exportableLayers(doc)).toEqual([layers[0], layers[2]]);
+    expect(exportableLayers(doc)).toEqual([layers[0], layers[1], layers[2]]);
   });
 
   it('builds a horizontal sprite sheet from visible layers', () => {
