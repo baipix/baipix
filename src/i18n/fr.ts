@@ -549,8 +549,9 @@ export const fr: Record<MessageKey, string> = {
   'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
   'export.allBoards': 'Les {count} plans dans un .zip',
   'export.layers': 'Calques + planche de sprites (ZIP)',
+  'export.columns': 'Colonnes',
   'export.layersHint':
-    'Un ZIP contenant un PNG par calque visible et une planche de sprites avec les calques côte à côte. Utilise la taille des pixels et l’espacement actuels.',
+    'Un ZIP contenant un PNG par calque visible et une planche de sprites avec les calques en grille, autant par ligne que de colonnes. Utilise la taille des pixels et l’espacement actuels.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Largeur des tuiles',
   'export.tileHeight': 'Hauteur des tuiles',
@@ -689,7 +690,7 @@ export const fr: Record<MessageKey, string> = {
   'toast.downloadBusy': 'Une demande de téléchargement est déjà ouverte.',
   'toast.exportShrunk': 'Image trop grande : pixels réduits à {size} px.',
   'toast.exportTooLarge':
-    'Export impossible : la planche de sprites dépasse la taille maximale de {size} px par côté. Réduis l’espacement des pixels ou masque des calques, puis réessaie.',
+    'Export impossible : la planche de sprites dépasse la taille maximale de {size} px par côté. Change le nombre de colonnes, réduis l’espacement des pixels ou masque des calques, puis réessaie.',
   'toast.noVisibleLayers': 'Aucun calque visible à exporter.',
   'toast.svgCopied': 'SVG copié. Colle-le dans Figma ou Illustrator.',
   'toast.codeCopied': 'Code copié.',

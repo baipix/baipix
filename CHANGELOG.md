@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- The Layers + sprite sheet export lays the sheet out in a grid: Columns sets how many layers go on a row. ([#596](https://github.com/baipix/baipix/pull/596))
+
 ## [0.7.7] - 2026-10-27
 
 Baipix speaks Ukrainian and Spanish and opens in your browser's language, the layers export as separate PNGs and a sprite sheet, and PNG exports match the canvas with blend modes.
