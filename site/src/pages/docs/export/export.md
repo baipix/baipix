@@ -23,7 +23,7 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, clean SVG with o
 - **PNG**: an image, sharp at the pixel size you picked.
 - **SVG**: vector, light and sharp at any size. Each color is one path, neighboring pixels of the same color merged, so there are no thin lines between them. Layers and groups come out as named groups, with their opacity and blend modes. See [Pixel art to SVG](../../../pixel-art-to-svg/).
 - **Aseprite**: an .aseprite file to keep working there, with the layers, groups, blend modes and the palette, on a single frame.
-- **Layers + sprite sheet**: a .zip with one PNG per visible layer, named after it, and a sheet with the layers side by side, left to right from the bottom layer. Each PNG has the layer's own pixels, at full opacity, for game engines that put sprites together or swap them.
+- **Layers + sprite sheet**: a .zip with one PNG per visible layer, named after it, and a sheet with the layers side by side, left to right from the bottom layer. **Columns** sets how many go on a row: fewer make a grid, read left to right then top to bottom. Each PNG has the layer's own pixels, at full opacity, for game engines that put sprites together or swap them.
 - **Tileset**: the drawing cut into tiles of W × H pixels, for a game engine. A .zip with the tiles on one PNG sheet, a Tiled tileset and a Tiled map that draws the drawing again; Godot takes the PNG as it is. **Leave out empty and repeated tiles** keeps the sheet small.
 
 ## Every board at once

@@ -70,6 +70,8 @@ export interface UiState {
   exportTileWidth: number;
   exportTileHeight: number;
   exportTileDrop: boolean;
+  /** Layers + sprite sheet export: how many layers go on a row of the sheet, all of them when null. */
+  exportSheetColumns: number | null;
   /** Export every board of the file at once, in a .zip. */
   exportAllBoards: boolean;
   /** Ids of the collapsed panel sections. */
@@ -112,6 +114,7 @@ export const uiStore = createStore<UiState>({
   exportTileWidth: 16,
   exportTileHeight: 16,
   exportTileDrop: true,
+  exportSheetColumns: null,
   exportAllBoards: false,
   collapsed: [],
   exportBackground: true,

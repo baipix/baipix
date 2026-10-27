@@ -7,6 +7,7 @@ import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, isBoard, isEmptyBoard, MAX_SIZE } from '../../engine/document';
+import { exportableLayers } from '../../engine/export/layers';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
 import { uniqueColors } from '../../engine/region';
 import { useT } from '../../i18n';
@@ -607,6 +608,28 @@ function TilesetOptions() {
   );
 }
 
+/** Layers + sprite sheet export: how many layers go on a row of the sheet (all of them by default). */
+function LayerSheetOptions() {
+  const t = useT();
+  const doc = useEditorState((s) => s.doc);
+  useEditorState((s) => s.revision);
+  const columns = uiStore.use((s) => s.exportSheetColumns);
+  const count = exportableLayers(doc).length;
+  if (count < 2) return null;
+  return (
+    <Row label={t('export.columns')}>
+      <NumberField
+        value={Math.min(columns ?? count, count)}
+        min={1}
+        max={count}
+        ariaLabel={t('export.columns')}
+        scrubHint={t('common.dragToAdjust')}
+        onChange={(v) => uiStore.set({ exportSheetColumns: v >= count ? null : v })}
+      />
+    </Row>
+  );
+}
+
 /** The export's options and buttons, in the Export dialog (the top bar's Export button). */
 export function ExportOptions() {
   const t = useT();
@@ -680,6 +703,7 @@ export function ExportOptions() {
         />
       )}
       {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
+      {format === 'layers' && <LayerSheetOptions />}
       {format === 'layers' && <p className="hint">{t('export.layersHint')}</p>}
       {format === 'tileset' && <TilesetOptions />}
       {/* Tiles stay transparent: the background is the game's. */}
