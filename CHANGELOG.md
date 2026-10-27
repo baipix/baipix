@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.7.7] - 2026-10-27
+
+Baipix speaks Ukrainian and Spanish and opens in your browser's language, the layers export as separate PNGs and a sprite sheet, and PNG exports match the canvas with blend modes.
+
 ### Added
 
 - Export the layers as separate PNGs and a sprite sheet, in a .zip (Export › Format › Layers + sprite sheet). ([#581](https://github.com/baipix/baipix/pull/581))
@@ -495,7 +499,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.6...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.7...main
+[0.7.7]: https://github.com/baipix/baipix/releases/tag/v0.7.7
 [0.7.6]: https://github.com/baipix/baipix/releases/tag/v0.7.6
 [0.7.5]: https://github.com/baipix/baipix/releases/tag/v0.7.5
 [0.7.4]: https://github.com/baipix/baipix/releases/tag/v0.7.4
