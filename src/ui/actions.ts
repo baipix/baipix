@@ -8,6 +8,7 @@ import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
+import { exportableLayers } from '../engine/export/layers';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -188,6 +189,82 @@ export function createActions(editor: Editor) {
         files.push({ name: nameOf(d), data });
       }
       const filename = `${safeFileName(fileNameOf(doc()))}.zip`;
+      await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
+    },
+
+    /**
+     * Exports each visible layer as a PNG and all layers side by side as a sprite sheet,
+     * bundled into one .zip.
+     */
+    async exportLayers() {
+      const d = doc();
+      const layers = exportableLayers(d);
+
+      if (!layers.length) return;
+
+      // Fit the whole sheet within the export size limit, keeping the same pixel style.
+      const sheetGeometry = renderGeometry(
+        d.width * layers.length,
+        d.height,
+        d.render.pixelSize,
+        d.render.gap,
+      );
+      const layerGeometry = renderGeometry(d.width, d.height, sheetGeometry.pixelSize, sheetGeometry.gap);
+
+      if (sheetGeometry.pixelSize !== d.render.pixelSize)
+        toast(t('toast.exportShrunk', { size: sheetGeometry.pixelSize }));
+
+      const sheet = document.createElement('canvas');
+      sheet.width = sheetGeometry.width;
+      sheet.height = sheetGeometry.height;
+
+      const context = sheet.getContext('2d');
+      if (!context) throw new Error('Could not create sprite sheet canvas');
+
+      const usedNames = new Set<string>();
+
+      const uniqueName = (filename: string): string => {
+        const dot = filename.lastIndexOf('.');
+        const stem = filename.slice(0, dot);
+        const extension = filename.slice(dot);
+        let name = filename;
+
+        for (let n = 2; usedNames.has(name); n++) {
+          name = `${stem} ${n}${extension}`;
+        }
+
+        usedNames.add(name);
+        return name;
+      };
+
+      // Reserve the sprite sheet's name to avoid collisions with layer names.
+      const sheetName = uniqueName(`${baseName()}-sprite-sheet.png`);
+      const files: { name: string; data: Uint8Array }[] = [];
+
+      for (const [index, layer] of layers.entries()) {
+        const pixels = flatten(d, { onlyLayer: layer });
+        const canvas = renderToCanvas(pixels, d.width, d.height, layerGeometry);
+
+        context.drawImage(canvas, index * (layerGeometry.width + sheetGeometry.gap), 0);
+
+        const blob = await canvasToBlob(canvas);
+        const filename = uniqueName(`${safeFileName(layer.name)}.png`);
+
+        files.push({
+          name: filename,
+          data: new Uint8Array(await blob.arrayBuffer()),
+        });
+      }
+
+      const sheetBlob = await canvasToBlob(sheet);
+
+      files.push({
+        name: sheetName,
+        data: new Uint8Array(await sheetBlob.arrayBuffer()),
+      });
+
+      const filename = `${baseName()}.zip`;
+
       await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
     },
 
