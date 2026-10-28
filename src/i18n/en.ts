@@ -671,6 +671,7 @@ export const en = {
   'shortcuts.clipboard': 'Copy, cut, paste',
   'shortcuts.clear': 'Clear the selection',
   'shortcuts.nudge': 'Nudge 1 px, 8 px',
+  'shortcuts.numberStep': 'Number field: change by 1, 10',
   'shortcuts.pan': 'Pan',
   'shortcuts.zoom': 'Zoom',
   'shortcuts.actualSize': 'Zoom to 100 %',

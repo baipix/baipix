@@ -33,6 +33,7 @@ import { helpMenu } from './menus';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
+import { useShiftArrowSteps } from './hooks/useShiftArrowSteps';
 import { leaveHome, showEmptyHome } from './home';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
@@ -226,6 +227,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
     if (ready && !home) startTourOnce();
   }, [ready, home]);
   useNotices(editor);
+  useShiftArrowSteps();
   useAutosave(editor, storage, ready);
 
   const style = {
