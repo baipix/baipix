@@ -11,8 +11,8 @@ Three tools share a button: the **rectangle** (<kbd>M</kbd>), the **lasso** (<kb
 - <kbd>Ctrl</kbd>+<kbd>A</kbd> selects all, <kbd>Ctrl</kbd>+<kbd>D</kbd> or <kbd>Esc</kbd> deselects.
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/selection-light.webp" width="832" height="534" alt="The magic wand’s selection on a sunset: every pixel of one color, in several areas, outlined with marching ants." loading="lazy" />
-  <img class="for-dark" src="../../shots/selection-dark.webp" width="832" height="534" alt="The magic wand’s selection on a sunset: every pixel of one color, in several areas, outlined with marching ants." loading="lazy" />
+  <img class="for-light" src="../../shots/selection-light.webp" width="832" height="514" alt="The magic wand’s selection on a sunset: every pixel of one color, in several areas, outlined with marching ants." loading="lazy" />
+  <img class="for-dark" src="../../shots/selection-dark.webp" width="832" height="514" alt="The magic wand’s selection on a sunset: every pixel of one color, in several areas, outlined with marching ants." loading="lazy" />
 </figure>
 
 ## Use it
