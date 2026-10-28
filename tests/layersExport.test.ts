@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { pack } from '../src/engine/color';
 import { createDocument, createLayer } from '../src/engine/document';
-import { exportableLayers, layerSheetGrid, layerSpriteSheet } from '../src/engine/export/layers';
+import {
+  exportableLayers,
+  layerSheetGrid,
+  layerSpriteSheet,
+  spriteSheetJson,
+} from '../src/engine/export/layers';
 
 function documentWithLayers(...names: string[]) {
   const doc = createDocument('Test', 4, 4);
@@ -108,5 +113,28 @@ describe('exportableLayers', () => {
 
     expect(layers[0].pixels.some((pixel) => pixel !== 0)).toBe(false);
     expect(exportableLayers(doc)).toEqual(layers);
+  });
+});
+
+describe('spriteSheetJson', () => {
+  it('places each frame on the grid, cells apart by the gap, in exported pixels', () => {
+    // 3 layers of 4 × 2 at 3× with a gap of 1: a cell is 15 × 7, and 2 columns make 31 × 15.
+    const json = JSON.parse(
+      spriteSheetJson(
+        'sheet.png',
+        ['a.png', 'b.png', 'c.png'],
+        2,
+        { width: 15, height: 7 },
+        1,
+        { width: 31, height: 15 },
+        '1.0.0',
+      ),
+    );
+
+    expect(json.frames['a.png'].frame).toEqual({ x: 0, y: 0, w: 15, h: 7 });
+    expect(json.frames['b.png'].frame).toEqual({ x: 16, y: 0, w: 15, h: 7 });
+    expect(json.frames['c.png'].frame).toEqual({ x: 0, y: 8, w: 15, h: 7 });
+    expect(json.frames['c.png'].sourceSize).toEqual({ w: 15, h: 7 });
+    expect(json.meta).toMatchObject({ image: 'sheet.png', size: { w: 31, h: 15 }, version: '1.0.0' });
   });
 });

@@ -63,3 +63,54 @@ export function layerSpriteSheet(
 
   return { layers, pixels, width, height };
 }
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+/**
+ * The sheet's data file for game engines, in the TexturePacker / Aseprite "hash" format that
+ * Phaser, Godot importers and Unity read: each layer's frame on the sheet, in exported pixels.
+ * `cell` is one layer's exported size and `gap` the space between pixels, which also separates
+ * the cells, as it does on the sheet.
+ */
+export function spriteSheetJson(
+  image: string,
+  names: string[],
+  columns: number,
+  cell: Size,
+  gap: number,
+  sheet: Size,
+  version: string,
+): string {
+  const frames = Object.fromEntries(
+    names.map((name, index) => {
+      const frame = {
+        x: (index % columns) * (cell.width + gap),
+        y: Math.floor(index / columns) * (cell.height + gap),
+        w: cell.width,
+        h: cell.height,
+      };
+      return [
+        name,
+        {
+          frame,
+          rotated: false,
+          trimmed: false,
+          spriteSourceSize: { x: 0, y: 0, w: cell.width, h: cell.height },
+          sourceSize: { w: cell.width, h: cell.height },
+        },
+      ];
+    }),
+  );
+  const meta = {
+    app: 'https://baipix.app',
+    version,
+    image,
+    format: 'RGBA8888',
+    size: { w: sheet.width, h: sheet.height },
+    scale: '1',
+  };
+  return JSON.stringify({ frames, meta }, null, 2);
+}

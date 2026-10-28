@@ -8,7 +8,7 @@ import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
-import { exportableLayers, layerSheetGrid, layerSpriteSheet } from '../engine/export/layers';
+import { exportableLayers, layerSheetGrid, layerSpriteSheet, spriteSheetJson } from '../engine/export/layers';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -196,8 +196,8 @@ export function createActions(editor: Editor) {
     },
 
     /**
-     * Exports visible layers as individual PNGs and a sprite sheet (as many on a row as asked),
-     * bundled into one .zip.
+     * Exports visible layers as individual PNGs and a sprite sheet (as many on a row as asked), with
+     * the sheet's JSON for game engines, bundled into one .zip.
      */
     async exportLayers() {
       const d = doc();
@@ -241,8 +241,9 @@ export function createActions(editor: Editor) {
         return name;
       };
 
-      // Reserve the sprite sheet's name before assigning layer filenames.
+      // Reserve the sprite sheet's names before assigning layer filenames.
       const sheetName = uniqueName(`${baseName()}-sprite-sheet.png`);
+      const jsonName = uniqueName(`${baseName()}-sprite-sheet.json`);
       const layerNames = sheet.layers.map((layer) => `${safeFileName(layer.name)}.png`);
       const filenames = layerNames.map(uniqueName);
 
@@ -266,6 +267,16 @@ export function createActions(editor: Editor) {
         name: sheetName,
         data: new Uint8Array(await sheetBlob.arrayBuffer()),
       });
+      const json = spriteSheetJson(
+        sheetName,
+        filenames,
+        grid.columns,
+        layerGeometry,
+        sheetGeometry.gap,
+        sheetGeometry,
+        __APP_VERSION__,
+      );
+      files.push({ name: jsonName, data: new TextEncoder().encode(json) });
 
       const filename = `${baseName()}.zip`;
 

@@ -551,7 +551,7 @@ export const fr: Record<MessageKey, string> = {
   'export.layers': 'Calques + planche de sprites (ZIP)',
   'export.columns': 'Colonnes',
   'export.layersHint':
-    'Un ZIP contenant un PNG par calque visible et une planche de sprites avec les calques en grille, autant par ligne que de colonnes. Utilise la taille des pixels et l’espacement actuels.',
+    'Un ZIP contenant un PNG par calque visible et une planche de sprites avec les calques en grille, autant par ligne que de colonnes, et son JSON pour les moteurs de jeu. Utilise la taille des pixels et l’espacement actuels.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Largeur des tuiles',
   'export.tileHeight': 'Hauteur des tuiles',

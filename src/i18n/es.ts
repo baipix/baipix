@@ -554,7 +554,7 @@ export const es: Record<MessageKey, string> = {
   'export.layers': 'Capas + hoja de sprites (ZIP)',
   'export.columns': 'Columnas',
   'export.layersHint':
-    'Un ZIP con un PNG por cada capa visible y una hoja de sprites con las capas en una cuadrícula, tantas por fila como columnas. Usa el tamaño de píxel y el espacio actuales.',
+    'Un ZIP con un PNG por cada capa visible y una hoja de sprites con las capas en una cuadrícula, tantas por fila como columnas, y su JSON para motores de juego. Usa el tamaño de píxel y el espacio actuales.',
   'export.tileset': 'Conjunto de baldosas (Godot, Tiled)',
   'export.tileWidth': 'Ancho de las baldosas',
   'export.tileHeight': 'Alto de las baldosas',
