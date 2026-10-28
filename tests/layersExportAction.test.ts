@@ -126,6 +126,7 @@ describe('exportLayers', () => {
       'base.png',
       'details.png',
       'Test Board-sprite-sheet.png',
+      'Test Board-sprite-sheet.json',
     ]);
 
     const sheet = decodePng(mocks.zipFiles[2].data);
@@ -153,13 +154,29 @@ describe('exportLayers', () => {
     expect(sheet.pixels).toEqual([RED, 0, 0, BLUE]);
   });
 
+  it("adds the sheet's JSON, naming each layer's frame", async () => {
+    const { actions } = setup();
+    mocks.ui.exportSheetColumns = 1;
+
+    await actions.exportLayers();
+
+    const json = JSON.parse(new TextDecoder().decode(mocks.zipFiles[3].data));
+    expect(Object.keys(json.frames)).toEqual(['base.png', 'details.png']);
+    expect(json.frames['details.png'].frame.y).toBeGreaterThan(0);
+    expect(json.meta.image).toBe('Test Board-sprite-sheet.png');
+  });
+
   it('does not export hidden layers', async () => {
     const { doc, actions } = setup();
     doc.layers[1].visible = false;
 
     await actions.exportLayers();
 
-    expect(mocks.zipFiles.map(({ name }) => name)).toEqual(['base.png', 'Test Board-sprite-sheet.png']);
+    expect(mocks.zipFiles.map(({ name }) => name)).toEqual([
+      'base.png',
+      'Test Board-sprite-sheet.png',
+      'Test Board-sprite-sheet.json',
+    ]);
 
     const sheet = decodePng(mocks.zipFiles[1].data);
 
@@ -177,6 +194,7 @@ describe('exportLayers', () => {
       'base.png',
       'base 2.png',
       'Test Board-sprite-sheet.png',
+      'Test Board-sprite-sheet.json',
     ]);
   });
 
@@ -192,6 +210,7 @@ describe('exportLayers', () => {
       'Test Board-sprite-sheet 2.png',
       'Test Board-sprite-sheet 3.png',
       'Test Board-sprite-sheet.png',
+      'Test Board-sprite-sheet.json',
     ]);
   });
 

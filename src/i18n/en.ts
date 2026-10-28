@@ -545,7 +545,7 @@ export const en = {
   'export.layers': 'Layers + sprite sheet (ZIP)',
   'export.columns': 'Columns',
   'export.layersHint':
-    'A ZIP with one PNG per visible layer and a sprite sheet with the layers in a grid, as many to a row as the columns. Uses the current pixel size and gap.',
+    'A ZIP with one PNG per visible layer and a sprite sheet with the layers in a grid, as many to a row as the columns, and its JSON for game engines. Uses the current pixel size and gap.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Tile width',
   'export.tileHeight': 'Tile height',
