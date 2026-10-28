@@ -188,6 +188,9 @@ const chrome = spawn(
     `--remote-debugging-port=${DEBUG}`,
     `--user-data-dir=${mkdtempSync(join(tmpdir(), 'baipix-docs-'))}`,
     '--hide-scrollbars',
+    // In English, whatever the computer's language: Baipix opens in the browser's.
+    '--lang=en-US',
+    '--accept-lang=en-US',
     'about:blank',
   ],
   { stdio: 'ignore' },

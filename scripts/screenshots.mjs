@@ -41,6 +41,9 @@ for (const theme of ['dark', 'light']) {
   execFileSync(CHROME, [
     '--headless=new',
     '--hide-scrollbars',
+    // In English, whatever the computer's language: Baipix opens in the browser's.
+    '--lang=en-US',
+    '--accept-lang=en-US',
     '--window-size=1440,900',
     '--force-device-scale-factor=2',
     // Time for the app to load the drawing and draw it.
