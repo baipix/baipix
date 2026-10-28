@@ -487,7 +487,8 @@ export function createActions(editor: Editor) {
 
     /**
      * Copies the selected layers whole (Cmd+C with no pixels selected, or in the Layers panel), also
-     * to the system clipboard: another file or tab pastes them, other apps get a PNG. `cut` deletes them.
+     * to the system clipboard: another file or tab pastes them, other apps get an SVG or a PNG. `cut`
+     * deletes them.
      */
     copyLayers(cut = false) {
       const f = cut ? editor.cutLayers() : editor.copyLayers();
@@ -496,17 +497,14 @@ export function createActions(editor: Editor) {
       if (cut) toast(n > 1 ? t('toast.layersCut', { count: n }) : t('toast.layerCut'));
       else toast(n > 1 ? t('toast.layersCopied', { count: n }) : t('toast.layerCopied'));
       const d = doc();
-      const pixels = flatten(
-        { ...d, width: f.width, height: f.height, layers: f.layers, groups: f.groups },
-        {
-          includeBackground: false,
-        },
-      );
+      const copied = { ...d, width: f.width, height: f.height, layers: f.layers, groups: f.groups };
+      const pixels = flatten(copied, { includeBackground: false });
       const geometry = renderGeometry(f.width, f.height, d.render.pixelSize, d.render.gap);
       // Not awaited: the browser may refuse (no focus, no permission); the copy here still works.
       void copyHtmlAndPng(
         layerClipHtml(f),
         canvasToBlob(renderToCanvas(pixels, f.width, f.height, geometry, 0)),
+        toLayeredSvg(copied, geometry),
       );
       return true;
     },
@@ -518,7 +516,7 @@ export function createActions(editor: Editor) {
     /**
      * Copies (or cuts) the selected pixels, and puts them on the system clipboard too, as a picture
      * with their id: a paste here then takes them, not what was on the clipboard before (a
-     * screenshot, layers copied earlier), and other apps get the picture.
+     * screenshot, layers copied earlier), and other apps get the picture, as an SVG or a PNG.
      */
     copyPixels(cut = false) {
       if (!(cut ? editor.cut() : editor.copy())) return false;
@@ -532,6 +530,7 @@ export function createActions(editor: Editor) {
       void copyHtmlAndPng(
         pixelClipHtml(id),
         canvasToBlob(renderToCanvas(block.pixels, block.width, block.height, geometry, 0)),
+        toSvg(block.pixels, block.width, block.height, geometry),
       );
       return true;
     },

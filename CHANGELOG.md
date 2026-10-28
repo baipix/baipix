@@ -9,6 +9,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The Layers + sprite sheet export adds the sheet's JSON, in the TexturePacker format game engines read: each layer's frame on the sheet. ([#603](https://github.com/baipix/baipix/pull/603))
 - The Layers + sprite sheet export lays the sheet out in a grid: Columns sets how many layers go on a row. ([#596](https://github.com/baipix/baipix/pull/596))
 
+### Changed
+
+- Ctrl+C on a selection or on layers also puts them on the clipboard as SVG: pasted into Figma, they come out as shapes you can edit, while other apps still get the picture. ([#604](https://github.com/baipix/baipix/pull/604))
+
 ### Fixed
 
 - The Layers + sprite sheet export remembers its columns after a reload. ([#602](https://github.com/baipix/baipix/pull/602))
