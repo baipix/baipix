@@ -77,6 +77,7 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
       ['menu.renameFile', 'F2'],
       ['menu.export', 'Ctrl+E'],
       ['menu.adjustColors', 'Ctrl+U'],
+      ['shortcuts.numberStep', '↑ ↓ (Shift)'],
     ],
   },
 ];

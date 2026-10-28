@@ -679,6 +679,7 @@ export const uk: Record<MessageKey, string> = {
   'shortcuts.clipboard': 'Копіювання, вирізання, вставлення',
   'shortcuts.clear': 'Очистити виділення',
   'shortcuts.nudge': 'Зсув на 1 px або 8 px',
+  'shortcuts.numberStep': 'Числове поле: змінити на 1 або 10',
   'shortcuts.pan': 'Переміщення полотна',
   'shortcuts.zoom': 'Масштаб',
   'shortcuts.actualSize': 'Масштаб 100 %',

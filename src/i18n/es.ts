@@ -686,6 +686,7 @@ export const es: Record<MessageKey, string> = {
   'shortcuts.clipboard': 'Copiar, cortar y pegar',
   'shortcuts.clear': 'Borrar la selección',
   'shortcuts.nudge': 'Desplazar 1 px u 8 px',
+  'shortcuts.numberStep': 'Campo numérico: cambiar de 1 en 1 o de 10 en 10',
   'shortcuts.pan': 'Desplazar la vista',
   'shortcuts.zoom': 'Ampliar o reducir',
   'shortcuts.actualSize': 'Zoom al 100 %',
