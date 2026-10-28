@@ -35,6 +35,8 @@ In a file of several boards, **All boards** exports each one in the format you p
 - **Copy as SVG** (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>): paste the drawing straight into Figma or Illustrator, as shapes you can edit. See [Pixel art for Figma](../../../pixel-art-for-figma/).
 - **Copy as PNG**: for apps that only take images.
 
+A plain <kbd>Ctrl</kbd>+<kbd>C</kbd> on a selection or on layers works too: Figma pastes shapes, Slack, Notion and other apps get the picture, and Baipix gets the pixels back as they were.
+
 ## Save the file itself
 
 Export makes images. To keep the drawing with its layers and boards, use **File › Download as .baipix**: see [Files and saving](../../getting-started/files-and-saving/).
