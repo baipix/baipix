@@ -29,6 +29,8 @@ export type LayerEffect =
       /** Offset of the shadow, in pixels. */
       x: number;
       y: number;
+      /** The offset follows the board's light (see light.ts), set again whenever the light moves. */
+      followLight?: boolean;
     }
   | {
       type: 'glow';
@@ -191,6 +193,7 @@ export function cleanEffects(raw: unknown): LayerEffect[] | undefined {
           ...base,
           x: int(e.x, -MAX_SHADOW_OFFSET, MAX_SHADOW_OFFSET, 1),
           y: int(e.y, -MAX_SHADOW_OFFSET, MAX_SHADOW_OFFSET, 1),
+          ...(e.followLight === true && { followLight: true }),
         };
       if (e.type === 'glow') return { type: 'glow', ...base, size: int(e.size, 1, MAX_EFFECT_SIZE, 3) };
       return {

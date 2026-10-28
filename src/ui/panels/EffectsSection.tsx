@@ -1,6 +1,7 @@
 import { EFFECT_TYPES, MAX_EFFECT_SIZE, MAX_SHADOW_OFFSET, type LayerEffect } from '../../engine/effects';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
+import { Checkbox } from '../components/Checkbox';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { NumberField } from '../components/NumberField';
@@ -17,6 +18,7 @@ export function EffectsSection() {
   const layer = useEditorState((s) => s.doc.layers[s.doc.activeLayer]);
   const onLayer = useEditorState((s) => !s.referenceSelected && !s.selectedGroup);
   useEditorState((s) => s.revision);
+  const hasLight = useEditorState((s) => !!s.doc.light);
   const effects = layer.effects ?? [];
   const set = (k: number, patch: Partial<LayerEffect>, done = true) => editor.setEffect(k, patch, done);
   const number = (
@@ -37,7 +39,10 @@ export function EffectsSection() {
       ariaLabel={label}
       scrubHint={t('common.dragToAdjust')}
       sensitivity={10}
-      onChange={(v, final) => set(k, { [key]: v } as Partial<LayerEffect>, final)}
+      // A shadow moved by hand stops following the light.
+      onChange={(v, final) =>
+        set(k, { [key]: v, ...(key !== 'size' && { followLight: false }) } as Partial<LayerEffect>, final)
+      }
     />
   );
 
@@ -129,6 +134,13 @@ export function EffectsSection() {
               </label>
             )}
           </div>
+          {effect.type === 'shadow' && hasLight && (
+            <Checkbox
+              checked={!!effect.followLight}
+              onChange={(v) => set(k, { followLight: v } as Partial<LayerEffect>)}
+              label={t('effects.followLight')}
+            />
+          )}
         </div>
       ))}
     </Section>

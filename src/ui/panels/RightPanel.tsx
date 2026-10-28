@@ -8,6 +8,7 @@ import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, isBoard, isEmptyBoard, MAX_SIZE } from '../../engine/document';
 import { exportableLayers } from '../../engine/export/layers';
+import { DEFAULT_LIGHT, LIGHT_HEIGHT } from '../../engine/light';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
 import { uniqueColors } from '../../engine/region';
 import { useT } from '../../i18n';
@@ -15,6 +16,7 @@ import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Checkbox } from '../components/Checkbox';
 import { IconButton } from '../components/IconButton';
+import { LightStage } from '../components/LightStage';
 import { openMenu, type MenuItem } from '../components/Menu';
 import { Icon } from '../components/Icon';
 import { NumberField } from '../components/NumberField';
@@ -538,6 +540,74 @@ function CanvasSection() {
   );
 }
 
+/** The board's light, a guide to shade by: set on a small stage, shown over the canvas. */
+function LightSection() {
+  const t = useT();
+  const editor = useEditor();
+  const light = useEditorState((s) => s.doc.light);
+  // The active layer has no shadow following the light yet: one click adds it.
+  const followed = useEditorState((s) =>
+    s.doc.layers[s.doc.activeLayer]?.effects?.some((e) => e.type === 'shadow' && e.followLight),
+  );
+  useEditorState((s) => s.revision);
+  return (
+    <Section
+      id="light"
+      title={t('section.light')}
+      info={t('light.info')}
+      aside={
+        light ? (
+          <IconButton icon="minus" label={t('light.remove')} onClick={() => editor.setLight(null)} />
+        ) : (
+          <IconButton icon="plus" label={t('light.add')} onClick={() => editor.setLight(DEFAULT_LIGHT)} />
+        )
+      }
+    >
+      {light && (
+        <>
+          <LightStage light={light} onChange={(l, final) => editor.setLight(l, final)} />
+          <div className="two-columns">
+            <NumberField
+              value={light.angle}
+              min={0}
+              max={359}
+              label="∠"
+              suffix="°"
+              ariaLabel={t('light.angle')}
+              scrubHint={t('common.dragToAdjust')}
+              onChange={(v, final) => editor.setLight({ ...light, angle: v }, final)}
+            />
+            <NumberField
+              value={light.height}
+              min={LIGHT_HEIGHT.min}
+              max={LIGHT_HEIGHT.max}
+              label="↑"
+              suffix="°"
+              ariaLabel={t('light.heightField')}
+              scrubHint={t('common.dragToAdjust')}
+              onChange={(v, final) => editor.setLight({ ...light, height: v }, final)}
+            />
+          </div>
+          <Checkbox
+            checked={light.direction}
+            onChange={(v) => editor.setLight({ ...light, direction: v })}
+            label={t('light.direction')}
+          />
+          {!followed && (
+            <button
+              type="button"
+              className="btn btn-wide"
+              onClick={() => editor.addEffect('shadow', { followLight: true })}
+            >
+              {t('light.addShadow')}
+            </button>
+          )}
+        </>
+      )}
+    </Section>
+  );
+}
+
 /** The display options (grid, tile preview, symmetry, rulers, isometric grid), in the top bar's popover. */
 export function DisplayOptions() {
   const t = useT();
@@ -760,6 +830,7 @@ export function RightPanel() {
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
       {board && <CanvasSection />}
+      {board && <LightSection />}
       <PaletteSection />
       {!noBoard && <LayerSection />}
       {!noBoard && <EffectsSection />}

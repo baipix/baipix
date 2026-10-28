@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
+import { normalizeAngle } from '../../engine/light';
 
 /** Which sides of a board a drag pulls (two for a corner). */
 type BoardSides = { left: boolean; right: boolean; top: boolean; bottom: boolean };
@@ -20,6 +21,8 @@ import {
   axisPositions,
   drawScene,
   LABEL,
+  LIGHT_SUN_RADIUS,
+  lightSunAt,
   labelRect,
   type BrushPreview,
   type SceneBoard,
@@ -73,6 +76,9 @@ function unionBounds(layers: Layer[], width: number, height: number): Rect | nul
   return box;
 }
 
+/** How far around the light's sun a press still takes it, in CSS pixels. */
+const SUN_REACH = 6;
+
 export function CanvasView() {
   const editor = useEditor();
   const actions = useActions();
@@ -124,6 +130,8 @@ export function CanvasView() {
     let altHeld = false;
     // Dragging a symmetry axis by its grip.
     let axisDrag: 'x' | 'y' | null = null;
+    /** The light's sun being dragged around the board, to turn the light. */
+    let sunDrag = false;
     // Dragging a guide out of a ruler (index null) or an existing one (with the Move tool).
     let guideDrag: { axis: 'x' | 'y'; index: number | null; at: number } | null = null;
     let sprayTimer = 0;
@@ -219,6 +227,34 @@ export function CanvasView() {
         { x: p.x < anchor.x ? anchor.x - w : anchor.x, y: p.y < anchor.y ? anchor.y - h : anchor.y, w, h },
         final,
       );
+    };
+
+    /** The board's light, when its sun is shown and under the pointer. */
+    const onSun = (l: { x: number; y: number }): boolean => {
+      const { doc } = editor.getState();
+      if (!doc.light?.direction || !isBoard(doc)) return false;
+      const cam = camera();
+      const sun = lightSunAt(
+        doc.light.angle,
+        cam.originX,
+        cam.originY,
+        doc.width * cam.scale,
+        doc.height * cam.scale,
+        cam.dpr,
+      );
+      return (
+        Math.hypot(l.x * cam.dpr - sun.x, l.y * cam.dpr - sun.y) <= (LIGHT_SUN_RADIUS + SUN_REACH) * cam.dpr
+      );
+    };
+    /** Turns the light toward the pointer, seen from the board's middle. */
+    const dragSun = (l: { x: number; y: number }, final: boolean) => {
+      const { doc } = editor.getState();
+      if (!doc.light) return;
+      const cam = camera();
+      const cx = cam.originX + (doc.width * cam.scale) / 2;
+      const cy = cam.originY + (doc.height * cam.scale) / 2;
+      const angle = normalizeAngle((Math.atan2(cy - l.y * cam.dpr, l.x * cam.dpr - cx) * 180) / Math.PI);
+      editor.setLight({ ...doc.light, angle }, final);
     };
 
     /** The symmetry axis whose grip (the part outside the canvas) is under the pointer, if any. */
@@ -903,6 +939,10 @@ export function CanvasView() {
         axisDrag = axis;
         return;
       }
+      if (e.button === 0 && onSun(l)) {
+        sunDrag = true;
+        return;
+      }
       // The selected board's sides resize it.
       const st = editor.getState();
       const sides = e.button === 0 ? boardSidesAt(l) : null;
@@ -1058,6 +1098,10 @@ export function CanvasView() {
         dragAxis(local(e));
         return;
       }
+      if (sunDrag) {
+        dragSun(local(e), false);
+        return;
+      }
       if (refDrag) {
         dragRef(local(e), false);
         return;
@@ -1083,6 +1127,7 @@ export function CanvasView() {
       canvas.classList.toggle('on-axis-x', onAxis === 'x');
       canvas.classList.toggle('on-axis-y', onAxis === 'y');
       canvas.classList.toggle('on-ruler', !editor.isStroking && rulerAt(here) !== null);
+      canvas.classList.toggle('on-sun', !editor.isStroking && onSun(here));
       const events = editor.isStroking && e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
       for (const ev of events.length ? events : [e]) {
         const l = local(ev);
@@ -1185,6 +1230,11 @@ export function CanvasView() {
         axisDrag = null;
         return;
       }
+      if (sunDrag) {
+        dragSun(local(e), true);
+        sunDrag = false;
+        return;
+      }
       if (refDrag) {
         dragRef(local(e), true);
         refDrag = null;
@@ -1225,6 +1275,7 @@ export function CanvasView() {
       panStart = null;
       pinch = null;
       axisDrag = null;
+      sunDrag = false;
       boardDrag = null;
       boardDraft = null;
       boardResize = null;

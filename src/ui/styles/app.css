@@ -982,6 +982,9 @@ body.is-resizing * {
 .canvas.on-label {
   cursor: default;
 }
+.canvas.on-sun {
+  cursor: grab;
+}
 /* A file with no board: centered on the canvas, letting drags through to draw one. */
 .no-board {
   position: absolute;
@@ -2981,6 +2984,17 @@ body.is-dragging-swatch * {
   grid-column: 1 / -1;
 }
 /* Where something is pinned: 9 spots, the chosen one filled. */
+.light-stage {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  background: var(--input);
+  cursor: grab;
+  touch-action: none;
+}
+.light-stage:active {
+  cursor: grabbing;
+}
 .anchor-grid {
   flex: none;
   display: grid;

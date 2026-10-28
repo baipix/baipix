@@ -1,4 +1,5 @@
 import type { Selection } from '../../engine/selection';
+import { towardLight } from '../../engine/light';
 import { alpha, toCss, type Color } from '../../engine/color';
 import {
   hasBackground,
@@ -489,6 +490,7 @@ export function drawScene(
   }
   if (doc.isoGrid && !free)
     drawIsoGrid(ctx, doc.isoGrid, !!doc.isoGridVertical, W, H, X, Y, s, camera.dpr, theme.isoGrid);
+  if (doc.light?.direction && !free) drawLightDirection(ctx, doc.light.angle, X, Y, cw, ch, dpr, theme);
   if (!free) {
     ctx.strokeStyle = theme.frame;
     ctx.lineWidth = 1;
@@ -841,6 +843,64 @@ const RULER_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
  * they cross every `cell / 2` pixels across and `cell / 4` down, from the top middle of the canvas. Left out
  * when zoomed so far out that the diamonds would be a blur.
  */
+/** Space between the light direction's lines, in CSS pixels: the same however far the view zooms. */
+const LIGHT_LINE_SPACING = 28;
+/** The sun on the board: its size, and how far inside the board's edge, in CSS pixels. */
+export const LIGHT_SUN_RADIUS = 6;
+const LIGHT_SUN_GAP = 14;
+
+/**
+ * Where the light's sun sits on the board, in device pixels: just inside its edge, on the side the
+ * light comes from (outside, it would sit on the board's name). It can be dragged around.
+ */
+export function lightSunAt(angle: number, X: number, Y: number, cw: number, ch: number, dpr: number) {
+  const { x: ux, y: uy } = towardLight(angle);
+  const out = Math.min(cw / 2 / Math.max(Math.abs(ux), 1e-6), ch / 2 / Math.max(Math.abs(uy), 1e-6));
+  const inset = Math.max(0, out - LIGHT_SUN_GAP * dpr);
+  return { x: X + cw / 2 + ux * inset, y: Y + ch / 2 + uy * inset };
+}
+
+/** The light's direction over the board, as faint parallel lines running from the light, and a sun where it comes from. */
+function drawLightDirection(
+  ctx: CanvasRenderingContext2D,
+  angle: number,
+  X: number,
+  Y: number,
+  cw: number,
+  ch: number,
+  dpr: number,
+  theme: Theme,
+): void {
+  const { x: ux, y: uy } = towardLight(angle);
+  const cx = X + cw / 2;
+  const cy = Y + ch / 2;
+  const reach = Math.hypot(cw, ch) / 2;
+  const step = LIGHT_LINE_SPACING * dpr;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(X, Y, cw, ch);
+  ctx.clip();
+  ctx.strokeStyle = theme.lightDirection;
+  ctx.lineWidth = dpr;
+  ctx.beginPath();
+  for (let k = -Math.ceil(reach / step); k * step <= reach; k++) {
+    const bx = cx - uy * k * step;
+    const by = cy + ux * k * step;
+    ctx.moveTo(bx - ux * reach, by - uy * reach);
+    ctx.lineTo(bx + ux * reach, by + uy * reach);
+  }
+  ctx.stroke();
+  ctx.restore();
+  const { x: sx, y: sy } = lightSunAt(angle, X, Y, cw, ch, dpr);
+  ctx.fillStyle = theme.lightLamp;
+  ctx.strokeStyle = theme.canvas;
+  ctx.lineWidth = 2 * dpr;
+  ctx.beginPath();
+  ctx.arc(sx, sy, LIGHT_SUN_RADIUS * dpr, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+}
+
 function drawIsoGrid(
   ctx: CanvasRenderingContext2D,
   cell: number,

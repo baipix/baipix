@@ -1,4 +1,5 @@
 import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
+import { readLight, shadowOffset, type BoardLight } from './light';
 import { blendOver, flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   hasBackground,
@@ -121,6 +122,24 @@ export interface ViewSettings {
 
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
+
+/**
+ * Sets the drop shadows that follow the light, on every layer of `doc`, where its light casts them.
+ * Without a light they stay where they were. True when one moved.
+ */
+function followLight(doc: PixelDoc): boolean {
+  if (!doc.light) return false;
+  const { x, y } = shadowOffset(doc.light);
+  let moved = false;
+  for (const layer of doc.layers)
+    for (const e of layer.effects ?? [])
+      if (e.type === 'shadow' && e.followLight && (e.x !== x || e.y !== y)) {
+        e.x = x;
+        e.y = y;
+        moved = true;
+      }
+  return moved;
+}
 
 /** The space left between a board and one added or copied beside it, in pixels. */
 const BOARD_SPACING = 16;
@@ -773,8 +792,11 @@ export class Editor {
     else delete snapshot.doc.palette;
     // The reference image and the guides aren't part of the history: undo and redo leave them,
     // except across a canvas resize, which moved them with the drawing.
-    const { reference, guides, isoGrid, isoGridVertical } = this.active.doc;
-    // The isometric grid isn't either, resize or not.
+    const { reference, guides, isoGrid, isoGridVertical, light } = this.active.doc;
+    // The isometric grid and the light aren't either, resize or not.
+    if (light) snapshot.doc.light = light;
+    else delete snapshot.doc.light;
+    followLight(snapshot.doc);
     if (isoGrid) snapshot.doc.isoGrid = isoGrid;
     else delete snapshot.doc.isoGrid;
     if (isoGridVertical) snapshot.doc.isoGridVertical = true;
@@ -1851,6 +1873,19 @@ export class Editor {
     this.commit();
   }
 
+  /**
+   * Sets the board's light (a shading guide), or takes it away with null. `final` false while the
+   * lamp is dragged: the canvas follows, and the file is saved when it's let go.
+   */
+  setLight(light: BoardLight | null, final = true): void {
+    if (light) this.doc.light = readLight(light);
+    else delete this.doc.light;
+    // Shadows that follow the light move with it: they're the pixels' business too.
+    const moved = followLight(this.doc);
+    if (final) this.touch();
+    this.commit(final, moved);
+  }
+
   toggleIsoGrid(): void {
     this.setIsoGrid(this.doc.isoGrid ? null : this.isoCell);
   }
@@ -2621,10 +2656,10 @@ export class Editor {
   /* ------------------------------------------------------------------ effects */
 
   /**
-   * Adds an effect to the active layer, on top of its list. Outlines and shadows start in the
-   * palette's darkest color, glows in the primary one.
+   * Adds an effect to the active layer, on top of its list, with `patch` over its first settings.
+   * Outlines and shadows start in the palette's darkest color, glows in the primary one.
    */
-  addEffect(type: EffectType): void {
+  addEffect(type: EffectType, patch?: Partial<LayerEffect>): void {
     const colors = this.palette.colors.filter((c) => alpha(c) === 255);
     const darkest = colors.reduce<Color | null>(
       (d, c) => (d === null || toOklab(c)[0] < toOklab(d)[0] ? c : d),
@@ -2633,7 +2668,8 @@ export class Editor {
     const color = type === 'glow' ? this.primary : (darkest ?? 0xff000000);
     this.edit((doc) => {
       const layer = activeLayer(doc);
-      layer.effects = [newEffect(type, color), ...(layer.effects ?? [])];
+      layer.effects = [{ ...newEffect(type, color), ...patch } as LayerEffect, ...(layer.effects ?? [])];
+      followLight(doc);
     });
   }
 
@@ -2646,6 +2682,7 @@ export class Editor {
       this.effectChange = true;
     }
     effects[index] = { ...effects[index], ...patch } as LayerEffect;
+    followLight(this.doc);
     if (done) {
       this.effectChange = false;
       this.commit();

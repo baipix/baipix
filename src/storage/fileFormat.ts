@@ -1,4 +1,5 @@
 import type { Color } from '../engine/color';
+import { readLight, type BoardLight } from '../engine/light';
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
 import {
   isoCellSize,
@@ -74,6 +75,8 @@ export interface BaipixFile {
   isoGrid?: number;
   /** Upright lines in the isometric grid (missing: none). */
   isoGridVertical?: boolean;
+  /** The board's light, a shading guide (missing: none). */
+  light?: BoardLight;
   /** A board of a file with several: its file and its place in it (missing: a file of its own). */
   board?: BoardPlace;
   /** Last change, in ms since the epoch. */
@@ -153,6 +156,7 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
     ...(doc.guides && { guides: { x: [...doc.guides.x], y: [...doc.guides.y] } }),
     ...(doc.isoGrid && { isoGrid: doc.isoGrid }),
     ...(doc.isoGridVertical && { isoGridVertical: true }),
+    ...(doc.light && { light: { ...doc.light } }),
     ...(doc.board && { board: { ...doc.board } }),
     ...(doc.updatedAt !== undefined && { updatedAt: doc.updatedAt }),
     ...(doc.palette && {
@@ -338,6 +342,7 @@ export function deserializeDocument(data: unknown, inFile = false): PixelDoc {
     ...(readGuides(f.guides, width, height) ?? {}),
     ...(typeof f.isoGrid === 'number' && Number.isFinite(f.isoGrid) && { isoGrid: isoCellSize(f.isoGrid) }),
     ...(f.isoGridVertical === true && { isoGridVertical: true }),
+    ...(readLight(f.light) && { light: readLight(f.light) }),
     ...(readBoard(f.board) ?? {}),
     ...(typeof f.updatedAt === 'number' && Number.isFinite(f.updatedAt) && { updatedAt: f.updatedAt }),
     ...(groups && { groups }),

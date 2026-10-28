@@ -34,6 +34,13 @@
   --danger: light-dark(#d93025, #ff6b6b);
   /* The isometric grid: a soft blue, apart from the pixel grid and the guides. */
   --iso-grid: light-dark(rgba(20, 110, 220, 0.7), rgba(110, 180, 255, 0.7));
+  /* The light guide: the stage's lamp, beam, shadow and sphere, and the direction over the canvas. */
+  --light-lamp: #ffc45c;
+  --light-stage-beam: light-dark(rgba(255, 196, 92, 0.22), rgba(255, 210, 130, 0.12));
+  --light-stage-shadow: light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.4));
+  --light-sphere-dark: light-dark(#5b5670, #26232f);
+  --light-sphere-lit: light-dark(#ffffff, #e9e6f5);
+  --light-direction: light-dark(rgba(80, 50, 220, 0.45), rgba(190, 175, 255, 0.45));
   --check-a: light-dark(#ffffff, #3a3a3a);
   --check-b: light-dark(#e3e3e3, #2e2e2e);
   --grid: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
