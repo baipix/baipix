@@ -124,6 +124,7 @@ export const en = {
   'light.readout': '{angle}°, height {height}°',
   'light.angle': 'Angle',
   'light.heightField': 'Height',
+  'light.addShadow': 'Add a shadow that follows it',
   'light.direction': 'Direction on the canvas',
   'section.canvas': 'Board',
   'section.display': 'Display',

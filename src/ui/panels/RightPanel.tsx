@@ -545,6 +545,11 @@ function LightSection() {
   const t = useT();
   const editor = useEditor();
   const light = useEditorState((s) => s.doc.light);
+  // The active layer has no shadow following the light yet: one click adds it.
+  const followed = useEditorState((s) =>
+    s.doc.layers[s.doc.activeLayer]?.effects?.some((e) => e.type === 'shadow' && e.followLight),
+  );
+  useEditorState((s) => s.revision);
   return (
     <Section
       id="light"
@@ -588,6 +593,15 @@ function LightSection() {
             onChange={(v) => editor.setLight({ ...light, direction: v })}
             label={t('light.direction')}
           />
+          {!followed && (
+            <button
+              type="button"
+              className="btn btn-wide"
+              onClick={() => editor.addEffect('shadow', { followLight: true })}
+            >
+              {t('light.addShadow')}
+            </button>
+          )}
         </>
       )}
     </Section>

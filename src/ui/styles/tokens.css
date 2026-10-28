@@ -40,7 +40,7 @@
   --light-stage-shadow: light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.4));
   --light-sphere-dark: light-dark(#5b5670, #26232f);
   --light-sphere-lit: light-dark(#ffffff, #e9e6f5);
-  --light-direction: light-dark(rgba(124, 92, 255, 0.28), rgba(170, 150, 255, 0.28));
+  --light-direction: light-dark(rgba(80, 50, 220, 0.45), rgba(190, 175, 255, 0.45));
   --check-a: light-dark(#ffffff, #3a3a3a);
   --check-b: light-dark(#e3e3e3, #2e2e2e);
   --grid: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));

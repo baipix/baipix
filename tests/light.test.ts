@@ -80,6 +80,13 @@ describe('a shadow that follows the light', () => {
     expect(e.getState().doc.layers[0].effects?.[0]).toMatchObject({ x: 3, y: 0 });
   });
 
+  it('can be added following, set from the light at once', () => {
+    const e = new Editor();
+    e.setLight({ ...DEFAULT_LIGHT, angle: 180, height: 45 });
+    e.addEffect('shadow', { followLight: true });
+    expect(e.getState().doc.layers[0].effects?.[0]).toMatchObject({ x: 2, y: 0, followLight: true });
+  });
+
   it('is saved in the file', () => {
     const e = new Editor();
     e.addEffect('shadow');

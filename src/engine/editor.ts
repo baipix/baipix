@@ -2656,10 +2656,10 @@ export class Editor {
   /* ------------------------------------------------------------------ effects */
 
   /**
-   * Adds an effect to the active layer, on top of its list. Outlines and shadows start in the
-   * palette's darkest color, glows in the primary one.
+   * Adds an effect to the active layer, on top of its list, with `patch` over its first settings.
+   * Outlines and shadows start in the palette's darkest color, glows in the primary one.
    */
-  addEffect(type: EffectType): void {
+  addEffect(type: EffectType, patch?: Partial<LayerEffect>): void {
     const colors = this.palette.colors.filter((c) => alpha(c) === 255);
     const darkest = colors.reduce<Color | null>(
       (d, c) => (d === null || toOklab(c)[0] < toOklab(d)[0] ? c : d),
@@ -2668,7 +2668,8 @@ export class Editor {
     const color = type === 'glow' ? this.primary : (darkest ?? 0xff000000);
     this.edit((doc) => {
       const layer = activeLayer(doc);
-      layer.effects = [newEffect(type, color), ...(layer.effects ?? [])];
+      layer.effects = [{ ...newEffect(type, color), ...patch } as LayerEffect, ...(layer.effects ?? [])];
+      followLight(doc);
     });
   }
 

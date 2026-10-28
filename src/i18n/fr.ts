@@ -125,6 +125,7 @@ export const fr: Record<MessageKey, string> = {
   'light.readout': '{angle}°, hauteur {height}°',
   'light.angle': 'Angle',
   'light.heightField': 'Hauteur',
+  'light.addShadow': 'Ajouter une ombre qui la suit',
   'light.direction': 'Direction sur le canevas',
   'section.canvas': 'Plan',
   'section.display': 'Affichage',

@@ -125,6 +125,7 @@ export const uk: Record<MessageKey, string> = {
   'light.readout': '{angle}°, висота {height}°',
   'light.angle': 'Кут',
   'light.heightField': 'Висота',
+  'light.addShadow': 'Додати тінь, що слідує за ним',
   'light.direction': 'Напрямок на полотні',
   'section.canvas': 'Артборд',
   'section.display': 'Відображення',
