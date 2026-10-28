@@ -16,8 +16,8 @@ A group has them too. Its **Pass through** mode (the default) lets its layers mi
 ## Effects
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/effects-light.webp" width="264" height="593" alt="The right panel with two effects on the layer: an outline of 1 pixel outside, and a drop shadow 1 pixel right and down." loading="lazy" />
-  <img class="for-dark" src="../../shots/effects-dark.webp" width="264" height="593" alt="The right panel with two effects on the layer: an outline of 1 pixel outside, and a drop shadow 1 pixel right and down." loading="lazy" />
+  <img class="for-light" src="../../shots/effects-light.webp" width="264" height="646" alt="The right panel with two effects on the layer: an outline of 1 pixel outside, and a drop shadow 1 pixel right and down." loading="lazy" />
+  <img class="for-dark" src="../../shots/effects-dark.webp" width="264" height="646" alt="The right panel with two effects on the layer: an outline of 1 pixel outside, and a drop shadow 1 pixel right and down." loading="lazy" />
 </figure>
 
 Effects are drawn from the layer's pixels without changing them: tune them, hide them or remove them anytime. They show on the canvas and in every export.

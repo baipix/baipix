@@ -58,8 +58,8 @@ Undo and redo are at the right end of the toolbar.
 ## The right panel
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/right-panel-light.webp" width="264" height="469" alt="The right panel: Board, Light, Colors, Layer and Effects." loading="lazy" />
-  <img class="for-dark" src="../../shots/right-panel-dark.webp" width="264" height="469" alt="The right panel: Board, Light, Colors, Layer and Effects." loading="lazy" />
+  <img class="for-light" src="../../shots/right-panel-light.webp" width="264" height="522" alt="The right panel: Board, Light, Colors, Layer and Effects." loading="lazy" />
+  <img class="for-dark" src="../../shots/right-panel-dark.webp" width="264" height="522" alt="The right panel: Board, Light, Colors, Layer and Effects." loading="lazy" />
 </figure>
 
 What's selected, in five sections:
