@@ -982,6 +982,9 @@ body.is-resizing * {
 .canvas.on-label {
   cursor: default;
 }
+.canvas.on-sun {
+  cursor: grab;
+}
 /* A file with no board: centered on the canvas, letting drags through to draw one. */
 .no-board {
   position: absolute;

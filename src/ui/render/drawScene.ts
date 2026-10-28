@@ -846,8 +846,19 @@ const RULER_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
 /** Space between the light direction's lines, in CSS pixels: the same however far the view zooms. */
 const LIGHT_LINE_SPACING = 28;
 /** The sun on the board: its size, and how far inside the board's edge, in CSS pixels. */
-const LIGHT_SUN_RADIUS = 6;
+export const LIGHT_SUN_RADIUS = 6;
 const LIGHT_SUN_GAP = 14;
+
+/**
+ * Where the light's sun sits on the board, in device pixels: just inside its edge, on the side the
+ * light comes from (outside, it would sit on the board's name). It can be dragged around.
+ */
+export function lightSunAt(angle: number, X: number, Y: number, cw: number, ch: number, dpr: number) {
+  const { x: ux, y: uy } = towardLight(angle);
+  const out = Math.min(cw / 2 / Math.max(Math.abs(ux), 1e-6), ch / 2 / Math.max(Math.abs(uy), 1e-6));
+  const inset = Math.max(0, out - LIGHT_SUN_GAP * dpr);
+  return { x: X + cw / 2 + ux * inset, y: Y + ch / 2 + uy * inset };
+}
 
 /** The light's direction over the board, as faint parallel lines running from the light, and a sun where it comes from. */
 function drawLightDirection(
@@ -880,12 +891,7 @@ function drawLightDirection(
   }
   ctx.stroke();
   ctx.restore();
-  // A sun just inside the board's edge, on the side the light comes from (outside, it would sit on
-  // the board's name).
-  const out = Math.min(cw / 2 / Math.max(Math.abs(ux), 1e-6), ch / 2 / Math.max(Math.abs(uy), 1e-6));
-  const gap = LIGHT_SUN_GAP * dpr;
-  const sx = cx + ux * Math.max(0, out - gap);
-  const sy = cy + uy * Math.max(0, out - gap);
+  const { x: sx, y: sy } = lightSunAt(angle, X, Y, cw, ch, dpr);
   ctx.fillStyle = theme.lightLamp;
   ctx.strokeStyle = theme.canvas;
   ctx.lineWidth = 2 * dpr;

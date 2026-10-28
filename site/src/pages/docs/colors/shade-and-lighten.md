@@ -23,7 +23,7 @@ Each stroke steps a pixel once, however long you paint over it: paint again for 
 
 Shading holds together when every shape takes its light from the same side. The **Light** section of the right panel sets that side for the board: click **+**, then drag the lamp around the little sphere. Around it is the angle, from any direction; nearer the sphere is a light from high above, farther a low, grazing one. The sphere shades as the light falls on it, and its shadow stretches on the ground. The **angle** and **height** fields below set them to the degree, and with the stage focused, the arrow keys turn the light (<kbd>Shift</kbd> by 15°) and raise or lower it.
 
-**Direction on the canvas** draws faint parallel lines running from the light over the board, to keep it in mind as you shade. They're a guide, like the grid: never painted, never exported.
+**Direction on the canvas** draws faint parallel lines running from the light over the board, and a sun at its edge where the light comes from: drag the sun around the board to turn the light, and the stage follows. They're a guide, like the grid: never painted, never exported.
 
 A layer's **drop shadow** can **follow the light** (a box under its X and Y, in the Effects section): it then falls away from the light, longer the lower the light is, and moves when you move the lamp, on every layer that follows it. Setting X or Y by hand stops it following.
 
