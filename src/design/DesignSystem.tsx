@@ -3,6 +3,8 @@ import { pack } from '../engine/color';
 import { Editor } from '../engine/editor';
 import { EditorContext } from '../ui/EditorContext';
 import { AnchorGrid, type Anchor } from '../ui/components/AnchorGrid';
+import { LightStage } from '../ui/components/LightStage';
+import { DEFAULT_LIGHT, type BoardLight } from '../engine/light';
 import { GradientEditor } from '../ui/components/GradientEditor';
 import { PaletteColorButton } from '../ui/components/PaletteColorButton';
 import { ColorChips } from '../ui/components/ColorChips';
@@ -395,6 +397,7 @@ function FieldsBlock() {
   const [n, setN] = useState(64);
   const [checked, setChecked] = useState(true);
   const [anchor, setAnchor] = useState<Anchor>({ x: 1, y: 1 });
+  const [light, setLight] = useState<BoardLight>(DEFAULT_LIGHT);
   return (
     <Block id="fields" title="Fields">
       <div className="ds-grid">
@@ -477,6 +480,14 @@ function FieldsBlock() {
           use="Where something is pinned, top left to bottom right (the drawing in the Canvas size dialog). The chosen spot is filled."
         >
           <AnchorGrid value={anchor} onChange={setAnchor} label="Position" />
+        </Specimen>
+        <Specimen
+          label="Light stage"
+          use="Where a light comes from (the Light section): drag the lamp around the pixel sphere for the angle, nearer for a higher light. The arrow keys turn and raise it."
+        >
+          <div className="ds-field">
+            <LightStage light={light} onChange={(l) => setLight(l)} />
+          </div>
         </Specimen>
       </div>
     </Block>

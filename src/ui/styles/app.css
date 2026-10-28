@@ -2981,6 +2981,22 @@ body.is-dragging-swatch * {
   grid-column: 1 / -1;
 }
 /* Where something is pinned: 9 spots, the chosen one filled. */
+.light-stage {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  background: var(--input);
+  cursor: grab;
+  touch-action: none;
+}
+.light-stage:active {
+  cursor: grabbing;
+}
+.light-readout {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
 .anchor-grid {
   flex: none;
   display: grid;

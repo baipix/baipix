@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Shade and lighten
-description: 'Shade and lighten pixel art along the palette in Baipix: one step darker or lighter in the same ramp, the whole palette, or outside it, with a hue shift.'
+description: 'Shade and lighten pixel art along the palette in Baipix: one step darker or lighter in the same ramp, the whole palette, or outside it, with a hue shift, and a light guide to shade by.'
 ---
 
 **Shade** (<kbd>S</kbd>) and **Lighten** (<kbd>O</kbd>) share a button. Paint over pixels to make them one step darker or lighter. Right-click does the opposite.
@@ -18,3 +18,14 @@ The **Mode** in their options says what "one step" is:
 </figure>
 
 Each stroke steps a pixel once, however long you paint over it: paint again for another step.
+
+## The light guide
+
+Shading holds together when every shape takes its light from the same side. The **Light** section of the right panel sets that side for the board: click **+**, then drag the lamp around the little sphere. Around it is the angle, from any direction; nearer the sphere is a light from high above, farther a low, grazing one. The sphere shades as the light falls on it, and its shadow stretches on the ground. With the stage focused, the arrow keys turn the light (<kbd>Shift</kbd> by 15°) and raise or lower it.
+
+Over the canvas, the guide shows:
+
+- **Direction on the canvas**: faint parallel lines running from the light.
+- **Lit and shaded sides**: the edges of your shapes facing the light tinted warm, the ones away from it cool, so you see where highlights and shadows go. The background color doesn't count as a shape.
+
+It's a guide, like the grid: nothing is painted with it, and it isn't exported. The light is saved with the board, each board its own, and **−** takes it away.

@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- A light guide to shade by: in the board's new Light section, drag a lamp around a pixel sphere to set where the light comes from and how high; the canvas shows its direction and tints the sides of your shapes facing it warm, the others cool. Saved with the board, never exported. (#PR)
 - Shift with the up and down arrows changes a number field by 10, as in Figma: sizes, opacities, tile sizes, in the panels and the dialogs. ([#606](https://github.com/baipix/baipix/pull/606))
 - The Layers + sprite sheet export adds the sheet's JSON, in the TexturePacker format game engines read: each layer's frame on the sheet. ([#603](https://github.com/baipix/baipix/pull/603))
 - The Layers + sprite sheet export lays the sheet out in a grid: Columns sets how many layers go on a row. ([#596](https://github.com/baipix/baipix/pull/596))

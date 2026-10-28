@@ -1,4 +1,5 @@
 import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
+import { readLight, type BoardLight } from './light';
 import { blendOver, flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   hasBackground,
@@ -773,8 +774,10 @@ export class Editor {
     else delete snapshot.doc.palette;
     // The reference image and the guides aren't part of the history: undo and redo leave them,
     // except across a canvas resize, which moved them with the drawing.
-    const { reference, guides, isoGrid, isoGridVertical } = this.active.doc;
-    // The isometric grid isn't either, resize or not.
+    const { reference, guides, isoGrid, isoGridVertical, light } = this.active.doc;
+    // The isometric grid and the light aren't either, resize or not.
+    if (light) snapshot.doc.light = light;
+    else delete snapshot.doc.light;
     if (isoGrid) snapshot.doc.isoGrid = isoGrid;
     else delete snapshot.doc.isoGrid;
     if (isoGridVertical) snapshot.doc.isoGridVertical = true;
@@ -1849,6 +1852,17 @@ export class Editor {
     else delete this.doc.isoGridVertical;
     this.touch();
     this.commit();
+  }
+
+  /**
+   * Sets the board's light (a shading guide), or takes it away with null. `final` false while the
+   * lamp is dragged: the canvas follows, and the file is saved when it's let go.
+   */
+  setLight(light: BoardLight | null, final = true): void {
+    if (light) this.doc.light = readLight(light);
+    else delete this.doc.light;
+    if (final) this.touch();
+    this.commit(final, false);
   }
 
   toggleIsoGrid(): void {

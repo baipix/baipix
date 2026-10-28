@@ -1,4 +1,5 @@
 import type { Selection } from '../../engine/selection';
+import { towardLight } from '../../engine/light';
 import { alpha, toCss, type Color } from '../../engine/color';
 import {
   hasBackground,
@@ -90,6 +91,8 @@ export interface Scene {
   composite: CanvasImageSource;
   /** Grid line color for each pixel, same size as `composite` (see grid.ts). */
   gridInk: CanvasImageSource;
+  /** The light guide's tint over the lit and shaded sides, same size as `composite`, when shown. */
+  lightSides?: CanvasImageSource | null;
   /** When set, `composite` leaves out the background: it is painted here, under the reference. */
   reference: SceneReference | null;
   view: ViewSettings;
@@ -446,6 +449,7 @@ export function drawScene(
     ctx.restore();
   }
   ctx.drawImage(scene.composite, X, Y, cw, ch);
+  if (scene.lightSides && !free) ctx.drawImage(scene.lightSides, X, Y, cw, ch);
   // Layers outside the boards, over them, like objects beside the frames in Figma.
   const loose = scene.free;
   if (loose) ctx.drawImage(loose.image, X + loose.x * s, Y + loose.y * s, loose.width * s, loose.height * s);
@@ -489,6 +493,7 @@ export function drawScene(
   }
   if (doc.isoGrid && !free)
     drawIsoGrid(ctx, doc.isoGrid, !!doc.isoGridVertical, W, H, X, Y, s, camera.dpr, theme.isoGrid);
+  if (doc.light?.direction && !free) drawLightDirection(ctx, doc.light.angle, X, Y, cw, ch, dpr, theme);
   if (!free) {
     ctx.strokeStyle = theme.frame;
     ctx.lineWidth = 1;
@@ -841,6 +846,42 @@ const RULER_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
  * they cross every `cell / 2` pixels across and `cell / 4` down, from the top middle of the canvas. Left out
  * when zoomed so far out that the diamonds would be a blur.
  */
+/** Space between the light direction's lines, in CSS pixels: the same however far the view zooms. */
+const LIGHT_LINE_SPACING = 28;
+
+/** The light's direction over the board, as faint parallel lines running from the light. */
+function drawLightDirection(
+  ctx: CanvasRenderingContext2D,
+  angle: number,
+  X: number,
+  Y: number,
+  cw: number,
+  ch: number,
+  dpr: number,
+  theme: Theme,
+): void {
+  const { x: ux, y: uy } = towardLight(angle);
+  const cx = X + cw / 2;
+  const cy = Y + ch / 2;
+  const reach = Math.hypot(cw, ch) / 2;
+  const step = LIGHT_LINE_SPACING * dpr;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(X, Y, cw, ch);
+  ctx.clip();
+  ctx.strokeStyle = theme.lightDirection;
+  ctx.lineWidth = dpr;
+  ctx.beginPath();
+  for (let k = -Math.ceil(reach / step); k * step <= reach; k++) {
+    const bx = cx - uy * k * step;
+    const by = cy + ux * k * step;
+    ctx.moveTo(bx - ux * reach, by - uy * reach);
+    ctx.lineTo(bx + ux * reach, by + uy * reach);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawIsoGrid(
   ctx: CanvasRenderingContext2D,
   cell: number,

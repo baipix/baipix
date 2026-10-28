@@ -17,6 +17,16 @@ export interface Theme {
   guide: string;
   /** The isometric grid's lines. */
   isoGrid: string;
+  /** The light guide: the lit and shaded sides, and the direction's lines. */
+  lightLit: string;
+  lightShade: string;
+  lightDirection: string;
+  /** The light stage in the panel: the lamp, its beam, the shadow, and the sphere's dark and lit ends. */
+  lightLamp: string;
+  lightBeam: string;
+  lightShadow: string;
+  sphereDark: string;
+  sphereLit: string;
   /** Rulers: their background, edge, the band over the drawing, and the text. */
   panel: string;
   line: string;
@@ -54,6 +64,14 @@ export function readTheme(el: Element = document.documentElement): Theme {
     axis: v('--axis'),
     guide: v('--guide'),
     isoGrid: v('--iso-grid'),
+    lightLit: v('--light-lit'),
+    lightShade: v('--light-shade'),
+    lightDirection: v('--light-direction'),
+    lightLamp: v('--light-lamp'),
+    lightBeam: v('--light-stage-beam'),
+    lightShadow: v('--light-stage-shadow'),
+    sphereDark: v('--light-sphere-dark'),
+    sphereLit: v('--light-sphere-lit'),
     panel: v('--menubar'),
     line: v('--line'),
     selected: v('--selected'),
