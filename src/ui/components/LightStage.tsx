@@ -4,13 +4,14 @@ import { useT } from '../../i18n';
 import { readTheme } from '../render/theme';
 
 /** The stage's height, in CSS pixels (its width is the panel's). */
-const STAGE_HEIGHT = 156;
+const STAGE_HEIGHT = 184;
 /** The sphere: its radius in its own pixels, and how big they are. */
 const SPHERE_RADIUS = 7;
 const SPHERE_PIXEL = 5;
-/** How far the lamp goes from the sphere: near is a high light, far a low one. */
-const LAMP_NEAR = 44;
-const LAMP_FAR = 72;
+/** How far the lamp goes from the sphere's center: near is a high light, far a low one. Even at its
+ * nearest, the lamp stays clear of the sphere, so it can always be grabbed. */
+const LAMP_NEAR = 54;
+const LAMP_FAR = 82;
 /** Shades of the sphere, dark to light. */
 const SPHERE_STEPS = 6;
 /** Arrow keys turn the light by a degree, by 15 with Shift; up and down raise and lower it. */

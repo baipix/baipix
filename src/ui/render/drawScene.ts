@@ -91,8 +91,6 @@ export interface Scene {
   composite: CanvasImageSource;
   /** Grid line color for each pixel, same size as `composite` (see grid.ts). */
   gridInk: CanvasImageSource;
-  /** The light guide's tint over the lit and shaded sides, same size as `composite`, when shown. */
-  lightSides?: CanvasImageSource | null;
   /** When set, `composite` leaves out the background: it is painted here, under the reference. */
   reference: SceneReference | null;
   view: ViewSettings;
@@ -449,7 +447,6 @@ export function drawScene(
     ctx.restore();
   }
   ctx.drawImage(scene.composite, X, Y, cw, ch);
-  if (scene.lightSides && !free) ctx.drawImage(scene.lightSides, X, Y, cw, ch);
   // Layers outside the boards, over them, like objects beside the frames in Figma.
   const loose = scene.free;
   if (loose) ctx.drawImage(loose.image, X + loose.x * s, Y + loose.y * s, loose.width * s, loose.height * s);

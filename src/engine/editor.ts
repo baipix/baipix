@@ -1,5 +1,5 @@
 import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
-import { readLight, type BoardLight } from './light';
+import { readLight, shadowOffset, type BoardLight } from './light';
 import { blendOver, flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
 import {
   hasBackground,
@@ -122,6 +122,24 @@ export interface ViewSettings {
 
 /** View settings that are switched on and off. */
 type ViewToggle = 'grid' | 'tile' | 'mirrorX' | 'mirrorY' | 'rulers';
+
+/**
+ * Sets the drop shadows that follow the light, on every layer of `doc`, where its light casts them.
+ * Without a light they stay where they were. True when one moved.
+ */
+function followLight(doc: PixelDoc): boolean {
+  if (!doc.light) return false;
+  const { x, y } = shadowOffset(doc.light);
+  let moved = false;
+  for (const layer of doc.layers)
+    for (const e of layer.effects ?? [])
+      if (e.type === 'shadow' && e.followLight && (e.x !== x || e.y !== y)) {
+        e.x = x;
+        e.y = y;
+        moved = true;
+      }
+  return moved;
+}
 
 /** The space left between a board and one added or copied beside it, in pixels. */
 const BOARD_SPACING = 16;
@@ -778,6 +796,7 @@ export class Editor {
     // The isometric grid and the light aren't either, resize or not.
     if (light) snapshot.doc.light = light;
     else delete snapshot.doc.light;
+    followLight(snapshot.doc);
     if (isoGrid) snapshot.doc.isoGrid = isoGrid;
     else delete snapshot.doc.isoGrid;
     if (isoGridVertical) snapshot.doc.isoGridVertical = true;
@@ -1861,8 +1880,10 @@ export class Editor {
   setLight(light: BoardLight | null, final = true): void {
     if (light) this.doc.light = readLight(light);
     else delete this.doc.light;
+    // Shadows that follow the light move with it: they're the pixels' business too.
+    const moved = followLight(this.doc);
     if (final) this.touch();
-    this.commit(final, false);
+    this.commit(final, moved);
   }
 
   toggleIsoGrid(): void {
@@ -2660,6 +2681,7 @@ export class Editor {
       this.effectChange = true;
     }
     effects[index] = { ...effects[index], ...patch } as LayerEffect;
+    followLight(this.doc);
     if (done) {
       this.effectChange = false;
       this.commit();

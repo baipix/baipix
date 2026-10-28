@@ -1,5 +1,3 @@
-import { alpha } from './color';
-
 /**
  * A board's light, to shade by: where it comes from, as an angle around the drawing in degrees
  * (0 from the right, 90 from the top, counterclockwise as on a compass rose), and how high it is
@@ -11,15 +9,13 @@ export interface BoardLight {
   height: number;
   /** The direction drawn over the canvas, as faint parallel lines. */
   direction: boolean;
-  /** The sides of the shapes facing the light tinted warm, the ones away from it cool. */
-  sides: boolean;
 }
 
 /** How high a light can be: never flat on the ground, never straight above. */
 export const LIGHT_HEIGHT = { min: 10, max: 80 };
 
 /** A new light: from the top left, halfway up, the most common choice in pixel art. */
-export const DEFAULT_LIGHT: BoardLight = { angle: 135, height: 45, direction: true, sides: true };
+export const DEFAULT_LIGHT: BoardLight = { angle: 135, height: 45, direction: true };
 
 /** An angle in whole degrees from 0 to 359. */
 export const normalizeAngle = (deg: number): number => ((Math.round(deg) % 360) + 360) % 360;
@@ -34,7 +30,6 @@ export function readLight(value: unknown): BoardLight | undefined {
     angle: normalizeAngle(l.angle),
     height: Math.min(LIGHT_HEIGHT.max, Math.max(LIGHT_HEIGHT.min, Math.round(height))),
     direction: l.direction !== false,
-    sides: l.sides !== false,
   };
 }
 
@@ -44,30 +39,20 @@ export function towardLight(angle: number): { x: number; y: number } {
   return { x: Math.cos(a), y: -Math.sin(a) };
 }
 
-/** Lit side (1), shaded side (-1) or neither (0), for each pixel; see `lightSides`. */
-export type Side = 1 | -1 | 0;
+/** The longest shadow a light casts, in pixels: a grazing light stops there. */
+export const MAX_LIGHT_SHADOW = 6;
 
 /**
- * Which pixels of the drawing are on a side facing the light and which on a side away from it:
- * a pixel whose neighbor toward the light is empty is lit, one whose neighbor away from it is
- * empty is shaded. Diagonal light looks at both of its axes, so a staircase edge is lit along
- * its whole length. Thin parts, empty on both sides, count as lit.
+ * Where a drop shadow falls under this light, as an offset in pixels: away from the light, longer
+ * the lower it is (2 pixels at 45°, up to `MAX_LIGHT_SHADOW`), never under the drawing itself.
  */
-export function lightSides(pixels: Uint32Array, width: number, height: number, angle: number): Int8Array {
-  const out = new Int8Array(width * height);
-  const { x: dx, y: dy } = towardLight(angle);
-  // An axis counts when the light leans enough along it (more than about 22° off the other axis).
-  const sx = Math.abs(dx) > 0.38 ? Math.sign(dx) : 0;
-  const sy = Math.abs(dy) > 0.38 ? Math.sign(dy) : 0;
-  const empty = (x: number, y: number) =>
-    x < 0 || y < 0 || x >= width || y >= height || !alpha(pixels[y * width + x]);
-  const open = (x: number, y: number, k: number) =>
-    (sx !== 0 && empty(x + k * sx, y)) || (sy !== 0 && empty(x, y + k * sy)) || empty(x + k * sx, y + k * sy);
-  for (let y = 0; y < height; y++)
-    for (let x = 0; x < width; x++) {
-      if (!alpha(pixels[y * width + x])) continue;
-      if (open(x, y, 1)) out[y * width + x] = 1;
-      else if (open(x, y, -1)) out[y * width + x] = -1;
-    }
-  return out;
+export function shadowOffset(light: Pick<BoardLight, 'angle' | 'height'>): { x: number; y: number } {
+  const { x: ux, y: uy } = towardLight(light.angle);
+  const length = Math.min(MAX_LIGHT_SHADOW, Math.max(1, 2 / Math.tan((light.height * Math.PI) / 180)));
+  // `|| 0`: no -0 from a light straight along an axis.
+  const x = Math.round(-ux * length) || 0;
+  const y = Math.round(-uy * length) || 0;
+  if (x || y) return { x, y };
+  // Too short to round to a pixel: one step along the light's main axis.
+  return Math.abs(ux) > Math.abs(uy) ? { x: -Math.sign(ux) || 0, y: 0 } : { x: 0, y: -Math.sign(uy) || 0 };
 }

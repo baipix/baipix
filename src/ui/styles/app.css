@@ -2992,11 +2992,6 @@ body.is-dragging-swatch * {
 .light-stage:active {
   cursor: grabbing;
 }
-.light-readout {
-  display: flex;
-  justify-content: space-between;
-  color: var(--muted);
-}
 .anchor-grid {
   flex: none;
   display: grid;

@@ -25,7 +25,7 @@ Effects are drawn from the layer's pixels without changing them: tune them, hide
 The **+** next to Effects adds one:
 
 - **Outline**: a line around what's drawn, of the size you set, outside or inside, with round or square corners, in its color.
-- **Drop shadow**: a copy of the drawing in its color, shifted by X and Y pixels.
+- **Drop shadow**: a copy of the drawing in its color, shifted by X and Y pixels. When the board has a [light](../../colors/shade-and-lighten/#the-light), **Follow the light** sets X and Y from it.
 - **Glow**: a halo around the drawing, of the size you set, that fades in dithering rather than in new shades: the pixel art way.
 
 Each effect's swatch opens its color: any color, and its **opacity**, above the palette's colors. A drop shadow in black at 30% darkens what's under it instead of covering it. Picking a palette color keeps the opacity you set, and an effect that isn't opaque shows its opacity beside its swatch.

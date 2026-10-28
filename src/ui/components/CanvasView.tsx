@@ -1,5 +1,4 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { lightSides } from '../../engine/light';
 
 /** Which sides of a board a drag pulls (two for a corner). */
 type BoardSides = { left: boolean; right: boolean; top: boolean; bottom: boolean };
@@ -9,7 +8,7 @@ import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
 import { clipSelection, type Selection } from '../../engine/selection';
 import { isShown } from '../../engine/groups';
-import { hasBackground, isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
+import { isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
 import type { ToolId } from '../../engine/tools';
 import { t as translate, useT } from '../../i18n';
@@ -106,12 +105,6 @@ export function CanvasView() {
     // Grid line colors, one per art pixel (see render/grid.ts).
     const ink = document.createElement('canvas');
     const ictx = ink.getContext('2d')!;
-    // The light guide's tint over the lit and shaded sides, one per art pixel, and what it was made
-    // from: drawn again when the drawing or the light's angle changes.
-    const lit = document.createElement('canvas');
-    const lctx = lit.getContext('2d')!;
-    let flatPixels: Uint32Array = new Uint32Array(0);
-    let litKey = '';
     let theme: Theme = readTheme();
     let hover: { x: number; y: number } | null = null;
     let compositeDirty = true;
@@ -290,13 +283,9 @@ export function CanvasView() {
         composite.height = ink.height = doc.height;
       }
       const pixels = flatten(doc);
-      // The light guide looks at the shapes drawn, not the background color behind them.
-      const drawn = hasBackground(doc) ? flatten(doc, { includeBackground: false }) : pixels;
-      flatPixels = drawn;
-      litKey = '';
       // A visible reference sits between the background and the layers: the renderer paints the
       // background itself, under it.
-      const layers = doc.reference?.visible ? drawn : pixels;
+      const layers = doc.reference?.visible ? flatten(doc, { includeBackground: false }) : pixels;
       const image = cctx.createImageData(doc.width, doc.height);
       new Uint32Array(image.data.buffer).set(layers);
       cctx.putImageData(image, 0, 0);
@@ -304,33 +293,6 @@ export function CanvasView() {
       new Uint32Array(lines.data.buffer).set(gridInk(pixels, theme.checkA));
       ictx.putImageData(lines, 0, 0);
       compositeDirty = false;
-    };
-
-    /** The light guide's sides, when the board has a light that shows them; see light.ts. */
-    const lightSidesImage = (doc: PixelDoc): HTMLCanvasElement | null => {
-      const light = doc.light;
-      if (!light?.sides) return null;
-      const key = `${light.angle}:${doc.width}x${doc.height}`;
-      if (key === litKey) return lit;
-      // The two tints as pixel values, read back from the canvas that parses the CSS colors.
-      lit.width = lit.height = 1;
-      const tint = (color: string) => {
-        lctx.clearRect(0, 0, 1, 1);
-        lctx.fillStyle = color;
-        lctx.fillRect(0, 0, 1, 1);
-        return new Uint32Array(lctx.getImageData(0, 0, 1, 1).data.buffer)[0];
-      };
-      const warm = tint(theme.lightLit);
-      const cool = tint(theme.lightShade);
-      lit.width = doc.width;
-      lit.height = doc.height;
-      const sides = lightSides(flatPixels, doc.width, doc.height, light.angle);
-      const image = lctx.createImageData(doc.width, doc.height);
-      const out = new Uint32Array(image.data.buffer);
-      for (let i = 0; i < sides.length; i++) out[i] = sides[i] === 1 ? warm : sides[i] === -1 ? cool : 0;
-      lctx.putImageData(image, 0, 0);
-      litKey = key;
-      return lit;
     };
 
     // The file's other boards, each flattened once per change (they only change while active).
@@ -504,7 +466,6 @@ export function CanvasView() {
           doc: live.doc,
           composite,
           gridInk: ink,
-          lightSides: lightSidesImage(live.doc),
           reference: sceneReference(live.doc),
           view: live.view,
           selection: live.selection,
@@ -690,7 +651,6 @@ export function CanvasView() {
     const onTheme = () => {
       theme = readTheme();
       compositeDirty = true;
-      litKey = '';
       request();
     };
     const media = matchMedia('(prefers-color-scheme: dark)');

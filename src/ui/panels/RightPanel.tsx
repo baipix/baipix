@@ -8,7 +8,7 @@ import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, isBoard, isEmptyBoard, MAX_SIZE } from '../../engine/document';
 import { exportableLayers } from '../../engine/export/layers';
-import { DEFAULT_LIGHT } from '../../engine/light';
+import { DEFAULT_LIGHT, LIGHT_HEIGHT } from '../../engine/light';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
 import { uniqueColors } from '../../engine/region';
 import { useT } from '../../i18n';
@@ -561,19 +561,32 @@ function LightSection() {
       {light && (
         <>
           <LightStage light={light} onChange={(l, final) => editor.setLight(l, final)} />
-          <p className="light-readout">
-            <span>{t('light.height', { height: light.height })}</span>
-            <span>{light.angle}°</span>
-          </p>
+          <div className="two-columns">
+            <NumberField
+              value={light.angle}
+              min={0}
+              max={359}
+              label="∠"
+              suffix="°"
+              ariaLabel={t('light.angle')}
+              scrubHint={t('common.dragToAdjust')}
+              onChange={(v, final) => editor.setLight({ ...light, angle: v }, final)}
+            />
+            <NumberField
+              value={light.height}
+              min={LIGHT_HEIGHT.min}
+              max={LIGHT_HEIGHT.max}
+              label="↑"
+              suffix="°"
+              ariaLabel={t('light.heightField')}
+              scrubHint={t('common.dragToAdjust')}
+              onChange={(v, final) => editor.setLight({ ...light, height: v }, final)}
+            />
+          </div>
           <Checkbox
             checked={light.direction}
             onChange={(v) => editor.setLight({ ...light, direction: v })}
             label={t('light.direction')}
-          />
-          <Checkbox
-            checked={light.sides}
-            onChange={(v) => editor.setLight({ ...light, sides: v })}
-            label={t('light.sides')}
           />
         </>
       )}
