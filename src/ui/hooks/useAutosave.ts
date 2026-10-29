@@ -64,71 +64,77 @@ function createWorkspaceSnapshot(editor: Editor, uiState: UiState) {
 }
 
 function getHistoriesToSave(editor: Editor) {
-  const kept = new Set(getNonFreshDocuments(editor).map((document) => document.id));
-  return editor.histories().filter((history) => kept.has(history.id));
+  const keptDocumentIds = new Set(getNonFreshDocuments(editor).map((document) => document.id));
+  return editor.histories().filter((history) => keptDocumentIds.has(history.id));
 }
 
 function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
-  let timer = 0;
-  let warned = false;
-  const save = () => {
+  // Workspace and history persistence.
+  let workspaceSaveTimer = 0;
+  let hasShownSaveFailureToast = false;
+  const saveWorkspace = () => {
     storage
       .save(createWorkspaceSnapshot(editor, uiStore.get()))
       .then(() => refreshTrash(storage))
       .catch(() => {
-        if (!warned) toast(t('toast.saveFailed'));
-        warned = true;
+        if (!hasShownSaveFailureToast) toast(t('toast.saveFailed'));
+        hasShownSaveFailureToast = true;
       });
   };
-  // The undo history, apart and less often: it's bigger, and only matters after a reload.
-  let historyTimer = 0;
+  let historySaveTimer = 0;
   const saveHistory = () => {
-    clearTimeout(historyTimer);
+    clearTimeout(historySaveTimer);
     if (!storage.saveHistory) return;
     storage.saveHistory(getHistoriesToSave(editor)).catch(() => {
       /* the drawing is saved anyway; only the undo steps would be lost */
     });
   };
-  const schedule = () => {
-    clearTimeout(timer);
-    timer = window.setTimeout(save, AUTOSAVE_DEBOUNCE_MS);
-    clearTimeout(historyTimer);
-    historyTimer = window.setTimeout(saveHistory, HISTORY_SAVE_DEBOUNCE_MS);
+
+  // Debouncing and browser lifecycle events.
+  const scheduleSaves = () => {
+    clearTimeout(workspaceSaveTimer);
+    workspaceSaveTimer = window.setTimeout(saveWorkspace, AUTOSAVE_DEBOUNCE_MS);
+    clearTimeout(historySaveTimer);
+    historySaveTimer = window.setTimeout(saveHistory, HISTORY_SAVE_DEBOUNCE_MS);
   };
-  const leave = () => {
-    save();
+  const saveBeforePageHide = () => {
+    saveWorkspace();
     saveHistory();
   };
   // Back on this tab: what another tab of Baipix drew or added meanwhile shows here too.
-  const sync = () => {
+  const syncDocumentsFromOtherTabs = () => {
     if (document.visibilityState === 'hidden' || !storage.changedElsewhere) return;
     storage
       .changedElsewhere()
-      .then((docs) => docs.length && editor.adoptDocuments(docs))
+      .then((docs) => {
+        if (docs.length) editor.adoptDocuments(docs);
+      })
       .catch(() => {
         /* storage unavailable: nothing to take in */
       });
   };
-  const offs = [
-    editor.onPersist(schedule),
-    editor.subscribe(schedule),
-    uiStore.subscribe(schedule),
-    subscribeLocale(schedule),
+
+  // Subscriptions and cleanup.
+  const unsubscribe = [
+    editor.onPersist(scheduleSaves),
+    editor.subscribe(scheduleSaves),
+    uiStore.subscribe(scheduleSaves),
+    subscribeLocale(scheduleSaves),
   ];
 
-  schedule();
+  scheduleSaves();
 
-  window.addEventListener('pagehide', leave);
-  window.addEventListener('focus', sync);
-  document.addEventListener('visibilitychange', sync);
+  window.addEventListener('pagehide', saveBeforePageHide);
+  window.addEventListener('focus', syncDocumentsFromOtherTabs);
+  document.addEventListener('visibilitychange', syncDocumentsFromOtherTabs);
 
   return () => {
-    clearTimeout(timer);
-    clearTimeout(historyTimer);
-    offs.forEach((off) => off());
-    window.removeEventListener('pagehide', leave);
-    window.removeEventListener('focus', sync);
-    document.removeEventListener('visibilitychange', sync);
+    clearTimeout(workspaceSaveTimer);
+    clearTimeout(historySaveTimer);
+    unsubscribe.forEach((removeSubscription) => removeSubscription());
+    window.removeEventListener('pagehide', saveBeforePageHide);
+    window.removeEventListener('focus', syncDocumentsFromOtherTabs);
+    document.removeEventListener('visibilitychange', syncDocumentsFromOtherTabs);
   };
 }
 
