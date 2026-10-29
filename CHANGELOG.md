@@ -21,6 +21,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The Tileset export remembers its tile size and Leave out empty and repeated tiles after a reload. ([#600](https://github.com/baipix/baipix/pull/600))
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))
 
+### Thanks
+
+- [@mykola-lp](https://github.com/mykola-lp) for a clearer autosave hook and its first tests. ([#611](https://github.com/baipix/baipix/pull/611))
+
 ## [0.7.7] - 2026-10-27
 
 Baipix speaks Ukrainian and Spanish and opens in your browser's language, the layers export as separate PNGs and a sprite sheet, and PNG exports match the canvas with blend modes.
