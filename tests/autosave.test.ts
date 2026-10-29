@@ -1,7 +1,8 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import type { Editor } from '../src/engine/editor';
 import type { PixelDoc } from '../src/engine/document';
 import type { StorageAdapter } from '../src/storage/workspace';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type Effect = () => void | (() => void);
 
@@ -95,6 +96,7 @@ interface TestEditor {
   fresh: Set<string>;
   preferences: Record<string, unknown>;
   historyData: { id: string; undo: unknown[]; redo: unknown[] }[];
+
   onPersist: (listener: () => void) => () => void;
   subscribe: (listener: () => void) => () => void;
   getState: () => { doc: TestDocument };
@@ -109,6 +111,7 @@ function makeEditor(overrides: Partial<TestEditor> = {}): TestEditor {
   const first = { id: 'first', name: 'First', updatedAt: 1 };
   const listeners = new Set<() => void>();
   const persistListeners = new Set<() => void>();
+
   const editor: TestEditor = {
     active: first,
     documents: [first],
@@ -145,7 +148,9 @@ function makeStorage(overrides: Partial<StorageAdapter> = {}): StorageAdapter {
 function useAutosaveForTest(editor: TestEditor, storage: StorageAdapter, ready = true): () => void {
   harness.effect = undefined;
   useAutosave(editor as unknown as Editor, storage, ready);
+
   const registeredEffect = harness.effect as Effect | undefined;
+
   if (!registeredEffect) throw new Error('useAutosave did not register an effect');
   return registeredEffect() ?? (() => undefined);
 }
@@ -157,14 +162,20 @@ let documentGlobal: { visibilityState: DocumentVisibilityState };
 beforeEach(() => {
   vi.useFakeTimers();
   windowStub = new EventTargetStub();
-  documentStub = Object.assign(new EventTargetStub(), { visibilityState: 'visible' as DocumentVisibilityState });
+
+  documentStub = Object.assign(new EventTargetStub(), {
+    visibilityState: 'visible' as DocumentVisibilityState,
+  });
+
   documentGlobal = { visibilityState: documentStub.visibilityState };
+
   vi.stubGlobal('window', {
     addEventListener: windowStub.addEventListener.bind(windowStub),
     removeEventListener: windowStub.removeEventListener.bind(windowStub),
     setTimeout,
     clearTimeout,
   });
+
   vi.stubGlobal('document', {
     get visibilityState() {
       return documentGlobal.visibilityState;
@@ -172,6 +183,7 @@ beforeEach(() => {
     addEventListener: documentStub.addEventListener.bind(documentStub),
     removeEventListener: documentStub.removeEventListener.bind(documentStub),
   });
+
   harness.refreshTrash.mockReset();
   harness.toast.mockReset();
   harness.uiListeners.clear();
@@ -204,6 +216,7 @@ describe('useAutosave', () => {
     const storage = makeStorage();
 
     useAutosaveForTest(editor, storage);
+
     vi.advanceTimersByTime(599);
     expect(storage.save).not.toHaveBeenCalled();
 
@@ -239,6 +252,7 @@ describe('useAutosave', () => {
     const storage = makeStorage({ saveHistory });
 
     useAutosaveForTest(editor, storage);
+
     vi.advanceTimersByTime(2_000);
     await vi.waitFor(() => expect(saveHistory).toHaveBeenCalledTimes(1));
 
@@ -248,10 +262,15 @@ describe('useAutosave', () => {
   it('keeps all documents when every document is fresh', async () => {
     const first = { id: 'first', name: 'First', updatedAt: 1 };
     const second = { id: 'second', name: 'Second', updatedAt: 2 };
-    const editor = makeEditor({ active: second, documents: [first, second], fresh: new Set(['first', 'second']) });
+    const editor = makeEditor({
+      active: second,
+      documents: [first, second],
+      fresh: new Set(['first', 'second']),
+    });
     const storage = makeStorage();
 
     useAutosaveForTest(editor, storage);
+
     vi.advanceTimersByTime(600);
     await vi.waitFor(() => expect(storage.save).toHaveBeenCalledTimes(1));
 
@@ -265,16 +284,19 @@ describe('useAutosave', () => {
     const storage = makeStorage({ saveHistory });
 
     useAutosaveForTest(makeEditor(), storage);
+
     vi.advanceTimersByTime(500);
     harness.uiListeners.forEach((listener) => listener());
 
     vi.advanceTimersByTime(599);
     expect(storage.save).not.toHaveBeenCalled();
+
     vi.advanceTimersByTime(1);
     expect(storage.save).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(1_399);
     expect(saveHistory).not.toHaveBeenCalled();
+
     vi.advanceTimersByTime(1);
     await vi.waitFor(() => expect(saveHistory).toHaveBeenCalledTimes(1));
   });
@@ -283,12 +305,15 @@ describe('useAutosave', () => {
     const storage = makeStorage({ save: vi.fn(async () => Promise.reject(new Error('save failed'))) });
 
     useAutosaveForTest(makeEditor(), storage);
+
     vi.advanceTimersByTime(600);
     await vi.waitFor(() => expect(harness.toast).toHaveBeenCalledTimes(1));
 
     harness.localeListeners.forEach((listener) => listener());
+
     vi.advanceTimersByTime(600);
     await Promise.resolve();
+
     expect(storage.save).toHaveBeenCalledTimes(2);
     expect(harness.toast).toHaveBeenCalledTimes(1);
   });
@@ -299,6 +324,7 @@ describe('useAutosave', () => {
 
     useAutosaveForTest(makeEditor(), storage);
     windowStub.dispatch('pagehide');
+
     await vi.waitFor(() => {
       expect(storage.save).toHaveBeenCalledTimes(1);
       expect(saveHistory).toHaveBeenCalledTimes(1);
@@ -319,6 +345,7 @@ describe('useAutosave', () => {
     documentGlobal.visibilityState = 'hidden';
     windowStub.dispatch('focus');
     documentStub.dispatch('visibilitychange');
+
     expect(changedElsewhere).not.toHaveBeenCalled();
   });
 
