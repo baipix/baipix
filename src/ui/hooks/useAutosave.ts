@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
+
 import type { Editor } from '../../engine/editor';
 import { getLocale, getLocalePreference, subscribeLocale, t } from '../../i18n';
 import type { StorageAdapter } from '../../storage/workspace';
+
 import { refreshTrash } from '../StorageContext';
 import { toast, uiStore } from '../uiStore';
 
@@ -11,10 +13,16 @@ const HISTORY_SAVE_DEBOUNCE_MS = 2000;
 type EditorDocument = ReturnType<Editor['getDocuments']>[number];
 type UiState = ReturnType<typeof uiStore.get>;
 
+/**
+ * Returns documents that are no longer untouched fresh files.
+ */
 function getNonFreshDocuments(editor: Editor, documents: EditorDocument[] = editor.getDocuments()) {
   return documents.filter((document) => !editor.isFresh(document.id));
 }
 
+/**
+ * Selects the UI settings that belong in the persisted workspace metadata.
+ */
 function getWorkspaceUiSettings(uiState: UiState) {
   return {
     panelWidths: uiState.panelWidths,
@@ -39,13 +47,18 @@ function getWorkspaceUiSettings(uiState: UiState) {
   };
 }
 
+/**
+ * Builds the workspace payload from the latest editor and UI state.
+ */
 function createWorkspaceSnapshot(editor: Editor, uiState: UiState) {
   const editorState = editor.getState();
+
+  // New files left untouched aren't kept (unless there's nothing else).
   const allDocuments = editor.getDocuments();
   const nonFreshDocuments = getNonFreshDocuments(editor, allDocuments);
-
   const documents = nonFreshDocuments.length ? nonFreshDocuments : allDocuments;
 
+  // The active board, to open again on it.
   const activeId = documents.some((document) => document.id === editorState.doc.id)
     ? editorState.doc.id
     : [...documents].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0].id;
@@ -58,11 +71,17 @@ function createWorkspaceSnapshot(editor: Editor, uiState: UiState) {
   };
 }
 
+/**
+ * Keeps undo histories only for documents that will remain persisted.
+ */
 function getHistoriesToSave(editor: Editor) {
   const keptDocumentIds = new Set(getNonFreshDocuments(editor).map((document) => document.id));
   return editor.histories().filter((history) => keptDocumentIds.has(history.id));
 }
 
+/**
+ * Installs autosave timers and browser subscriptions, and returns their cleanup.
+ */
 function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
   // Workspace and history persistence.
   let workspaceSaveTimer = 0;
@@ -81,6 +100,7 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
       });
   };
 
+  // The undo history, apart and less often: it's bigger, and only matters after a reload.
   let historySaveTimer = 0;
 
   const saveHistory = () => {
@@ -95,12 +115,13 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
     });
   };
 
-  // Debouncing and browser lifecycle events.
+  // Coalesce frequent workspace changes into one delayed save.
   const scheduleWorkspaceSave = () => {
     clearTimeout(workspaceSaveTimer);
     workspaceSaveTimer = window.setTimeout(saveWorkspace, AUTOSAVE_DEBOUNCE_MS);
   };
 
+  // History is larger and changes less often, so it uses a separate delay.
   const scheduleHistorySave = () => {
     clearTimeout(historySaveTimer);
     historySaveTimer = window.setTimeout(saveHistory, HISTORY_SAVE_DEBOUNCE_MS);
@@ -112,12 +133,13 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
     scheduleHistorySave();
   };
 
+  // Flush both saves immediately instead of waiting for their debounce timers.
   const saveBeforePageHide = () => {
     saveWorkspace();
     saveHistory();
   };
 
-  // Back on this tab: what another tab of Baipix drew or added meanwhile shows here too.
+  // When this tab becomes active, adopt documents changed by another tab.
   const syncDocumentsFromOtherTabs = () => {
     if (document.visibilityState === 'hidden' || !storage.changedElsewhere) {
       return;
@@ -161,12 +183,14 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
   };
 }
 
-/** Saves the workspace (debounced) whenever the document, preferences or UI settings change. */
+/**
+ * Saves the workspace (debounced) whenever the document, preferences or UI settings change.
+ */
 export function useAutosave(editor: Editor, storage: StorageAdapter, ready: boolean) {
   useEffect(() => {
     if (!ready) {
       return;
-    } 
+    }
 
     return setupAutosave(editor, storage);
   }, [editor, storage, ready]);
