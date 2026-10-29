@@ -3,7 +3,8 @@ import type { BoardLight } from './light';
 import type { LayerEffect } from './effects';
 import { syncInstances, type ComponentFrame, type InstanceRef } from './components';
 import type { BlendMode } from './composite';
-import { reframe, type Outside } from './outside';
+import { reframe, reframeCels, type Outside } from './outside';
+import type { Cel, Frame } from './frames';
 
 export const MAX_SIZE = 512;
 
@@ -29,6 +30,11 @@ export interface Layer {
   instance?: InstanceRef;
   /** Effects drawn from its pixels when the picture is put together (see effects.ts). */
   effects?: LayerEffect[];
+  /**
+   * Its pixels on each animation frame, when the board has frames; null on the active frame, whose
+   * pixels are `pixels` (see frames.ts).
+   */
+  cels?: (Cel | null)[];
 }
 
 /**
@@ -141,6 +147,10 @@ export interface PixelDoc {
   /** Last change, in ms since the epoch (for the home screen). Missing in older files. */
   updatedAt?: number;
   reference?: ReferenceImage;
+  /** Animation frames (see frames.ts); missing: a single frame. */
+  frames?: Frame[];
+  /** The frame shown and drawn on, an index in `frames`. */
+  activeFrame?: number;
 }
 
 let seq = 0;
@@ -181,6 +191,8 @@ export const cloneLayer = (layer: Layer, keepId = true): Layer => ({
   ...(layer.component && { component: { ...layer.component } }),
   ...(layer.instance && { instance: { ...layer.instance } }),
   ...(layer.effects && { effects: layer.effects.map((e) => ({ ...e })) }),
+  // Cels are never changed in place: the copy shares them.
+  ...(layer.cels && { cels: layer.cels.slice() }),
 });
 
 /**
@@ -248,6 +260,7 @@ export function cloneDocument(doc: PixelDoc, keepIds = true, ids?: Map<string, s
     ...(doc.groups && { groups: doc.groups.map((g) => ({ ...g })) }),
     ...(doc.board && { board: { ...doc.board } }),
     ...(doc.light && { light: { ...doc.light } }),
+    ...(doc.frames && { frames: doc.frames.map((f) => ({ ...f })) }),
     layers: keepIds ? doc.layers.map((l) => cloneLayer(l)) : cloneLayersWithNewIds(doc.layers, ids),
   };
 }
@@ -310,6 +323,9 @@ export function resizeDocument(
     const r = reframe(layer.pixels, doc.width, doc.height, layer.outside, offsetX, offsetY, width, height);
     layer.pixels = r.pixels;
     layer.outside = r.outside;
+    // The other frames are cropped or grown the same way.
+    if (layer.cels)
+      layer.cels = reframeCels(layer.cels, doc.width, doc.height, offsetX, offsetY, width, height);
     // Masters' frames and instances' places stay on the same pixels.
     if (layer.component) {
       const f = layer.component;
