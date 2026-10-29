@@ -15,18 +15,6 @@ function getNonFreshDocuments(editor: Editor, documents: EditorDocument[] = edit
   return documents.filter((document) => !editor.isFresh(document.id));
 }
 
-function getDocumentsToSave(editor: Editor): EditorDocument[] {
-  const documents = editor.getDocuments();
-  const nonFreshDocuments = getNonFreshDocuments(editor, documents);
-  return nonFreshDocuments.length ? nonFreshDocuments : documents;
-}
-
-function getActiveDocumentId(activeDocumentId: EditorDocument['id'], documents: EditorDocument[]) {
-  if (documents.some((document) => document.id === activeDocumentId)) return activeDocumentId;
-
-  return [...documents].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0].id;
-}
-
 function getWorkspaceUiSettings(uiState: UiState) {
   return {
     panelWidths: uiState.panelWidths,
@@ -53,11 +41,18 @@ function getWorkspaceUiSettings(uiState: UiState) {
 
 function createWorkspaceSnapshot(editor: Editor, uiState: UiState) {
   const editorState = editor.getState();
-  const documents = getDocumentsToSave(editor);
+  const allDocuments = editor.getDocuments();
+  const nonFreshDocuments = getNonFreshDocuments(editor, allDocuments);
+
+  const documents = nonFreshDocuments.length ? nonFreshDocuments : allDocuments;
+
+  const activeId = documents.some((document) => document.id === editorState.doc.id)
+    ? editorState.doc.id
+    : [...documents].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0].id;
 
   return {
     documents,
-    activeId: getActiveDocumentId(editorState.doc.id, documents),
+    activeId,
     preferences: editor.getPreferences(),
     ui: getWorkspaceUiSettings(uiState),
   };
@@ -72,42 +67,68 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
   // Workspace and history persistence.
   let workspaceSaveTimer = 0;
   let hasShownSaveFailureToast = false;
+
   const saveWorkspace = () => {
     storage
       .save(createWorkspaceSnapshot(editor, uiStore.get()))
       .then(() => refreshTrash(storage))
       .catch(() => {
-        if (!hasShownSaveFailureToast) toast(t('toast.saveFailed'));
+        if (!hasShownSaveFailureToast) {
+          toast(t('toast.saveFailed'));
+        }
+
         hasShownSaveFailureToast = true;
       });
   };
+
   let historySaveTimer = 0;
+
   const saveHistory = () => {
     clearTimeout(historySaveTimer);
-    if (!storage.saveHistory) return;
+
+    if (!storage.saveHistory) {
+      return;
+    }
+
     storage.saveHistory(getHistoriesToSave(editor)).catch(() => {
       /* the drawing is saved anyway; only the undo steps would be lost */
     });
   };
 
   // Debouncing and browser lifecycle events.
-  const scheduleSaves = () => {
+  const scheduleWorkspaceSave = () => {
     clearTimeout(workspaceSaveTimer);
     workspaceSaveTimer = window.setTimeout(saveWorkspace, AUTOSAVE_DEBOUNCE_MS);
+  };
+
+  const scheduleHistorySave = () => {
     clearTimeout(historySaveTimer);
     historySaveTimer = window.setTimeout(saveHistory, HISTORY_SAVE_DEBOUNCE_MS);
   };
+
+  // Every observed change postpones both independent persistence operations.
+  const scheduleSaves = () => {
+    scheduleWorkspaceSave();
+    scheduleHistorySave();
+  };
+
   const saveBeforePageHide = () => {
     saveWorkspace();
     saveHistory();
   };
+
   // Back on this tab: what another tab of Baipix drew or added meanwhile shows here too.
   const syncDocumentsFromOtherTabs = () => {
-    if (document.visibilityState === 'hidden' || !storage.changedElsewhere) return;
+    if (document.visibilityState === 'hidden' || !storage.changedElsewhere) {
+      return;
+    }
+
     storage
       .changedElsewhere()
       .then((docs) => {
-        if (docs.length) editor.adoptDocuments(docs);
+        if (docs.length) {
+          editor.adoptDocuments(docs);
+        }
       })
       .catch(() => {
         /* storage unavailable: nothing to take in */
@@ -131,7 +152,9 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
   return () => {
     clearTimeout(workspaceSaveTimer);
     clearTimeout(historySaveTimer);
+
     unsubscribe.forEach((removeSubscription) => removeSubscription());
+
     window.removeEventListener('pagehide', saveBeforePageHide);
     window.removeEventListener('focus', syncDocumentsFromOtherTabs);
     document.removeEventListener('visibilitychange', syncDocumentsFromOtherTabs);
@@ -141,7 +164,10 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
 /** Saves the workspace (debounced) whenever the document, preferences or UI settings change. */
 export function useAutosave(editor: Editor, storage: StorageAdapter, ready: boolean) {
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) {
+      return;
+    } 
+
     return setupAutosave(editor, storage);
   }, [editor, storage, ready]);
 }
