@@ -9,6 +9,7 @@ const BLUE = pack(0, 0, 255, 128);
 /** Reads an .aseprite file back, following the spec on its own (not the writer's code). */
 async function read(bytes: Uint8Array) {
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
   const header = {
     size: v.getUint32(0, true),
     magic: v.getUint16(4, true),
@@ -19,13 +20,17 @@ async function read(bytes: Uint8Array) {
     flags: v.getUint32(14, true),
     colors: v.getUint16(32, true),
   };
+
   let at = 128;
+
   const frame = {
     size: v.getUint32(at, true),
     magic: v.getUint16(at + 4, true),
     chunks: v.getUint32(at + 12, true),
   };
+
   at += 16;
+
   const layers: {
     flags: number;
     type: number;
@@ -34,15 +39,19 @@ async function read(bytes: Uint8Array) {
     opacity: number;
     name: string;
   }[] = [];
+
   const cels: { layer: number; x: number; y: number; w: number; h: number; pixels: Uint32Array }[] = [];
   let palette: number[][] = [];
+
   for (let k = 0; k < frame.chunks; k++) {
     const size = v.getUint32(at, true);
     expect(size).toBeGreaterThanOrEqual(6);
     const type = v.getUint16(at + 4, true);
     const d = at + 6;
+
     if (type === 0x2004) {
       const length = v.getUint16(d + 16, true);
+
       layers.push({
         flags: v.getUint16(d, true),
         type: v.getUint16(d + 2, true),
@@ -55,10 +64,12 @@ async function read(bytes: Uint8Array) {
       expect(v.getUint16(d + 7, true)).toBe(2); // compressed image
       const w = v.getUint16(d + 16, true);
       const h = v.getUint16(d + 18, true);
+
       const stream = new Blob([bytes.slice(d + 20, at + size)])
         .stream()
         .pipeThrough(new DecompressionStream('deflate'));
       const raw = new Uint8Array(await new Response(stream).arrayBuffer());
+
       cels.push({
         layer: v.getUint16(d, true),
         x: v.getInt16(d + 2, true),
@@ -164,11 +175,12 @@ describe('export to Aseprite', () => {
     e.selectLayer(0, 'single');
     e.selectLayer(1, 'toggle');
     e.groupSelection();
+    e.getState().doc.groups![1].name = 'Outer group';
 
     const f = await read(await toAseprite(e.getState().doc, { palette: [] }));
 
     expect(f.layers.map((layer) => [layer.name, layer.type, layer.level])).toEqual([
-      ['Group 2', 1, 0],
+      ['Outer group', 1, 0],
       ['内側', 1, 1],
       ['底层', 0, 2],
       ['透明', 0, 2],
