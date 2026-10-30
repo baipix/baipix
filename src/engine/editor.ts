@@ -46,7 +46,21 @@ import {
   type LayerNode,
 } from './groups';
 import { applyRepeat, clampGrid, DEFAULT_REPEAT, type RepeatGrid, type RepeatSource } from './repeat';
-import { bakeEffects, newEffect, type EffectType, type LayerEffect } from './effects';
+import { newEffect, type EffectType, type LayerEffect } from './effects';
+import {
+  activeFrame,
+  addFrame,
+  bakeEffectsOnEveryFrame,
+  deleteFrame,
+  eachFrame,
+  frameCount,
+  moveFrame,
+  normalizeFrames,
+  onEachFrame,
+  setCels,
+  setDuration,
+  showFrame,
+} from './frames';
 import {
   clipSelection,
   fromCanvasMask,
@@ -75,7 +89,7 @@ import {
   syncInstances,
 } from './components';
 import { History, takeSnapshot, type Snapshot } from './history';
-import { addOutside, flipOutside, layerContent, reframe, type Outside } from './outside';
+import { addOutside, flipOutside, layerContent, reframe, reframeCels, type Outside } from './outside';
 import { clamp, clipRect, type Point, type Rect } from './math';
 import { PaletteIndex, hueShiftedRamp, presetColors, sortByLightness } from './palette';
 import {
@@ -734,6 +748,8 @@ export class Editor {
    */
   private commit(persist = true, pixels = true): void {
     if (pixels) {
+      // Every layer has its pixels on every frame, however it came (added, pasted, moved across).
+      for (const { doc } of this.sessions) normalizeFrames(doc);
       // Instances show their master as it is now, whatever changed it, on every board of the file:
       // a board whose instances changed is dated, so its picture on the canvas is drawn again.
       this.linkFiles();
@@ -1427,7 +1443,13 @@ export class Editor {
     // Onto the other one, on top, as it was (name, opacity, blend mode, effects), out of any group.
     this.activate(to);
     const put = (doc: PixelDoc) => {
-      const copy: Layer = { ...layer, pixels: moved.pixels };
+      const copy: Layer = {
+        ...layer,
+        pixels: moved.pixels,
+        ...(layer.cels && {
+          cels: reframeCels(layer.cels, src.width, src.height, dx, dy, dst.width, dst.height),
+        }),
+      };
       // A component keeps its id, so its instances on every board still follow it: its frame
       // moves with its pixels. An instance lands where it was let go, drawn again on its new board.
       if (copy.component)
@@ -1995,6 +2017,43 @@ export class Editor {
     this.commit(true, false);
   }
 
+  /* ------------------------------------------------------------------ animation frames */
+
+  /** Shows frame `f`, to draw on it. Not an undo step, like picking a layer. */
+  setFrame(f: number): void {
+    if (this.stroke || this.adjusting || this.scaling) return;
+    if (f === activeFrame(this.doc) || f < 0 || f >= frameCount(this.doc)) return;
+    if (this.repeatSession) this.endRepeat(true);
+    if (this.extrudeSession) this.endExtrude(true);
+    showFrame(this.doc, f);
+    this.commit();
+  }
+
+  /** Adds a frame after the shown one, a copy of it, and shows it. */
+  addFrame(): void {
+    this.edit((doc) => addFrame(doc));
+  }
+
+  /** Deletes frame `f` (the shown one by default); a board keeps at least one. */
+  deleteFrame(f = activeFrame(this.doc)): boolean {
+    if (frameCount(this.doc) < 2) return false;
+    this.edit((doc) => deleteFrame(doc, f));
+    return true;
+  }
+
+  /** Moves frame `from` to `to`. */
+  moveFrame(from: number, to: number): void {
+    const n = frameCount(this.doc);
+    if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
+    this.edit((doc) => moveFrame(doc, from, to));
+  }
+
+  /** Sets how long frames show, in ms: the given ones, or all of them. */
+  setFrameDuration(ms: number, frames?: number[]): void {
+    if (!this.doc.frames) return;
+    this.edit((doc) => setDuration(doc, ms, frames));
+  }
+
   /**
    * Layer list clicks: `single` selects one layer, `toggle` (Cmd/Ctrl+click) adds or removes one,
    * `range` (Shift+click) selects every layer from the last clicked one. The clicked layer becomes
@@ -2302,18 +2361,19 @@ export class Editor {
     }
     // The group's layers on their own, as if the group were plain and shown.
     const inner = (doc.groups ?? []).filter((x) => x.id !== id && isWithin(doc, x.id, id));
-    const pixels = flatten(
-      {
-        ...doc,
-        layers: layers.map((l) => ({ ...l, group: l.group === id ? undefined : l.group })),
-        groups: inner.map((x) => ({ ...x, parent: x.parent === id ? undefined : x.parent })),
-        background: 0,
-      },
-      { includeBackground: false },
-    );
+    const groupAlone = () =>
+      flatten(
+        {
+          ...doc,
+          layers: layers.map((l) => ({ ...l, group: l.group === id ? undefined : l.group })),
+          groups: inner.map((x) => ({ ...x, parent: x.parent === id ? undefined : x.parent })),
+          background: 0,
+        },
+        { includeBackground: false },
+      );
     this.edit((d) => {
       const merged = createLayer(g.name, d.width, d.height);
-      merged.pixels.set(pixels);
+      setCels(d, merged, onEachFrame(d, groupAlone));
       merged.opacity = g.opacity;
       merged.visible = g.visible;
       if (g.blendMode) merged.blendMode = g.blendMode;
@@ -2469,7 +2529,8 @@ export class Editor {
     this.edit((doc) => {
       // Merged into an instance, it becomes plain pixels: they're no longer its master's.
       detachInstance(doc.layers[i - 1]);
-      mergeLayerInto(doc.layers[i], doc.layers[i - 1], doc.width, doc.height);
+      bakeEffectsOnEveryFrame(doc, doc.layers[i - 1]);
+      eachFrame(doc, () => mergeLayerInto(doc.layers[i], doc.layers[i - 1], doc.width, doc.height));
       doc.layers.splice(i, 1);
       doc.activeLayer = i - 1;
     });
@@ -2496,7 +2557,7 @@ export class Editor {
       detachInstance(bottom);
       delete bottom.component;
       delete bottom.effects;
-      bottom.pixels.set(flatten(doc, { includeBackground: false }));
+      eachFrame(doc, () => bottom.pixels.set(flatten(doc, { includeBackground: false })));
       bottom.opacity = 1;
       delete bottom.blendMode;
       delete bottom.group;
@@ -2517,7 +2578,10 @@ export class Editor {
     this.edit((doc) => {
       const [bottom, ...rest] = layers;
       detachInstance(bottom);
-      for (const layer of rest) mergeLayerInto(layer, bottom, doc.width, doc.height);
+      bakeEffectsOnEveryFrame(doc, bottom);
+      eachFrame(doc, () => {
+        for (const layer of rest) mergeLayerInto(layer, bottom, doc.width, doc.height);
+      });
       doc.layers = doc.layers.filter((l) => !rest.includes(l));
       doc.activeLayer = doc.layers.indexOf(bottom);
       normalizeGroups(doc);
@@ -2706,7 +2770,7 @@ export class Editor {
   /** Writes the active layer's visible effects into its pixels, and removes them all. */
   applyEffects(): void {
     if (!activeLayer(this.doc).effects || this.activeLocked()) return;
-    this.edit((doc) => bakeEffects(activeLayer(doc), doc.width, doc.height));
+    this.edit((doc) => bakeEffectsOnEveryFrame(doc, activeLayer(doc)));
   }
 
   /* ------------------------------------------------------------------ colors & palette */

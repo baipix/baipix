@@ -1,7 +1,7 @@
 import { clampFrame, findMaster, syncInstances } from './components';
 import { activeLayer, cloneLayer, newId, type Layer, type LayerGroup, type PixelDoc } from './document';
 import { groupChain, isWithin, itemLayers, moveItems, pickedItems, type LayerItem } from './groups';
-import { reframe } from './outside';
+import { reframe, reframeCels } from './outside';
 
 /**
  * Whole layers on the clipboard (Cmd+C with no pixels selected, or in the Layers panel): copies of
@@ -66,6 +66,7 @@ export function pasteFragment(doc: PixelDoc, fragment: LayerFragment): { ids: st
   const layers = fragment.layers.map((l) => {
     const r = reframe(l.pixels, fragment.width, fragment.height, l.outside, 0, 0, doc.width, doc.height);
     const copy: Layer = { ...cloneLayer(l), id: layerIds.get(l.id)!, pixels: r.pixels };
+    if (l.cels) copy.cels = reframeCels(l.cels, fragment.width, fragment.height, 0, 0, doc.width, doc.height);
     if (r.outside) copy.outside = r.outside;
     else delete copy.outside;
     if (l.group && groupIds.has(l.group)) copy.group = groupIds.get(l.group);
