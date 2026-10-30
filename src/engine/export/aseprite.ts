@@ -1,19 +1,16 @@
-/**
- * Exports a Baipix drawing as an `.aseprite` file, preserving its layers,
- * groups, visibility, locking, opacity, blend modes and palette.
- *
- * Written according to Aseprite's file specification:
- * https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
- *
- * The format uses little-endian encoding, a 128-byte header
- * and a frame composed of chunks.
- */
-
 import type { Color } from '../color';
 import type { BlendMode } from '../composite';
 import type { Layer, LayerGroup, PixelDoc } from '../document';
 import { layerTree, type LayerNode } from '../groups';
 import { pixelBounds } from '../region';
+
+/**
+ * The drawing as an `.aseprite` file, to keep working on it in Aseprite: one
+ * frame, the layers with their names, visibility, lock, opacity and blend
+ * modes, the groups, and the palette. Written by hand from Aseprite's file
+ * spec (https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md):
+ * little-endian, a 128-byte header, then a frame made of chunks.
+ */
 
 const BLEND: Record<BlendMode, number> = {
   normal: 0,
@@ -34,7 +31,7 @@ const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
 const PALETTE_CHUNK = 0x2019;
 
-// Layer flags.
+/** Layer flags. */
 const VISIBLE = 1;
 const EDITABLE = 2;
 const BACKGROUND = 8;
@@ -70,20 +67,15 @@ type Entry =
       group: LayerGroup;
     };
 
-/**
- * Grows as it's written; everything little-endian, as Aseprite wants.
- */
+/** Grows as it's written; everything little-endian, as Aseprite wants. */
 class Writer {
   private bytes = new Uint8Array(1024);
   private view = new DataView(this.bytes.buffer);
 
   length = 0;
 
-  /** Ensures the writer has room for the next value. */
   private room(n: number) {
-    if (this.length + n <= this.bytes.length) {
-      return;
-    }
+    if (this.length + n <= this.bytes.length) return;
 
     const bigger = new Uint8Array(Math.max(this.bytes.length * 2, this.length + n));
     bigger.set(this.bytes);
@@ -92,49 +84,40 @@ class Writer {
     this.view = new DataView(bigger.buffer);
   }
 
-  /** BYTE: 8-bit unsigned. */
   byte(n: number) {
     this.room(1);
     this.view.setUint8(this.length, n);
     this.length += 1;
   }
 
-  /** WORD: 16-bit unsigned. */
   word(n: number) {
     this.room(2);
     this.view.setUint16(this.length, n, true);
     this.length += 2;
   }
 
-  /** SHORT: 16-bit signed. */
   short(n: number) {
     this.room(2);
     this.view.setInt16(this.length, n, true);
     this.length += 2;
   }
 
-  /** DWORD: 32-bit unsigned. */
   dword(n: number) {
     this.room(4);
     this.view.setUint32(this.length, n >>> 0, true);
     this.length += 4;
   }
 
-  /** BYTE[n]: n zero bytes. */
   zeros(n: number) {
-    for (let i = 0; i < n; i++) {
-      this.byte(0);
-    }
+    for (let i = 0; i < n; i++) this.byte(0);
   }
 
-  /** BYTE[]: raw bytes. */
   data(d: Uint8Array) {
     this.room(d.length);
     this.bytes.set(d, this.length);
     this.length += d.length;
   }
 
-  /** STRING: WORD length in bytes + BYTE[length] UTF-8 characters, without '\0'. */
   string(s: string) {
     const utf8 = new TextEncoder().encode(s);
     this.word(utf8.length);
@@ -146,36 +129,28 @@ class Writer {
     this.view.setUint32(at, n >>> 0, true);
   }
 
-  /** Returns the written bytes without exposing unused capacity. */
   done(): Uint8Array {
     return this.bytes.slice(0, this.length);
   }
 }
 
-/**
- * Zlib-compressed bytes, as Aseprite stores cels (`deflate` in CompressionStream is zlib).
- */
+/** Zlib-compressed bytes, as Aseprite stores cels (`deflate` in CompressionStream is zlib). */
 async function zlib(data: Uint8Array): Promise<Uint8Array> {
   const stream = new Blob([data as BlobPart]).stream().pipeThrough(new CompressionStream('deflate'));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
-/**
- * Builds the file's bottom-to-top layer list and assigns the indices used by cels.
- */
+/** Builds the file's bottom-to-top layer list and assigns the indices used by cels. */
 function buildLayerEntries(doc: PixelDoc, background: Color | undefined): Entry[] {
   // The layer list, bottom to top, a group right before its own layers (one level deeper).
   const entries: Entry[] = [];
-
-  if (background !== undefined) {
-    entries.push({ kind: 'background', index: 0, level: 0, background });
-  }
+  if (background !== undefined) entries.push({ kind: 'background', index: 0, level: 0, background });
 
   const walk = (nodes: LayerNode[], level: number) => {
     for (const node of nodes) {
-      if (node.kind === 'layer') {
+      if (node.kind === 'layer')
         entries.push({ kind: 'layer', index: entries.length, level, layer: node.layer });
-      } else {
+      else {
         entries.push({ kind: 'group', index: entries.length, level, group: node.group });
         walk(node.children, level + 1);
       }
@@ -186,23 +161,17 @@ function buildLayerEntries(doc: PixelDoc, background: Color | undefined): Entry[
   return entries;
 }
 
-/**
- * Writes one size-prefixed Aseprite chunk and appends it to the frame.
- */
+/** Writes one size-prefixed Aseprite chunk and appends it to the frame. */
 function addChunk(chunks: Writer[], type: number, write: (writer: Writer) => void): void {
   const writer = new Writer();
-
-  writer.dword(0);
+  writer.dword(0); // size, patched below
   writer.word(type);
   write(writer);
   writer.patch(0, writer.length);
-
   chunks.push(writer);
 }
 
-/**
- * Serializes one layer or group entry into an Aseprite layer chunk.
- */
+/** Serializes one layer or group entry into an Aseprite layer chunk. */
 function addLayerChunk(chunks: Writer[], entry: Entry): void {
   addChunk(chunks, LAYER_CHUNK, (writer) => {
     let flags = 0;
@@ -227,11 +196,7 @@ function addLayerChunk(chunks: Writer[], entry: Entry): void {
 
       case 'group':
         flags = (entry.group.visible ? VISIBLE : 0) | (entry.group.locked ? 0 : EDITABLE);
-
-        if (entry.group.collapsed) {
-          flags |= COLLAPSED;
-        }
-
+        if (entry.group.collapsed) flags |= COLLAPSED;
         type = 1;
         blend = entry.group.blendMode ? BLEND[entry.group.blendMode] : 0;
         opacity = entry.group.opacity;
@@ -240,10 +205,11 @@ function addLayerChunk(chunks: Writer[], entry: Entry): void {
     }
 
     writer.word(flags);
-    writer.word(type);
+    writer.word(type); // 0: image, 1: group
     writer.word(entry.level);
     writer.word(0);
     writer.word(0);
+    // A group without a blend mode passes through, which is what Aseprite's normal group does.
     writer.word(blend);
     writer.byte(Math.round(opacity * 255));
     writer.zeros(3);
@@ -260,55 +226,37 @@ interface CroppedCel {
   pixels: Uint32Array;
 }
 
-/**
- * Creates the smallest cel image for a drawable entry; groups have no pixel data.
- */
-function cropCel(entry: Entry, documentWidth: number, documentHeight: number): CroppedCel | undefined {
+/** Creates the smallest cel image for a drawable entry; groups have no pixel data. */
+function cropCel(entry: Entry, W: number, H: number): CroppedCel | undefined {
   let sourcePixels: Uint32Array | undefined;
 
   if (entry.kind === 'background') {
-    sourcePixels = new Uint32Array(documentWidth * documentHeight).fill(entry.background);
+    sourcePixels = new Uint32Array(W * H).fill(entry.background);
   } else if (entry.kind === 'layer') {
     sourcePixels = entry.layer.pixels;
   } else {
     sourcePixels = undefined;
   }
 
-  if (!sourcePixels) {
-    return undefined;
-  }
+  if (!sourcePixels) return undefined;
 
-  const bounds = pixelBounds(sourcePixels, documentWidth, documentHeight);
-
-  if (!bounds) {
-    return undefined;
-  }
+  const bounds = pixelBounds(sourcePixels, W, H);
+  if (!bounds) return undefined;
 
   const pixels = new Uint32Array(bounds.w * bounds.h);
 
-  for (let y = 0; y < bounds.h; y++) {
+  for (let y = 0; y < bounds.h; y++)
     pixels.set(
-      sourcePixels.subarray(
-        (bounds.y + y) * documentWidth + bounds.x,
-        (bounds.y + y) * documentWidth + bounds.x + bounds.w,
-      ),
+      sourcePixels.subarray((bounds.y + y) * W + bounds.x, (bounds.y + y) * W + bounds.x + bounds.w),
       y * bounds.w,
     );
-  }
 
   return { x: bounds.x, y: bounds.y, width: bounds.w, height: bounds.h, pixels };
 }
 
-/**
- * Adds one cel chunk; the caller awaits each entry to preserve chunk order.
- */
-async function addCelChunk(
-  chunks: Writer[],
-  entry: Entry,
-  documentWidth: number,
-  documentHeight: number,
-): Promise<void> {
-  const cel = cropCel(entry, documentWidth, documentHeight);
+/** Adds one cel chunk; the caller awaits each entry to preserve chunk order. */
+async function addCelChunk(chunks: Writer[], entry: Entry, W: number, H: number): Promise<void> {
+  const cel = cropCel(entry, W, H);
 
   if (!cel) return;
 
@@ -320,8 +268,8 @@ async function addCelChunk(
     writer.short(cel.x);
     writer.short(cel.y);
     writer.byte(255);
-    writer.word(2);
-    writer.short(0);
+    writer.word(2); // compressed image
+    writer.short(0); // z-index
     writer.zeros(5);
     writer.word(cel.width);
     writer.word(cel.height);
@@ -329,9 +277,7 @@ async function addCelChunk(
   });
 }
 
-/**
- * Serializes the optional palette chunk, limited to the colors supplied by the caller.
- */
+/** Serializes the optional palette chunk, limited to the colors supplied by the caller. */
 function addPaletteChunk(chunks: Writer[], palette: Color[]): void {
   if (!palette.length) return;
 
@@ -351,67 +297,57 @@ function addPaletteChunk(chunks: Writer[], palette: Color[]): void {
   });
 }
 
-/**
- * Builds a one-frame Aseprite file from the document and its export options.
- */
+/** Builds a one-frame Aseprite file from the document and its export options. */
 export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promise<Uint8Array> {
-  const { width: documentWidth, height: documentHeight } = doc;
+  const { width: W, height: H } = doc;
   const entries = buildLayerEntries(doc, options.background);
   const chunks: Writer[] = [];
 
-  // The palette. Optional chunks (Color Profile 0x2007, sprite user data 0x2020)
-  // are intentionally not written, so readers treat the file as having no color profile.
+  // The palette.
   const palette = options.palette.slice(0, 256);
   addPaletteChunk(chunks, palette);
 
   // The layers.
-  for (const entry of entries) {
-    addLayerChunk(chunks, entry);
-  }
+  for (const entry of entries) addLayerChunk(chunks, entry);
 
   // A cel per drawn layer, cropped to what's drawn.
-  for (const entry of entries) {
-    await addCelChunk(chunks, entry, documentWidth, documentHeight);
-  }
+  for (const entry of entries) await addCelChunk(chunks, entry, W, H);
 
-  // The frame header precedes all chunks. The first chunk count is the legacy 16-bit field;
-  // the following DWORD is the full count used by newer readers.
+  // The frame: its header, then the chunks.
   const frame = new Writer();
   const frameSize = 16 + chunks.reduce((n, c) => n + c.length, 0);
 
   frame.dword(frameSize);
   frame.word(0xf1fa);
   frame.word(Math.min(chunks.length, 0xffff));
-  frame.word(100);
+  frame.word(100); // duration, ms
   frame.zeros(2);
   frame.dword(chunks.length);
 
-  for (const c of chunks) {
-    frame.data(c.done());
-  }
+  for (const c of chunks) frame.data(c.done());
 
-  // The 128-byte file header. Fields are written in the order required by the Aseprite spec.
+  // The header.
   const file = new Writer();
 
   file.dword(128 + frameSize);
   file.word(0xa5e0);
-  file.word(1);
-  file.word(documentWidth);
-  file.word(documentHeight);
-  file.word(32);
-  file.dword(1 | 2);
-  file.word(100);
+  file.word(1); // frames
+  file.word(W);
+  file.word(H);
+  file.word(32); // RGBA
+  file.dword(1 | 2); // layer opacity and group opacity/blend are meaningful
+  file.word(100); // speed (deprecated)
   file.dword(0);
   file.dword(0);
-  file.byte(0);
+  file.byte(0); // transparent index (indexed sprites only)
   file.zeros(3);
   file.word(palette.length === 256 ? 0 : palette.length);
-  file.byte(1);
-  file.byte(1);
-  file.short(0);
-  file.short(0);
-  file.word(16);
-  file.word(16);
+  file.byte(1); // pixel width
+  file.byte(1); // pixel height
+  file.short(0); // grid x
+  file.short(0); // grid y
+  file.word(16); // grid width
+  file.word(16); // grid height
   file.zeros(84);
   file.data(frame.done());
 
