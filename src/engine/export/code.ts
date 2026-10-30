@@ -4,6 +4,9 @@ import { alpha, blue, green, red, toHex, type Color } from '../color';
 export type CodeLanguage = 'react' | 'svg' | 'css' | 'json' | 'ascii';
 export const CODE_LANGUAGES: CodeLanguage[] = ['react', 'svg', 'css', 'json', 'ascii'];
 
+/** One character per color, the most used first; past them, letters and digits. */
+const GLYPHS = '#@%*+=o~^xs&$:!?abcdefghijklmnpqrtuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
 /** The file each language is saved as. */
 export const CODE_EXTENSIONS: Record<CodeLanguage, string> = {
   react: 'tsx',
@@ -86,6 +89,7 @@ export function colorName(color: Color): string {
   return hue;
 }
 
+/** Assigns unique human-readable names while preserving the supplied color order. */
 function assignColorNames(sortedColors: [Color, number][]): NamedColor[] {
   const taken = new Map<string, number>();
   const named: NamedColor[] = [];
@@ -145,6 +149,7 @@ export function className(name: string): string {
   return /^[a-z]/.test(slug) ? slug : `sprite${slug ? `-${slug}` : ''}`;
 }
 
+/** Returns an RGB hex value, adding an alpha suffix when the color is translucent. */
 const colorHex = (color: Color): string => {
   const hex = toHex(color);
   const opacity = alpha(color);
@@ -167,6 +172,9 @@ function svgToJsx(svg: string): string {
     .replace(/\/>/g, ' />');
 }
 
+/**
+ * Uses the SVG's rendered size, falling back to the drawing dimensions when it is absent.
+ */
 function cssDimensions(input: CodeInput): [string, string] {
   const size = input.flatSvg.match(/width="(\d+)" height="(\d+)"/);
   return size ? [size[1], size[2]] : [String(input.width), String(input.height)];
@@ -234,6 +242,9 @@ function writeCss(input: CodeInput): string {
   ].join('\n');
 }
 
+/**
+ * Converts pixels into JSON rows whose color indexes start at one; zero represents transparency.
+ */
 function pixelRows(input: CodeInput, colors: NamedColor[]): string[] {
   const index = new Map(colors.map((c, i) => [c.color, i + 1]));
   const rows: string[] = [];
@@ -273,12 +284,7 @@ function writeJson(input: CodeInput): string {
 }
 
 /**
- * One character per color, the most used first; past them, letters and digits.
- */
-const GLYPHS = '#@%*+=o~^xs&$:!?abcdefghijklmnpqrtuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-/**
- * The drawing in characters, with the legend on top: for a README or a comment.
+ * Renders the pixel matrix, using a dot for transparency and the final glyph as overflow fallback.
  */
 function asciiRows(input: CodeInput, glyphs: Map<Color, string>): string[] {
   const rows: string[] = [];
@@ -298,6 +304,9 @@ function asciiRows(input: CodeInput, glyphs: Map<Color, string>): string[] {
   return rows;
 }
 
+/**
+ * The drawing in characters, with the legend on top: for a README or a comment.
+ */
 function writeAscii(input: CodeInput): string {
   const colors = namedColors(input.pixels).slice(0, GLYPHS.length);
   const glyphs = new Map(colors.map((color, index) => [color.color, GLYPHS[index]]));
@@ -319,7 +328,6 @@ function writeAscii(input: CodeInput): string {
  */
 export function codeOf(language: CodeLanguage, input: CodeInput): string {
   switch (language) {
-
     case 'react':
       return writeReact(input);
 
@@ -328,7 +336,7 @@ export function codeOf(language: CodeLanguage, input: CodeInput): string {
 
     case 'css':
       return writeCss(input);
-  
+
     case 'json':
       return writeJson(input);
 

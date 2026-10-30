@@ -56,6 +56,30 @@ describe('code export', () => {
     expect(colorName(pack(150, 210, 250))).toBe('light-sky');
   });
 
+  it('names the full hue palette', () => {
+    const hues = [
+      [pack(255, 128, 0), 'orange'],
+      [pack(240, 255, 0), 'yellow'],
+      [pack(128, 255, 0), 'lime'],
+      [pack(0, 255, 128), 'teal'],
+      [pack(0, 255, 255), 'cyan'],
+      [pack(0, 128, 255), 'sky'],
+      [pack(128, 0, 255), 'violet'],
+      [pack(180, 0, 255), 'purple'],
+      [pack(255, 0, 128), 'pink'],
+    ] as const;
+
+    for (const [color, name] of hues) expect(colorName(color)).toBe(name);
+  });
+
+  it('keeps the lightness thresholds stable', () => {
+    expect(colorName(pack(255, 255, 255))).toBe('paper');
+    expect(colorName(pack(230, 230, 230))).toBe('light-gray');
+    expect(colorName(pack(76, 76, 76))).toBe('dark-gray');
+    expect(colorName(pack(255, 150, 150))).toBe('light-red');
+    expect(colorName(pack(100, 0, 0))).toBe('dark-red');
+  });
+
   it('makes names fit for a component and a class', () => {
     expect(componentName('My knight 2')).toBe('MyKnight2');
     expect(componentName('2 tiles')).toBe('Sprite2Tiles');
@@ -74,6 +98,18 @@ describe('code export', () => {
     expect(code).not.toContain('shape-rendering');
     expect(code).not.toContain('xmlns');
     expect(code).toContain('<path fill="#1a1c2c"');
+  });
+
+  it('converts SVG attributes and self-closing tags to JSX', () => {
+    const code = codeOf('react', {
+      ...input,
+      flatSvg:
+        '<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path fill-opacity="0.5"/></svg>',
+    });
+
+    expect(code).toContain('shapeRendering="crispEdges"');
+    expect(code).toContain('<path fillOpacity="0.5" />');
+    expect(code).not.toContain('xmlns=');
   });
 
   it('writes CSS with a background image and the colors as properties', () => {
@@ -95,6 +131,19 @@ describe('code export', () => {
 
     expect(code).toContain('width: 7px;');
     expect(code).toContain('height: 5px;');
+  });
+
+  it('escapes data URL delimiters and removes line breaks', () => {
+    const code = codeOf('css', {
+      ...input,
+      flatSvg: '<svg width="1" height="1">\n<path d="M0%0{1}" fill="#fff"/>\n</svg>',
+    });
+
+    expect(code).toContain('%25');
+    expect(code).toContain('%23');
+    expect(code).toContain('%7B');
+    expect(code).toContain('%7D');
+    expect(code).not.toContain('\n<path');
   });
 
   it('preserves alpha in generated color values and escapes JSON names', () => {
@@ -120,6 +169,19 @@ describe('code export', () => {
     ]);
   });
 
+  it('writes an empty JSON drawing with no colors or rows', () => {
+    const data = JSON.parse(codeOf('json', { ...input, width: 0, height: 0, pixels: new Uint32Array() }));
+
+    expect(data.colors).toEqual([]);
+    expect(data.pixels).toEqual([]);
+  });
+
+  it('uses the declared dimensions when the pixel buffer is shorter', () => {
+    const data = JSON.parse(codeOf('json', { ...input, width: 2, height: 1, pixels: new Uint32Array() }));
+
+    expect(data.pixels).toEqual([[0, 0]]);
+  });
+
   it('draws the sprite in characters, with a legend', () => {
     const code = codeOf('ascii', input);
     expect(code).toContain('# #1a1c2c ink');
@@ -133,6 +195,12 @@ describe('code export', () => {
 
     expect(code.trim().split('\n').at(-1)).toHaveLength(80);
     expect(code.trim().split('\n').at(-1)?.at(-1)).toBe('9');
+  });
+
+  it('renders transparent pixels as dots across multiple rows', () => {
+    const code = codeOf('ascii', { ...input, pixels: Uint32Array.from([0, RED, 0, RED, 0, 0]) });
+
+    expect(code.trim().split('\n').slice(-2)).toEqual(['.#.', '#..']);
   });
 
   it('gives the SVG as it is', () => {
