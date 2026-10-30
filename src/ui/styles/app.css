@@ -3547,6 +3547,20 @@ body.is-dragging-swatch * {
 .timeline-cel.is-active {
   background: var(--glow);
 }
+/* The Animate button: a violet dot when the board has frames and the timeline is closed. */
+.animate-button {
+  position: relative;
+}
+.animate-button.has-frames::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--glow-line);
+}
 /* A dot where the layer has pixels on that frame, a ring where it's empty. */
 .timeline-dot {
   display: block;

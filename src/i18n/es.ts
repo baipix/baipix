@@ -556,6 +556,7 @@ export const es: Record<MessageKey, string> = {
   'display.mirrorY': 'Simetría arriba-abajo',
   'display.isoGrid': 'Cuadrícula isométrica',
 
+  'timeline.animate': 'Animar',
   'timeline.title': 'Línea de tiempo',
   'timeline.first': 'Primer fotograma',
   'timeline.play': 'Reproducir',

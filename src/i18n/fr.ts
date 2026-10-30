@@ -554,6 +554,7 @@ export const fr: Record<MessageKey, string> = {
   'display.mirrorY': 'Symétrie haut-bas',
   'display.isoGrid': 'Grille isométrique',
 
+  'timeline.animate': 'Animer',
   'timeline.title': 'Timeline',
   'timeline.first': 'Première frame',
   'timeline.play': 'Lire',

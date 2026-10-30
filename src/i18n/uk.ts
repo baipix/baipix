@@ -553,6 +553,7 @@ export const uk: Record<MessageKey, string> = {
   'display.mirrorY': 'Симетрія згори донизу',
   'display.isoGrid': 'Ізометрична сітка',
 
+  'timeline.animate': 'Анімувати',
   'timeline.title': 'Шкала часу',
   'timeline.first': 'Перший кадр',
   'timeline.play': 'Відтворити',

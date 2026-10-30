@@ -548,6 +548,7 @@ export const en = {
   'display.mirrorY': 'Top-bottom symmetry',
   'display.isoGrid': 'Isometric grid',
 
+  'timeline.animate': 'Animate',
   'timeline.title': 'Timeline',
   'timeline.first': 'First frame',
   'timeline.play': 'Play',

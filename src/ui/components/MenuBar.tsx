@@ -5,7 +5,8 @@ import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { MENU_BAR, filesMenu, mainMenu, zoomMenu } from '../menus';
 import { DisplayOptions } from '../panels/RightPanel';
-import { openDialog, uiStore } from '../uiStore';
+import { frameCount } from '../../engine/frames';
+import { openDialog, toggleTimeline, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
@@ -120,6 +121,8 @@ export function MenuBar() {
   const actions = useActions();
   const zoom = useSyncExternalStore(viewport.subscribe, () => viewport.pixelZoom);
   const board = useEditorState((s) => isBoard(s.doc));
+  const animated = useEditorState((s) => frameCount(s.doc) > 1);
+  const timeline = uiStore.use((s) => s.timeline);
   const titles = useRef<(HTMLButtonElement | null)[]>([]);
 
   const open = (i: number) => {
@@ -214,6 +217,17 @@ export function MenuBar() {
             className="icon-btn"
             label={t('menu.code')}
             onClick={() => openDialog({ type: 'code' })}
+          />
+        )}
+        {/* Animating opens the timeline. A dot says the board has frames to see while it's closed. */}
+        {board && (
+          <IconButton
+            icon="timeline"
+            className={`icon-btn animate-button${animated && !timeline ? ' has-frames' : ''}`}
+            label={t('timeline.animate')}
+            shortcut="Shift+A"
+            pressed={timeline}
+            onClick={toggleTimeline}
           />
         )}
         {board && (
