@@ -138,7 +138,10 @@ class Viewport {
 
   private insets() {
     const small = this.width < 600;
-    return { x: small ? 24 : 64, top: small ? 76 : 44, bottom: small ? 72 : 84 };
+    // The timeline, when shown, takes the bottom of the workspace: the toolbars sit above it.
+    const timeline =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--timeline-space')) || 0;
+    return { x: small ? 24 : 64, top: small ? 76 : 44, bottom: (small ? 72 : 84) + timeline };
   }
 
   fit(doc: PixelDoc): void {

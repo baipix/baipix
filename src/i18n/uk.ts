@@ -765,6 +765,7 @@ export const uk: Record<MessageKey, string> = {
   'toast.languageDetected': 'Baipix відкрито українською.',
   'toast.filesRestored': 'Відновлено файлів: {count}.',
   'toast.legacyImported': 'Із попередньої версії відновлено малюнків: {count}.',
+  'home.animated': 'Анімація',
   'home.title': 'Вітаємо в Baipix',
   'home.tagline': 'Закиньте монету — створіть свій перший піксель.',
   'home.formats': 'Відкриває файли .baipix, PNG, JPG і GIF',

@@ -756,6 +756,7 @@ export const en = {
   'toast.languageDetected': 'Baipix is in English.',
   'toast.filesRestored': '{count} files restored.',
   'toast.legacyImported': '{count} drawings recovered from the previous version.',
+  'home.animated': 'Animation',
   'home.title': 'Welcome to Baipix',
   'home.tagline': 'Insert coin, drop your first pixel.',
   'home.formats': 'Opens .baipix, PNG, JPG and GIF files',

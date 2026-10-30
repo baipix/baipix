@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fileIdOf } from '../../engine/document';
 import { flatten } from '../../engine/composite';
+import { frameCount } from '../../engine/frames';
 import type { PixelDoc } from '../../engine/document';
 import { getLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
@@ -94,6 +95,8 @@ export function HomeScreen() {
   };
   const [dropping, setDropping] = useState(false);
   const docs = editor.getDocuments();
+  // A file with a board of several frames is an animation: its card says so.
+  const animated = (id: string) => docs.some((d) => fileIdOf(d) === id && frameCount(d) > 1);
   const sort = uiStore.use((s) => s.homeSort);
   const order = uiStore.use((s) => s.homeOrder);
   const view = uiStore.use((s) => s.homeView);
@@ -449,6 +452,11 @@ export function HomeScreen() {
                               <span>
                                 <HomeThumb doc={doc} />
                                 <span className="truncate">{f.name}</span>
+                                {animated(f.id) && (
+                                  <span className="home-animated-inline" data-tip={t('home.animated')}>
+                                    <Icon name="timeline" size={14} />
+                                  </span>
+                                )}
                               </span>
                             </td>
                             <td>{format(f)}</td>
@@ -502,6 +510,11 @@ export function HomeScreen() {
                           }}
                         >
                           <HomeThumb doc={doc} />
+                          {animated(f.id) && (
+                            <span className="home-animated" data-tip={t('home.animated')}>
+                              <Icon name="timeline" size={14} />
+                            </span>
+                          )}
                           <span className="home-card-info">
                             <span className="home-card-name truncate">{f.name}</span>
                             <span className="home-card-meta muted truncate">

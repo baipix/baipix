@@ -2465,6 +2465,28 @@ body.is-dragging-swatch * {
 .home-card .home-thumb {
   grid-column: 1 / -1;
 }
+/* An animation: a film badge on its picture's corner, and beside its name in the list. */
+.home-card {
+  position: relative;
+}
+.home-animated {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.home-animated-inline {
+  display: inline-flex;
+  flex: none;
+  color: var(--muted);
+}
 /* The name and the actions sit in from the card's edge, farther than the picture. */
 .home-card-info {
   min-width: 0;

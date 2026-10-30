@@ -764,6 +764,7 @@ export const fr: Record<MessageKey, string> = {
   'toast.languageDetected': 'Baipix est en français.',
   'toast.filesRestored': '{count} fichiers restaurés.',
   'toast.legacyImported': '{count} dessins récupérés depuis la version précédente.',
+  'home.animated': 'Animation',
   'home.title': 'Bienvenue dans Baipix',
   'home.tagline': 'Insère une pièce, pose ton premier pixel.',
   'home.formats': 'Ouvre les fichiers .baipix, PNG, JPG et GIF',
