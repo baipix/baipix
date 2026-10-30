@@ -68,19 +68,31 @@ export function colorName(color: Color): string {
   return l < 0.3 ? `dark-${hue}` : l > 0.72 ? `light-${hue}` : hue;
 }
 
+/** Assigns unique human-readable names while preserving the supplied color order. */
+function assignColorNames(sortedColors: [Color, number][]): NamedColor[] {
+  const taken = new Map<string, number>();
+  const named: NamedColor[] = [];
+
+  for (const [color] of sortedColors) {
+    const base = colorName(color);
+    const count = (taken.get(base) ?? 0) + 1;
+    taken.set(base, count);
+    named.push({ name: count === 1 ? base : `${base}-${count}`, color });
+  }
+  return named;
+}
+
 /** The drawing's colors, most used first, each with a name of its own. */
 export function namedColors(pixels: Uint32Array): NamedColor[] {
   const counts = new Map<Color, number>();
-  for (const c of pixels) if (alpha(c)) counts.set(c, (counts.get(c) ?? 0) + 1);
-  const taken = new Map<string, number>();
-  return [...counts]
-    .sort((a, b) => b[1] - a[1])
-    .map(([color]) => {
-      const base = colorName(color);
-      const n = (taken.get(base) ?? 0) + 1;
-      taken.set(base, n);
-      return { name: n === 1 ? base : `${base}-${n}`, color };
-    });
+
+  for (const color of pixels) {
+    if (!alpha(color)) continue;
+    const count = counts.get(color) ?? 0;
+    counts.set(color, count + 1);
+  }
+  const sortedColors = [...counts].sort((a, b) => b[1] - a[1]);
+  return assignColorNames(sortedColors);
 }
 
 /** `My knight 2` → `MyKnight2`, for a component's name; `Sprite` when nothing is left. */
@@ -120,6 +132,15 @@ function toJsx(svg: string): string {
     .replace(/\/>/g, ' />');
 }
 
+/** Quotes swapped and the few characters a URL can't hold escaped: smaller than base64. */
+function cssDataUri(svg: string): string {
+  return svg
+    .trim()
+    .replace(/"/g, "'")
+    .replace(/\n/g, '')
+    .replace(/[%#<>{}]/g, (c) => encodeURIComponent(c));
+}
+
 /** A React component that draws the sprite, sized by its props like an icon. */
 function react(input: CodeInput): string {
   const name = componentName(input.name);
@@ -147,12 +168,7 @@ function css(input: CodeInput): string {
   const cls = className(input.name);
   const size = input.flatSvg.match(/width="(\d+)" height="(\d+)"/);
   const [w, h] = size ? [size[1], size[2]] : [String(input.width), String(input.height)];
-  // Quotes swapped and the few characters a URL can't hold escaped: smaller than base64.
-  const data = input.flatSvg
-    .trim()
-    .replace(/"/g, "'")
-    .replace(/\n/g, '')
-    .replace(/[%#<>{}]/g, (c) => encodeURIComponent(c));
+  const data = cssDataUri(input.flatSvg);
   const colors = namedColors(input.pixels);
   return [
     `/* ${input.name}, ${input.width} × ${input.height} pixels, drawn in Baipix. */`,
@@ -170,9 +186,8 @@ function css(input: CodeInput): string {
   ].join('\n');
 }
 
-/** Size, named colors, and the pixels as rows of color numbers (0 is empty). */
-function json(input: CodeInput): string {
-  const colors = namedColors(input.pixels);
+/** Converts pixels into JSON rows whose color indexes start at one; zero represents transparency. */
+function pixelRows(input: CodeInput, colors: NamedColor[]): string[] {
   const index = new Map(colors.map((c, i) => [c.color, i + 1]));
   const rows: string[] = [];
   for (let y = 0; y < input.height; y++) {
@@ -183,6 +198,12 @@ function json(input: CodeInput): string {
     }
     rows.push(`    [${row.join(', ')}]`);
   }
+  return rows;
+}
+
+/** Size, named colors, and the pixels as rows of color numbers (0 is empty). */
+function json(input: CodeInput): string {
+  const colors = namedColors(input.pixels);
   return [
     '{',
     `  "name": ${JSON.stringify(input.name)},`,
@@ -192,7 +213,7 @@ function json(input: CodeInput): string {
     colors.map((c) => `    { "name": "${c.name}", "value": "${hex(c.color)}" }`).join(',\n'),
     '  ],',
     '  "pixels": [',
-    rows.join(',\n'),
+    pixelRows(input, colors).join(',\n'),
     '  ]',
     '}',
     '',
@@ -202,22 +223,36 @@ function json(input: CodeInput): string {
 /** One character per color, the most used first; past them, letters and digits. */
 const GLYPHS = '#@%*+=o~^xs&$:!?abcdefghijklmnpqrtuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-/** The drawing in characters, with the legend on top: for a README or a comment. */
-function ascii(input: CodeInput): string {
-  const colors = namedColors(input.pixels).slice(0, GLYPHS.length);
-  const glyph = new Map(colors.map((c, i) => [c.color, GLYPHS[i]]));
-  const lines = [`${input.name}, ${input.width} × ${input.height}`, '', '. empty'];
-  for (const c of colors) lines.push(`${glyph.get(c.color)} ${hex(c.color)} ${c.name}`);
-  lines.push('');
+/** Renders the pixel matrix, using a dot for transparency and the final glyph as overflow fallback. */
+function asciiRows(input: CodeInput, glyphs: Map<Color, string>): string[] {
+  const rows: string[] = [];
+  const fallback = GLYPHS[GLYPHS.length - 1];
   for (let y = 0; y < input.height; y++) {
     let row = '';
     for (let x = 0; x < input.width; x++) {
-      const c = input.pixels[y * input.width + x];
+      const color = input.pixels[y * input.width + x];
       // Past the glyphs (a drawing of many colors), the rest share the last one.
-      row += alpha(c) ? (glyph.get(c) ?? GLYPHS[GLYPHS.length - 1]) : '.';
+      row += alpha(color) ? (glyphs.get(color) ?? fallback) : '.';
     }
-    lines.push(row);
+    rows.push(row);
   }
+
+  return rows;
+}
+
+/** The drawing in characters, with the legend on top: for a README or a comment. */
+function ascii(input: CodeInput): string {
+  const colors = namedColors(input.pixels).slice(0, GLYPHS.length);
+  const glyphs = new Map(colors.map((color, index) => [color.color, GLYPHS[index]]));
+  const legend = [
+    `${input.name}, ${input.width} × ${input.height}`,
+    '',
+    '. empty',
+    ...colors.map(({ color, name }, index) => `${GLYPHS[index]} ${hex(color)} ${name}`),
+    '',
+  ];
+
+  const lines = [...legend, ...asciiRows(input, glyphs)];
   return lines.join('\n') + '\n';
 }
 
