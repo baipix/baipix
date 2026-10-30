@@ -4,3 +4,5 @@ dist/
 .DS_Store
 *.log
 .astro/
+/playwright-report/
+/test-results/
