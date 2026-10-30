@@ -51,15 +51,22 @@ const HUES: [number, string][] = [
 /** A short plain name for a color, from its hue and lightness. */
 export function colorName(color: Color): string {
   const [r, g, b] = [red(color), green(color), blue(color)].map((v) => v / 255);
+
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
+
   const l = (max + min) / 2;
   const d = max - min;
+
   if (l < 0.16) return 'ink';
   if (l > 0.93 && d < 0.1) return 'paper';
+
   const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+
   if (s < 0.15) return l < 0.35 ? 'dark-gray' : l > 0.7 ? 'light-gray' : 'gray';
+
   let h = 0;
+
   if (max === r) h = ((g - b) / d) % 6;
   else if (max === g) h = (b - r) / d + 2;
   else h = (r - g) / d + 4;
@@ -71,6 +78,7 @@ export function colorName(color: Color): string {
 /** The drawing's colors, most used first, each with a name of its own. */
 export function namedColors(pixels: Uint32Array): NamedColor[] {
   const counts = new Map<Color, number>();
+
   for (const c of pixels) if (alpha(c)) counts.set(c, (counts.get(c) ?? 0) + 1);
   const taken = new Map<string, number>();
   return [...counts]
@@ -106,11 +114,11 @@ export function className(name: string): string {
   return /^[a-z]/.test(slug) ? slug : `sprite${slug ? `-${slug}` : ''}`;
 }
 
-const hex = (c: Color): string =>
+const colorHex = (c: Color): string =>
   alpha(c) < 255 ? toHex(c) + alpha(c).toString(16).padStart(2, '0') : toHex(c);
 
 /** SVG attributes in their React spelling: `shape-rendering` → `shapeRendering`. */
-function toJsx(svg: string): string {
+function svgToJsx(svg: string): string {
   return svg
     .replace(/ xmlns="[^"]*"/, '')
     .replace(
@@ -120,10 +128,24 @@ function toJsx(svg: string): string {
     .replace(/\/>/g, ' />');
 }
 
+function cssDimensions(input: CodeInput): [string, string] {
+  const size = input.flatSvg.match(/width="(\d+)" height="(\d+)"/);
+  return size ? [size[1], size[2]] : [String(input.width), String(input.height)];
+}
+
+/** Quotes are swapped and the few characters a data URL can't hold are escaped. */
+function cssDataUri(svg: string): string {
+  return svg
+    .trim()
+    .replace(/"/g, "'")
+    .replace(/\n/g, '')
+    .replace(/[%#<>{}]/g, (c) => encodeURIComponent(c));
+}
+
 /** A React component that draws the sprite, sized by its props like an icon. */
-function react(input: CodeInput): string {
+function writeReact(input: CodeInput): string {
   const name = componentName(input.name);
-  const body = toJsx(input.flatSvg.trim())
+  const body = svgToJsx(input.flatSvg.trim())
     .split('\n')
     // The root takes the props, after its own size, so `width`, `className`… can change it.
     .map((line, i) => (i === 0 ? line.replace(/>$/, ' {...props}>') : line))
@@ -143,21 +165,15 @@ function react(input: CodeInput): string {
 }
 
 /** The drawing as a background image, and its colors as custom properties. */
-function css(input: CodeInput): string {
+function writeCss(input: CodeInput): string {
   const cls = className(input.name);
-  const size = input.flatSvg.match(/width="(\d+)" height="(\d+)"/);
-  const [w, h] = size ? [size[1], size[2]] : [String(input.width), String(input.height)];
-  // Quotes swapped and the few characters a URL can't hold escaped: smaller than base64.
-  const data = input.flatSvg
-    .trim()
-    .replace(/"/g, "'")
-    .replace(/\n/g, '')
-    .replace(/[%#<>{}]/g, (c) => encodeURIComponent(c));
+  const [w, h] = cssDimensions(input);
+  const data = cssDataUri(input.flatSvg);
   const colors = namedColors(input.pixels);
   return [
     `/* ${input.name}, ${input.width} × ${input.height} pixels, drawn in Baipix. */`,
     ':root {',
-    ...colors.map(({ name, color }) => `  --${cls}-${name}: ${hex(color)};`),
+    ...colors.map(({ name, color }) => `  --${cls}-${name}: ${colorHex(color)};`),
     '}',
     '',
     `.${cls} {`,
@@ -170,9 +186,7 @@ function css(input: CodeInput): string {
   ].join('\n');
 }
 
-/** Size, named colors, and the pixels as rows of color numbers (0 is empty). */
-function json(input: CodeInput): string {
-  const colors = namedColors(input.pixels);
+function pixelRows(input: CodeInput, colors: NamedColor[]): string[] {
   const index = new Map(colors.map((c, i) => [c.color, i + 1]));
   const rows: string[] = [];
   for (let y = 0; y < input.height; y++) {
@@ -183,16 +197,22 @@ function json(input: CodeInput): string {
     }
     rows.push(`    [${row.join(', ')}]`);
   }
+  return rows;
+}
+
+/** Size, named colors, and the pixels as rows of color numbers (0 is empty). */
+function writeJson(input: CodeInput): string {
+  const colors = namedColors(input.pixels);
   return [
     '{',
     `  "name": ${JSON.stringify(input.name)},`,
     `  "width": ${input.width},`,
     `  "height": ${input.height},`,
     '  "colors": [',
-    colors.map((c) => `    { "name": "${c.name}", "value": "${hex(c.color)}" }`).join(',\n'),
+    colors.map((c) => `    { "name": "${c.name}", "value": "${colorHex(c.color)}" }`).join(',\n'),
     '  ],',
     '  "pixels": [',
-    rows.join(',\n'),
+    pixelRows(input, colors).join(',\n'),
     '  ]',
     '}',
     '',
@@ -203,11 +223,11 @@ function json(input: CodeInput): string {
 const GLYPHS = '#@%*+=o~^xs&$:!?abcdefghijklmnpqrtuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 /** The drawing in characters, with the legend on top: for a README or a comment. */
-function ascii(input: CodeInput): string {
+function writeAscii(input: CodeInput): string {
   const colors = namedColors(input.pixels).slice(0, GLYPHS.length);
   const glyph = new Map(colors.map((c, i) => [c.color, GLYPHS[i]]));
   const lines = [`${input.name}, ${input.width} × ${input.height}`, '', '. empty'];
-  for (const c of colors) lines.push(`${glyph.get(c.color)} ${hex(c.color)} ${c.name}`);
+  for (const c of colors) lines.push(`${glyph.get(c.color)} ${colorHex(c.color)} ${c.name}`);
   lines.push('');
   for (let y = 0; y < input.height; y++) {
     let row = '';
@@ -225,14 +245,14 @@ function ascii(input: CodeInput): string {
 export function codeOf(language: CodeLanguage, input: CodeInput): string {
   switch (language) {
     case 'react':
-      return react(input);
+      return writeReact(input);
     case 'svg':
       return input.svg;
     case 'css':
-      return css(input);
+      return writeCss(input);
     case 'json':
-      return json(input);
+      return writeJson(input);
     case 'ascii':
-      return ascii(input);
+      return writeAscii(input);
   }
 }
