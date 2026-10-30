@@ -48,7 +48,9 @@ const HUES: [number, string][] = [
   [360, 'red'],
 ];
 
-/** A short plain name for a color, from its hue and lightness. */
+/**
+ * A short plain name for a color, from its hue and lightness.
+ */
 export function colorName(color: Color): string {
   const [r, g, b] = [red(color), green(color), blue(color)].map((v) => v / 255);
 
@@ -65,22 +67,40 @@ export function colorName(color: Color): string {
 
   if (s < 0.15) return l < 0.35 ? 'dark-gray' : l > 0.7 ? 'light-gray' : 'gray';
 
-  let h = 0;
+  let hueSector: number;
 
-  if (max === r) h = ((g - b) / d) % 6;
-  else if (max === g) h = (b - r) / d + 2;
-  else h = (r - g) / d + 4;
-  h = (h * 60 + 360) % 360;
-  const hue = HUES.find(([limit]) => h < limit)![1];
-  return l < 0.3 ? `dark-${hue}` : l > 0.72 ? `light-${hue}` : hue;
+  if (max === r) {
+    hueSector = ((g - b) / d) % 6;
+  } else if (max === g) {
+    hueSector = (b - r) / d + 2;
+  } else {
+    hueSector = (r - g) / d + 4;
+  }
+
+  const degrees = (hueSector * 60 + 360) % 360;
+  const hue = HUES.find(([limit]) => degrees < limit)![1];
+
+  if (l < 0.3) return `dark-${hue}`;
+  if (l > 0.72) return `light-${hue}`;
+
+  return hue;
 }
 
-/** The drawing's colors, most used first, each with a name of its own. */
+/**
+ * The drawing's colors, most used first, each with a name of its own.
+ */
 export function namedColors(pixels: Uint32Array): NamedColor[] {
   const counts = new Map<Color, number>();
 
-  for (const c of pixels) if (alpha(c)) counts.set(c, (counts.get(c) ?? 0) + 1);
+  for (const color of pixels) {
+    if (!alpha(color)) continue;
+
+    const count = counts.get(color) ?? 0;
+    counts.set(color, count + 1);
+  }
+
   const taken = new Map<string, number>();
+
   return [...counts]
     .sort((a, b) => b[1] - a[1])
     .map(([color]) => {
