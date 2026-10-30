@@ -209,12 +209,15 @@ function writeReact(input: CodeInput): string {
   ].join('\n');
 }
 
-/** The drawing as a background image, and its colors as custom properties. */
+/**
+ * The drawing as a background image, and its colors as custom properties.
+ */
 function writeCss(input: CodeInput): string {
   const cls = className(input.name);
   const [w, h] = cssDimensions(input);
   const data = cssDataUri(input.flatSvg);
   const colors = namedColors(input.pixels);
+
   return [
     `/* ${input.name}, ${input.width} × ${input.height} pixels, drawn in Baipix. */`,
     ':root {',
@@ -234,8 +237,10 @@ function writeCss(input: CodeInput): string {
 function pixelRows(input: CodeInput, colors: NamedColor[]): string[] {
   const index = new Map(colors.map((c, i) => [c.color, i + 1]));
   const rows: string[] = [];
+
   for (let y = 0; y < input.height; y++) {
     const row: number[] = [];
+
     for (let x = 0; x < input.width; x++) {
       const c = input.pixels[y * input.width + x];
       row.push(alpha(c) ? index.get(c)! : 0);
@@ -245,9 +250,12 @@ function pixelRows(input: CodeInput, colors: NamedColor[]): string[] {
   return rows;
 }
 
-/** Size, named colors, and the pixels as rows of color numbers (0 is empty). */
+/**
+ * Size, named colors, and the pixels as rows of color numbers (0 is empty).
+ */
 function writeJson(input: CodeInput): string {
   const colors = namedColors(input.pixels);
+
   return [
     '{',
     `  "name": ${JSON.stringify(input.name)},`,
@@ -264,39 +272,66 @@ function writeJson(input: CodeInput): string {
   ].join('\n');
 }
 
-/** One character per color, the most used first; past them, letters and digits. */
+/**
+ * One character per color, the most used first; past them, letters and digits.
+ */
 const GLYPHS = '#@%*+=o~^xs&$:!?abcdefghijklmnpqrtuvwyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-/** The drawing in characters, with the legend on top: for a README or a comment. */
-function writeAscii(input: CodeInput): string {
-  const colors = namedColors(input.pixels).slice(0, GLYPHS.length);
-  const glyph = new Map(colors.map((c, i) => [c.color, GLYPHS[i]]));
-  const lines = [`${input.name}, ${input.width} × ${input.height}`, '', '. empty'];
-  for (const c of colors) lines.push(`${glyph.get(c.color)} ${colorHex(c.color)} ${c.name}`);
-  lines.push('');
+/**
+ * The drawing in characters, with the legend on top: for a README or a comment.
+ */
+function asciiRows(input: CodeInput, glyphs: Map<Color, string>): string[] {
+  const rows: string[] = [];
+  const fallback = GLYPHS[GLYPHS.length - 1];
+
   for (let y = 0; y < input.height; y++) {
     let row = '';
+
     for (let x = 0; x < input.width; x++) {
-      const c = input.pixels[y * input.width + x];
-      // Past the glyphs (a drawing of many colors), the rest share the last one.
-      row += alpha(c) ? (glyph.get(c) ?? GLYPHS[GLYPHS.length - 1]) : '.';
+      const color = input.pixels[y * input.width + x];
+      row += alpha(color) ? (glyphs.get(color) ?? fallback) : '.';
     }
-    lines.push(row);
+
+    rows.push(row);
   }
+
+  return rows;
+}
+
+function writeAscii(input: CodeInput): string {
+  const colors = namedColors(input.pixels).slice(0, GLYPHS.length);
+  const glyphs = new Map(colors.map((color, index) => [color.color, GLYPHS[index]]));
+
+  const legend = [
+    `${input.name}, ${input.width} × ${input.height}`,
+    '',
+    '. empty',
+    ...colors.map(({ color, name }, index) => `${GLYPHS[index]} ${colorHex(color)} ${name}`),
+    '',
+  ];
+
+  const lines = [...legend, ...asciiRows(input, glyphs)];
   return lines.join('\n') + '\n';
 }
 
-/** The drawing as code, in the language picked. */
+/**
+ * The drawing as code, in the language picked.
+ */
 export function codeOf(language: CodeLanguage, input: CodeInput): string {
   switch (language) {
+
     case 'react':
       return writeReact(input);
+
     case 'svg':
       return input.svg;
+
     case 'css':
       return writeCss(input);
+  
     case 'json':
       return writeJson(input);
+
     case 'ascii':
       return writeAscii(input);
   }
