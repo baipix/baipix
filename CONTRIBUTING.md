@@ -12,10 +12,34 @@ npm run dev
 Before opening a pull request, make sure everything passes:
 
 ```bash
-npm run typecheck && npm run lint && npm test
+npm run typecheck && npm run lint && npm test && npm run e2e
 ```
 
 The CI runs the same checks on every pull request.
+
+## End-to-end tests
+
+Playwright tests live in `e2e/playwright/`.
+
+Install Chromium once:
+
+```bash
+npx playwright install chromium
+```
+
+Run the E2E tests:
+
+```bash
+npm run e2e
+```
+
+Run them interactively:
+
+```bash
+npm run e2e:watch
+```
+
+The Playwright config starts the local Vite server automatically. Test reports are written to `playwright-report/`, and failed test artifacts to `test-results/`.
 
 ## Picking something to work on
 
