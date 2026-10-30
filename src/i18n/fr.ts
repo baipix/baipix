@@ -553,6 +553,18 @@ export const fr: Record<MessageKey, string> = {
     'Glisse depuis une règle pour ajouter un repère. Avec l’outil Déplacer, glisse un repère pour le bouger, ou ramène-le sur sa règle pour le retirer.',
   'display.mirrorY': 'Symétrie haut-bas',
   'display.isoGrid': 'Grille isométrique',
+
+  'timeline.title': 'Timeline',
+  'timeline.first': 'Première frame',
+  'timeline.play': 'Lire',
+  'timeline.pause': 'Pause',
+  'timeline.duration': 'Durée',
+  'timeline.add': 'Nouvelle frame',
+  'timeline.delete': 'Supprimer la frame',
+  'timeline.hide': 'Masquer la timeline',
+  'timeline.frame': 'Frame {n}, {ms} ms',
+  'timeline.previous': 'Frame précédente',
+  'timeline.next': 'Frame suivante',
   'display.isoCell': 'Case',
   'display.isoVertical': 'Lignes verticales',
 

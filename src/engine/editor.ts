@@ -2019,14 +2019,17 @@ export class Editor {
 
   /* ------------------------------------------------------------------ animation frames */
 
-  /** Shows frame `f`, to draw on it. Not an undo step, like picking a layer. */
-  setFrame(f: number): void {
+  /**
+   * Shows frame `f`, to draw on it. Not an undo step, like picking a layer. Playing passes
+   * `persist` false: a frame shown for a tenth of a second isn't worth a save.
+   */
+  setFrame(f: number, persist = true): void {
     if (this.stroke || this.adjusting || this.scaling) return;
     if (f === activeFrame(this.doc) || f < 0 || f >= frameCount(this.doc)) return;
     if (this.repeatSession) this.endRepeat(true);
     if (this.extrudeSession) this.endExtrude(true);
     showFrame(this.doc, f);
-    this.commit();
+    this.commit(persist);
   }
 
   /** Adds a frame after the shown one, a copy of it, and shows it. */

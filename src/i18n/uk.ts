@@ -552,6 +552,18 @@ export const uk: Record<MessageKey, string> = {
     'Перетягніть від лінійки, щоб додати напрямну. Інструментом «Переміщення» перетягніть напрямну, щоб перемістити її, або перетягніть назад на лінійку, щоб вилучити.',
   'display.mirrorY': 'Симетрія згори донизу',
   'display.isoGrid': 'Ізометрична сітка',
+
+  'timeline.title': 'Шкала часу',
+  'timeline.first': 'Перший кадр',
+  'timeline.play': 'Відтворити',
+  'timeline.pause': 'Пауза',
+  'timeline.duration': 'Тривалість',
+  'timeline.add': 'Новий кадр',
+  'timeline.delete': 'Видалити кадр',
+  'timeline.hide': 'Сховати шкалу часу',
+  'timeline.frame': 'Кадр {n}, {ms} мс',
+  'timeline.previous': 'Попередній кадр',
+  'timeline.next': 'Наступний кадр',
   'display.isoCell': 'Комірка',
   'display.isoVertical': 'Вертикальні лінії',
 

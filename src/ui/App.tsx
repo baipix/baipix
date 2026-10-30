@@ -21,6 +21,7 @@ import { MenuHost, openMenu } from './components/Menu';
 import { MobileBar } from './components/MobileBar';
 import { MobileColors } from './components/MobileColors';
 import { PanelResizer } from './components/PanelResizer';
+import { Timeline } from './components/Timeline';
 import { ToolOptionsBar } from './components/ToolOptionsBar';
 import { Toasts } from './components/Toasts';
 import { Toolbar } from './components/Toolbar';
@@ -129,6 +130,7 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
               : 'react',
             exportActiveLayer: !!ui.exportActiveLayer,
             layersFolded: !!ui.layersFolded,
+            timeline: !!ui.timeline,
             homeSort: ui.homeSort === 'name' ? 'name' : 'modified',
             homeOrder: ui.homeOrder === 'asc' ? 'asc' : 'desc',
             homeView: ui.homeView === 'list' ? 'list' : 'grid',
@@ -218,7 +220,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   useT();
   const actions = useMemo(() => createActions(editor), [editor]);
   const ready = useRestore(editor, storage);
-  const { uiHidden, sheet, panelWidths, home } = uiStore.use((s) => s);
+  const { uiHidden, sheet, panelWidths, home, timeline } = uiStore.use((s) => s);
   // A file with no board: no size, coordinates or preview to show.
   const noBoard = useSyncExternalStore(editor.subscribe, () => !isBoard(editor.getState().doc));
   useKeyboardShortcuts(editor, actions);
@@ -273,6 +275,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
                 />
               </div>
               {!noBoard && <FloatingPreview />}
+              {!noBoard && timeline && <Timeline />}
               <ToolOptionsBar />
               <Toolbar />
             </main>

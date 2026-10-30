@@ -555,6 +555,18 @@ export const es: Record<MessageKey, string> = {
     'Arrastra desde una regla para añadir una guía. Con la herramienta Mover, arrastra la guía para moverla o devuélvela a la regla para eliminarla.',
   'display.mirrorY': 'Simetría arriba-abajo',
   'display.isoGrid': 'Cuadrícula isométrica',
+
+  'timeline.title': 'Línea de tiempo',
+  'timeline.first': 'Primer fotograma',
+  'timeline.play': 'Reproducir',
+  'timeline.pause': 'Pausa',
+  'timeline.duration': 'Duración',
+  'timeline.add': 'Nuevo fotograma',
+  'timeline.delete': 'Eliminar fotograma',
+  'timeline.hide': 'Ocultar la línea de tiempo',
+  'timeline.frame': 'Fotograma {n}, {ms} ms',
+  'timeline.previous': 'Fotograma anterior',
+  'timeline.next': 'Fotograma siguiente',
   'display.isoCell': 'Celda',
   'display.isoVertical': 'Líneas verticales',
 

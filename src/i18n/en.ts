@@ -547,6 +547,18 @@ export const en = {
     'Drag from a ruler to add a guide. With the Move tool, drag a guide to move it, or back onto its ruler to remove it.',
   'display.mirrorY': 'Top-bottom symmetry',
   'display.isoGrid': 'Isometric grid',
+
+  'timeline.title': 'Timeline',
+  'timeline.first': 'First frame',
+  'timeline.play': 'Play',
+  'timeline.pause': 'Pause',
+  'timeline.duration': 'Duration',
+  'timeline.add': 'New frame',
+  'timeline.delete': 'Delete frame',
+  'timeline.hide': 'Hide the timeline',
+  'timeline.frame': 'Frame {n}, {ms} ms',
+  'timeline.previous': 'Previous frame',
+  'timeline.next': 'Next frame',
   'display.isoCell': 'Cell',
   'display.isoVertical': 'Vertical lines',
 
