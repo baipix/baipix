@@ -145,10 +145,18 @@ export function className(name: string): string {
   return /^[a-z]/.test(slug) ? slug : `sprite${slug ? `-${slug}` : ''}`;
 }
 
-const colorHex = (c: Color): string =>
-  alpha(c) < 255 ? toHex(c) + alpha(c).toString(16).padStart(2, '0') : toHex(c);
+const colorHex = (color: Color): string => {
+  const hex = toHex(color);
+  const opacity = alpha(color);
 
-/** SVG attributes in their React spelling: `shape-rendering` → `shapeRendering`. */
+  if (opacity === 255) return hex;
+
+  return `${hex}${opacity.toString(16).padStart(2, '0')}`;
+};
+
+/**
+ * SVG attributes in their React spelling: `shape-rendering` → `shapeRendering`.
+ */
 function svgToJsx(svg: string): string {
   return svg
     .replace(/ xmlns="[^"]*"/, '')
@@ -164,7 +172,9 @@ function cssDimensions(input: CodeInput): [string, string] {
   return size ? [size[1], size[2]] : [String(input.width), String(input.height)];
 }
 
-/** Quotes are swapped and the few characters a data URL can't hold are escaped. */
+/**
+ * Quotes are swapped and the few characters a data URL can't hold are escaped.
+ */
 function cssDataUri(svg: string): string {
   return svg
     .trim()
@@ -173,15 +183,19 @@ function cssDataUri(svg: string): string {
     .replace(/[%#<>{}]/g, (c) => encodeURIComponent(c));
 }
 
-/** A React component that draws the sprite, sized by its props like an icon. */
+/**
+ * A React component that draws the sprite, sized by its props like an icon.
+ */
 function writeReact(input: CodeInput): string {
   const name = componentName(input.name);
+
   const body = svgToJsx(input.flatSvg.trim())
     .split('\n')
     // The root takes the props, after its own size, so `width`, `className`… can change it.
     .map((line, i) => (i === 0 ? line.replace(/>$/, ' {...props}>') : line))
     .map((line) => `    ${line}`)
     .join('\n');
+
   return [
     "import type { SVGProps } from 'react';",
     '',
