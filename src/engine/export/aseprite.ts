@@ -98,15 +98,29 @@ async function zlib(data: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
-interface Entry {
-  /** Index in the file's layer list, which cels point at. */
-  index: number;
-  level: number;
-  layer?: Layer;
-  group?: LayerGroup;
-  /** The background color, as a layer of its own at the bottom. */
-  background?: Color;
-}
+type Entry =
+  | {
+      kind: 'background';
+      /** Index in the file's layer list, which cels point at. */
+      index: number;
+      level: number;
+      /** The background color, as a layer of its own at the bottom. */
+      background: Color;
+    }
+  | {
+      kind: 'layer';
+      /** Index in the file's layer list, which cels point at. */
+      index: number;
+      level: number;
+      layer: Layer;
+    }
+  | {
+      kind: 'group';
+      /** Index in the file's layer list, which cels point at. */
+      index: number;
+      level: number;
+      group: LayerGroup;
+    };
 
 export interface AsepriteOptions {
   /** Palette colors to save with the file. */
@@ -115,96 +129,121 @@ export interface AsepriteOptions {
   background?: Color;
 }
 
-export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promise<Uint8Array> {
-  const { width: W, height: H } = doc;
+function entriesFor(doc: PixelDoc, background: Color | undefined): Entry[] {
   // The layer list, bottom to top, a group right before its own layers (one level deeper).
   const entries: Entry[] = [];
-  if (options.background !== undefined) entries.push({ index: 0, level: 0, background: options.background });
+  if (background !== undefined) entries.push({ kind: 'background', index: 0, level: 0, background });
   const walk = (nodes: LayerNode[], level: number) => {
     for (const node of nodes) {
-      if (node.kind === 'layer') entries.push({ index: entries.length, level, layer: node.layer });
+      if (node.kind === 'layer')
+        entries.push({ kind: 'layer', index: entries.length, level, layer: node.layer });
       else {
-        entries.push({ index: entries.length, level, group: node.group });
+        entries.push({ kind: 'group', index: entries.length, level, group: node.group });
         walk(node.children, level + 1);
       }
     }
   };
   walk(layerTree(doc), 0);
+  return entries;
+}
 
+function addChunk(chunks: Writer[], type: number, write: (writer: Writer) => void): void {
+  const writer = new Writer();
+  writer.dword(0); // size, patched below
+  writer.word(type);
+  write(writer);
+  writer.patch(0, writer.length);
+  chunks.push(writer);
+}
+
+function addLayerChunk(chunks: Writer[], entry: Entry): void {
+  addChunk(chunks, LAYER_CHUNK, (writer) => {
+    const group = entry.kind === 'group' ? entry.group : undefined;
+    const layer = entry.kind === 'layer' ? entry.layer : undefined;
+    const isBackground = entry.kind === 'background';
+    const visible = isBackground || (group ?? layer)!.visible;
+    const locked = !isBackground && (group ?? layer)!.locked;
+    let flags = (visible ? VISIBLE : 0) | (locked ? 0 : EDITABLE);
+    if (isBackground) flags |= BACKGROUND;
+    if (group?.collapsed) flags |= COLLAPSED;
+    writer.word(flags);
+    writer.word(group ? 1 : 0); // 0: image, 1: group
+    writer.word(entry.level);
+    writer.word(0);
+    writer.word(0);
+    // A group without a blend mode passes through, which is what Aseprite's normal group does.
+    const blend = group ? group.blendMode : layer?.blendMode;
+    writer.word(blend ? BLEND[blend] : 0);
+    writer.byte(Math.round(((group ?? layer)?.opacity ?? 1) * 255));
+    writer.zeros(3);
+    writer.string(isBackground ? 'Background' : (group ?? layer)!.name);
+  });
+}
+
+async function addCelChunk(
+  chunks: Writer[],
+  entry: Entry,
+  documentWidth: number,
+  documentHeight: number,
+): Promise<void> {
+  const sourcePixels =
+    entry.kind === 'background'
+      ? new Uint32Array(documentWidth * documentHeight).fill(entry.background)
+      : entry.kind === 'layer'
+        ? entry.layer.pixels
+        : undefined;
+  if (!sourcePixels) return;
+  const box = pixelBounds(sourcePixels, documentWidth, documentHeight);
+  if (!box) return;
+  const crop = new Uint32Array(box.w * box.h);
+  for (let y = 0; y < box.h; y++)
+    crop.set(
+      sourcePixels.subarray((box.y + y) * documentWidth + box.x, (box.y + y) * documentWidth + box.x + box.w),
+      y * box.w,
+    );
+  // 0xAABBGGRR in memory, little-endian: the bytes are R, G, B, A, Aseprite's RGBA order.
+  const compressed = await zlib(new Uint8Array(crop.buffer));
+  addChunk(chunks, CEL_CHUNK, (writer) => {
+    writer.word(entry.index);
+    writer.short(box.x);
+    writer.short(box.y);
+    writer.byte(255);
+    writer.word(2); // compressed image
+    writer.short(0); // z-index
+    writer.zeros(5);
+    writer.word(box.w);
+    writer.word(box.h);
+    writer.data(compressed);
+  });
+}
+
+export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promise<Uint8Array> {
+  const { width: documentWidth, height: documentHeight } = doc;
+  const entries = entriesFor(doc, options.background);
   const chunks: Writer[] = [];
-  const chunk = (type: number, write: (w: Writer) => void) => {
-    const w = new Writer();
-    w.dword(0); // size, patched below
-    w.word(type);
-    write(w);
-    w.patch(0, w.length);
-    chunks.push(w);
-  };
 
   // The palette.
   const palette = options.palette.slice(0, 256);
   if (palette.length)
-    chunk(PALETTE_CHUNK, (w) => {
-      w.dword(palette.length);
-      w.dword(0);
-      w.dword(palette.length - 1);
-      w.zeros(8);
+    addChunk(chunks, PALETTE_CHUNK, (writer) => {
+      writer.dword(palette.length);
+      writer.dword(0);
+      writer.dword(palette.length - 1);
+      writer.zeros(8);
       for (const c of palette) {
-        w.word(0);
-        w.byte(c & 0xff);
-        w.byte((c >>> 8) & 0xff);
-        w.byte((c >>> 16) & 0xff);
-        w.byte((c >>> 24) & 0xff);
+        writer.word(0);
+        writer.byte(c & 0xff);
+        writer.byte((c >>> 8) & 0xff);
+        writer.byte((c >>> 16) & 0xff);
+        writer.byte((c >>> 24) & 0xff);
       }
     });
 
   // The layers.
-  for (const e of entries)
-    chunk(LAYER_CHUNK, (w) => {
-      const g = e.group;
-      const l = e.layer;
-      const visible = e.background !== undefined || (g ?? l)!.visible;
-      const locked = e.background === undefined && (g ?? l)!.locked;
-      let flags = (visible ? VISIBLE : 0) | (locked ? 0 : EDITABLE);
-      if (e.background !== undefined) flags |= BACKGROUND;
-      if (g?.collapsed) flags |= COLLAPSED;
-      w.word(flags);
-      w.word(g ? 1 : 0); // 0: image, 1: group
-      w.word(e.level);
-      w.word(0);
-      w.word(0);
-      // A group without a blend mode passes through, which is what Aseprite's normal group does.
-      const blend = g ? g.blendMode : l?.blendMode;
-      w.word(blend ? BLEND[blend] : 0);
-      w.byte(Math.round(((g ?? l)?.opacity ?? 1) * 255));
-      w.zeros(3);
-      w.string(e.background !== undefined ? 'Background' : (g ?? l)!.name);
-    });
+  for (const entry of entries) addLayerChunk(chunks, entry);
 
   // A cel per drawn layer, cropped to what's drawn.
-  for (const e of entries) {
-    const full = e.background !== undefined ? new Uint32Array(W * H).fill(e.background) : e.layer?.pixels;
-    if (!full) continue;
-    const box = pixelBounds(full, W, H);
-    if (!box) continue;
-    const crop = new Uint32Array(box.w * box.h);
-    for (let y = 0; y < box.h; y++)
-      crop.set(full.subarray((box.y + y) * W + box.x, (box.y + y) * W + box.x + box.w), y * box.w);
-    // 0xAABBGGRR in memory, little-endian: the bytes are R, G, B, A, Aseprite's RGBA order.
-    const compressed = await zlib(new Uint8Array(crop.buffer));
-    chunk(CEL_CHUNK, (w) => {
-      w.word(e.index);
-      w.short(box.x);
-      w.short(box.y);
-      w.byte(255);
-      w.word(2); // compressed image
-      w.short(0); // z-index
-      w.zeros(5);
-      w.word(box.w);
-      w.word(box.h);
-      w.data(compressed);
-    });
-  }
+  for (const entry of entries) await addCelChunk(chunks, entry, documentWidth, documentHeight);
 
   // The frame: its header, then the chunks.
   const frame = new Writer();
@@ -222,8 +261,8 @@ export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promi
   file.dword(128 + frameSize);
   file.word(0xa5e0);
   file.word(1); // frames
-  file.word(W);
-  file.word(H);
+  file.word(documentWidth);
+  file.word(documentHeight);
   file.word(32); // RGBA
   file.dword(1 | 2); // layer opacity and group opacity/blend are meaningful
   file.word(100); // speed (deprecated)

@@ -38,6 +38,7 @@ async function read(bytes: Uint8Array) {
   let palette: number[][] = [];
   for (let k = 0; k < frame.chunks; k++) {
     const size = v.getUint32(at, true);
+    expect(size).toBeGreaterThanOrEqual(6);
     const type = v.getUint16(at + 4, true);
     const d = at + 6;
     if (type === 0x2004) {
@@ -138,5 +139,74 @@ describe('export to Aseprite', () => {
     expect(f.layers[0]).toMatchObject({ name: 'Background', flags: 1 | 2 | 8 });
     expect(f.cels[0]).toMatchObject({ layer: 0, w: 2, h: 2 });
     expect([...f.cels[0].pixels]).toEqual([RED, RED, RED, RED]);
+  });
+
+  it('preserves nested group metadata and non-ASCII layer names', async () => {
+    const e = new Editor();
+    e.newFile(2, 2);
+    e.addLayer();
+    e.addLayer();
+    const doc = e.getState().doc;
+    doc.layers[0].name = '底层';
+    doc.layers[0].pixels[0] = RED;
+    doc.layers[1].name = '透明';
+    doc.layers[1].pixels[3] = BLUE;
+    doc.layers[2].name = '最上层';
+
+    e.selectLayer(0, 'single');
+    e.selectLayer(1, 'toggle');
+    e.groupSelection();
+    const group = e.getState().doc.groups?.[0];
+    expect(group).toBeDefined();
+    group!.name = '内側';
+    group!.collapsed = true;
+
+    e.selectLayer(0, 'single');
+    e.selectLayer(1, 'toggle');
+    e.groupSelection();
+
+    const f = await read(await toAseprite(e.getState().doc, { palette: [] }));
+
+    expect(f.layers.map((layer) => [layer.name, layer.type, layer.level])).toEqual([
+      ['Group 2', 1, 0],
+      ['内側', 1, 1],
+      ['底层', 0, 2],
+      ['透明', 0, 2],
+      ['最上层', 0, 0],
+    ]);
+    expect(f.layers[1].flags & 32).toBe(32);
+    expect(f.cels.map((cel) => [cel.layer, cel.x, cel.y, cel.w, cel.h])).toEqual([
+      [2, 0, 0, 1, 1],
+      [3, 1, 1, 1, 1],
+    ]);
+  });
+
+  it('limits the saved palette to 256 colors and reports exact file sizes', async () => {
+    const e = new Editor();
+    e.newFile(2, 2);
+    const palette = Array.from({ length: 300 }, (_, index) => pack(index & 255, 0, 0));
+    const bytes = await toAseprite(e.getState().doc, { palette });
+    const f = await read(bytes);
+
+    expect(f.header.colors).toBe(0);
+    expect(f.palette).toHaveLength(256);
+    expect(f.palette[255]).toEqual([255, 0, 0, 255]);
+    expect(f.header.size).toBe(bytes.length);
+    expect(f.frame.size + 128).toBe(bytes.length);
+    expect(f.end).toBe(bytes.length);
+  });
+
+  it('keeps metadata for transparent layers without creating empty cels', async () => {
+    const e = new Editor();
+    e.newFile(2, 2);
+    e.addLayer();
+    const doc = e.getState().doc;
+    doc.layers[0].name = 'Empty but present';
+    doc.layers[0].visible = true;
+
+    const f = await read(await toAseprite(doc, { palette: [] }));
+
+    expect(f.layers.map((layer) => layer.name)).toEqual(['Empty but present', 'Layer 2']);
+    expect(f.cels).toEqual([]);
   });
 });
