@@ -24,6 +24,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Thanks
 
 - [@mykola-lp](https://github.com/mykola-lp) for a clearer autosave hook and its first tests. ([#611](https://github.com/baipix/baipix/pull/611))
+- [@mykola-lp](https://github.com/mykola-lp) for clearer Aseprite and code exports, and the tests that pin them down. ([#616](https://github.com/baipix/baipix/pull/616), [#617](https://github.com/baipix/baipix/pull/617))
 
 ## [0.7.7] - 2026-10-27
 
