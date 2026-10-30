@@ -34,10 +34,41 @@ const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
 const PALETTE_CHUNK = 0x2019;
 
+// Layer flags.
 const VISIBLE = 1;
 const EDITABLE = 2;
 const BACKGROUND = 8;
 const COLLAPSED = 32;
+
+export interface AsepriteOptions {
+  /** Palette colors to save with the file. */
+  palette: Color[];
+  /** Adds the document's background color as Aseprite's background layer. */
+  background?: Color;
+}
+
+/** One item in Aseprite's layer list, including the optional synthetic background layer. */
+type Entry =
+  | {
+      kind: 'background';
+      /** Index in the file's layer list, which cels point. */
+      index: number;
+      level: number;
+      /** The background color, as a layer of its own at the bottom. */
+      background: Color;
+    }
+  | {
+      kind: 'layer';
+      index: number;
+      level: number;
+      layer: Layer;
+    }
+  | {
+      kind: 'group';
+      index: number;
+      level: number;
+      group: LayerGroup;
+    };
 
 /**
  * Grows as it's written; everything little-endian, as Aseprite wants.
@@ -127,38 +158,6 @@ class Writer {
 async function zlib(data: Uint8Array): Promise<Uint8Array> {
   const stream = new Blob([data as BlobPart]).stream().pipeThrough(new CompressionStream('deflate'));
   return new Uint8Array(await new Response(stream).arrayBuffer());
-}
-
-/**
- * One item in Aseprite's layer list, including the optional synthetic background layer.
- */
-type Entry =
-  | {
-      kind: 'background';
-      /** Index in the file's layer list, which cels point. */
-      index: number;
-      level: number;
-      /** The background color, as a layer of its own at the bottom. */
-      background: Color;
-    }
-  | {
-      kind: 'layer';
-      index: number;
-      level: number;
-      layer: Layer;
-    }
-  | {
-      kind: 'group';
-      index: number;
-      level: number;
-      group: LayerGroup;
-    };
-
-export interface AsepriteOptions {
-  /** Palette colors to save with the file. */
-  palette: Color[];
-  /** Adds the document's background color as Aseprite's background layer. */
-  background?: Color;
 }
 
 /**
