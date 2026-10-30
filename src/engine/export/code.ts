@@ -86,6 +86,21 @@ export function colorName(color: Color): string {
   return hue;
 }
 
+function assignColorNames(sortedColors: [Color, number][]): NamedColor[] {
+  const taken = new Map<string, number>();
+  const named: NamedColor[] = [];
+
+  for (const [color] of sortedColors) {
+    const base = colorName(color);
+    const count = (taken.get(base) ?? 0) + 1;
+
+    taken.set(base, count);
+    named.push({ name: count === 1 ? base : `${base}-${count}`, color });
+  }
+
+  return named;
+}
+
 /**
  * The drawing's colors, most used first, each with a name of its own.
  */
@@ -99,19 +114,13 @@ export function namedColors(pixels: Uint32Array): NamedColor[] {
     counts.set(color, count + 1);
   }
 
-  const taken = new Map<string, number>();
-
-  return [...counts]
-    .sort((a, b) => b[1] - a[1])
-    .map(([color]) => {
-      const base = colorName(color);
-      const n = (taken.get(base) ?? 0) + 1;
-      taken.set(base, n);
-      return { name: n === 1 ? base : `${base}-${n}`, color };
-    });
+  const sortedColors = [...counts].sort((a, b) => b[1] - a[1]);
+  return assignColorNames(sortedColors);
 }
 
-/** `My knight 2` → `MyKnight2`, for a component's name; `Sprite` when nothing is left. */
+/**
+ * `My knight 2` → `MyKnight2`, for a component's name; `Sprite` when nothing is left.
+ */
 export function componentName(name: string): string {
   const words = name
     .normalize('NFD')
@@ -122,7 +131,9 @@ export function componentName(name: string): string {
   return /^[A-Za-z]/.test(joined) ? joined : `Sprite${joined}`;
 }
 
-/** `My knight 2` → `my-knight-2`, for a CSS class; `sprite` when nothing is left. */
+/**
+ * `My knight 2` → `my-knight-2`, for a CSS class; `sprite` when nothing is left.
+ */
 export function className(name: string): string {
   const slug = name
     .normalize('NFD')
