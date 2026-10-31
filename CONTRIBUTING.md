@@ -17,6 +17,32 @@ npm run typecheck && npm run lint && npm test
 
 The CI runs the same checks on every pull request.
 
+## End-to-end tests
+
+Playwright tests live in `e2e/playwright/`.
+
+Run the E2E tests when changing behavior covered by an existing Playwright spec.
+
+Install Chromium once:
+
+```bash
+npx playwright install chromium
+```
+
+Run the E2E tests:
+
+```bash
+npm run e2e
+```
+
+Run them interactively:
+
+```bash
+npm run e2e:watch
+```
+
+The Playwright config starts the local Vite server automatically. Test reports are written to `e2e/playwright-report/`, and failed test artifacts to `e2e/test-results/`.
+
 ## Picking something to work on
 
 Ideas and bugs are tracked in [issues](https://github.com/baipix/baipix/issues). The ones labeled `good first issue` are small and a good way to start. Leave a comment on the issue when you pick it up, so two people don't end up doing the same thing.
