@@ -12,7 +12,7 @@ npm run dev
 Before opening a pull request, make sure everything passes:
 
 ```bash
-npm run typecheck && npm run lint && npm test && npm run e2e
+npm run typecheck && npm run lint && npm test
 ```
 
 The CI runs the same checks on every pull request.
@@ -20,6 +20,8 @@ The CI runs the same checks on every pull request.
 ## End-to-end tests
 
 Playwright tests live in `e2e/playwright/`.
+
+Run the E2E tests when changing behavior covered by an existing Playwright spec.
 
 Install Chromium once:
 
