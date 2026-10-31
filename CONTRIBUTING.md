@@ -41,7 +41,7 @@ Run them interactively:
 npm run e2e:watch
 ```
 
-The Playwright config starts the local Vite server automatically. Test reports are written to `playwright-report/`, and failed test artifacts to `test-results/`.
+The Playwright config starts the local Vite server automatically. Test reports are written to `e2e/playwright-report/`, and failed test artifacts to `e2e/test-results/`.
 
 ## Picking something to work on
 

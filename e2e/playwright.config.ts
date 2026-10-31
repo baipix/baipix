@@ -14,7 +14,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
 
-  reporter: [['html', { open: 'never' }]],
+  reporter: [['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
     baseURL,
     trace: 'retain-on-failure',
@@ -35,5 +35,5 @@ export default defineConfig({
     timeout: 30_000,
   },
 
-  outputDir: '../test-results',
+  outputDir: 'test-results',
 });
