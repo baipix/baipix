@@ -15,9 +15,8 @@ import { startTourOnce, Tour } from './components/Tour';
 import { FloatingPreview } from './components/FloatingPreview';
 import { ColorAdjustPanel } from './components/ColorAdjustPanel';
 import { Coordinates } from './components/Coordinates';
-import { IconButton } from './components/IconButton';
 import { MenuBar } from './components/MenuBar';
-import { MenuHost, openMenu } from './components/Menu';
+import { MenuHost } from './components/Menu';
 import { MobileBar } from './components/MobileBar';
 import { MobileColors } from './components/MobileColors';
 import { PanelResizer } from './components/PanelResizer';
@@ -29,7 +28,6 @@ import { Dialogs } from './dialogs/Dialogs';
 import { EditorContext } from './EditorContext';
 import { refreshTrash, StorageContext } from './StorageContext';
 import { CHANGELOG_URL } from './links';
-import { helpMenu } from './menus';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
@@ -254,7 +252,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
               <MobileBar />
               <MobileColors />
               {!noBoard && <Coordinates />}
-              {/* The window's bottom right corner: the version, which opens what's new, and the Help menu. */}
+              {/* The window's bottom right corner: the version, which opens what's new. */}
               <div className="help-corner">
                 <button
                   type="button"
@@ -264,13 +262,6 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
                 >
                   v{__APP_VERSION__}
                 </button>
-                <IconButton
-                  className="icon-btn large help-button"
-                  icon="help"
-                  iconSize={18}
-                  label={t('menu.help')}
-                  onClick={(e) => openMenu(e.currentTarget, helpMenu(editor, actions))}
-                />
               </div>
               {!noBoard && <FloatingPreview />}
               <ToolOptionsBar />
