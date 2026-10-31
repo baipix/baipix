@@ -1,63 +1,55 @@
 import { expect, test } from '@playwright/test';
-import {
-  activeLayerThumbnailHasPixels,
-  createNewFile,
-  drawAtCanvasCenter,
-  readSavedFiles,
-  readStoredHistorySteps,
-} from './helpers';
+import { activeLayerThumbnailHasPixels, createNewFile, drawAtCanvasCenter } from './helpers';
 
-test('keeps a drawing after reloading the page', async ({ page }) => {
+test('keeps a drawing after reloading the page', async ({ page, context }) => {
   await createNewFile(page);
   await drawAtCanvasCenter(page);
 
-  // Wait for the autosave debounce and the IndexedDB transaction.
-  await expect
-    .poll(
-      async () => {
-        const files = await readSavedFiles(page);
-        return files.some((file) => file.pixelCount > 0);
-      },
-      { timeout: 15_000 },
-    )
-    .toBe(true);
+  // Keep the original page open so pagehide cannot flush the pending save.
+  // Wait for the autosave debounce before opening another page.
+  await page.waitForTimeout(1_000);
 
-  await page.reload();
+  const restoredPage = await context.newPage();
+  await restoredPage.goto('/');
 
-  await expect(page.locator('canvas.canvas')).toBeVisible();
-
-  // The layer thumbnail is rendered from the restored document.
-  await expect.poll(() => activeLayerThumbnailHasPixels(page), { timeout: 10_000 }).toBe(true);
+  await expect(restoredPage.locator('canvas.canvas')).toBeVisible();
+  await expect.poll(() => activeLayerThumbnailHasPixels(restoredPage), { timeout: 10_000 }).toBe(true);
 });
 
-test('restores Undo and Redo history after reloading the page', async ({ page }) => {
+test('restores Undo and Redo history after reloading the page', async ({ page, context }) => {
   await createNewFile(page);
   await drawAtCanvasCenter(page);
 
-  await expect.poll(() => readStoredHistorySteps(page, 'undo'), { timeout: 20_000 }).toBeGreaterThan(0);
+  // Wait for the drawing and its Undo history to be saved.
+  await page.waitForTimeout(2_500);
 
-  await page.reload();
+  const restoredPage = await context.newPage();
+  await restoredPage.goto('/');
 
-  const toolbar = page.getByRole('toolbar', { name: 'Tools' });
+  const toolbar = restoredPage.getByRole('toolbar', { name: 'Tools' });
   const undo = toolbar.getByRole('button', { name: 'Undo', exact: true });
 
+  await expect(restoredPage.locator('canvas.canvas')).toBeVisible();
   await expect(undo).toBeEnabled();
+
   await undo.click();
 
-  await expect.poll(() => activeLayerThumbnailHasPixels(page)).toBe(false);
+  await expect.poll(() => activeLayerThumbnailHasPixels(restoredPage)).toBe(false);
 
-  // Wait until the Redo history is persisted.
-  await expect.poll(() => readStoredHistorySteps(page, 'redo'), { timeout: 20_000 }).toBeGreaterThan(0);
+  // Wait for the updated Redo history to be saved.
+  await restoredPage.waitForTimeout(2_500);
 
-  // Redo must survive another reload.
-  await page.reload();
+  const redoPage = await context.newPage();
+  await redoPage.goto('/');
 
-  const redo = page
+  const redo = redoPage
     .getByRole('toolbar', { name: 'Tools' })
     .getByRole('button', { name: 'Redo', exact: true });
 
+  await expect(redoPage.locator('canvas.canvas')).toBeVisible();
   await expect(redo).toBeEnabled();
+
   await redo.click();
 
-  await expect.poll(() => activeLayerThumbnailHasPixels(page)).toBe(true);
+  await expect.poll(() => activeLayerThumbnailHasPixels(redoPage)).toBe(true);
 });
