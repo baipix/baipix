@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { alpha } from '../../engine/color';
-import { activeFrame, celOf, DURATION, frameCount } from '../../engine/frames';
+import { activeFrame, celOf, DURATION, frameCount, ONION } from '../../engine/frames';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { pause, playbackStore, togglePlay } from '../playback';
-import { toggleTimeline } from '../uiStore';
+import { toggleOnion, toggleTimeline, uiStore, type UiState } from '../uiStore';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 import { NumberField } from './NumberField';
@@ -14,12 +14,16 @@ import { NumberField } from './NumberField';
  * frame, a dot where the layer has pixels on that frame. Clicking a cell shows its frame and picks
  * its layer; dragging a frame's number moves the frame.
  */
+const setOnion = (change: Partial<UiState['onion']>) =>
+  uiStore.set((s) => ({ onion: { ...s.onion, ...change } }));
+
 export function Timeline() {
   const t = useT();
   const editor = useEditor();
   const doc = useEditorState((s) => s.doc);
   const revision = useEditorState((s) => s.revision);
   const playing = playbackStore.use((s) => s.playing);
+  const onion = uiStore.use((s) => s.onion);
   const ref = useRef<HTMLDivElement>(null);
   const [dragged, setDragged] = useState<number | null>(null);
   const count = frameCount(doc);
@@ -110,6 +114,44 @@ export function Timeline() {
               label={t('timeline.duration')}
               sensitivity={1}
               onChange={(ms, final) => final && editor.setFrameDuration(ms, [shown])}
+            />
+          </div>
+        )}
+        <IconButton
+          icon="onion"
+          label={t('timeline.onion')}
+          pressed={onion.on}
+          onClick={toggleOnion}
+          disabled={count < 2}
+        />
+        {onion.on && count > 1 && (
+          <div className="timeline-onion">
+            <NumberField
+              value={onion.before}
+              min={0}
+              max={ONION.max}
+              ariaLabel={t('timeline.onionBefore')}
+              label={t('timeline.onionBefore')}
+              sensitivity={12}
+              onChange={(before) => setOnion({ before })}
+            />
+            <NumberField
+              value={onion.after}
+              min={0}
+              max={ONION.max}
+              ariaLabel={t('timeline.onionAfter')}
+              label={t('timeline.onionAfter')}
+              sensitivity={12}
+              onChange={(after) => setOnion({ after })}
+            />
+            <NumberField
+              value={Math.round(onion.opacity * 100)}
+              min={5}
+              max={100}
+              suffix="%"
+              ariaLabel={t('timeline.onionOpacity')}
+              label="◐"
+              onChange={(v) => setOnion({ opacity: v / 100 })}
             />
           </div>
         )}

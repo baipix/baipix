@@ -3491,6 +3491,13 @@ body.is-dragging-swatch * {
 .timeline-duration {
   width: 132px;
 }
+.timeline-onion {
+  display: flex;
+  gap: 4px;
+}
+.timeline-onion > * {
+  width: 76px;
+}
 .timeline-spacer {
   flex: 1;
 }

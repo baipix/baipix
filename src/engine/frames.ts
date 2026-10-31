@@ -192,3 +192,36 @@ export function setDuration(doc: PixelDoc, ms: number, frames?: number[]): void 
 
 /** Copies a board's frames and cels for a copy of it: cels are never changed in place, so shared. */
 export const cloneCels = (cels: Layer['cels']): Layer['cels'] => cels && cels.slice();
+
+export interface OnionSkin {
+  /** Frames shown before and after the active one. */
+  before: number;
+  after: number;
+  /** Opacity of the nearest ones, 0 to 1; the farther ones fade. */
+  opacity: number;
+}
+
+export const ONION = { max: 5 };
+
+/**
+ * The frames the onion skin shows around the active one, the nearest last so they lie on top, each
+ * with its opacity: the nearest at `opacity`, each step farther fading by an equal share. It doesn't
+ * loop around: the first frame has nothing before it.
+ */
+export function onionFrames(
+  doc: PixelDoc,
+  { before, after, opacity }: OnionSkin,
+): { frame: number; side: 'before' | 'after'; opacity: number }[] {
+  const n = frameCount(doc);
+  const at = activeFrame(doc);
+  const out: { frame: number; side: 'before' | 'after'; opacity: number }[] = [];
+  for (const [side, count, dir] of [
+    ['before', before, -1],
+    ['after', after, 1],
+  ] as const)
+    for (let d = count; d >= 1; d--) {
+      const frame = at + d * dir;
+      if (frame >= 0 && frame < n) out.push({ frame, side, opacity: (opacity * (count - d + 1)) / count });
+    }
+  return out;
+}

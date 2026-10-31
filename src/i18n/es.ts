@@ -568,6 +568,10 @@ export const es: Record<MessageKey, string> = {
   'timeline.frame': 'Fotograma {n}, {ms} ms',
   'timeline.previous': 'Fotograma anterior',
   'timeline.next': 'Fotograma siguiente',
+  'timeline.onion': 'Papel cebolla: los fotogramas anteriores en rojo, los siguientes en azul',
+  'timeline.onionBefore': 'Antes',
+  'timeline.onionAfter': 'Después',
+  'timeline.onionOpacity': 'Opacidad del papel cebolla',
   'display.isoCell': 'Celda',
   'display.isoVertical': 'Líneas verticales',
 
