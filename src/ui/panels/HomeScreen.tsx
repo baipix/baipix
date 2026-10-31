@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fileIdOf } from '../../engine/document';
 import { flatten } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
+import { ANIMATION } from '../features';
 import type { PixelDoc } from '../../engine/document';
 import { getLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
@@ -96,7 +97,7 @@ export function HomeScreen() {
   const [dropping, setDropping] = useState(false);
   const docs = editor.getDocuments();
   // A file with a board of several frames is an animation: its card says so.
-  const animated = (id: string) => docs.some((d) => fileIdOf(d) === id && frameCount(d) > 1);
+  const animated = (id: string) => ANIMATION && docs.some((d) => fileIdOf(d) === id && frameCount(d) > 1);
   const sort = uiStore.use((s) => s.homeSort);
   const order = uiStore.use((s) => s.homeOrder);
   const view = uiStore.use((s) => s.homeView);
