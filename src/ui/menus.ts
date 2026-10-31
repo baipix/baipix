@@ -6,7 +6,7 @@ import { LOCALES, getLocale, setLocale, t } from '../i18n';
 import type { Actions } from './actions';
 import type { MenuItem } from './components/Menu';
 import { getTheme, setTheme, type ThemePreference } from './theme';
-import { openAdjust, openDialog, toast, uiStore } from './uiStore';
+import { openAdjust, openDialog, toast, toggleTimeline, uiStore } from './uiStore';
 
 import { viewport } from './viewport';
 import { ALIGNS } from './components/ToolOptionsBar';
@@ -429,6 +429,12 @@ export const MENU_BAR: MenuBarMenu[] = [
           label: t('display.isoGrid'),
           checked: !!s.doc.isoGrid,
           onSelect: () => editor.toggleIsoGrid(),
+        },
+        {
+          label: t('timeline.title'),
+          shortcut: 'Shift+A',
+          checked: uiStore.get().timeline,
+          onSelect: toggleTimeline,
         },
         {
           label: t('menu.preview'),

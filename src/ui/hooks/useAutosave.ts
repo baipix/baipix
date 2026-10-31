@@ -27,6 +27,7 @@ function getWorkspaceUiSettings(uiState: UiState) {
   return {
     panelWidths: uiState.panelWidths,
     layersFolded: uiState.layersFolded,
+    timeline: uiState.timeline,
     homeSort: uiState.homeSort,
     homeOrder: uiState.homeOrder,
     homeView: uiState.homeView,

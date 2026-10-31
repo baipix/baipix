@@ -86,7 +86,8 @@ body.is-resizing * {
 /* ---------- Layout ---------- */
 /* The floating toolbar's distance from the bottom; the tool options, toasts and adjust panel sit above it. */
 :root {
-  --toolbar-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  /* The timeline, when shown, sets --timeline-space: everything at the bottom moves up above it. */
+  --toolbar-bottom: calc(16px + var(--timeline-space, 0px) + env(safe-area-inset-bottom, 0px));
 }
 .app {
   height: 100%;
@@ -2180,7 +2181,7 @@ body.is-dragging-swatch * {
   .panel-left {
     grid-column: 1;
     align-self: start;
-    max-height: calc(100% - 26px);
+    max-height: calc(100% - 26px - var(--timeline-space, 0px));
     margin: 12px 0 14px 12px;
   }
   /* As tall as what it shows, like the left one: it only holds what depends on the selection. */
@@ -2188,7 +2189,7 @@ body.is-dragging-swatch * {
   .panel-right {
     grid-column: 3;
     align-self: start;
-    max-height: calc(100% - 26px - 48px);
+    max-height: calc(100% - 26px - 48px - var(--timeline-space, 0px));
     margin: 12px 12px 14px 0;
   }
   /* The handle lines up with the panel's inner edge, between its rounded corners, so the highlight
@@ -2196,7 +2197,7 @@ body.is-dragging-swatch * {
   .resizer {
     z-index: 11;
     top: 24px;
-    bottom: 26px;
+    bottom: calc(26px + var(--timeline-space, 0px));
     width: 8px;
   }
   .resizer-left {
@@ -2204,11 +2205,11 @@ body.is-dragging-swatch * {
   }
   /* Rulers shown: the panels move aside, by a ruler's thickness (18px), to leave them in view. */
   .app.has-rulers .panel-left {
-    max-height: calc(100% - 44px);
+    max-height: calc(100% - 44px - var(--timeline-space, 0px));
     margin: 30px 0 14px 30px;
   }
   .app.has-rulers .panel-right {
-    max-height: calc(100% - 44px - 48px);
+    max-height: calc(100% - 44px - 48px - var(--timeline-space, 0px));
     margin-top: 30px;
   }
   .app.has-rulers .resizer {
@@ -2454,6 +2455,28 @@ body.is-dragging-swatch * {
 }
 .home-card .home-thumb {
   grid-column: 1 / -1;
+}
+/* An animation: a film badge on its picture's corner, and beside its name in the list. */
+.home-card {
+  position: relative;
+}
+.home-animated {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.home-animated-inline {
+  display: inline-flex;
+  flex: none;
+  color: var(--muted);
 }
 /* The name and the actions sit in from the card's edge, farther than the picture. */
 .home-card-info {
@@ -3421,4 +3444,150 @@ body.is-dragging-swatch * {
 .code-buttons {
   display: flex;
   gap: 8px;
+}
+
+/* ---------- Timeline ----------
+   Under the canvas, the whole width (the side panels stop above it): the active board's frames, a row per layer. */
+.timeline {
+  --timeline-names: 112px;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: 40%;
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.app.has-rulers .timeline {
+  left: 30px;
+}
+.app.ui-hidden .timeline {
+  display: none;
+}
+.timeline-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  flex: none;
+  padding: 0 6px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+.timeline-title {
+  margin-right: 8px;
+  font-weight: 600;
+}
+.timeline-count {
+  min-width: 44px;
+  margin: 0 4px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.timeline-duration {
+  width: 132px;
+}
+.timeline-spacer {
+  flex: 1;
+}
+.timeline-grid {
+  display: grid;
+  grid-auto-rows: 24px;
+  align-items: center;
+  min-height: 0;
+  padding: 4px 8px 8px 0;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.timeline-row {
+  display: contents;
+}
+.timeline-corner,
+.timeline-name {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  align-self: stretch;
+  background: var(--panel);
+}
+.timeline-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 8px 0 12px;
+  overflow: hidden;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.timeline-name.is-active {
+  color: var(--text);
+  font-weight: 500;
+}
+.timeline-frame,
+.timeline-cel {
+  width: 22px;
+  height: 22px;
+  margin: 1px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.timeline-frame:hover,
+.timeline-cel:hover {
+  background: var(--hover);
+}
+.timeline-frame.is-active {
+  background: var(--glow);
+  color: var(--glow-ink);
+}
+.timeline-frame.is-dragged {
+  opacity: 0.4;
+}
+.timeline-cel.in-frame {
+  background: var(--selected);
+}
+.timeline-cel.is-active {
+  background: var(--glow);
+}
+/* The Animate button: a violet dot when the board has frames and the timeline is closed. */
+.animate-button {
+  position: relative;
+}
+.animate-button.has-frames::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--glow-line);
+}
+/* A dot where the layer has pixels on that frame, a ring where it's empty. */
+.timeline-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: auto;
+  border-radius: 50%;
+  background: currentColor;
+}
+.timeline-dot.is-empty {
+  background: none;
+  box-shadow: inset 0 0 0 1px currentColor;
+  opacity: 0.6;
+}
+.timeline-cel.is-active .timeline-dot {
+  color: var(--glow-ink);
 }

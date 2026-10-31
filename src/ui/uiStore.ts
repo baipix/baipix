@@ -57,6 +57,8 @@ export interface UiState {
   panelWidths: { left: number; right: number };
   /** The Layers panel folded into a small pill, like Figma's Minimize UI. */
   layersFolded: boolean;
+  /** The timeline, under the canvas: the active board's frames. */
+  timeline: boolean;
   /** The files screen: how its files are sorted and shown. */
   homeSort: 'name' | 'modified';
   homeOrder: 'asc' | 'desc';
@@ -104,6 +106,7 @@ export const uiStore = createStore<UiState>({
   preview: { open: true, collapsed: false, x: null, y: null, w: 208, h: 168, zoom: null },
   panelWidths: { left: PANEL_LIMITS.left.default, right: PANEL_LIMITS.right.default },
   layersFolded: false,
+  timeline: false,
   homeSort: 'modified',
   homeOrder: 'desc',
   homeView: 'grid',
@@ -131,6 +134,8 @@ export const openAdjust = (scope: 'layer' | 'all' = 'all', tab: AdjustTab = 'col
 export const closeDialog = (): void => uiStore.set({ dialog: null });
 /** Folds the Layers panel into a pill, or unfolds it (Ctrl/Cmd+Shift+\). */
 export const toggleLayersPanel = (): void => uiStore.set((s) => ({ layersFolded: !s.layersFolded }));
+/** Shows or hides the timeline (Shift+A). */
+export const toggleTimeline = (): void => uiStore.set((s) => ({ timeline: !s.timeline }));
 
 /** Pixel under the cursor, for the coordinates badge (updated often, kept separate). */
 export const hoverStore = createStore<
