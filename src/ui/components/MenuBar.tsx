@@ -6,6 +6,7 @@ import { useEditor, useEditorState } from '../EditorContext';
 import { MENU_BAR, filesMenu, mainMenu, zoomMenu } from '../menus';
 import { DisplayOptions } from '../panels/RightPanel';
 import { frameCount } from '../../engine/frames';
+import { ANIMATION } from '../features';
 import { openDialog, toggleTimeline, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
 import { Icon } from './Icon';
@@ -220,7 +221,7 @@ export function MenuBar() {
           />
         )}
         {/* Animating opens the timeline. A dot says the board has frames to see while it's closed. */}
-        {board && (
+        {board && ANIMATION && (
           <IconButton
             icon="timeline"
             className={`icon-btn animate-button${animated && !timeline ? ' has-frames' : ''}`}

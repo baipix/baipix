@@ -35,6 +35,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
 import { useShiftArrowSteps } from './hooks/useShiftArrowSteps';
 import { leaveHome, showEmptyHome } from './home';
+import { ANIMATION } from './features';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
 import { RightPanel } from './panels/RightPanel';
@@ -280,7 +281,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
                 </button>
               </div>
               {!noBoard && <FloatingPreview />}
-              {!noBoard && timeline && <Timeline />}
+              {!noBoard && timeline && ANIMATION && <Timeline />}
               <ToolOptionsBar />
               <Toolbar />
             </main>
