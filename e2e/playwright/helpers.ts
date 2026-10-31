@@ -1,12 +1,5 @@
+import { Buffer } from 'node:buffer';
 import { expect, type Page } from '@playwright/test';
-
-export interface SavedFileSummary {
-  id: string;
-  fileId: string;
-  name: string;
-  layerNames: string[];
-  pixelCount: number;
-}
 
 export async function createNewFile(page: Page, width = 32, height = 32) {
   await page.goto('/');
@@ -42,8 +35,9 @@ export async function drawAtCanvasCenter(page: Page) {
   await page.mouse.move(0, 0);
 }
 
+/** Checks whether the layer thumbnail currently displays any non-transparent pixels. */
 export async function activeLayerThumbnailHasPixels(page: Page): Promise<boolean> {
-  const thumbnail = page.locator('.panel-left .item-list > .item canvas.thumb').first();
+  const thumbnail = page.locator('.panel-left .item-list > .item.is-active canvas.thumb');
 
   if (!(await thumbnail.count())) {
     return false;
@@ -62,108 +56,4 @@ export async function activeLayerThumbnailHasPixels(page: Page): Promise<boolean
 
     return false;
   });
-}
-
-/** Reads a summary of the documents actually saved in IndexedDB. */
-export async function readSavedFiles(page: Page): Promise<SavedFileSummary[]> {
-  return page.evaluate(async () => {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('baipix');
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-
-    const result = await new Promise<SavedFileSummary[]>((resolve, reject) => {
-      const transaction = db.transaction('files', 'readonly');
-      const request = transaction.objectStore('files').getAll();
-
-      let summaries: SavedFileSummary[] = [];
-
-      request.onsuccess = () => {
-        const documents = request.result as Array<{
-          id: string;
-          name: string;
-          board?: { file?: string };
-          layers: Array<{
-            name: string;
-            colors: number[];
-            runs: number[];
-          }>;
-        }>;
-
-        summaries = documents.map((document) => {
-          let pixelCount = 0;
-
-          for (const layer of document.layers) {
-            for (let i = 0; i < layer.runs.length; i += 2) {
-              const colorIndex = layer.runs[i];
-              const runLength = layer.runs[i + 1];
-
-              if (layer.colors[colorIndex] !== 0) {
-                pixelCount += runLength;
-              }
-            }
-          }
-
-          return {
-            id: document.id,
-            fileId: document.board?.file ?? document.id,
-            name: document.name,
-            layerNames: document.layers.map((layer) => layer.name),
-            pixelCount,
-          };
-        });
-      };
-
-      transaction.oncomplete = () => resolve(summaries);
-      transaction.onerror = () => reject(transaction.error);
-      transaction.onabort = () => reject(transaction.error);
-    });
-
-    db.close();
-    return result;
-  });
-}
-
-/** Counts saved Undo steps across all stored board histories. */
-export async function readStoredHistorySteps(page: Page, direction: 'undo' | 'redo'): Promise<number> {
-  return page.evaluate(async (side) => {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('baipix');
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-
-    const count = await new Promise<number>((resolve, reject) => {
-      const transaction = db.transaction('histories', 'readonly');
-      const request = transaction.objectStore('histories').getAll();
-
-      let steps = 0;
-
-      request.onsuccess = () => {
-        const histories = request.result as Array<{
-          boards?: Array<{
-            undo?: unknown[];
-            redo?: unknown[];
-          }>;
-        }>;
-
-        steps = histories.reduce(
-          (total, history) =>
-            total +
-            (history.boards ?? []).reduce((boardTotal, board) => boardTotal + (board[side]?.length ?? 0), 0),
-          0,
-        );
-      };
-
-      transaction.oncomplete = () => resolve(steps);
-      transaction.onerror = () => reject(transaction.error);
-      transaction.onabort = () => reject(transaction.error);
-    });
-
-    db.close();
-    return count;
-  }, direction);
 }
