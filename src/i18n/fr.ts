@@ -566,6 +566,10 @@ export const fr: Record<MessageKey, string> = {
   'timeline.frame': 'Frame {n}, {ms} ms',
   'timeline.previous': 'Frame précédente',
   'timeline.next': 'Frame suivante',
+  'timeline.onion': 'Pelure d’oignon : les frames d’avant en rouge, d’après en bleu',
+  'timeline.onionBefore': 'Avant',
+  'timeline.onionAfter': 'Après',
+  'timeline.onionOpacity': 'Opacité de la pelure d’oignon',
   'display.isoCell': 'Case',
   'display.isoVertical': 'Lignes verticales',
 

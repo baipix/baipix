@@ -1,6 +1,7 @@
 import { alpha, blue, green, pack, red, type Color } from './color';
 import { hasBackground, type Layer, type PixelDoc } from './document';
 import { bakeEffects, withEffects } from './effects';
+import { celOf } from './frames';
 import { layerTree, type LayerNode } from './groups';
 
 /** Straight-alpha "source over" of one color onto another, with an extra opacity factor. */
@@ -95,6 +96,12 @@ export interface FlattenOptions {
   includeBackground?: boolean;
   /** Only render this layer (ignores visibility and opacity). */
   onlyLayer?: Layer;
+}
+
+/** Frame `f` of the board merged, as `flatten` merges the frame shown. */
+export function flattenFrame(doc: PixelDoc, f: number, options: FlattenOptions = {}): Uint32Array {
+  const layers = doc.layers.map((layer) => ({ ...layer, pixels: celOf(doc, layer, f).pixels }));
+  return flatten({ ...doc, layers }, options);
 }
 
 /** Merges the document's layers into a single pixel buffer. Pure: never touches the document. */

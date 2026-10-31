@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
-import { addFrame, celOf, normalizeFrames, showFrame } from '../src/engine/frames';
+import { flattenFrame } from '../src/engine/composite';
+import { addFrame, celOf, normalizeFrames, onionFrames, showFrame } from '../src/engine/frames';
 import { createDocument } from '../src/engine/document';
 import { documentFromJson, documentToJson, deserializeDocument } from '../src/storage/fileFormat';
 import { packHistories, unpackHistories } from '../src/storage/history';
@@ -187,5 +188,37 @@ describe('animation frames in the browser', () => {
     const back = readStoredFile(structuredClone(storeFile(doc(e))))!;
     expect(back.layers[0].outside).toBeDefined();
     expect(back.layers[0].cels![1]!.outside).toBeDefined();
+  });
+});
+
+describe('onion skin', () => {
+  const walk = (frames: number, shown: number) => {
+    const e = editor();
+    for (let i = 1; i < frames; i++) e.addFrame();
+    e.setFrame(shown);
+    return doc(e);
+  };
+
+  it('shows the frames around the shown one, the nearest on top and the most opaque', () => {
+    expect(onionFrames(walk(6, 3), { before: 2, after: 1, opacity: 0.4 })).toEqual([
+      { frame: 1, side: 'before', opacity: 0.2 },
+      { frame: 2, side: 'before', opacity: 0.4 },
+      { frame: 4, side: 'after', opacity: 0.4 },
+    ]);
+  });
+
+  it("doesn't loop around the ends", () => {
+    const frames = onionFrames(walk(3, 0), { before: 2, after: 5, opacity: 0.5 }).map((o) => o.frame);
+    expect(frames).toEqual([2, 1]);
+  });
+
+  it('merges another frame without showing it', () => {
+    const e = editor();
+    e.addFrame();
+    dot(e, 1, 1);
+    e.setFrame(0);
+    expect(flattenFrame(doc(e), 1)[1 * 8 + 1]).toBe(RED);
+    expect(flattenFrame(doc(e), 0)[1 * 8 + 1]).not.toBe(RED);
+    expect(doc(e).activeFrame).toBe(0);
   });
 });

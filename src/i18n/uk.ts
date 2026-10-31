@@ -565,6 +565,10 @@ export const uk: Record<MessageKey, string> = {
   'timeline.frame': 'Кадр {n}, {ms} мс',
   'timeline.previous': 'Попередній кадр',
   'timeline.next': 'Наступний кадр',
+  'timeline.onion': 'Калька: попередні кадри червоним, наступні синім',
+  'timeline.onionBefore': 'До',
+  'timeline.onionAfter': 'Після',
+  'timeline.onionOpacity': 'Непрозорість кальки',
   'display.isoCell': 'Комірка',
   'display.isoVertical': 'Вертикальні лінії',
 

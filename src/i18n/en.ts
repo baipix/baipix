@@ -560,6 +560,10 @@ export const en = {
   'timeline.frame': 'Frame {n}, {ms} ms',
   'timeline.previous': 'Previous frame',
   'timeline.next': 'Next frame',
+  'timeline.onion': 'Onion skin: the frames before in red, after in blue',
+  'timeline.onionBefore': 'Before',
+  'timeline.onionAfter': 'After',
+  'timeline.onionOpacity': 'Onion skin opacity',
   'display.isoCell': 'Cell',
   'display.isoVertical': 'Vertical lines',
 

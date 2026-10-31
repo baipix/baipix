@@ -31,6 +31,7 @@ import {
   Eye,
   EyeOff,
   Film,
+  Ghost,
   FlipHorizontal2,
   FlipVertical2,
   Folder,
@@ -196,6 +197,7 @@ export const ICONS = {
   play: Play,
   pause: Pause,
   first: SkipBack,
+  onion: Ghost,
   // Named by what moves: the drawing against the left edge, centered across, and so on.
   alignLeft: AlignStartVertical,
   alignCenterX: AlignCenterVertical,
