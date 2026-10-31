@@ -5,6 +5,7 @@ import { isMenuOpen } from '../components/Menu';
 import { renameFile, togglePreview } from '../menus';
 import { keyState } from '../keyState';
 import { TOOL_LIST } from '../tools';
+import { ANIMATION } from '../features';
 import { stepFrame, togglePlay } from '../playback';
 import { openAdjust, openDialog, toggleLayersPanel, toggleTimeline, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
@@ -133,7 +134,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         const { doc } = editor.getState();
         const command = {
           p: togglePreview,
-          a: toggleTimeline,
+          a: ANIMATION ? toggleTimeline : undefined,
           n: () => editor.addLayer(),
           d: () => editor.duplicateLayer(),
           m: () => doc.activeLayer > 0 && editor.mergeDown(),
@@ -160,13 +161,14 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         if (to && !e.shiftKey) return (e.preventDefault(), editor.align(to));
       }
       // Frames, like in Aseprite: Alt+N adds one, comma and period step through, Enter plays.
-      if (e.altKey && !e.shiftKey && e.code === 'KeyN') {
+      if (ANIMATION && e.altKey && !e.shiftKey && e.code === 'KeyN') {
         e.preventDefault();
         uiStore.set({ timeline: true });
         return editor.addFrame();
       }
-      if (e.key === ',' || e.key === '.') return stepFrame(editor, e.key === ',' ? -1 : 1);
-      if (e.key === 'Enter' && uiStore.get().timeline) return (e.preventDefault(), togglePlay(editor));
+      if (ANIMATION && (e.key === ',' || e.key === '.')) return stepFrame(editor, e.key === ',' ? -1 : 1);
+      if (ANIMATION && e.key === 'Enter' && uiStore.get().timeline)
+        return (e.preventDefault(), togglePlay(editor));
       if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
         e.preventDefault();
         const { doc } = editor.getState();
