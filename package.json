@@ -20,7 +20,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "screenshots": "node scripts/screenshots.mjs",
-    "screenshots:docs": "node scripts/docs-screenshots.mjs"
+    "screenshots:docs": "node scripts/docs-screenshots.mjs",
+    "screenshots:hero": "node scripts/hero.mjs"
   },
   "dependencies": {
     "lucide-react": "1.49.0",
