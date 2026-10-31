@@ -1243,10 +1243,6 @@ body.is-dragging-swatch * {
   align-items: center;
   gap: 8px;
 }
-.help-button {
-  background: var(--panel);
-  box-shadow: var(--shadow);
-}
 /* Quiet, like a status line: the version, which opens what's new. */
 .app-version {
   padding: 2px 4px;
@@ -2059,12 +2055,8 @@ body.is-dragging-swatch * {
       inset 0 0 0 2px var(--glow),
       inset 0 0 0 4px var(--panel);
   }
-  /* On a phone the bottom belongs to the tools: the shortcuts' button goes to the top, alone. */
+  /* On a phone the bottom belongs to the tools. */
   .help-corner {
-    top: 56px;
-    bottom: auto;
-  }
-  .app-version {
     display: none;
   }
   :root {
@@ -2158,7 +2150,6 @@ body.is-dragging-swatch * {
 .popover,
 .dialog,
 .coordinates,
-.help-button,
 .toast,
 .menu,
 .command-palette,
