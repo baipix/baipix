@@ -4,27 +4,19 @@ import Faq from '../components/Faq.astro';
 import Footer from '../components/Footer.astro';
 import GuideHero from '../components/GuideHero.astro';
 import Nav from '../components/Nav.astro';
+import Flipbook from '../components/Flipbook.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 import { blue, green, pack, red, alpha } from '../../../src/engine/color';
 import { flattenFrame } from '../../../src/engine/composite';
-import { frameCount, DEFAULT_DURATION } from '../../../src/engine/frames';
 import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
-import { fileFromJson } from '../../../src/storage/fileFormat';
-import slimeFile from '../art/slime.baipix?raw';
+import { slime, slimeFrames as frames } from '../slime';
 import slimeUrl from '../art/slime.baipix?url';
 
 const base = import.meta.env.BASE_URL;
 
-// The slime's jump: one board, 14 frames, each rendered here at build time with its duration.
-const [slime] = fileFromJson(slimeFile);
 const { width: w, height: h } = slime;
-const svgOf = (pixels: Uint32Array) => toSvg(pixels, w, h, renderGeometry(w, h, 1, 0));
-const frames = Array.from({ length: frameCount(slime) }, (_, f) => ({
-  svg: svgOf(flattenFrame(slime, f)),
-  duration: slime.frames?.[f].duration ?? DEFAULT_DURATION,
-}));
 const total = frames.reduce((sum, f) => sum + f.duration, 0);
 
 /**
@@ -126,24 +118,7 @@ const faq = [
 
     <section class="showcase container" aria-label="A slime jumping, frame by frame">
       <figure class="frame showcase-art">
-        <div class="player" data-player data-durations={JSON.stringify(frames.map((f) => f.duration))}>
-          <div class="player-stage" role="img" aria-label="A green slime squashes, jumps and lands">
-            {frames.map((f, i) => (
-              <div class="pix player-frame" data-frame={i} hidden={i > 0} set:html={f.svg} />
-            ))}
-          </div>
-          <ol class="strip" aria-label="The frames">
-            {frames.map((f, i) => (
-              <li class="strip-cell" data-cell={i} aria-current={i === 0 ? 'true' : undefined}>
-                <div class="pix" set:html={f.svg} />
-                <span>{f.duration} ms</span>
-              </li>
-            ))}
-          </ol>
-          <button type="button" class="btn player-toggle" data-toggle aria-pressed="false">
-            Pause
-          </button>
-        </div>
+        <Flipbook frames={frames} label="A green slime squashes, jumps and lands" />
         <figcaption class="muted">
           A slime drawn and animated in Baipix: 14 frames, {total} ms in all. The squash before the jump and
           the hang at the top hold longest. Open the editor to play it and change it.
@@ -353,36 +328,6 @@ const faq = [
 </Base>
 
 <script>
-  // Plays the slime with each frame's own duration, and marks its cell in the strip. With reduced
-  // motion, the first frame stays; the button plays it anyway.
-  for (const player of document.querySelectorAll<HTMLElement>('[data-player]')) {
-    const durations: number[] = JSON.parse(player.dataset.durations ?? '[]');
-    const shown = [...player.querySelectorAll<HTMLElement>('[data-frame]')];
-    const cells = [...player.querySelectorAll<HTMLElement>('[data-cell]')];
-    const toggle = player.querySelector<HTMLButtonElement>('[data-toggle]')!;
-    let frame = 0;
-    let timer = 0;
-    const show = (f: number) => {
-      shown[frame].hidden = true;
-      cells[frame].removeAttribute('aria-current');
-      frame = f;
-      shown[frame].hidden = false;
-      cells[frame].setAttribute('aria-current', 'true');
-    };
-    const tick = () => {
-      show((frame + 1) % durations.length);
-      timer = window.setTimeout(tick, durations[frame]);
-    };
-    const set = (playing: boolean) => {
-      clearTimeout(timer);
-      if (playing) timer = window.setTimeout(tick, durations[frame]);
-      toggle.textContent = playing ? 'Pause' : 'Play';
-      toggle.setAttribute('aria-pressed', String(!playing));
-    };
-    toggle.addEventListener('click', () => set(toggle.textContent === 'Play'));
-    set(!matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }
-
   // The onion skin as the editor works it out (onionFrames): `before` and `after` frames on each side,
   // no wrapping around, the nearest the most opaque, all under the frame shown.
   for (const demo of document.querySelectorAll<HTMLElement>('[data-onion]')) {
@@ -427,48 +372,8 @@ const faq = [
   .showcase-art {
     gap: 20px;
   }
-  .player {
-    display: grid;
-    justify-items: center;
-    gap: 16px;
+  .showcase-art :global(.flipbook) {
     width: min(100%, 880px);
-  }
-  .player-stage {
-    display: grid;
-    width: 100%;
-  }
-  .player-frame {
-    grid-area: 1 / 1;
-  }
-  /* The frames under the drawing, as in the editor's timeline: the one shown is outlined. */
-  .strip {
-    display: grid;
-    grid-template-columns: repeat(14, minmax(0, 1fr));
-    gap: 6px;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .strip-cell {
-    display: grid;
-    gap: 4px;
-    font-size: 11px;
-    text-align: center;
-    color: var(--tint-ink, var(--muted));
-  }
-  .strip-cell span {
-    white-space: nowrap;
-  }
-  .strip-cell .pix {
-    outline: 2px solid transparent;
-    outline-offset: 1px;
-  }
-  .strip-cell[aria-current] .pix {
-    outline-color: var(--accent);
-  }
-  .player-toggle {
-    min-width: 96px;
   }
   .showcase-art figcaption {
     max-width: 640px;
@@ -560,12 +465,6 @@ const faq = [
   @media (max-width: 760px) {
     .onion-block {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .strip {
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-    }
-    .strip-cell {
-      font-size: 10px;
     }
   }
 </style>
