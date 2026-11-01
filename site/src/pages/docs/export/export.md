@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Export
-description: 'Export pixel art from Baipix: PNG at 1× to 32×, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
+description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
 ---
 
 <figure class="shot">
@@ -14,13 +14,14 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, clean SVG with o
 ## Size and background
 
 - **Pixel size**, 1× to 32×: how many screen pixels each drawing pixel becomes. A 32 × 32 sprite at 8× is a 256 × 256 image.
-- The **gap** set in the Board section spaces the pixels apart, for an LED look, in the PNG and the SVG alike.
+- The **gap** set in the Board section spaces the pixels apart, for an LED look, in PNG, GIF and SVG exports.
 - **Include the background**: the board's background color, or a transparent image.
 - **Active layer only**: just the layer you're on.
 
 ## Formats
 
 - **PNG**: an image, sharp at the pixel size you picked.
+- **GIF**: an animated image that loops forever. Each frame keeps its duration from the timeline, rounded to 10 ms. Fully transparent pixels stay transparent; semi-transparent pixels become opaque.
 - **SVG**: vector, light and sharp at any size. Each color is one path, neighboring pixels of the same color merged, so there are no thin lines between them. Layers and groups come out as named groups, with their opacity and blend modes. See [Pixel art to SVG](../../../pixel-art-to-svg/).
 - **Aseprite**: an .aseprite file to keep working there, with the layers, groups, blend modes and the palette, on a single frame.
 - **Layers + sprite sheet**: a .zip with one PNG per visible layer, named after it, and a sheet with the layers side by side, left to right from the bottom layer. **Columns** sets how many go on a row: fewer make a grid, read left to right then top to bottom. A JSON file comes with the sheet, giving each layer's place on it in the TexturePacker format, so Phaser, Unity or a Godot importer cut the frames without setup. Each PNG has the layer's own pixels, at full opacity, for game engines that put sprites together or swap them.
@@ -28,7 +29,7 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, clean SVG with o
 
 ## Every board at once
 
-In a file of several boards, **All boards** exports each one in the format you picked, named after it, in a .zip.
+In a file of several boards, **All boards** exports each one in the format you picked, named after it, in a .zip. For GIF, each board's animation is exported separately.
 
 ## Copy instead of saving
 

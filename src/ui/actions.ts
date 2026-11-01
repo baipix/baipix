@@ -1,6 +1,7 @@
 import { alpha, type Color } from '../engine/color';
-import { flatten } from '../engine/composite';
+import { flatten, flattenFrame } from '../engine/composite';
 import { createDocument, fileNameOf, hasBackground, MAX_SIZE, type PixelDoc } from '../engine/document';
+import { DEFAULT_DURATION, celOf, frameCount } from '../engine/frames';
 import type { Editor } from '../engine/editor';
 import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
@@ -18,13 +19,14 @@ import { pickFile } from '../io/pickFile';
 import { referenceFromFile } from '../io/reference';
 import { zip } from '../io/zip';
 import { canvasToBlob, renderToCanvas } from '../io/png';
+import { encodeGif } from '../io/gif';
 import { FILE_EXTENSION, fileFromJson, fileToJson } from '../storage/fileFormat';
 import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } from '../storage/layerClip';
 import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
 /** Every export format, also to check the one read back from a save. */
-export const EXPORT_FORMATS = ['png', 'svg', 'aseprite', 'tileset', 'layers'] as const;
+export const EXPORT_FORMATS = ['png', 'gif', 'svg', 'aseprite', 'tileset', 'layers'] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
@@ -69,6 +71,47 @@ export function createActions(editor: Editor) {
     return onlyActiveLayer
       ? toSvg(pixels, d.width, d.height, geometry, background)
       : toLayeredSvg(d, geometry, background);
+  }
+
+  /** Renders the board's frames and encodes them as an animated GIF. */
+  async function gifBlobOf(d: PixelDoc, onlyActiveLayer: boolean, quiet = false): Promise<Blob> {
+    const geometry = renderGeometry(d.width, d.height, d.render.pixelSize, d.render.gap);
+
+    if (!quiet && geometry.pixelSize !== d.render.pixelSize) {
+      toast(t('toast.exportShrunk', { size: geometry.pixelSize }));
+    }
+
+    const withBackground = !onlyActiveLayer && uiStore.get().exportBackground && hasBackground(d);
+
+    function* frames() {
+      for (let f = 0; f < frameCount(d); f++) {
+        const layer = onlyActiveLayer ? d.layers[d.activeLayer] : undefined;
+
+        const pixels = flattenFrame(
+          d,
+          f,
+          layer
+            ? { onlyLayer: { ...layer, pixels: celOf(d, layer, f).pixels } }
+            : { includeBackground: withBackground },
+        );
+
+        const background = withBackground && geometry.gap > 0 ? d.background : 0;
+        const canvas = renderToCanvas(pixels, d.width, d.height, geometry, background);
+        const context = canvas.getContext('2d');
+
+        if (!context) {
+          throw new Error('Unable to read the rendered GIF frame.');
+        }
+
+        yield {
+          rgba: context.getImageData(0, 0, geometry.width, geometry.height).data,
+          duration: d.frames?.[f].duration ?? DEFAULT_DURATION,
+        };
+      }
+    }
+    const bytes = await encodeGif(frames(), geometry.width, geometry.height);
+
+    return new Blob([bytes as BlobPart], { type: 'image/gif' });
   }
 
   /** The drawing as code: the SVG with its layers, the rest made from the drawing merged. */
@@ -131,23 +174,37 @@ export function createActions(editor: Editor) {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
       if (format === 'tileset') return actions.exportTileset(onlyActiveLayer);
       if (format === 'layers') return actions.exportLayers();
+
       const filename = `${baseName()}.${format}`;
+
       // Aseprite: the layers as they are, to keep working on them there.
       if (format === 'aseprite') {
         const d = doc();
+
         const bytes = await toAseprite(d, {
           palette: editor.getState().palette.colors,
           background: uiStore.get().exportBackground && hasBackground(d) ? d.background : undefined,
         });
         await report(filename, saveFile(filename, new Blob([bytes as BlobPart])));
+
         return;
       }
+
+      if (format === 'gif') {
+        const blob = await gifBlobOf(doc(), onlyActiveLayer);
+
+        await report(filename, saveFile(filename, blob, 'image/gif'));
+        return;
+      }
+
       if (format === 'svg') {
         await report(filename, saveFile(filename, svgOf(onlyActiveLayer), 'image/svg+xml'));
         return;
       }
+
       const { d, pixels, geometry, background } = pictureInput(onlyActiveLayer);
       const blob = await canvasToBlob(renderToCanvas(pixels, d.width, d.height, geometry, background));
+
       await report(filename, saveFile(filename, blob, 'image/png'));
     },
 
@@ -179,8 +236,12 @@ export function createActions(editor: Editor) {
               : uniqueColors(flatten(d, { includeBackground: false })),
             background: withBackground(d) ? d.background : undefined,
           });
-        else if (format === 'svg') data = new TextEncoder().encode(toLayeredSvg(d, geometry, background));
-        else {
+        else if (format === 'svg') {
+          data = new TextEncoder().encode(toLayeredSvg(d, geometry, background));
+        } else if (format === 'gif') {
+          const blob = await gifBlobOf(d, false, true);
+          data = new Uint8Array(await blob.arrayBuffer());
+        } else {
           // Over the background when it's included, as on the canvas (see pictureInput).
           const over = alpha(background) > 0;
           const pixels = flatten(d, { includeBackground: over });
