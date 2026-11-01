@@ -52,6 +52,7 @@ import {
   addFrame,
   bakeEffectsOnEveryFrame,
   deleteFrame,
+  deleteFrames,
   eachFrame,
   frameCount,
   moveFrame,
@@ -2041,6 +2042,13 @@ export class Editor {
   deleteFrame(f = activeFrame(this.doc)): boolean {
     if (frameCount(this.doc) < 2) return false;
     this.edit((doc) => deleteFrame(doc, f));
+    return true;
+  }
+
+  /** Deletes several frames at once, in one step to undo; a board keeps at least one. */
+  deleteFrames(frames: number[]): boolean {
+    if (frameCount(this.doc) < 2 || !frames.length) return false;
+    this.edit((doc) => deleteFrames(doc, frames));
     return true;
   }
 

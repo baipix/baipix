@@ -5,6 +5,7 @@ import { flattenFrame } from '../src/engine/composite';
 import {
   addFrame,
   celOf,
+  deleteFrames,
   isStill,
   normalizeFrames,
   onionFrames,
@@ -196,6 +197,34 @@ describe('animation frames in the browser', () => {
     const back = readStoredFile(structuredClone(storeFile(doc(e))))!;
     expect(back.layers[0].outside).toBeDefined();
     expect(back.layers[0].cels![1]!.outside).toBeDefined();
+  });
+});
+
+describe('several frames at once', () => {
+  it('deletes the picked frames in one step, and undoes them in one', () => {
+    const e = editor();
+    for (let i = 1; i < 5; i++) e.addFrame();
+    const ids = doc(e).frames!.map((f) => f.id);
+    e.deleteFrames([1, 3]);
+    expect(doc(e).frames!.map((f) => f.id)).toEqual([ids[0], ids[2], ids[4]]);
+    e.undo();
+    expect(doc(e).frames!.map((f) => f.id)).toEqual(ids);
+  });
+
+  it('keeps one frame when all are picked', () => {
+    const e = editor();
+    e.addFrame();
+    e.addFrame();
+    deleteFrames(doc(e), [0, 1, 2]);
+    expect(doc(e).frames).toBeUndefined();
+  });
+
+  it('sets the duration of the picked frames only', () => {
+    const e = editor();
+    e.addFrame();
+    e.addFrame();
+    e.setFrameDuration(250, [0, 2]);
+    expect(doc(e).frames!.map((f) => f.duration)).toEqual([250, 100, 250]);
   });
 });
 

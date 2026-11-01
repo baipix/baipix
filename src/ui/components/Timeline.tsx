@@ -12,7 +12,8 @@ import { NumberField } from './NumberField';
 /**
  * The active board's frames, under the canvas: a row per layer (the top one first), a column per
  * frame, a dot where the layer has pixels on that frame. Clicking a cell shows its frame and picks
- * its layer; dragging a frame's number moves the frame.
+ * its layer; dragging a frame's number moves the frame. Shift-click a frame's number picks every
+ * frame up to it, Cmd/Ctrl-click adds or removes one: the duration and Delete then apply to them all.
  */
 const setOnion = (change: Partial<UiState['onion']>) =>
   uiStore.set((s) => ({ onion: { ...s.onion, ...change } }));
@@ -26,9 +27,50 @@ export function Timeline() {
   const onion = uiStore.use((s) => s.onion);
   const ref = useRef<HTMLDivElement>(null);
   const [dragged, setDragged] = useState<number | null>(null);
+  // The frames picked with Shift or Cmd/Ctrl, by id so they follow a move; fewer than two: the shown one.
+  const [picked, setPicked] = useState<string[]>([]);
+  const anchor = useRef(0);
   const count = frameCount(doc);
   const shown = activeFrame(doc);
   const duration = doc.frames?.[shown].duration;
+  const ids = doc.frames?.map((f) => f.id) ?? [];
+  const pickedFrames = ids.flatMap((id, f) => (picked.includes(id) ? [f] : []));
+  // Showing a frame outside the pick (playing, stepping, a cell clicked) leaves it aside.
+  const selected = pickedFrames.length > 1 && pickedFrames.includes(shown) ? pickedFrames : [shown];
+  const isSelected = (f: number) => selected.length > 1 && selected.includes(f);
+
+  // Another board: nothing picked.
+  useEffect(() => setPicked([]), [doc.id]);
+
+  const pickFrame = (e: ReactMouseEvent, f: number) => {
+    pause();
+    if (e.shiftKey) {
+      // From the last frame clicked while picking, or else from the shown one.
+      const start = selected.length > 1 ? anchor.current : shown;
+      const [from, to] = [Math.min(start, f), Math.max(start, f)];
+      setPicked(ids.slice(from, to + 1));
+    } else if (e.metaKey || e.ctrlKey) {
+      const current = selected.map((s) => ids[s]);
+      const id = ids[f];
+      const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
+      setPicked(next);
+      anchor.current = f;
+      // Removed from the pick: the shown frame stays, or moves to another picked one if it was this one.
+      if (!next.includes(id)) {
+        if (f === shown && next.length) editor.setFrame(ids.indexOf(next[next.length - 1]));
+        return;
+      }
+    } else {
+      setPicked([]);
+      anchor.current = f;
+    }
+    editor.setFrame(f);
+  };
+
+  const deleteSelected = () => {
+    editor.deleteFrames(selected);
+    setPicked([]);
+  };
 
   // Which layers have pixels on which frame, for the dots.
   const drawn = useMemo(
@@ -69,6 +111,9 @@ export function Timeline() {
   const frameMenu = (e: ReactMouseEvent<HTMLElement>, f: number) => {
     e.preventDefault();
     pause();
+    // On a picked frame, the menu is for all of them; elsewhere, for that frame alone.
+    const many = isSelected(f);
+    if (!many) setPicked([]);
     editor.setFrame(f);
     openMenu(e.currentTarget, [
       { label: t('timeline.add'), icon: 'plus', shortcut: 'Alt+N', onSelect: () => editor.addFrame() },
@@ -79,10 +124,10 @@ export function Timeline() {
         onSelect: () => editor.addFrame(true),
       },
       {
-        label: t('timeline.delete'),
+        label: many ? t('timeline.deleteFrames', { n: selected.length }) : t('timeline.delete'),
         icon: 'trash',
         disabled: count < 2,
-        onSelect: () => editor.deleteFrame(f),
+        onSelect: () => (many ? deleteSelected() : editor.deleteFrame(f)),
       },
     ]);
   };
@@ -119,7 +164,7 @@ export function Timeline() {
               ariaLabel={t('timeline.duration')}
               label={t('timeline.duration')}
               sensitivity={1}
-              onChange={(ms, final) => final && editor.setFrameDuration(ms, [shown])}
+              onChange={(ms, final) => final && editor.setFrameDuration(ms, selected)}
             />
           </div>
         )}
@@ -170,8 +215,10 @@ export function Timeline() {
         />
         <IconButton
           icon="trash"
-          label={t('timeline.delete')}
-          onClick={() => editor.deleteFrame()}
+          label={
+            selected.length > 1 ? t('timeline.deleteFrames', { n: selected.length }) : t('timeline.delete')
+          }
+          onClick={deleteSelected}
           disabled={count < 2}
         />
         <IconButton icon="close" label={t('timeline.hide')} shortcut="Shift+A" onClick={toggleTimeline} />
@@ -185,10 +232,13 @@ export function Timeline() {
           <button
             key={doc.frames?.[f].id ?? f}
             type="button"
-            className={`timeline-frame${f === shown ? ' is-active' : ''}${f === dragged ? ' is-dragged' : ''}`}
+            className={`timeline-frame${f === shown ? ' is-active' : ''}${isSelected(f) ? ' is-picked' : ''}${
+              f === dragged ? ' is-dragged' : ''
+            }`}
+            aria-pressed={isSelected(f) || f === shown}
             draggable
             data-tip={t('timeline.frame', { n: f + 1, ms: doc.frames?.[f].duration ?? 0 })}
-            onClick={() => (pause(), editor.setFrame(f))}
+            onClick={(e) => pickFrame(e, f)}
             onContextMenu={(e) => frameMenu(e, f)}
             onDragStart={(e) => {
               e.dataTransfer.effectAllowed = 'move';
@@ -214,7 +264,7 @@ export function Timeline() {
               <button
                 key={f}
                 type="button"
-                className={`timeline-cel${f === shown ? ' in-frame' : ''}${
+                className={`timeline-cel${f === shown || isSelected(f) ? ' in-frame' : ''}${
                   f === shown && index === doc.activeLayer ? ' is-active' : ''
                 }`}
                 aria-label={`${layer.name}, ${t('timeline.frame', { n: f + 1, ms: doc.frames?.[f].duration ?? 0 })}`}

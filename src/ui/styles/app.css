@@ -3558,6 +3558,10 @@ body.is-dragging-swatch * {
   background: var(--glow);
   color: var(--glow-ink);
 }
+/* Picked with Shift or Cmd/Ctrl, besides the shown one. */
+.timeline-frame.is-picked:not(.is-active) {
+  background: var(--selected);
+}
 .timeline-frame.is-dragged {
   opacity: 0.4;
 }
