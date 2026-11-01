@@ -42,6 +42,7 @@ test('adds, hides, reorders and merges layers', async ({ page }) => {
   await clickMenuItem(page, 'Layer', 'Merge down');
 
   await expect(rows).toHaveCount(2);
+  await expect.poll(() => getLayerNames(page)).toEqual(['Layer 2', 'Layer 1']);
 });
 
 test('creates and switches between boards in one file', async ({ page }) => {
@@ -88,5 +89,7 @@ test('switches the interface language', async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Language', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Français', exact: true }).click();
 
-  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  const frenchMenubar = page.getByRole('menubar', { name: 'Menu principal' });
+
+  await expect(frenchMenubar.getByRole('menuitem', { name: 'Fichier', exact: true })).toBeVisible();
 });
