@@ -2,7 +2,7 @@ import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { filesMenu, mainMenu } from '../menus';
-import { uiStore } from '../uiStore';
+import { openDialog, uiStore } from '../uiStore';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 
@@ -49,11 +49,7 @@ export function MobileBar() {
         pressed={sheet === 'right'}
         onClick={() => toggle('right')}
       />
-      <button
-        type="button"
-        className="btn btn-primary"
-        onClick={() => void actions.exportImage(uiStore.get().exportFormat, uiStore.get().exportActiveLayer)}
-      >
+      <button type="button" className="btn btn-primary" onClick={() => openDialog({ type: 'export' })}>
         {t('export.button')}
       </button>
     </div>

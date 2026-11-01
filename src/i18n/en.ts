@@ -134,7 +134,7 @@ export const en = {
   'menu.newFile': 'New file…',
   'menu.open': 'Open a .baipix file…',
   'menu.importImage': 'Import an image…',
-  'menu.export': 'Export',
+  'menu.export': 'Export…',
   'menu.copySvg': 'Copy as SVG',
   'menu.copyPng': 'Copy as PNG',
   'menu.undo': 'Undo',

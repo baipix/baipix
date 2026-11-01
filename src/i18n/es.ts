@@ -135,7 +135,7 @@ export const es: Record<MessageKey, string> = {
   'menu.newFile': 'Nuevo archivo…',
   'menu.open': 'Abrir un archivo .baipix…',
   'menu.importImage': 'Importar una imagen…',
-  'menu.export': 'Exportar',
+  'menu.export': 'Exportar…',
   'menu.copySvg': 'Copiar como SVG',
   'menu.copyPng': 'Copiar como PNG',
   'menu.undo': 'Deshacer',

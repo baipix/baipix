@@ -14,6 +14,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- File › Export, Ctrl+E and Ctrl+S open the Export dialog, as the Export button does, instead of exporting straight away in the last format picked. ([#651](https://github.com/baipix/baipix/pull/651))
 - Ctrl+C on a selection or on layers also puts them on the clipboard as SVG: pasted into Figma, they come out as shapes you can edit, while other apps still get the picture. ([#604](https://github.com/baipix/baipix/pull/604))
 
 ### Fixed
