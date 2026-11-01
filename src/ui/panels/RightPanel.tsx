@@ -749,6 +749,7 @@ export function ExportOptions() {
             aria-label={t('export.format')}
           >
             <option value="png">PNG</option>
+            <option value="gif">GIF</option>
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
