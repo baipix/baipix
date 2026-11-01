@@ -11,6 +11,10 @@ import {
 const PROBE_TIMEOUT = 2_000;
 // Adopting changes from other tabs (changedElsewhere) has no UI signal, so give it a moment.
 const SYNC_SETTLE_MS = 300;
+// Maximum time to wait for changes from the other tab to appear.
+const TAB_SYNC_TIMEOUT = 15_000;
+// Maximum time to wait for a board's drawing to appear in its layer thumbnail.
+const BOARD_CONTENT_TIMEOUT = 10_000;
 
 const boardItems = (page: Page) => page.locator('.panel-left .board-item');
 
@@ -110,21 +114,23 @@ test('keeps changes from two tabs without overwriting either board', async ({ pa
     await waitUntilBoardsSaved(context, [1]);
 
     // Tab A (idle on the first board) should receive Tab B's drawing.
-    await expect.poll(() => syncAndCheckBoard(page, 1, 0), { timeout: 15_000 }).toBe(true);
+    await expect.poll(() => syncAndCheckBoard(page, 1, 0), { timeout: TAB_SYNC_TIMEOUT }).toBe(true);
 
     // Tab A draws on the first board.
     await drawOnBoard(page, 0);
     await waitUntilBoardsSaved(context, [0, 1]);
 
     // Tab B (idle on the second board) should receive Tab A's drawing.
-    await expect.poll(() => syncAndCheckBoard(pageB, 0, 1), { timeout: 15_000 }).toBe(true);
+    await expect.poll(() => syncAndCheckBoard(pageB, 0, 1), { timeout: TAB_SYNC_TIMEOUT }).toBe(true);
 
     // Both drawings are visible in both tabs...
     for (const tab of [page, pageB]) {
       await tab.bringToFront();
 
       for (const index of [0, 1]) {
-        await expect.poll(() => openBoardHasPixels(tab, index), { timeout: 10_000 }).toBe(true);
+        await expect
+          .poll(() => openBoardHasPixels(tab, index), { timeout: BOARD_CONTENT_TIMEOUT })
+          .toBe(true);
       }
     }
 
