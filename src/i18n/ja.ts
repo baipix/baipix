@@ -594,6 +594,7 @@ export const ja: Record<MessageKey, string> = {
   'export.info': '{w} × {h} px、',
   'export.withBackground': '背景あり',
   'export.transparent': '背景は透明',
+  'export.layerEmpty': '{name}は空です。全体を書き出すには「選択中のレイヤーのみ」をオフにしてください。',
   'export.name': '名前',
   'export.includeBackground': '背景を含める',
   'export.previewLabel': '書き出す画像のプレビュー',

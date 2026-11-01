@@ -597,6 +597,7 @@ export const uk: Record<MessageKey, string> = {
   'export.info': '{w} × {h} px,',
   'export.withBackground': 'із тлом',
   'export.transparent': 'прозоре тло',
+  'export.layerEmpty': '{name} порожній. Зніміть «Лише активний шар», щоб експортувати весь малюнок.',
   'export.name': 'Назва',
   'export.includeBackground': 'Додати тло',
   'export.previewLabel': 'Попередній перегляд експортованого зображення',
