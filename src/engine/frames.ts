@@ -183,6 +183,24 @@ export function deleteFrames(doc: PixelDoc, frames: number[]): boolean {
   return deleted;
 }
 
+/**
+ * Reverses the order of the given frames, in the places they hold (the others don't move), keeping
+ * the shown frame shown: a loop that goes back.
+ */
+export function reverseFrames(doc: PixelDoc, frames: number[]): boolean {
+  const at = [...new Set(frames)].filter((f) => f >= 0 && f < frameCount(doc)).sort((a, b) => a - b);
+  if (!doc.frames || at.length < 2) return false;
+  const shown = doc.frames[activeFrame(doc)];
+  const reorder = <T>(list: T[]) => {
+    const picked = at.map((f) => list[f]).reverse();
+    at.forEach((f, i) => (list[f] = picked[i]));
+  };
+  reorder(doc.frames);
+  for (const layer of doc.layers) reorder(layer.cels!);
+  doc.activeFrame = doc.frames.indexOf(shown);
+  return true;
+}
+
 /** Moves frame `from` to index `to`, keeping the shown frame shown. */
 export function moveFrame(doc: PixelDoc, from: number, to: number): boolean {
   const n = frameCount(doc);

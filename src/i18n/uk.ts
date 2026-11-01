@@ -562,6 +562,7 @@ export const uk: Record<MessageKey, string> = {
   'timeline.add': 'Новий кадр',
   'timeline.addEmpty': 'Новий порожній кадр',
   'timeline.delete': 'Видалити кадр',
+  'timeline.reverse': 'Обернути порядок кадрів',
   'timeline.deleteFrames': 'Видалити кадри: {n}',
   'timeline.hide': 'Сховати шкалу часу',
   'timeline.frame': 'Кадр {n}, {ms} мс',
