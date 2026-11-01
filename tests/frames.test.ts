@@ -199,6 +199,33 @@ describe('animation frames in the browser', () => {
   });
 });
 
+describe('empty frames', () => {
+  it('keeps the scenery and empties what moves', () => {
+    const e = editor();
+    dot(e, 0, 0); // The sky, on the bottom layer.
+    e.addLayer();
+    e.addFrame();
+    dot(e, 3, 3); // The character moves on the second frame.
+    e.addFrame(true);
+    const d = doc(e);
+    expect(d.activeFrame).toBe(2);
+    expect(at(e, 0, 0, 0)).toBe(RED);
+    expect(d.layers[1].pixels.every((c) => c === 0)).toBe(true);
+  });
+
+  it('on a single frame, empties only the active layer', () => {
+    const e = editor();
+    dot(e, 0, 0);
+    e.addLayer();
+    dot(e, 1, 1);
+    e.addFrame(true);
+    expect(at(e, 0, 0, 0)).toBe(RED);
+    expect(at(e, 1, 1, 1)).toBe(0);
+    e.setFrame(0);
+    expect(at(e, 1, 1, 1)).toBe(RED);
+  });
+});
+
 describe('onion skin', () => {
   const walk = (frames: number, shown: number) => {
     const e = editor();

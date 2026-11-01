@@ -561,6 +561,7 @@ export const fr: Record<MessageKey, string> = {
   'timeline.pause': 'Pause',
   'timeline.duration': 'Durée',
   'timeline.add': 'Nouvelle frame',
+  'timeline.addEmpty': 'Nouvelle frame vide',
   'timeline.delete': 'Supprimer la frame',
   'timeline.hide': 'Masquer la timeline',
   'timeline.frame': 'Frame {n}, {ms} ms',

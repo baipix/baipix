@@ -156,11 +156,11 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         )[e.code as 'KeyA'];
         if (to && !e.shiftKey) return (e.preventDefault(), editor.align(to));
       }
-      // Frames, like in Aseprite: Alt+N adds one, comma and period step through, Enter plays.
-      if (ANIMATION && e.altKey && !e.shiftKey && e.code === 'KeyN') {
+      // Frames, like in Aseprite: Alt+N adds one, Alt+B an empty one, comma and period step through, Enter plays.
+      if (ANIMATION && e.altKey && !e.shiftKey && (e.code === 'KeyN' || e.code === 'KeyB')) {
         e.preventDefault();
         uiStore.set({ timeline: true });
-        return editor.addFrame();
+        return editor.addFrame(e.code === 'KeyB');
       }
       if (ANIMATION && (e.key === ',' || e.key === '.')) return stepFrame(editor, e.key === ',' ? -1 : 1);
       if (ANIMATION && e.key === 'Enter' && uiStore.get().timeline)
