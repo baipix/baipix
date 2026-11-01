@@ -135,7 +135,7 @@ export const uk: Record<MessageKey, string> = {
   'menu.newFile': 'Новий файл…',
   'menu.open': 'Відкрити файл .baipix…',
   'menu.importImage': 'Імпортувати зображення…',
-  'menu.export': 'Експортувати',
+  'menu.export': 'Експортувати…',
   'menu.copySvg': 'Копіювати як SVG',
   'menu.copyPng': 'Копіювати як PNG',
   'menu.undo': 'Скасувати дію',

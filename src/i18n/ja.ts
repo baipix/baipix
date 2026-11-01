@@ -135,7 +135,7 @@ export const ja: Record<MessageKey, string> = {
   'menu.newFile': '新規ファイル…',
   'menu.open': '.baipixファイルを開く…',
   'menu.importImage': '画像を読み込む…',
-  'menu.export': '書き出し',
+  'menu.export': '書き出し…',
   'menu.copySvg': 'SVGとしてコピー',
   'menu.copyPng': 'PNGとしてコピー',
   'menu.undo': '元に戻す',

@@ -72,11 +72,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
           if (key === 'i' && e.shiftKey) return (editor.invertSelection(), true);
           if (key === 'a') return (editor.selectAll(), true);
           if (key === 'd') return (editor.deselect(), true);
-          if (key === 'e' || key === 's')
-            return (
-              void actions.exportImage(uiStore.get().exportFormat, uiStore.get().exportActiveLayer),
-              true
-            );
+          if (key === 'e' || key === 's') return (openDialog({ type: 'export' }), true);
           if (key === 'o') return (void actions.openDocument(), true);
           if (key === 'u') return (openAdjust('all'), true);
           if (key === 'k') return (uiStore.set({ commandPalette: true }), true);
