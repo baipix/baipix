@@ -33,13 +33,12 @@ const total = frames.reduce((sum, f) => sum + f.duration, 0);
  */
 const character = slime.layers.filter((l) => !['Sky', 'Ground'].includes(l.name));
 const alone = { ...slime, layers: character };
-const ONION_AT = 4;
-const around = [ONION_AT - 1, ONION_AT, ONION_AT + 1].map((f) =>
+const alonePixels = Array.from({ length: frames.length }, (_, f) =>
   flattenFrame(alone, f, { includeBackground: false }),
 );
-// Cropped around the slime on the three frames, with a little room.
+// Cropped around the slime over the whole jump, with a little room.
 let [x0, y0, x1, y1] = [w, h, 0, 0];
-around.forEach((pixels) =>
+alonePixels.forEach((pixels) =>
   pixels.forEach((c, i) => {
     if (alpha(c) === 0) return;
     const x = i % w;
@@ -59,15 +58,17 @@ const cropSvg = (pixels: Uint32Array) => {
   for (let y = 0; y < ch; y++) out.set(pixels.subarray((y0 + y) * w + x0, (y0 + y) * w + x0 + cw), y * cw);
   return toSvg(out, cw, ch, renderGeometry(cw, ch, 1, 0));
 };
+// The editor's tints (CanvasView's ONION_TINT), half over the frame's own colors.
 const tint = (pixels: Uint32Array, [tr, tg, tb]: number[]) =>
   pixels.map((c) =>
     alpha(c) === 0 ? 0 : pack((red(c) + tr) >> 1, (green(c) + tg) >> 1, (blue(c) + tb) >> 1, alpha(c)),
   );
-const onion = {
-  before: cropSvg(tint(around[0], [255, 59, 48])),
-  after: cropSvg(tint(around[2], [47, 128, 255])),
-  shown: cropSvg(around[1]),
-};
+const onionFramesSvg = alonePixels.map((pixels) => ({
+  shown: cropSvg(pixels),
+  before: cropSvg(tint(pixels, [255, 59, 48])),
+  after: cropSvg(tint(pixels, [47, 128, 255])),
+}));
+const ONION_START = 4;
 
 const faq = [
   {
@@ -189,15 +190,44 @@ const faq = [
       <SectionHead label="Onion skin" />
       <h2>See where it comes from.</h2>
       <div class="onion-block">
-        <figure class="frame">
+        <figure class="frame onion-figure" data-onion data-start={ONION_START}>
           <div
             class="onion-art"
             role="img"
-            aria-label="The slime rising, with the frame before tinted red and the frame after tinted blue under it"
+            aria-label="The slime on one frame of its jump, with the frames around it tinted under it"
           >
-            <div class="pix onion-ghost" set:html={onion.before} />
-            <div class="pix onion-ghost" set:html={onion.after} />
-            <div class="pix" set:html={onion.shown} />
+            {onionFramesSvg.map((f, i) => (
+              <>
+                <div class="pix" data-ghost="before" data-of={i} hidden set:html={f.before} />
+                <div class="pix" data-ghost="after" data-of={i} hidden set:html={f.after} />
+                <div class="pix" data-shown={i} hidden={i !== ONION_START} set:html={f.shown} />
+              </>
+            ))}
+          </div>
+          <div class="onion-controls">
+            <div class="onion-step">
+              <button type="button" class="btn onion-btn" data-step="-1" aria-label="Previous frame">
+                ‹
+              </button>
+              <output class="onion-label" data-label aria-live="polite">
+                Frame {ONION_START + 1} of {frames.length}
+              </output>
+              <button type="button" class="btn onion-btn" data-step="1" aria-label="Next frame">
+                ›
+              </button>
+            </div>
+            <label class="onion-field">
+              <span class="onion-swatch" data-side="before"></span>Before
+              <input type="number" min="0" max="5" value="1" data-count="before" />
+            </label>
+            <label class="onion-field">
+              <span class="onion-swatch" data-side="after"></span>After
+              <input type="number" min="0" max="5" value="1" data-count="after" />
+            </label>
+            <label class="onion-field onion-opacity">
+              Opacity
+              <input type="range" min="0" max="100" value="40" data-opacity />
+            </label>
           </div>
         </figure>
         <div class="onion-text">
@@ -205,6 +235,11 @@ const faq = [
             The onion skin shows the frames around the one you draw, faded under it: red for the ones before,
             blue for the ones after. Up to five on each side, fainter the further they are, with the opacity
             you pick.
+          </p>
+          <p class="muted">
+            Step through the slime's jump here: the red shows where it's coming from, the blue where it's
+            going. On the squash, the blue already rises; at the top, red and blue almost meet, so the hang
+            reads.
           </p>
           <p class="muted">
             Turn it on from the timeline. It never ends up in an export, it's only there to draw by.
@@ -347,6 +382,42 @@ const faq = [
     toggle.addEventListener('click', () => set(toggle.textContent === 'Play'));
     set(!matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
+
+  // The onion skin as the editor works it out (onionFrames): `before` and `after` frames on each side,
+  // no wrapping around, the nearest the most opaque, all under the frame shown.
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-onion]')) {
+    const shown = [...demo.querySelectorAll<HTMLElement>('[data-shown]')];
+    const ghosts = [...demo.querySelectorAll<HTMLElement>('[data-ghost]')];
+    const label = demo.querySelector<HTMLOutputElement>('[data-label]')!;
+    const count = (side: string) => demo.querySelector<HTMLInputElement>(`[data-count="${side}"]`)!;
+    const opacity = demo.querySelector<HTMLInputElement>('[data-opacity]')!;
+    const n = shown.length;
+    let frame = Number(demo.dataset.start ?? 0);
+    const draw = () => {
+      const o = Number(opacity.value) / 100;
+      shown.forEach((el, i) => (el.hidden = i !== frame));
+      for (const el of ghosts) {
+        const side = el.dataset.ghost!;
+        const of = Number(el.dataset.of);
+        const k = Math.min(5, Math.max(0, Number(count(side).value) || 0));
+        const d = side === 'before' ? frame - of : of - frame;
+        el.hidden = d < 1 || d > k;
+        if (el.hidden) continue;
+        el.style.opacity = String((o * (k - d + 1)) / k);
+        // The farthest at the bottom, the frame shown on top.
+        el.style.zIndex = String(10 - d);
+      }
+      shown[frame].style.zIndex = '20';
+      label.textContent = `Frame ${frame + 1} of ${n}`;
+    };
+    for (const button of demo.querySelectorAll<HTMLButtonElement>('[data-step]'))
+      button.addEventListener('click', () => {
+        frame = Math.min(n - 1, Math.max(0, frame + Number(button.dataset.step)));
+        draw();
+      });
+    for (const input of demo.querySelectorAll('input')) input.addEventListener('input', draw);
+    draw();
+  }
 </script>
 
 <style>
@@ -411,6 +482,9 @@ const faq = [
     margin-top: 40px;
     align-items: center;
   }
+  .onion-figure {
+    gap: 24px;
+  }
   .onion-art {
     display: grid;
     width: min(100%, 320px);
@@ -418,8 +492,59 @@ const faq = [
   .onion-art > .pix {
     grid-area: 1 / 1;
   }
-  .onion-ghost {
-    opacity: 0.4;
+  .onion-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px 20px;
+    font-size: 14px;
+  }
+  .onion-step {
+    display: flex;
+    flex-basis: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .onion-btn {
+    width: 44px;
+    padding: 0;
+    font-size: 20px;
+  }
+  .onion-label {
+    min-width: 9ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .onion-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .onion-field input[type='number'] {
+    width: 52px;
+    height: 32px;
+    padding: 0 6px;
+    border: 2px solid var(--line-strong);
+    border-radius: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+  .onion-field input[type='range'] {
+    width: 96px;
+    accent-color: var(--accent);
+  }
+  .onion-swatch {
+    width: 10px;
+    height: 10px;
+  }
+  .onion-swatch[data-side='before'] {
+    background: rgb(255 59 48);
+  }
+  .onion-swatch[data-side='after'] {
+    background: rgb(47 128 255);
   }
   .onion-text {
     display: grid;
