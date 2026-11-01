@@ -5,6 +5,7 @@ import { isMenuOpen } from '../components/Menu';
 import { renameFile, togglePreview } from '../menus';
 import { keyState } from '../keyState';
 import { TOOL_LIST } from '../tools';
+import { frameCount } from '../../engine/frames';
 import { ANIMATION } from '../features';
 import { stepFrame, togglePlay } from '../playback';
 import { openAdjust, openDialog, toggleLayersPanel, toggleTimeline, uiStore } from '../uiStore';
@@ -14,6 +15,9 @@ const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && !!target.closest('input, textarea, select, [contenteditable]');
 
 /** Global keyboard shortcuts. Uses `event.code` for digits so AZERTY layouts work too. */
+/** How short a press of Space plays or pauses instead of panning, in ms. */
+const SPACE_TAP_MS = 250;
+
 export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -43,6 +47,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         return toggleLayersPanel();
       }
       if (e.code === 'Space') {
+        if (!keyState.space) spaceTap = { at: performance.now(), panned: false };
         keyState.space = true;
         document.body.classList.add('is-panning');
         e.preventDefault();
@@ -202,9 +207,19 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
     };
     const release = () => {
       keyState.space = false;
+      spaceTap = null;
       document.body.classList.remove('is-panning');
     };
-    const onKeyUp = (e: KeyboardEvent) => e.code === 'Space' && release();
+    // Space held pans the view; tapped with the timeline open, it plays or pauses, like in video editors.
+    let spaceTap: { at: number; panned: boolean } | null = null;
+    const onPointerDown = () => spaceTap && (spaceTap.panned = true);
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      const tap = spaceTap;
+      release();
+      if (!ANIMATION || !tap || tap.panned || performance.now() - tap.at > SPACE_TAP_MS) return;
+      if (uiStore.get().timeline && frameCount(editor.getState().doc) > 1) togglePlay(editor);
+    };
     const onPaste = (e: ClipboardEvent) => {
       if (isTyping(e.target) || uiStore.get().home) return;
       const files = [...(e.clipboardData?.files ?? [])];
@@ -214,11 +229,13 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('pointerdown', onPointerDown, true);
     window.addEventListener('blur', release);
     document.addEventListener('paste', onPaste);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('pointerdown', onPointerDown, true);
       window.removeEventListener('blur', release);
       document.removeEventListener('paste', onPaste);
     };
