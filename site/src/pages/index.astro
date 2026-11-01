@@ -135,21 +135,26 @@ const features = [
       </div>
       <div class="container">
         <figure class="shot">
-          <img
-            class="for-light"
-            src={`${base}screenshot-light.png`}
-            width="1440"
-            height="900"
-            alt="The Baipix editor with a pixel art sunset: the menu bar on top, layers and a floating preview on the left, tools at the bottom, properties on the right."
-          />
-          <img
-            class="for-dark"
-            src={`${base}screenshot-dark.png`}
-            width="1440"
-            height="900"
-            alt="The Baipix editor with a pixel art sunset: the menu bar on top, layers and a floating preview on the left, tools at the bottom, properties on the right."
-            loading="lazy"
-          />
+          <!-- The animation, or the still screenshot for visitors who'd rather not have motion. -->
+          <picture class="for-light">
+            <source srcset={`${base}screenshot-light.png`} media="(prefers-reduced-motion: reduce)" />
+            <img
+              src={`${base}hero-light.webp`}
+              width="1440"
+              height="900"
+              alt="The Baipix editor with a green slime jumping on a pixel art sunset: the timeline at the bottom plays its fourteen frames, layers and a floating preview on the left, tools above the timeline, properties on the right."
+            />
+          </picture>
+          <picture class="for-dark">
+            <source srcset={`${base}screenshot-dark.png`} media="(prefers-reduced-motion: reduce)" />
+            <img
+              src={`${base}hero-dark.webp`}
+              width="1440"
+              height="900"
+              alt="The Baipix editor with a green slime jumping on a pixel art sunset: the timeline at the bottom plays its fourteen frames, layers and a floating preview on the left, tools above the timeline, properties on the right."
+              loading="lazy"
+            />
+          </picture>
           <span class="shot-pixel" aria-hidden="true"></span>
         </figure>
       </div>
@@ -290,7 +295,11 @@ const features = [
       0 2px 0 0 var(--edge),
       0 10px 0 0 var(--edge);
   }
+  .shot picture {
+    display: block;
+  }
   .shot img {
+    display: block;
     width: 100%;
     height: auto;
     border-radius: 0;
