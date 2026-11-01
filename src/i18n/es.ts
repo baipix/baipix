@@ -565,6 +565,7 @@ export const es: Record<MessageKey, string> = {
   'timeline.add': 'Nuevo fotograma',
   'timeline.addEmpty': 'Nuevo fotograma vacío',
   'timeline.delete': 'Eliminar fotograma',
+  'timeline.reverse': 'Invertir el orden de los fotogramas',
   'timeline.deleteFrames': 'Eliminar {n} fotogramas',
   'timeline.hide': 'Ocultar la línea de tiempo',
   'timeline.frame': 'Fotograma {n}, {ms} ms',

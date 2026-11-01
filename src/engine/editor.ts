@@ -56,6 +56,7 @@ import {
   eachFrame,
   frameCount,
   moveFrame,
+  reverseFrames,
   normalizeFrames,
   onEachFrame,
   setCels,
@@ -2050,6 +2051,12 @@ export class Editor {
     if (frameCount(this.doc) < 2 || !frames.length) return false;
     this.edit((doc) => deleteFrames(doc, frames));
     return true;
+  }
+
+  /** Reverses the order of the given frames, in their places. */
+  reverseFrames(frames: number[]): void {
+    if (new Set(frames).size < 2) return;
+    this.edit((doc) => reverseFrames(doc, frames));
   }
 
   /** Moves frame `from` to `to`. */

@@ -211,6 +211,29 @@ describe('several frames at once', () => {
     expect(doc(e).frames!.map((f) => f.id)).toEqual(ids);
   });
 
+  it('reverses the picked frames in their places, the shown one still shown', () => {
+    const e = editor();
+    for (let i = 1; i < 5; i++) e.addFrame();
+    const ids = doc(e).frames!.map((f) => f.id);
+    e.setFrame(1);
+    e.reverseFrames([1, 2, 4]);
+    expect(doc(e).frames!.map((f) => f.id)).toEqual([ids[0], ids[4], ids[2], ids[3], ids[1]]);
+    expect(doc(e).frames![doc(e).activeFrame!].id).toBe(ids[1]);
+    e.undo();
+    expect(doc(e).frames!.map((f) => f.id)).toEqual(ids);
+  });
+
+  it('moves the pixels with their frames', () => {
+    const e = editor();
+    e.addFrame();
+    dot(e, 2, 2);
+    e.reverseFrames([0, 1]);
+    e.setFrame(0);
+    expect(at(e, 2, 2)).toBe(RED);
+    e.setFrame(1);
+    expect(at(e, 2, 2)).not.toBe(RED);
+  });
+
   it('keeps one frame when all are picked', () => {
     const e = editor();
     e.addFrame();

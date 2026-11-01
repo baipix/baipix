@@ -124,6 +124,13 @@ export function Timeline() {
         onSelect: () => editor.addFrame(true),
       },
       {
+        label: t('timeline.reverse'),
+        icon: 'swap',
+        disabled: !many,
+        onSelect: () => editor.reverseFrames(selected),
+      },
+      '-',
+      {
         label: many ? t('timeline.deleteFrames', { n: selected.length }) : t('timeline.delete'),
         icon: 'trash',
         disabled: count < 2,
