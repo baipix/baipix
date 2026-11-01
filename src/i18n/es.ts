@@ -602,6 +602,7 @@ export const es: Record<MessageKey, string> = {
   'export.info': '{w} × {h} px,',
   'export.withBackground': 'con fondo',
   'export.transparent': 'fondo transparente',
+  'export.layerEmpty': '{name} está vacía. Desmarca Solo la capa activa para exportar todo el dibujo.',
   'export.name': 'Nombre',
   'export.includeBackground': 'Incluir el fondo',
   'export.previewLabel': 'Vista previa de la imagen exportada',

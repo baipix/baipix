@@ -593,6 +593,7 @@ export const en = {
   'export.info': '{w} × {h} px,',
   'export.withBackground': 'with background',
   'export.transparent': 'transparent background',
+  'export.layerEmpty': '{name} is empty. Untick Active layer only to export the whole drawing.',
   'export.name': 'Name',
   'export.includeBackground': 'Include the background',
   'export.previewLabel': 'Preview of the exported image',

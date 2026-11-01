@@ -599,6 +599,7 @@ export const fr: Record<MessageKey, string> = {
   'export.info': '{w} × {h} px,',
   'export.withBackground': 'avec fond',
   'export.transparent': 'fond transparent',
+  'export.layerEmpty': '{name} est vide. Décoche Calque actif uniquement pour exporter tout le dessin.',
   'export.name': 'Nom',
   'export.includeBackground': 'Inclure le fond',
   'export.previewLabel': "Aperçu de l'image exportée",
