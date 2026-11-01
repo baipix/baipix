@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
 import { flattenFrame } from '../src/engine/composite';
-import { addFrame, celOf, normalizeFrames, onionFrames, showFrame } from '../src/engine/frames';
+import {
+  addFrame,
+  celOf,
+  isStill,
+  normalizeFrames,
+  onionFrames,
+  showFrame,
+  stillUnder,
+} from '../src/engine/frames';
 import { createDocument } from '../src/engine/document';
 import { documentFromJson, documentToJson, deserializeDocument } from '../src/storage/fileFormat';
 import { packHistories, unpackHistories } from '../src/storage/history';
@@ -210,6 +218,30 @@ describe('onion skin', () => {
   it("doesn't loop around the ends", () => {
     const frames = onionFrames(walk(3, 0), { before: 2, after: 5, opacity: 0.5 }).map((o) => o.frame);
     expect(frames).toEqual([2, 1]);
+  });
+
+  it('goes over the still layers at the bottom, under the first one that moves', () => {
+    const e = editor();
+    dot(e, 0, 0); // A sky on the bottom layer, the same on every frame.
+    e.addLayer();
+    e.addLayer();
+    e.addFrame();
+    dot(e, 2, 2); // On the top layer, on the new frame only: it moves.
+    const d = doc(e);
+    expect(d.layers.map((l) => isStill(d, l))).toEqual([true, true, false]);
+    expect(stillUnder(d)).toBe(2);
+  });
+
+  it('stops at a layer that moves, even with still ones above', () => {
+    const e = editor();
+    e.addLayer();
+    e.setActiveLayer(0);
+    e.addFrame();
+    dot(e, 1, 1);
+    const d = doc(e);
+    expect(isStill(d, d.layers[0])).toBe(false);
+    expect(isStill(d, d.layers[1])).toBe(true);
+    expect(stillUnder(d)).toBe(0);
   });
 
   it('merges another frame without showing it', () => {
