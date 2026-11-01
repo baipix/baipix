@@ -124,6 +124,18 @@ export function Timeline() {
         onSelect: () => editor.addFrame(true),
       },
       {
+        label: many ? t('timeline.copyFrames', { n: selected.length }) : t('timeline.copy'),
+        icon: 'duplicate',
+        onSelect: () => editor.copyFrames(many ? selected : [f]),
+      },
+      {
+        label: t('timeline.paste'),
+        icon: 'paste',
+        disabled: !editor.canPasteFrames(),
+        onSelect: () => (setPicked([]), editor.pasteFrames()),
+      },
+      '-',
+      {
         label: t('timeline.reverse'),
         icon: 'swap',
         disabled: !many,
