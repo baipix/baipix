@@ -1,5 +1,50 @@
 import { Buffer } from 'node:buffer';
-import { expect, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page } from '@playwright/test';
+
+/** Runs in a probe page before the app starts: it may read saved work, never write it. */
+function blockSaving() {
+  const store = IDBObjectStore.prototype as unknown as Record<string, unknown>;
+
+  store.put = () => {
+    throw new DOMException('Probe pages must not save.', 'ReadOnlyError');
+  };
+}
+
+/**
+ * Retries with a fresh page until `check` passes, instead of waiting a fixed time.
+ *
+ * Baipix rewrites what it loaded on mount (after 600 ms) and on pagehide, so a probe that
+ * loaded a stale state would overwrite the newer save and every later attempt would fail.
+ * Probes are therefore read-only, and closed after each attempt.
+ */
+export async function waitUntilSaved(
+  context: BrowserContext,
+  check: (page: Page) => Promise<void>,
+  timeout = 10_000,
+) {
+  await expect(async () => {
+    const probe = await context.newPage();
+
+    try {
+      await probe.addInitScript(blockSaving);
+      await probe.goto('/');
+
+      await check(probe);
+    } finally {
+      await probe.close();
+    }
+  }).toPass({ timeout });
+}
+
+/** A normal page, opened only once `waitUntilSaved` has shown that storage holds the state. */
+export async function openEditor(context: BrowserContext): Promise<Page> {
+  const page = await context.newPage();
+
+  await page.goto('/');
+  await expect(page.locator('canvas.canvas')).toBeVisible();
+
+  return page;
+}
 
 export async function createNewFile(page: Page, width = 32, height = 32) {
   await page.goto('/');
