@@ -225,3 +225,26 @@ export function onionFrames(
     }
   return out;
 }
+
+/** Whether a layer has the same pixels on every frame: scenery that doesn't move. */
+export function isStill(doc: PixelDoc, layer: Layer): boolean {
+  const shown = layer.pixels;
+  for (let f = 0; f < frameCount(doc); f++) {
+    const { pixels } = celOf(doc, layer, f);
+    if (pixels === shown) continue;
+    if (pixels.length !== shown.length) return false;
+    for (let i = 0; i < shown.length; i++) if (pixels[i] !== shown[i]) return false;
+  }
+  return true;
+}
+
+/**
+ * How many layers at the bottom of the stack, outside any group, are the same on every frame: a sky,
+ * a room, the ground. The onion skin goes over them, as over the board's background color, or an
+ * opaque one would hide it.
+ */
+export function stillUnder(doc: PixelDoc): number {
+  let k = 0;
+  while (k < doc.layers.length && !doc.layers[k].group && isStill(doc, doc.layers[k])) k++;
+  return k;
+}
