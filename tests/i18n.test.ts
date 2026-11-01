@@ -5,11 +5,13 @@ import { en, type MessageKey } from '../src/i18n/en';
 import { fr } from '../src/i18n/fr';
 import { uk } from '../src/i18n/uk';
 import { es } from '../src/i18n/es';
+import { ja } from '../src/i18n/ja';
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
   uk,
   es,
+  ja,
 };
 
 const getPlaceholders = (text: string): string[] =>
