@@ -557,6 +557,7 @@ export const en = {
   'timeline.add': 'New frame',
   'timeline.addEmpty': 'New empty frame',
   'timeline.delete': 'Delete frame',
+  'timeline.deleteFrames': 'Delete {n} frames',
   'timeline.hide': 'Hide the timeline',
   'timeline.frame': 'Frame {n}, {ms} ms',
   'timeline.previous': 'Previous frame',

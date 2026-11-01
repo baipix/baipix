@@ -558,6 +558,7 @@ export const ja: Record<MessageKey, string> = {
   'timeline.add': '新規フレーム',
   'timeline.addEmpty': '新規空白フレーム',
   'timeline.delete': 'フレームを削除',
+  'timeline.deleteFrames': '{n}個のフレームを削除',
   'timeline.hide': 'タイムラインを隠す',
   'timeline.frame': 'フレーム{n}、{ms}ms',
   'timeline.previous': '前のフレーム',

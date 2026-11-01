@@ -563,6 +563,7 @@ export const fr: Record<MessageKey, string> = {
   'timeline.add': 'Nouvelle frame',
   'timeline.addEmpty': 'Nouvelle frame vide',
   'timeline.delete': 'Supprimer la frame',
+  'timeline.deleteFrames': 'Supprimer {n} frames',
   'timeline.hide': 'Masquer la timeline',
   'timeline.frame': 'Frame {n}, {ms} ms',
   'timeline.previous': 'Frame précédente',

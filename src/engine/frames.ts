@@ -176,6 +176,13 @@ export function deleteFrame(doc: PixelDoc, f: number): boolean {
   return true;
 }
 
+/** Deletes the given frames, the last first; the board keeps at least one. */
+export function deleteFrames(doc: PixelDoc, frames: number[]): boolean {
+  let deleted = false;
+  for (const f of [...new Set(frames)].sort((a, b) => b - a)) deleted = deleteFrame(doc, f) || deleted;
+  return deleted;
+}
+
 /** Moves frame `from` to index `to`, keeping the shown frame shown. */
 export function moveFrame(doc: PixelDoc, from: number, to: number): boolean {
   const n = frameCount(doc);
