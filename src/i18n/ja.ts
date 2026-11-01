@@ -556,6 +556,7 @@ export const ja: Record<MessageKey, string> = {
   'timeline.pause': '一時停止',
   'timeline.duration': '表示時間',
   'timeline.add': '新規フレーム',
+  'timeline.addEmpty': '新規空白フレーム',
   'timeline.delete': 'フレームを削除',
   'timeline.hide': 'タイムラインを隠す',
   'timeline.frame': 'フレーム{n}、{ms}ms',

@@ -560,6 +560,7 @@ export const uk: Record<MessageKey, string> = {
   'timeline.pause': 'Пауза',
   'timeline.duration': 'Тривалість',
   'timeline.add': 'Новий кадр',
+  'timeline.addEmpty': 'Новий порожній кадр',
   'timeline.delete': 'Видалити кадр',
   'timeline.hide': 'Сховати шкалу часу',
   'timeline.frame': 'Кадр {n}, {ms} мс',

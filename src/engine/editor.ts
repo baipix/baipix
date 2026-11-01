@@ -2032,9 +2032,9 @@ export class Editor {
     this.commit(persist);
   }
 
-  /** Adds a frame after the shown one, a copy of it, and shows it. */
-  addFrame(): void {
-    this.edit((doc) => addFrame(doc));
+  /** Adds a frame after the shown one, a copy of it or an `empty` one (see frames.ts), and shows it. */
+  addFrame(empty = false): void {
+    this.edit((doc) => addFrame(doc, undefined, empty));
   }
 
   /** Deletes frame `f` (the shown one by default); a board keeps at least one. */

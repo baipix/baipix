@@ -73,6 +73,12 @@ export function Timeline() {
     openMenu(e.currentTarget, [
       { label: t('timeline.add'), icon: 'plus', shortcut: 'Alt+N', onSelect: () => editor.addFrame() },
       {
+        label: t('timeline.addEmpty'),
+        icon: 'frameEmpty',
+        shortcut: 'Alt+B',
+        onSelect: () => editor.addFrame(true),
+      },
+      {
         label: t('timeline.delete'),
         icon: 'trash',
         disabled: count < 2,

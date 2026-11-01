@@ -555,6 +555,7 @@ export const en = {
   'timeline.pause': 'Pause',
   'timeline.duration': 'Duration',
   'timeline.add': 'New frame',
+  'timeline.addEmpty': 'New empty frame',
   'timeline.delete': 'Delete frame',
   'timeline.hide': 'Hide the timeline',
   'timeline.frame': 'Frame {n}, {ms} ms',

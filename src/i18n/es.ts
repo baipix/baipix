@@ -563,6 +563,7 @@ export const es: Record<MessageKey, string> = {
   'timeline.pause': 'Pausa',
   'timeline.duration': 'Duración',
   'timeline.add': 'Nuevo fotograma',
+  'timeline.addEmpty': 'Nuevo fotograma vacío',
   'timeline.delete': 'Eliminar fotograma',
   'timeline.hide': 'Ocultar la línea de tiempo',
   'timeline.frame': 'Fotograma {n}, {ms} ms',

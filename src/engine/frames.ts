@@ -134,14 +134,20 @@ export function bakeEffectsOnEveryFrame(doc: PixelDoc, layer: Layer): void {
   });
 }
 
-/** Adds a frame after `at`, a copy of it, and shows it. */
-export function addFrame(doc: PixelDoc, at = activeFrame(doc)): void {
+/**
+ * Adds a frame after `at`, a copy of it, and shows it. An `empty` one keeps only the scenery: the
+ * layers that are the same on every frame (a sky, the ground); on a board of one frame, where every
+ * layer is, only the active layer is left empty.
+ */
+export function addFrame(doc: PixelDoc, at = activeFrame(doc), empty = false): void {
   const n = frameCount(doc);
   if (n >= MAX_FRAMES) return;
   at = Math.min(n - 1, Math.max(0, at));
   normalizeFrames(doc);
   const duration = doc.frames?.[at].duration ?? DEFAULT_DURATION;
-  const copies = doc.layers.map((layer): Cel => {
+  const kept = (layer: Layer, i: number) => !empty || (n > 1 ? isStill(doc, layer) : i !== doc.activeLayer);
+  const copies = doc.layers.map((layer, i): Cel => {
+    if (!kept(layer, i)) return { pixels: new Uint32Array(doc.width * doc.height) };
     const { pixels, outside } = celOf(doc, layer, at);
     return { pixels: pixels.slice(), ...(outside && { outside }) };
   });
