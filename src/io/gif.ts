@@ -38,7 +38,7 @@ function opaquePixelsOf(rgba: Uint8ClampedArray): Uint8Array {
 }
 
 /** Maps an RGBA frame to GIF palette indexes, reserving index 0 for transparency. */
-function indexFrame(rgba: Uint8ClampedArray): { pixels: Uint8Array; palette: number[][] } {
+export function indexGifFrame(rgba: Uint8ClampedArray): { pixels: Uint8Array; palette: number[][] } {
   const opaquePixels = opaquePixelsOf(rgba);
   const opaquePalette = quantize(opaquePixels, MAX_OPAQUE_COLORS);
   const pixels = applyPalette(opaquePixels, opaquePalette);
@@ -79,7 +79,7 @@ export async function encodeGif(
       throw new RangeError('GIF frame dimensions do not match the image dimensions.');
     }
 
-    const { pixels, palette } = indexFrame(frame.rgba);
+    const { pixels, palette } = indexGifFrame(frame.rgba);
 
     encoder.writeFrame(pixels, width, height, {
       palette,
