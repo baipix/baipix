@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Export
-description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or GIF or PNG.'
+description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
 ---
 
 <figure class="shot">
