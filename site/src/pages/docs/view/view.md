@@ -34,7 +34,7 @@ The two buttons at the right end of the options bar turn on **left-right** (<kbd
 
 ## Language
 
-Baipix speaks English, French, Ukrainian and Spanish. The first time, it opens in your browser's language when it's one of them, and in English otherwise. A message then says which language it picked, with a button to switch back to English.
+Baipix speaks English, French, Ukrainian, Spanish and Japanese. The first time, it opens in your browser's language when it's one of them, and in English otherwise. A message then says which language it picked, with a button to switch back to English.
 
 Change it at any time in **View › Language**. Baipix keeps your choice for next time.
 
