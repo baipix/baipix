@@ -67,7 +67,7 @@ export interface UiState {
   homeOrder: 'asc' | 'desc';
   homeView: 'grid' | 'list';
   uiHidden: boolean;
-  exportFormat: 'png' | 'svg' | 'aseprite' | 'tileset' | 'layers';
+  exportFormat: 'png' | 'gif' | 'svg' | 'aseprite' | 'tileset' | 'layers';
   /** The language picked in the Code dialog. */
   exportCode: CodeLanguage;
   exportActiveLayer: boolean;
