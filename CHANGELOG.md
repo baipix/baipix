@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Onion skin, from the timeline: the frames before in red and after in blue, faded under the one you draw, up to five on each side. A sky or a ground painted on its own layer stays under it. ([#638](https://github.com/baipix/baipix/pull/638), [#650](https://github.com/baipix/baipix/pull/650))
 - Export an animation as a GIF: every frame with its duration, looping, with its exact colors, transparent or on the background, at the pixel size picked; with All boards, one GIF per board in a .zip. ([#644](https://github.com/baipix/baipix/pull/644))
 - Export an animation as a PNG sequence: one PNG per frame, named in order, in a .zip; with All boards, a folder per board. ([#683](https://github.com/baipix/baipix/pull/683))
+- Export an animation as a sprite sheet: every frame on a grid, as many to a row as the columns, with its JSON for game engines, each frame's duration included. ([#674](https://github.com/baipix/baipix/pull/674))
 - The Aseprite export writes every frame, with its duration; a layer that doesn't change from one frame to the next becomes a linked cel there. ([#682](https://github.com/baipix/baipix/pull/682))
 - More ways to handle frames: New empty frame (Alt+B) keeps the scenery and empties what moves; Shift or Cmd/Ctrl-click picks several frames to set their duration, copy, paste, reverse or delete them at once. ([#661](https://github.com/baipix/baipix/pull/661), [#662](https://github.com/baipix/baipix/pull/662), [#665](https://github.com/baipix/baipix/pull/665), [#668](https://github.com/baipix/baipix/pull/668))
 - The editor in Italian (View › Language › Italiano). ([#630](https://github.com/baipix/baipix/pull/630))
@@ -36,10 +37,16 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - A Pixel art animation page, Animate in the header, and the news on the home page. ([#680](https://github.com/baipix/baipix/pull/680))
 - An Animation page in the docs, and an Animation group on the shortcuts page. ([#679](https://github.com/baipix/baipix/pull/679))
+- A blog, and its first post: why I made Baipix. ([#693](https://github.com/baipix/baipix/pull/693))
+- The header fits narrow screens, with its links on a row of their own on a phone, and it's as wide as the docs on every page. ([#688](https://github.com/baipix/baipix/pull/688), [#689](https://github.com/baipix/baipix/pull/689))
+- On a phone or a tablet, the docs' table of contents folds behind a button, so the page comes first. ([#690](https://github.com/baipix/baipix/pull/690))
+- Screenshots on the Animation docs page, and PNG sequences and Aseprite frames wherever the exports are listed. ([#686](https://github.com/baipix/baipix/pull/686), [#687](https://github.com/baipix/baipix/pull/687))
+- The Draw page's top matches the guides', and selected text takes the editor's violet. ([#691](https://github.com/baipix/baipix/pull/691), [#694](https://github.com/baipix/baipix/pull/694))
 - The site's icon is a file now, so search engines show it next to baipix.app. ([#643](https://github.com/baipix/baipix/pull/643))
 
 ### Thanks
 
+- [@mykola-lp](https://github.com/mykola-lp) for the frames sprite sheet export, with its JSON for game engines. ([#674](https://github.com/baipix/baipix/pull/674))
 - [@mykola-lp](https://github.com/mykola-lp) for the GIF export, which takes animations out of Baipix. ([#644](https://github.com/baipix/baipix/pull/644))
 - [@mrCabez](https://github.com/mrCabez) for the Italian translation, the editor's sixth language. ([#630](https://github.com/baipix/baipix/pull/630))
 - [@rogervokma-stack](https://github.com/rogervokma-stack) for the Japanese translation, the editor's fifth language, and its review as a native speaker. ([#645](https://github.com/baipix/baipix/pull/645), [#669](https://github.com/baipix/baipix/pull/669))
