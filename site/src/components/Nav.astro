@@ -12,7 +12,6 @@ const links = [
   { href: `${base}pixel-art-animation/`, label: 'Animate' },
   { href: `${base}docs/`, label: 'Docs' },
   { href: `${base}#gallery`, label: 'Gallery' },
-  { href: `${base}#install`, label: 'Get started' },
 ];
 const here = Astro.url.pathname;
 /** As wide as the docs, instead of the pages' column. */
@@ -22,7 +21,7 @@ const { wide = false } = Astro.props as { wide?: boolean };
 <header class="site-header">
   <div class:list={['nav', wide ? 'container-wide' : 'container']}>
     <a class="brand" href={base} aria-label="Baipix home">
-      <Logo size={18} />
+      <Logo size={24} />
       <span>Baipix</span>
     </a>
     <nav class="nav-links">
@@ -39,7 +38,7 @@ const { wide = false } = Astro.props as { wide?: boolean };
     </nav>
     <a class="btn btn-small star" href={REPO_URL} aria-label="Star Baipix on GitHub">
       <PixelIcon rows={STAR} size={13} />
-      <span>Star</span>
+      <span class="star-label">Star</span>
       <span class="star-count" data-stars></span>
     </a>
     <ThemeToggle />
@@ -87,19 +86,28 @@ const { wide = false } = Astro.props as { wide?: boolean };
     gap: 32px;
     height: var(--header-height);
   }
+  /* Like Linear's: the brand alone on the left, the links on the right, then a line and the buttons. */
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-right: auto;
+    font-size: 19px;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
   .nav-links {
     display: flex;
-    gap: 24px;
-    margin-right: auto;
-    font-size: 14px;
+    align-items: center;
+    gap: 28px;
+    padding-right: 32px;
+    border-right: 1px solid var(--line);
+    font-size: 15px;
     color: var(--muted);
+  }
+  .nav-links a,
+  .nav .btn {
+    white-space: nowrap;
   }
   .nav-links a:hover,
   .nav-links a[aria-current='page'] {
@@ -118,17 +126,43 @@ const { wide = false } = Astro.props as { wide?: boolean };
     font: 500 13px/1 var(--mono);
     color: var(--muted);
   }
-  @media (max-width: 640px) {
-    .nav-links,
-    .star {
+  /* Tighter, and the star keeps only its count. */
+  @media (max-width: 1023px) {
+    .nav {
+      gap: 20px;
+    }
+    .nav-links {
+      gap: 18px;
+      padding-right: 20px;
+    }
+    .star-label {
       display: none;
     }
+  }
+  /* The links on a row of their own under the brand and the buttons, scrolling sideways if need be. */
+  @media (max-width: 860px) {
     .nav {
-      justify-content: space-between;
-      gap: 12px;
+      flex-wrap: wrap;
+      column-gap: 12px;
+      row-gap: 0;
+      height: var(--header-height);
     }
-    .nav :global(.theme-toggle) {
-      margin-left: auto;
+    .brand {
+      height: 60px;
+    }
+    .nav-links {
+      order: 1;
+      width: 100%;
+      height: 40px;
+      padding-right: 0;
+      border-right: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .star {
+      display: none;
     }
   }
 </style>
