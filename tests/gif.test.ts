@@ -156,6 +156,47 @@ describe('indexGifFrame', () => {
 
     expect(result.pixels.every((index) => index > 0)).toBe(true);
   });
+
+  it('preserves exact colors when a frame has up to 255 opaque colors', () => {
+    const colors = Array.from({ length: 255 }, (_, index) => [
+      (index >> 16) & 255,
+      (index >> 8) & 255,
+      index & 255,
+    ]);
+
+    const rgba = new Uint8ClampedArray((colors.length + 1) * 4);
+
+    rgba.set([0, 0, 0, 0]);
+
+    colors.forEach(([red, green, blue], index) => {
+      rgba.set([red, green, blue, 255], (index + 1) * 4);
+    });
+
+    const result = indexGifFrame(rgba);
+
+    expect(result.palette.slice(1)).toEqual(colors);
+    expect(Array.from(result.pixels)).toEqual([0, ...colors.map((_, index) => index + 1)]);
+  });
+
+  it('quantizes frames with more than 255 opaque colors', () => {
+    const colors = Array.from({ length: 256 }, (_, index) => [
+      (index >> 16) & 255,
+      (index >> 8) & 255,
+      index & 255,
+    ]);
+
+    const rgba = new Uint8ClampedArray(colors.length * 4);
+
+    colors.forEach(([red, green, blue], index) => {
+      rgba.set([red, green, blue, 255], index * 4);
+    });
+
+    const result = indexGifFrame(rgba);
+
+    expect(result.palette.length).toBeLessThanOrEqual(256);
+    expect(new Set(result.pixels).size).toBeLessThanOrEqual(255);
+    expect(result.pixels.every((index) => index > 0)).toBe(true);
+  });
 });
 
 describe('encodeGif', () => {

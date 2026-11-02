@@ -21,34 +21,91 @@ export function gifDelay(duration: number): number {
   return Math.max(GIF_DELAY_MS, Math.round(duration / GIF_DELAY_MS) * GIF_DELAY_MS);
 }
 
-/** Makes every non-transparent pixel opaque and clears transparent RGB values. */
-function opaquePixelsOf(rgba: Uint8ClampedArray): Uint8Array {
-  const pixels = new Uint8Array(rgba.length);
+/** Collects opaque pixels and keeps their positions in the original frame. */
+function opaquePixelsOf(rgba: Uint8ClampedArray): {
+  pixels: Uint8Array;
+  positions: Uint32Array;
+} {
+  let count = 0;
 
-  for (let i = 0; i < rgba.length; i += 4) {
-    const transparent = rgba[i + 3] === 0;
-
-    pixels[i] = transparent ? 0 : rgba[i];
-    pixels[i + 1] = transparent ? 0 : rgba[i + 1];
-    pixels[i + 2] = transparent ? 0 : rgba[i + 2];
-    pixels[i + 3] = 255;
+  for (let i = 3; i < rgba.length; i += 4) {
+    if (rgba[i] !== 0) count++;
   }
 
-  return pixels;
+  const pixels = new Uint8Array(count * 4);
+  const positions = new Uint32Array(count);
+
+  let pixelIndex = 0;
+
+  for (let i = 0; i < rgba.length; i += 4) {
+    if (rgba[i + 3] === 0) continue;
+
+    const offset = pixelIndex * 4;
+
+    pixels[offset] = rgba[i];
+    pixels[offset + 1] = rgba[i + 1];
+    pixels[offset + 2] = rgba[i + 2];
+    pixels[offset + 3] = 255;
+
+    positions[pixelIndex] = i / 4;
+    pixelIndex++;
+  }
+
+  return { pixels, positions };
 }
 
 /** Maps an RGBA frame to GIF palette indexes, reserving index 0 for transparency. */
-export function indexGifFrame(rgba: Uint8ClampedArray): { pixels: Uint8Array; palette: number[][] } {
-  const opaquePixels = opaquePixelsOf(rgba);
-  const opaquePalette = quantize(opaquePixels, MAX_OPAQUE_COLORS);
-  const pixels = applyPalette(opaquePixels, opaquePalette);
+export function indexGifFrame(rgba: Uint8ClampedArray): {
+  pixels: Uint8Array;
+  palette: number[][];
+} {
+  const { pixels: opaquePixels, positions } = opaquePixelsOf(rgba);
 
-  for (let i = 0; i < pixels.length; i++) {
-    if (rgba[i * 4 + 3] === 0) {
-      pixels[i] = TRANSPARENT_INDEX;
-    } else {
-      pixels[i]++;
+  const exactPalette: number[][] = [];
+  const colorIndexes = new Map<number, number>();
+  const exactIndexes = new Uint8Array(positions.length);
+
+  let needsQuantization = false;
+
+  for (let i = 0; i < opaquePixels.length; i += 4) {
+    const red = opaquePixels[i];
+    const green = opaquePixels[i + 1];
+    const blue = opaquePixels[i + 2];
+
+    const color = (red << 16) | (green << 8) | blue;
+
+    let index = colorIndexes.get(color);
+
+    if (index === undefined) {
+      if (exactPalette.length === MAX_OPAQUE_COLORS) {
+        needsQuantization = true;
+        break;
+      }
+
+      index = exactPalette.length;
+      colorIndexes.set(color, index);
+      exactPalette.push([red, green, blue]);
     }
+
+    exactIndexes[i / 4] = index;
+  }
+
+  let opaquePalette: number[][];
+
+  if (needsQuantization) {
+    opaquePalette = quantize(opaquePixels, MAX_OPAQUE_COLORS);
+  } else if (exactPalette.length > 0) {
+    opaquePalette = exactPalette;
+  } else {
+    opaquePalette = [TRANSPARENT_COLOR];
+  }
+
+  const opaqueIndexes = needsQuantization ? applyPalette(opaquePixels, opaquePalette) : exactIndexes;
+
+  const pixels = new Uint8Array(rgba.length / 4);
+
+  for (let i = 0; i < positions.length; i++) {
+    pixels[positions[i]] = opaqueIndexes[i] + 1;
   }
 
   return {
