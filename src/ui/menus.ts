@@ -162,8 +162,7 @@ export const MENU_BAR: MenuBarMenu[] = [
         {
           label: t('menu.export'),
           shortcut: 'Ctrl+E',
-          onSelect: () =>
-            void actions.exportImage(uiStore.get().exportFormat, uiStore.get().exportActiveLayer),
+          onSelect: () => openDialog({ type: 'export' }),
         },
         { label: t('menu.code'), onSelect: () => openDialog({ type: 'code' }) },
         '-',

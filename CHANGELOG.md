@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The editor in Japanese (View › Language › 日本語). ([#645](https://github.com/baipix/baipix/pull/645))
 - A light for each board, to shade by: in the new Light section, drag a lamp around a pixel sphere, or type its angle and height; faint lines and a sun on the canvas show where it comes from, and the sun can be dragged around the board to turn it; a drop shadow can follow it, falling away from the light and longer the lower it is. ([#609](https://github.com/baipix/baipix/pull/609))
 - Shift with the up and down arrows changes a number field by 10, as in Figma: sizes, opacities, tile sizes, in the panels and the dialogs. ([#606](https://github.com/baipix/baipix/pull/606))
 - The Layers + sprite sheet export adds the sheet's JSON, in the TexturePacker format game engines read: each layer's frame on the sheet. ([#603](https://github.com/baipix/baipix/pull/603))
@@ -13,6 +14,8 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- With Active layer only ticked on an empty layer, the Export dialog says the layer is empty instead of showing a blank preview that looks broken. ([#667](https://github.com/baipix/baipix/pull/667))
+- File › Export, Ctrl+E and Ctrl+S open the Export dialog, as the Export button does, instead of exporting straight away in the last format picked. ([#651](https://github.com/baipix/baipix/pull/651))
 - Ctrl+C on a selection or on layers also puts them on the clipboard as SVG: pasted into Figma, they come out as shapes you can edit, while other apps still get the picture. ([#604](https://github.com/baipix/baipix/pull/604))
 
 ### Fixed
@@ -23,6 +26,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@rogervokma-stack](https://github.com/rogervokma-stack) for the Japanese translation, the editor's fifth language. ([#645](https://github.com/baipix/baipix/pull/645))
 - [@mykola-lp](https://github.com/mykola-lp) for a clearer autosave hook and its first tests. ([#611](https://github.com/baipix/baipix/pull/611))
 - [@mykola-lp](https://github.com/mykola-lp) for clearer Aseprite and code exports, and the tests that pin them down. ([#616](https://github.com/baipix/baipix/pull/616), [#617](https://github.com/baipix/baipix/pull/617))
 

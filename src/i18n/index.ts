@@ -4,9 +4,10 @@ import { en, type MessageKey } from './en';
 import { fr } from './fr';
 import { uk } from './uk';
 import { es } from './es';
+import { ja } from './ja';
 import { it } from './it';
 
-export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'it';
+export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it';
 export type { MessageKey };
 
 const dictionaries: Record<Locale, Record<MessageKey, string>> = {
@@ -14,6 +15,7 @@ const dictionaries: Record<Locale, Record<MessageKey, string>> = {
   fr,
   uk,
   es,
+  ja,
   it,
 };
 
@@ -22,6 +24,7 @@ export const LOCALES: { id: Locale; label: string }[] = [
   { id: 'fr', label: 'Français' },
   { id: 'uk', label: 'Українська' },
   { id: 'es', label: 'Español' },
+  { id: 'ja', label: '日本語' },
   { id: 'it', label: 'Italiano' },
 ];
 

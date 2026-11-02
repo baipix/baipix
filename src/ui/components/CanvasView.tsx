@@ -5,7 +5,7 @@ import { normalizeAngle } from '../../engine/light';
 type BoardSides = { left: boolean; right: boolean; top: boolean; bottom: boolean };
 import { pack, toHex } from '../../engine/color';
 import { flatten, flattenFrame } from '../../engine/composite';
-import { frameCount, onionFrames } from '../../engine/frames';
+import { frameCount, onionFrames, stillUnder } from '../../engine/frames';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
 import { clipSelection, type Selection } from '../../engine/selection';
@@ -118,6 +118,11 @@ export function CanvasView() {
     // Grid line colors, one per art pixel (see render/grid.ts).
     const ink = document.createElement('canvas');
     const ictx = ink.getContext('2d')!;
+    // With the onion skin, the still layers at the bottom (a sky, the ground), painted under it.
+    const stillCanvas = document.createElement('canvas');
+    const uctx = stillCanvas.getContext('2d')!;
+    let underCount = 0;
+    let underPixels: Uint32Array | null = null;
     let theme: Theme = readTheme();
     let hover: { x: number; y: number } | null = null;
     let compositeDirty = true;
@@ -332,7 +337,33 @@ export function CanvasView() {
       // A visible reference, or the onion skin, sits between the background and the layers: the
       // renderer paints the background itself, under them.
       backgroundApart = !!doc.reference?.visible || onionShown;
-      const layers = backgroundApart ? flatten(doc, { includeBackground: false }) : pixels;
+      // The onion skin also goes over the still layers at the bottom: they're painted apart, under it.
+      const k = onionShown ? underCount : 0;
+      const only = (keep: (i: number) => boolean): PixelDoc => ({
+        ...doc,
+        layers: doc.layers.map((l, i) => (keep(i) ? l : { ...l, visible: false })),
+      });
+      underPixels = k
+        ? flatten(
+            only((i) => i < k),
+            { includeBackground: false },
+          )
+        : null;
+      if (underPixels) {
+        stillCanvas.width = doc.width;
+        stillCanvas.height = doc.height;
+        const image = uctx.createImageData(doc.width, doc.height);
+        new Uint32Array(image.data.buffer).set(underPixels);
+        uctx.putImageData(image, 0, 0);
+      }
+      const layers = k
+        ? flatten(
+            only((i) => i >= k),
+            { includeBackground: false },
+          )
+        : backgroundApart
+          ? flatten(doc, { includeBackground: false })
+          : pixels;
       const image = cctx.createImageData(doc.width, doc.height);
       new Uint32Array(image.data.buffer).set(layers);
       cctx.putImageData(image, 0, 0);
@@ -364,17 +395,27 @@ export function CanvasView() {
     const onion = (): SceneOnion[] => {
       const { doc, revision } = editor.getState();
       const { onion: o, timeline } = uiStore.get();
-      if (!ANIMATION || !o.on || !timeline || playbackStore.get().playing || frameCount(doc) < 2) return [];
+      if (!ANIMATION || !o.on || !timeline || playbackStore.get().playing || frameCount(doc) < 2) {
+        onionKey = '';
+        return [];
+      }
       const key = `${doc.id}:${revision}:${o.before}:${o.after}:${o.opacity}`;
       if (key === onionKey) return onionImages;
       onionKey = key;
+      // The still layers at the bottom go under the onion skin, so they're left out of its frames.
+      const k = stillUnder(doc);
+      if (k !== underCount) {
+        underCount = k;
+        compositeDirty = true;
+      }
+      const moving = { ...doc, layers: doc.layers.map((l, i) => (i < k ? { ...l, visible: false } : l)) };
       onionImages = onionFrames(doc, o).map(({ frame, side, opacity }) => {
         const c = document.createElement('canvas');
         c.width = doc.width;
         c.height = doc.height;
         const cx = c.getContext('2d')!;
         const image = new ImageData(doc.width, doc.height);
-        new Uint32Array(image.data.buffer).set(flattenFrame(doc, frame, { includeBackground: false }));
+        new Uint32Array(image.data.buffer).set(flattenFrame(moving, frame, { includeBackground: false }));
         cx.putImageData(image, 0, 0);
         cx.globalCompositeOperation = 'source-atop';
         cx.fillStyle = ONION_TINT[side];
@@ -544,6 +585,7 @@ export function CanvasView() {
           doc: live.doc,
           composite,
           onion: onionLayers,
+          onionUnder: onionLayers.length && underPixels ? stillCanvas : undefined,
           gridInk: ink,
           reference: sceneReference(live.doc),
           view: live.view,
@@ -784,8 +826,10 @@ export function CanvasView() {
       if (compositeDirty) updateComposite();
       const d = cctx.getImageData(p.x, p.y, 1, 1).data;
       // Nothing drawn there: the reference image's color, if it shows, as the eyedropper picks it.
-      const under =
-        !d[3] && doc.reference?.visible
+      const still = underPixels?.[p.y * doc.width + p.x] ?? 0;
+      const under = still
+        ? still
+        : !d[3] && doc.reference?.visible
           ? referenceColorAt(doc, p.x, p.y)
           : !d[3] && backgroundApart && hasBackground(doc)
             ? doc.background
