@@ -43,6 +43,11 @@
     --header-height: 100px;
   }
 }
+/* Selected text: the editor's violet, with white ink. */
+::selection {
+  background: #6e56cf;
+  color: #fff;
+}
 :root[data-theme='light'] {
   color-scheme: light;
 }
