@@ -1,5 +1,6 @@
 ---
 /** Site header, shared by every page: links, GitHub stars, theme, and the way into the editor. */
+import { posts } from '../blog';
 import { APP_URL, REPO_URL } from '../links';
 import Logo from './Logo.astro';
 import PixelIcon from './PixelIcon.astro';
@@ -12,6 +13,8 @@ const links = [
   { href: `${base}pixel-art-animation/`, label: 'Animate' },
   { href: `${base}docs/`, label: 'Docs' },
   { href: `${base}#gallery`, label: 'Gallery' },
+  // Once there's a post to read.
+  ...(posts.length ? [{ href: `${base}blog/`, label: 'Blog' }] : []),
 ];
 const here = Astro.url.pathname;
 ---

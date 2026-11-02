@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
+import { posts } from '../blog';
 import { DOC_PAGES } from '../docs';
 
-/** The pages worth finding: the home page, the Draw page, the guides, the docs and the editor (not the 404). */
+/** The pages worth finding: the home page, the Draw page, the guides, the docs, the blog and the editor (not the 404). */
 export const GET: APIRoute = ({ site }) => {
   const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
   const pages = [
@@ -13,6 +14,7 @@ export const GET: APIRoute = ({ site }) => {
     `${base}pixel-art-animation/`,
     `${base}docs/`,
     ...DOC_PAGES.map((p) => `${base}docs/${p.slug}/`),
+    ...(posts.length ? [`${base}blog/`, ...posts.map((p) => p.url)] : []),
     `${base}app/`,
   ];
   const urls = pages.map((p) => `  <url><loc>${new URL(p, site).href}</loc></url>`).join('\n');
