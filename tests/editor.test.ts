@@ -635,6 +635,34 @@ describe('Editor', () => {
     expect(e.getState().palette.colors).toEqual(adapted);
   });
 
+  it('remaps the background too when asked, in the same undo step', () => {
+    const e = new Editor();
+    const BLUE = pack(0, 0, 255);
+    const GREEN = pack(0, 255, 0);
+    e.setBackground(BLUE);
+    e.setColor('primary', RED);
+    drag(e, [[0, 0]]);
+    e.beginAdjust(false);
+    // Counted where nothing covers it: every pixel but the red one.
+    const { width, height } = e.getState().doc;
+    expect(e.adjustedColors(true).get(BLUE)).toBe(width * height - 1);
+    expect(e.adjustedColors().has(BLUE)).toBe(false);
+    const toGreen = (c: number) => (c === BLUE ? GREEN : c);
+    e.previewMap(toGreen, null, true);
+    expect(e.getState().doc.background).toBe(GREEN);
+    e.previewMap(toGreen, null, false);
+    expect(e.getState().doc.background).toBe(BLUE);
+    e.previewMap(toGreen, null, true);
+    e.cancelAdjust();
+    expect(e.getState().doc.background).toBe(BLUE);
+    e.beginAdjust(false);
+    e.applyMap(toGreen, null, true);
+    expect(e.getState().doc.background).toBe(GREEN);
+    e.undo();
+    expect(e.getState().doc.background).toBe(BLUE);
+    expect(layer(e)[0]).toBe(RED);
+  });
+
   it('previews the adjustment on the palette, and cancelling gives it back', () => {
     const e = new Editor();
     // A file starts with the colors of its drawing: these tests need a preset.

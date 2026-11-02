@@ -10,6 +10,7 @@ import {
   type Color,
   type ColorAdjustment,
 } from '../../engine/color';
+import { hasBackground } from '../../engine/document';
 import type { ColorMap } from '../../engine/editor';
 import { outlinePixels, type OutlineOptions } from '../../engine/outline';
 import { PALETTE_PRESETS, presetColors, remapTable, type RemapMode } from '../../engine/palette';
@@ -44,7 +45,11 @@ interface Remap {
   mode: RemapMode;
   count: number;
   replacePalette: boolean;
+  /** The file's background goes to the palette too. */
+  background: boolean;
 }
+
+const NO_REMAP = { target: 'file', mode: 'nearest', replacePalette: false, background: true } as const;
 
 /**
  * The Adjustments panel, floating: changes to the existing pixels of the active layer or all
@@ -65,16 +70,18 @@ function changeFor(
   remap: Remap,
   target: Color[],
   used: Map<Color, number>,
-): { map: ColorMap; palette: ((colors: Color[]) => Color[]) | null } {
+): { map: ColorMap; palette: ((colors: Color[]) => Color[]) | null; background: boolean } {
   if (tab === 'colors')
     return {
       map: (c) => adjustColor(c, adj),
       palette: palette ? (colors) => colors.map((c) => adjustColor(c, adj)) : null,
+      background: false,
     };
   const { table, colors } = remapTable(used, target, remap.mode, remap.count);
   return {
     map: (c) => (alpha(c) ? withAlpha(table.get(opaque(c)) ?? opaque(c), alpha(c)) : c),
     palette: remap.replacePalette ? () => colors : null,
+    background: remap.background,
   };
 }
 
@@ -82,6 +89,11 @@ function Panel() {
   const t = useT();
   const editor = useEditor();
   const hasSelection = useEditorState((s) => s.selection !== null);
+  // Its color as the panel opened (the remap previews change it), only when it shows.
+  const [background] = useState(() => {
+    const doc = editor.getState().doc;
+    return hasBackground(doc) ? doc.background : 0;
+  });
   const filePalette = useEditorState((s) => s.palette.colors);
   const rightWidth = uiStore.use((s) => (s.uiHidden ? 0 : s.panelWidths.right));
   const primary = useEditorState((s) => s.primary);
@@ -95,12 +107,9 @@ function Panel() {
   const [palette, setPalette] = useState(false);
   // The file's palette as it was when the panel opened (previews may change the live one).
   const [ownPalette] = useState(filePalette);
-  const [remap, setRemap] = useState<Remap>({
-    target: 'file',
-    mode: 'nearest',
-    count: ownPalette.length,
-    replacePalette: false,
-  });
+  const [remap, setRemap] = useState<Remap>({ ...NO_REMAP, count: ownPalette.length });
+  // A selection limits the remap to its pixels: the background stays as it is.
+  const remapBackground = remap.background && !!background && !hasSelection;
   const target = useMemo(
     () => (remap.target === 'file' ? ownPalette : presetColors(remap.target)),
     [remap.target, ownPalette],
@@ -119,18 +128,18 @@ function Panel() {
   ) => outlinePixels(base, width, rect, { ...outline, color: primary });
   useEffect(() => {
     if (tab === 'outline') return editor.previewChange(outlineChange);
-    const change = changeFor(tab, adj, palette, remap, target, editor.adjustedColors());
-    editor.previewMap(change.map, change.palette);
+    const change = changeFor(tab, adj, palette, remap, target, editor.adjustedColors(remapBackground));
+    editor.previewMap(change.map, change.palette, change.background && remapBackground);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- outlineChange follows outline and primary
-  }, [editor, tab, adj, palette, remap, target, allLayers, outline, primary]);
+  }, [editor, tab, adj, palette, remap, target, allLayers, outline, primary, remapBackground]);
   // Switching files cancels the adjustment in the editor: close the panel too.
   useEffect(() => editor.subscribe(() => !editor.isAdjusting && close()), [editor]);
 
   const apply = () => {
     if (tab === 'outline') editor.applyChange(outlineChange);
     else {
-      const change = changeFor(tab, adj, palette, remap, target, editor.adjustedColors());
-      editor.applyMap(change.map, change.palette);
+      const change = changeFor(tab, adj, palette, remap, target, editor.adjustedColors(remapBackground));
+      editor.applyMap(change.map, change.palette, change.background && remapBackground);
     }
     close();
   };
@@ -138,7 +147,7 @@ function Panel() {
   const reset = () => {
     if (tab === 'colors') setAdj(NO_ADJUSTMENT);
     else if (tab === 'outline') setOutline(NO_OUTLINE);
-    else setRemap({ target: 'file', mode: 'nearest', count: ownPalette.length, replacePalette: false });
+    else setRemap({ ...NO_REMAP, count: ownPalette.length });
   };
 
   return (
@@ -334,11 +343,20 @@ function Panel() {
         {tab === 'colors' ? (
           <Checkbox checked={palette} onChange={setPalette} label={t('adjust.palette')} />
         ) : tab === 'outline' ? null : (
-          <Checkbox
-            checked={remap.replacePalette}
-            onChange={(v) => setRemap((r) => ({ ...r, replacePalette: v }))}
-            label={t('remap.replacePalette')}
-          />
+          <>
+            <Checkbox
+              checked={remap.replacePalette}
+              onChange={(v) => setRemap((r) => ({ ...r, replacePalette: v }))}
+              label={t('remap.replacePalette')}
+            />
+            {!!background && !hasSelection && (
+              <Checkbox
+                checked={remap.background}
+                onChange={(v) => setRemap((r) => ({ ...r, background: v }))}
+                label={t('remap.background')}
+              />
+            )}
+          </>
         )}
         {hasSelection && <p className="hint">{t('adjust.selectionOnly')}</p>}
         <div className="adjust-actions">
