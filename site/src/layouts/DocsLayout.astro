@@ -30,6 +30,8 @@ const next = index >= 0 && index < DOC_PAGES.length - 1 ? DOC_PAGES[index + 1] :
 /** The pixel arrow of the site's buttons, turned to point back. */
 const LEFT = ['...#...', '..#....', '.#.....', '#######', '.#.....', '..#....', '...#...'];
 const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
+/** The pixel chevron of the table of contents' button, on a phone or a tablet. */
+const DOWN = ['#.....#', '.#...#.', '..#.#..', '...#...'];
 ---
 
 <Base title={`${title} · Baipix docs`} description={description}>
@@ -52,7 +54,14 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
         </kbd>
         <ul id="docs-results" class="docs-results" hidden></ul>
       </div>
-      <nav class="docs-nav" aria-label="Docs">
+      {/* On a phone or a tablet, the table of contents folds behind this button: the page comes first. */}
+      <button type="button" class="docs-menu-toggle" aria-expanded="false" aria-controls="docs-nav">
+        <span class="docs-menu-label">
+          {section && section.title !== title ? `${section.title} · ${title}` : title}
+        </span>
+        <PixelIcon rows={DOWN} size={10} />
+      </button>
+      <nav id="docs-nav" class="docs-nav" aria-label="Docs">
         <a
           class="docs-home"
           href={`${base}docs/`}
@@ -117,6 +126,16 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
   </div>
   <Footer wide />
 </Base>
+
+<script>
+  // The folded table of contents (on a phone or a tablet) opens and closes with its button.
+  const toggle = document.querySelector<HTMLButtonElement>('.docs-menu-toggle');
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.closest('.docs-side')!.classList.toggle('is-open', open);
+  });
+</script>
 
 <script>
   // Search the docs: every word typed must appear in a section's page name, title or text; the
@@ -641,7 +660,7 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
       gap: 24px;
       padding-top: 24px;
     }
-    /* On a phone the table of contents comes first, as a plain list. */
+    /* On a phone or a tablet the table of contents folds behind a button. */
     .docs-side {
       position: static;
       padding: 0 0 20px;
@@ -649,7 +668,42 @@ const section = DOCS.find((s) => s.pages.some((p) => href(p.slug) === path));
       border-bottom: 1px solid var(--line);
     }
     .docs-nav {
+      display: none;
       max-height: none;
+      margin-top: 16px;
     }
+    .docs-side.is-open .docs-nav {
+      display: block;
+    }
+    .docs-search {
+      margin-bottom: 12px;
+    }
+    /* .docs-side: over the rule below, which hides the button on a wider screen. */
+    .docs-side .docs-menu-toggle {
+      display: flex;
+    }
+  }
+  .docs-menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .docs-menu-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .docs-menu-toggle[aria-expanded='true'] :global(svg) {
+    transform: rotate(180deg);
   }
 </style>
