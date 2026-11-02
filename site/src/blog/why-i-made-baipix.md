@@ -4,7 +4,7 @@ description: 'I wanted a pixel art editor that felt like Figma, and I couldn’t
 date: '2026-11-02'
 category: news
 author: Todo-bai
-cover: /screenshot-light.png
+cover: /blog/why-i-made-baipix.webp
 draft: false
 ---
 
