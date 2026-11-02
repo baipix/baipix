@@ -52,6 +52,7 @@ const SHARE = [
   title={`${post.title} | Baipix blog`}
   description={post.description}
   noindex={post.draft}
+  image={post.coverImage?.replace(base, '')}
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',

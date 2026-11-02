@@ -9,12 +9,14 @@ interface Props {
   noindex?: boolean;
   /** Structured data for search engines (schema.org), as JSON-LD. */
   jsonLd?: Record<string, unknown>;
+  /** The picture shown when the link is shared, if not the site's (a path in site/public, 1200×630 or twice that). */
+  image?: string;
 }
-const { title, description, noindex = false, jsonLd } = Astro.props;
+const { title, description, noindex = false, jsonLd, image } = Astro.props;
 const base = import.meta.env.BASE_URL;
 // The page's one address for search engines, and the image shown when the link is shared.
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const shareImage = new URL(`${base}og.png`, Astro.site).href;
+const shareImage = new URL(`${base}${image ?? 'og.png'}`, Astro.site).href;
 const analytics = import.meta.env.PROD;
 ---
 
