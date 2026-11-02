@@ -57,3 +57,7 @@ With **All boards**, each board's animation is a GIF of its own, in a .zip.
 ## Keep working in Aseprite
 
 Pick **Aseprite** to open the animation there: every frame comes along with its duration, and so do the layers, groups, blend modes and the palette. A layer that stays the same from one frame to the next becomes a linked cel, as Aseprite makes them, so it stays one drawing there too.
+
+## Export the frames apart
+
+Pick **PNG sequence** for one PNG per frame, named in order (`slime-01.png`, `slime-02.png`…), in a .zip, at the pixel size picked, with or without the background. With **All boards**, each board's frames go in a folder of their own.

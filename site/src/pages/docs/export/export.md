@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Export
-description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
+description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, PNG sequences, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
 ---
 
 <figure class="shot">
@@ -22,6 +22,7 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, cl
 
 - **PNG**: an image, sharp at the pixel size you picked.
 - **GIF**: an animated image that loops forever. Each frame keeps its duration from the timeline, rounded to 10 ms, and the drawing keeps its exact colors up to 255 of them. Fully transparent pixels stay transparent; semi-transparent pixels become opaque. See [Animation](../../animation/animation/).
+- **PNG sequence**: one PNG per frame, named in order (`slime-01.png`, `slime-02.png`…), in a .zip, for tools and pipelines that want the frames apart.
 - **SVG**: vector, light and sharp at any size. Each color is one path, neighboring pixels of the same color merged, so there are no thin lines between them. Layers and groups come out as named groups, with their opacity and blend modes. See [Pixel art to SVG](../../../pixel-art-to-svg/).
 - **Aseprite**: an .aseprite file to keep working there, with the layers, groups, blend modes, the palette, and every frame with its duration.
 - **Layers + sprite sheet**: a .zip with one PNG per visible layer, named after it, and a sheet with the layers side by side, left to right from the bottom layer. **Columns** sets how many go on a row: fewer make a grid, read left to right then top to bottom. A JSON file comes with the sheet, giving each layer's place on it in the TexturePacker format, so Phaser, Unity or a Godot importer cut the frames without setup. Each PNG has the layer's own pixels, at full opacity, for game engines that put sprites together or swap them.
@@ -29,7 +30,7 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, cl
 
 ## Every board at once
 
-In a file of several boards, **All boards** exports each one in the format you picked, named after it, in a .zip. For GIF, each board's animation is a GIF of its own.
+In a file of several boards, **All boards** exports each one in the format you picked, named after it, in a .zip. For GIF, each board's animation is a GIF of its own. For a PNG sequence, each board's frames go in a folder of their own.
 
 ## Copy instead of saving
 

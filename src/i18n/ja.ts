@@ -579,6 +579,8 @@ export const ja: Record<MessageKey, string> = {
   'export.format': '形式',
   'export.asepriteHint':
     'レイヤー、グループ、合成モード、パレット、そして各フレームとその表示時間を書き出します。',
+  'export.sequence': 'PNG連番（ZIP）',
+  'export.sequenceHint': 'フレームごとに1枚のPNGを、順番どおりの名前で.zipにまとめます。',
   'export.allBoards': 'ボード{count}個すべてを.zipで',
   'export.layers': 'レイヤー＋スプライトシート（ZIP）',
   'export.columns': '列数',

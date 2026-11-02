@@ -581,6 +581,8 @@ export const it: Record<MessageKey, string> = {
   'export.button': 'Esporta',
   'export.format': 'Formato',
   'export.asepriteHint': 'Livelli, gruppi, metodi di fusione, palette e ogni fotogramma con la sua durata.',
+  'export.sequence': 'Sequenza PNG (ZIP)',
+  'export.sequenceHint': 'Un PNG per fotogramma, numerati in ordine, in un .zip.',
   'export.allBoards': 'Tutte le {count} tavole, in un .zip',
   'export.layers': 'Livelli + sprite sheet (ZIP)',
   'export.columns': 'Colonne',
