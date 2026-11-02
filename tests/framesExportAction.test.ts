@@ -10,6 +10,7 @@ import { toast } from '../src/ui/uiStore';
 
 const RED = pack(255, 0, 0);
 const BLUE = pack(0, 0, 255);
+const BACKGROUND = pack(20, 30, 40);
 
 const mocks = vi.hoisted(() => ({
   zipFiles: [] as Array<{ name: string; data: Uint8Array }>,
@@ -211,6 +212,51 @@ describe('exportFrames', () => {
 
     expect(mocks.savedFiles).toHaveLength(1);
     expect(mocks.savedFiles[0].mime).toBe('application/zip');
+  });
+
+  it('uses the current pixel size, gap and background', async () => {
+    const doc = animatedDocument();
+
+    doc.render.pixelSize = 3;
+    doc.render.gap = 1;
+    doc.background = BACKGROUND;
+    doc.backgroundVisible = true;
+
+    mocks.ui.exportSheetColumns = 2;
+    mocks.ui.exportBackground = true;
+
+    const { actions } = setup(doc);
+
+    await actions.exportFrames();
+
+    const sheet = decodeCanvas(mocks.zipFiles[0].data);
+
+    expect(sheet).toMatchObject({
+      docWidth: 4,
+      docHeight: 1,
+      pixels: [RED, BACKGROUND, BACKGROUND, BLUE],
+      geometry: {
+        pixelSize: 3,
+        gap: 1,
+        width: 15,
+        height: 3,
+      },
+      background: BACKGROUND,
+    });
+
+    const json = decodeJson(mocks.zipFiles[1].data);
+
+    expect(json.frames['frame-0002.png'].frame).toEqual({
+      x: 8,
+      y: 0,
+      w: 7,
+      h: 3,
+    });
+
+    expect(json.meta.size).toEqual({
+      w: 15,
+      h: 3,
+    });
   });
 
   it('generates unique filenames for boards with duplicate names', async () => {
