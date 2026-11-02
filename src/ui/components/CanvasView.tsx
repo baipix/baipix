@@ -36,7 +36,6 @@ import {
 } from '../render/drawScene';
 import { readTheme, type Theme } from '../render/theme';
 import { BRUSH_TOOLS, SHAPE_IDS } from '../tools';
-import { ANIMATION } from '../features';
 import { playbackStore } from '../playback';
 import { hoverStore, uiStore } from '../uiStore';
 import { referenceColorAt } from '../referenceColors';
@@ -395,7 +394,7 @@ export function CanvasView() {
     const onion = (): SceneOnion[] => {
       const { doc, revision } = editor.getState();
       const { onion: o, timeline } = uiStore.get();
-      if (!ANIMATION || !o.on || !timeline || playbackStore.get().playing || frameCount(doc) < 2) {
+      if (!o.on || !timeline || playbackStore.get().playing || frameCount(doc) < 2) {
         onionKey = '';
         return [];
       }
