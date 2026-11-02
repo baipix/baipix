@@ -1,0 +1,184 @@
+---
+/** The blog's home: the newest post up top, then every post, which a category narrows down. */
+import Footer from '../../components/Footer.astro';
+import Nav from '../../components/Nav.astro';
+import PixelGlow from '../../components/PixelGlow.astro';
+import PostCard from '../../components/PostCard.astro';
+import Base from '../../layouts/Base.astro';
+import { CATEGORIES, posts, type Category } from '../../blog';
+
+const [featured, ...rest] = posts;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const used = (Object.keys(CATEGORIES) as Category[]).filter((c) => posts.some((p) => p.category === c));
+---
+
+<Base
+  title="Blog | Baipix"
+  description="News and tutorials from Baipix, the free pixel art editor in your browser: releases, how to draw and animate, and why it's made the way it is."
+>
+  <Nav />
+  {/* As on the other pages: the files screen's lit grid behind the top, the newest post included. */}
+  <div class="blog-page">
+    <div class="hero-glow" aria-hidden="true">
+      <PixelGlow />
+    </div>
+    <header class="blog-head container-wide">
+      <div>
+        <h1>Blog</h1>
+        <p class="muted">News and tutorials from Baipix.</p>
+      </div>
+      <a class="blog-rss" href={`${base}blog/rss.xml`}>
+        RSS feed
+      </a>
+    </header>
+    <main class="blog container-wide">
+      {featured ? (
+        <>
+          <PostCard post={featured} featured />
+          {rest.length > 0 && (
+            <section class="blog-all" aria-labelledby="all-posts">
+              <div class="blog-bar">
+                <h2 id="all-posts">All posts</h2>
+                {used.length > 1 && (
+                  <div class="blog-filters" role="group" aria-label="Category">
+                    <button type="button" class="chip" aria-pressed="true" data-filter="">
+                      All
+                    </button>
+                    {used.map((c) => (
+                      <button type="button" class="chip" aria-pressed="false" data-filter={c}>
+                        {CATEGORIES[c].label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <ul class="blog-grid">
+                {rest.map((post) => (
+                  <li data-category={post.category}>
+                    <PostCard post={post} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      ) : (
+        <p class="muted">The first posts are on their way.</p>
+      )}
+    </main>
+  </div>
+  <Footer wide />
+</Base>
+
+<script>
+  // A category shows only its posts; All shows them all again.
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('.blog-filters button')];
+  for (const button of buttons)
+    button.addEventListener('click', () => {
+      const filter = button.dataset.filter;
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b === button));
+      for (const item of document.querySelectorAll<HTMLElement>('.blog-grid li'))
+        item.hidden = !!filter && item.dataset.category !== filter;
+    });
+</script>
+
+<style>
+  .blog {
+    position: relative;
+    padding: 8px 0 96px;
+  }
+  .blog-page {
+    position: relative;
+    padding-top: 56px;
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 760px;
+    pointer-events: none;
+  }
+  .blog-head {
+    position: relative;
+    padding-bottom: 40px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .blog-head h1 {
+    margin: 0 0 10px;
+    font-size: clamp(40px, 6vw, 64px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .blog-head p {
+    margin: 0;
+    font-size: 17px;
+  }
+  .blog-rss {
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .blog-rss:hover {
+    color: var(--text);
+  }
+  .blog-all {
+    margin-top: 72px;
+  }
+  .blog-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .blog-bar h2 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .blog-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .chip:hover {
+    color: var(--text);
+  }
+  .chip[aria-pressed='true'] {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 48px 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (max-width: 640px) {
+    .blog-page {
+      padding-top: 32px;
+    }
+    .blog-head {
+      align-items: start;
+      flex-direction: column;
+    }
+  }
+</style>

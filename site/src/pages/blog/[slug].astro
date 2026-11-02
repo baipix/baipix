@@ -1,0 +1,380 @@
+---
+/**
+ * A blog post: where it sits, its title, who wrote it and when, its cover, the text at a reading
+ * measure, then more posts, those of its category first.
+ */
+import Cta from '../../components/Cta.astro';
+import Footer from '../../components/Footer.astro';
+import Nav from '../../components/Nav.astro';
+import PixelGlow from '../../components/PixelGlow.astro';
+import PostCard from '../../components/PostCard.astro';
+import Base from '../../layouts/Base.astro';
+import { AUTHORS, CATEGORIES, formatDate, posts, type Post } from '../../blog';
+
+export function getStaticPaths() {
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Post };
+const category = CATEGORIES[post.category];
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const others = posts.filter((p) => p !== post);
+const more = [
+  ...others.filter((p) => p.category === post.category),
+  ...others.filter((p) => p.category !== post.category),
+].slice(0, 3);
+const { Content } = post;
+const author = AUTHORS[post.author];
+
+/** Where to share it: each network's own page for a new post, with the link (and the title) filled in. */
+const link = new URL(post.url, Astro.site).href;
+const text = encodeURIComponent(post.title);
+const SHARE = [
+  {
+    name: 'X',
+    href: `https://x.com/intent/post?text=${text}&url=${encodeURIComponent(link)}`,
+    path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
+  },
+  {
+    name: 'LinkedIn',
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`,
+    path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+  },
+  {
+    name: 'Bluesky',
+    href: `https://bsky.app/intent/compose?text=${encodeURIComponent(`${post.title} ${link}`)}`,
+    path: 'M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z',
+  },
+];
+---
+
+<Base
+  title={`${post.title} | Baipix blog`}
+  description={post.description}
+  noindex={post.draft}
+  image={post.coverImage?.replace(base, '')}
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: { '@type': 'Person', name: post.author },
+    publisher: { '@type': 'Organization', name: 'Baipix' },
+  }}
+>
+  <Nav />
+  <main data-tone={category.tone}>
+    <article class="post">
+      {/* As on the other pages: the files screen's lit grid behind the title. */}
+      <header class="post-hero">
+        <div class="hero-glow" aria-hidden="true">
+          <PixelGlow />
+        </div>
+        <div class="post-head container">
+          <nav class="post-crumbs" aria-label="Breadcrumb">
+            <a href={`${base}blog/`}>Blog</a>
+            <span aria-hidden="true">/</span>
+            <span>{category.label}</span>
+          </nav>
+          <h1>{post.title}</h1>
+          <p class="post-byline">
+            {author && (
+              <img class="post-avatar" src={`${base}${author.avatar}`} width="28" height="28" alt="" />
+            )}
+            {author ? <a href={author.url}>{post.author}</a> : post.author} ·{' '}
+            <time datetime={post.date}>{formatDate(post.date)}</time> · {post.minutes} min read
+            {post.draft && <span class="post-draft"> · Draft</span>}
+          </p>
+        </div>
+      </header>
+      <div class="container">
+        {post.coverImage ? (
+          <div class="post-cover is-picture">
+            <img src={post.coverImage} alt="" loading="lazy" />
+          </div>
+        ) : (
+          <div class="post-cover" set:html={post.coverSvg} />
+        )}
+        <div class="post-body">
+          <Content />
+        </div>
+        <aside class="post-share" aria-labelledby="share">
+          <h2 id="share">Share this post</h2>
+          <div class="post-share-links">
+            {SHARE.map((s) => (
+              <a
+                class="btn btn-small btn-icon"
+                href={s.href}
+                target="_blank"
+                rel="noopener"
+                aria-label={`Share on ${s.name}`}
+                title={`Share on ${s.name}`}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path fill="currentColor" d={s.path} />
+                </svg>
+              </a>
+            ))}
+            <button type="button" class="btn btn-small post-copy" data-link={link}>
+              Copy link
+            </button>
+          </div>
+        </aside>
+      </div>
+    </article>
+
+    {more.length > 0 && (
+      <section class="post-more container" aria-labelledby="more">
+        <h2 id="more">More from the blog</h2>
+        <ul>
+          {more.map((p) => (
+            <li>
+              <PostCard post={p} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </main>
+  <Cta />
+  <Footer />
+</Base>
+
+<script>
+  // Copy link: the post's address on the clipboard, and a word to say it's there.
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.post-copy'))
+    button.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(button.dataset.link!);
+      button.textContent = 'Copied';
+      setTimeout(() => (button.textContent = 'Copy link'), 1500);
+    });
+</script>
+
+<style>
+  .post {
+    padding-bottom: 24px;
+  }
+  .post-hero {
+    position: relative;
+    padding: 56px 0 40px;
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .post-head {
+    position: relative;
+    max-width: 820px;
+    text-align: center;
+  }
+  .post-crumbs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    color: var(--muted);
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .post-crumbs a:hover {
+    color: var(--text);
+  }
+  .post-crumbs span:last-child {
+    color: var(--accent);
+  }
+  h1 {
+    margin: 0 0 20px;
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .post-byline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .post-byline a:hover {
+    color: var(--text);
+  }
+  /* The author's pixel avatar, sharp. */
+  .post-avatar {
+    margin-right: 4px;
+    image-rendering: pixelated;
+  }
+  .post-cover {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 2 / 1;
+    padding: 6%;
+    background: linear-gradient(135deg, var(--tint-a), var(--tint-b));
+    overflow: hidden;
+  }
+  .post-cover :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+  /* A screenshot: whole, at its own size. */
+  .post-cover.is-picture {
+    aspect-ratio: auto;
+    padding: 0;
+    border: 1px solid var(--line);
+  }
+  .post-cover img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ---- The post's text, written in Markdown ---- */
+  .post-body {
+    max-width: 680px;
+    margin: 56px auto 0;
+    font-size: 17px;
+  }
+  .post-body :global(h2) {
+    margin: 48px 0 14px;
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+  .post-body :global(h3) {
+    margin: 32px 0 10px;
+    font-size: 20px;
+  }
+  .post-body :global(p),
+  .post-body :global(li) {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+  .post-body :global(p) {
+    margin: 0 0 18px;
+  }
+  .post-body :global(strong) {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .post-body :global(ul),
+  .post-body :global(ol) {
+    margin: 0 0 20px;
+    padding-left: 22px;
+  }
+  .post-body :global(li + li) {
+    margin-top: 8px;
+  }
+  .post-body :global(a) {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .post-body :global(code),
+  .post-body :global(kbd) {
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font: 500 14px/1.4 var(--mono);
+  }
+  .post-body :global(kbd) {
+    border-color: var(--line-strong);
+    box-shadow: 0 2px 0 var(--line-strong);
+  }
+  .post-body :global(blockquote) {
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    border-left: 2px solid var(--accent);
+    background: var(--surface);
+  }
+  .post-body :global(blockquote p) {
+    margin: 0;
+  }
+  /* Pixel art in a post: on black, sharp at any size. */
+  .post-body :global(.pixel-figure) {
+    margin: 8px 0 28px;
+  }
+  .post-body :global(.pixel-figure img) {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    margin: 0;
+    padding: 8% 20%;
+    box-sizing: border-box;
+    background: #000;
+    image-rendering: pixelated;
+  }
+  .post-body :global(figcaption) {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .post-body :global(img) {
+    display: block;
+    max-width: 100%;
+    margin: 8px 0 28px;
+  }
+
+  .post-share {
+    max-width: 680px;
+    margin: 48px auto 0;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .post-share h2 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+  .post-share-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  /* The site's push buttons, the icons in the text color. */
+  .post-share-links .btn {
+    color: var(--text);
+  }
+  .post-share-links svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+
+  .post-more {
+    padding: 72px 0 96px;
+  }
+  .post-more h2 {
+    margin: 0 0 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .post-more ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px 32px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (max-width: 640px) {
+    .post-hero {
+      padding-top: 32px;
+    }
+    .post-body {
+      margin-top: 36px;
+      font-size: 16px;
+    }
+  }
+</style>

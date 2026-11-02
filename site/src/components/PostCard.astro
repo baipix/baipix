@@ -1,0 +1,123 @@
+---
+/** A blog post in a list: its pixel art cover on its category's pastel, then what it is and when. */
+import { CATEGORIES, formatDate, type Post } from '../blog';
+
+interface Props {
+  post: Post;
+  /** The newest post, at the top of the blog: the cover beside the text, and its description. */
+  featured?: boolean;
+}
+const { post, featured = false } = Astro.props;
+const category = CATEGORIES[post.category];
+---
+
+<a class:list={['post-card', { 'is-featured': featured }]} href={post.url} data-tone={category.tone}>
+  {post.coverImage ? (
+    <div class="post-cover is-picture">
+      <img src={post.coverImage} alt="" loading="lazy" />
+    </div>
+  ) : (
+    <div class="post-cover" set:html={post.coverSvg} />
+  )}
+  <div class="post-text">
+    <p class="post-meta">
+      <span>{category.label}</span>
+      <span aria-hidden="true">·</span>
+      <time datetime={post.date}>{formatDate(post.date)}</time>
+      {post.draft && <span class="post-draft">Draft</span>}
+    </p>
+    {featured ? <h2>{post.title}</h2> : <h3>{post.title}</h3>}
+    {featured && <p class="post-description">{post.description}</p>}
+  </div>
+</a>
+
+<style>
+  .post-card {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+    color: inherit;
+  }
+  .post-card.is-featured {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 40px;
+    align-items: center;
+    padding: 24px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .post-cover {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    padding: 12%;
+    background: linear-gradient(135deg, var(--tint-a), var(--tint-b));
+    overflow: hidden;
+  }
+  .post-cover :global(svg) {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    transition: transform 0.2s steps(3);
+  }
+  /* A screenshot: the whole width, from its top. */
+  .post-cover.is-picture {
+    padding: 0;
+  }
+  .post-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+  .post-card:hover .post-cover :global(svg) {
+    transform: scale(1.04);
+  }
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .post-meta span:first-child {
+    color: var(--accent);
+  }
+  .post-draft {
+    padding: 2px 6px;
+    border: 1px dashed var(--line-strong);
+    font: 500 11px/1.2 var(--mono);
+    text-transform: uppercase;
+  }
+  h2,
+  h3 {
+    margin: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  h2 {
+    font-size: clamp(24px, 3vw, 32px);
+  }
+  h3 {
+    font-size: 19px;
+  }
+  .post-card:hover :is(h2, h3) {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+  .post-description {
+    margin: 14px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  @media (max-width: 760px) {
+    .post-card.is-featured {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      padding: 16px;
+    }
+  }
+</style>
