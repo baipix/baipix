@@ -207,6 +207,7 @@ export const ja: Record<MessageKey, string> = {
     '色を、パレットの色へ明るさの順に対応させます（いちばん暗い色はいちばん暗い色へ）。色を変えても、影とハイライトは保たれます。',
   'remap.count': '色数',
   'remap.replacePalette': 'ファイルのパレットも置き換える',
+  'remap.background': '背景も置き換える',
   'adjust.open': 'レイヤーを調整…',
   'adjust.hue': '色相',
   'adjust.saturation': '彩度',

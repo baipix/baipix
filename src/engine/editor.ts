@@ -599,6 +599,8 @@ export class Editor {
   private adjusting: {
     layers: { id: string; base: Uint32Array }[];
     rect: Rect;
+    /** The file's background before the adjustment (a remap may change it too). */
+    background: Color;
     /** The palette before the adjustment, while it's previewed on the palette too. */
     basePalette?: PaletteState;
   } | null = null;
@@ -3643,13 +3645,18 @@ export class Editor {
     this.adjusting = {
       layers: layers.map((l) => ({ id: l.id, base: l.pixels.slice() })),
       rect: clipRect(this.targetRect(), doc.width, doc.height),
+      background: doc.background,
     };
   }
 
-  /** Rewrites the adjusted layers from their original pixels, through `change` (none: as they were). */
-  private writeAdjustment(change: PixelChange | null): void {
+  /**
+   * Rewrites the adjusted layers from their original pixels, through `change` (none: as they were),
+   * and sets the background (by default, the one from before).
+   */
+  private writeAdjustment(change: PixelChange | null, background = this.adjusting!.background): void {
     const { layers, rect } = this.adjusting!;
     const width = this.doc.width;
+    this.doc.background = background;
     const sel = this.active.selection;
     for (const { id, base } of layers) {
       const layer = this.doc.layers.find((l) => l.id === id);
@@ -3666,19 +3673,29 @@ export class Editor {
 
   /**
    * The colors being adjusted (opaque, from the original pixels of the layers and area being
-   * adjusted) and how many pixels have each: what a remap starts from.
+   * adjusted) and how many pixels have each: what a remap starts from. With `background`, the
+   * background's color too, counted where none of these layers covers it.
    */
-  adjustedColors(): Map<Color, number> {
+  adjustedColors(background = false): Map<Color, number> {
     const used = new Map<Color, number>();
     if (!this.adjusting) return used;
     const { layers, rect } = this.adjusting;
     const width = this.doc.width;
+    const add = (c: Color, n = 1) => used.set(opaque(c), (used.get(opaque(c)) ?? 0) + n);
     for (const { base } of layers)
       for (let y = rect.y; y < rect.y + rect.h; y++)
         for (let x = rect.x; x < rect.x + rect.w; x++) {
           const c = base[y * width + x];
-          if (alpha(c)) used.set(opaque(c), (used.get(opaque(c)) ?? 0) + 1);
+          if (alpha(c)) add(c);
         }
+    const bg = this.adjusting.background;
+    if (background && alpha(bg)) {
+      let bare = 0;
+      for (let y = rect.y; y < rect.y + rect.h; y++)
+        for (let x = rect.x; x < rect.x + rect.w; x++)
+          if (layers.every(({ base }) => !alpha(base[y * width + x]))) bare++;
+      add(bg, Math.max(1, bare));
+    }
     return used;
   }
 
@@ -3700,16 +3717,21 @@ export class Editor {
 
   /**
    * Live preview of any color change on the adjusted pixels. `palette` gives the palette to show
-   * meanwhile (from the palette before the adjustment), or null to leave it as it is.
+   * meanwhile (from the palette before the adjustment), or null to leave it as it is. With
+   * `background`, the file's background goes through `map` too.
    */
-  previewMap(map: ColorMap, palette: ((colors: Color[]) => Color[]) | null): void {
-    this.previewChange(mapChange(map), palette);
+  previewMap(map: ColorMap, palette: ((colors: Color[]) => Color[]) | null, background = false): void {
+    this.previewChange(mapChange(map), palette, this.mappedBackground(map, background));
   }
 
   /** Live preview of any change of the adjusted pixels (an outline…), like `previewMap`. */
-  previewChange(change: PixelChange, palette: ((colors: Color[]) => Color[]) | null = null): void {
+  previewChange(
+    change: PixelChange,
+    palette: ((colors: Color[]) => Color[]) | null = null,
+    background?: Color,
+  ): void {
     if (!this.adjusting) return;
-    this.writeAdjustment(change);
+    this.writeAdjustment(change, background);
     const a = this.adjusting;
     if (palette) {
       a.basePalette ??= this.palette;
@@ -3725,14 +3747,25 @@ export class Editor {
 
   /**
    * Commits a color change as one undo step. With `palette`, the palette becomes what it returns,
-   * in the same step: undoing it gives back the pixels and the palette together.
+   * in the same step: undoing it gives back the pixels and the palette together. With `background`,
+   * the file's background goes through `map` too, in the same step.
    */
-  applyMap(map: ColorMap, palette: ((colors: Color[]) => Color[]) | null): void {
-    this.applyChange(mapChange(map), palette);
+  applyMap(map: ColorMap, palette: ((colors: Color[]) => Color[]) | null, background = false): void {
+    this.applyChange(mapChange(map), palette, this.mappedBackground(map, background));
+  }
+
+  /** The background once through `map` (asked for and there is one), else undefined: left as it was. */
+  private mappedBackground(map: ColorMap, background: boolean): Color | undefined {
+    const bg = this.adjusting?.background;
+    return background && bg && alpha(bg) ? map(bg) : undefined;
   }
 
   /** Commits any change of the adjusted pixels as one undo step, like `applyMap`. */
-  applyChange(change: PixelChange, palette: ((colors: Color[]) => Color[]) | null = null): void {
+  applyChange(
+    change: PixelChange,
+    palette: ((colors: Color[]) => Color[]) | null = null,
+    background?: Color,
+  ): void {
     if (!this.adjusting) return;
     const base = this.adjusting.basePalette ?? this.palette;
     this.palette = base;
@@ -3741,7 +3774,7 @@ export class Editor {
     // The colors of the drawing follow the pixels on their own: nothing to swap or set.
     const ownColors = palette && base.key !== 'drawing';
     if (ownColors) this.active.history.top()!.palette = this.savedPalette();
-    this.writeAdjustment(change);
+    this.writeAdjustment(change, background);
     this.adjusting = null;
     if (ownColors) this.usePalette(palette(base.colors));
     this.commit();

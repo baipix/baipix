@@ -207,6 +207,7 @@ export const es: Record<MessageKey, string> = {
     'Los colores se asignan a los de la paleta en el mismo orden, del más oscuro al más claro: cambia los colores conservando las sombras y las luces.',
   'remap.count': 'Colores',
   'remap.replacePalette': 'Reemplazar también la paleta del archivo',
+  'remap.background': 'Reasignar también el fondo',
   'adjust.open': 'Ajustar la capa…',
   'adjust.hue': 'Tono',
   'adjust.saturation': 'Saturación',

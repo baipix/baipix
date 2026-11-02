@@ -206,6 +206,7 @@ export const en = {
     'Colors go to palette colors in the same order, darkest to darkest: recolors and keeps shadows and highlights.',
   'remap.count': 'Colors',
   'remap.replacePalette': "Also replace the file's palette",
+  'remap.background': 'Also remap the background',
   'adjust.open': 'Adjust the layer…',
   'adjust.hue': 'Hue',
   'adjust.saturation': 'Saturation',
