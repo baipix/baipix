@@ -137,8 +137,10 @@ export function ExportPreview() {
       ctx.fillStyle = checkerPattern(ctx, Math.max(3, Math.round(5 * dpr)), theme.checkA, theme.checkB);
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
-      const onlyLayer = format !== 'layers' && ui.exportActiveLayer;
+
+      const onlyLayer = format !== 'layers' && ui.exportActiveLayer && !(format === 'frames' && everyBoard);
       const withBackground = format !== 'layers' && ui.exportBackground && !onlyLayer && hasBackground(doc);
+
       if (withBackground) {
         ctx.fillStyle = toCss(doc.background);
         ctx.fillRect(x, y, w, h);

@@ -712,6 +712,7 @@ function FrameSheetOptions() {
 
   const boardCount = useEditorState((s) => s.boards.length);
   const allBoards = uiStore.use((s) => s.exportAllBoards);
+  const columns = uiStore.use((s) => s.exportSheetColumns);
 
   const boards = editor.fileBoards();
 
@@ -725,7 +726,7 @@ function FrameSheetOptions() {
   return (
     <Row label={t('export.columns')}>
       <NumberField
-        value={Math.min(uiStore.get().exportSheetColumns ?? count, count)}
+        value={Math.min(columns ?? count, count)}
         min={1}
         max={count}
         ariaLabel={t('export.columns')}
