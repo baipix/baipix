@@ -6,6 +6,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Animation: Animate, beside Export, opens a timeline under the canvas, with a row per layer and a column per frame. Add a frame (a copy of the one shown), delete or drag frames to reorder them, give each its own duration, and play them in a loop with Enter or a tap on Space; comma and period step through them. Animated files show a film badge on the files screen, and `.baipix` files keep their frames. ([#629](https://github.com/baipix/baipix/pull/629), [#664](https://github.com/baipix/baipix/pull/664))
+- Onion skin, from the timeline: the frames before in red and after in blue, faded under the one you draw, up to five on each side. A sky or a ground painted on its own layer stays under it. ([#638](https://github.com/baipix/baipix/pull/638), [#650](https://github.com/baipix/baipix/pull/650))
+- Export an animation as a GIF: every frame with its duration, looping, with its exact colors, transparent or on the background, at the pixel size picked; with All boards, one GIF per board in a .zip. ([#644](https://github.com/baipix/baipix/pull/644))
+- More ways to handle frames: New empty frame (Alt+B) keeps the scenery and empties what moves; Shift or Cmd/Ctrl-click picks several frames to set their duration, copy, paste, reverse or delete them at once. ([#661](https://github.com/baipix/baipix/pull/661), [#662](https://github.com/baipix/baipix/pull/662), [#665](https://github.com/baipix/baipix/pull/665), [#668](https://github.com/baipix/baipix/pull/668))
 - The editor in Italian (View › Language › Italiano). ([#630](https://github.com/baipix/baipix/pull/630))
 - The editor in Japanese (View › Language › 日本語). ([#645](https://github.com/baipix/baipix/pull/645))
 - A light for each board, to shade by: in the new Light section, drag a lamp around a pixel sphere, or type its angle and height; faint lines and a sun on the canvas show where it comes from, and the sun can be dragged around the board to turn it; a drop shadow can follow it, falling away from the light and longer the lower it is. ([#609](https://github.com/baipix/baipix/pull/609))
@@ -31,6 +35,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@mykola-lp](https://github.com/mykola-lp) for the GIF export, which takes animations out of Baipix. ([#644](https://github.com/baipix/baipix/pull/644))
 - [@mrCabez](https://github.com/mrCabez) for the Italian translation, the editor's sixth language. ([#630](https://github.com/baipix/baipix/pull/630))
 
 - [@rogervokma-stack](https://github.com/rogervokma-stack) for the Japanese translation, the editor's fifth language, and its review as a native speaker. ([#645](https://github.com/baipix/baipix/pull/645), [#669](https://github.com/baipix/baipix/pull/669))

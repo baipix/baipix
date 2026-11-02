@@ -6,7 +6,6 @@ import { renameFile, togglePreview } from '../menus';
 import { keyState } from '../keyState';
 import { TOOL_LIST } from '../tools';
 import { frameCount } from '../../engine/frames';
-import { ANIMATION } from '../features';
 import { stepFrame, togglePlay } from '../playback';
 import { openAdjust, openDialog, toggleLayersPanel, toggleTimeline, uiStore } from '../uiStore';
 import { viewport } from '../viewport';
@@ -135,7 +134,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         const { doc } = editor.getState();
         const command = {
           p: togglePreview,
-          a: ANIMATION ? toggleTimeline : undefined,
+          a: toggleTimeline,
           n: () => editor.addLayer(),
           d: () => editor.duplicateLayer(),
           m: () => doc.activeLayer > 0 && editor.mergeDown(),
@@ -162,14 +161,13 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         if (to && !e.shiftKey) return (e.preventDefault(), editor.align(to));
       }
       // Frames, like in Aseprite: Alt+N adds one, Alt+B an empty one, comma and period step through, Enter plays.
-      if (ANIMATION && e.altKey && !e.shiftKey && (e.code === 'KeyN' || e.code === 'KeyB')) {
+      if (e.altKey && !e.shiftKey && (e.code === 'KeyN' || e.code === 'KeyB')) {
         e.preventDefault();
         uiStore.set({ timeline: true });
         return editor.addFrame(e.code === 'KeyB');
       }
-      if (ANIMATION && (e.key === ',' || e.key === '.')) return stepFrame(editor, e.key === ',' ? -1 : 1);
-      if (ANIMATION && e.key === 'Enter' && uiStore.get().timeline)
-        return (e.preventDefault(), togglePlay(editor));
+      if (e.key === ',' || e.key === '.') return stepFrame(editor, e.key === ',' ? -1 : 1);
+      if (e.key === 'Enter' && uiStore.get().timeline) return (e.preventDefault(), togglePlay(editor));
       if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
         e.preventDefault();
         const { doc } = editor.getState();
@@ -217,7 +215,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
       if (e.code !== 'Space') return;
       const tap = spaceTap;
       release();
-      if (!ANIMATION || !tap || tap.panned || performance.now() - tap.at > SPACE_TAP_MS) return;
+      if (!tap || tap.panned || performance.now() - tap.at > SPACE_TAP_MS) return;
       if (uiStore.get().timeline && frameCount(editor.getState().doc) > 1) togglePlay(editor);
     };
     const onPaste = (e: ClipboardEvent) => {
