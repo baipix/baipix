@@ -37,6 +37,12 @@
   --mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --container: 1120px;
 }
+/* The header's links get a row of their own under its buttons. */
+@media (max-width: 860px) {
+  :root {
+    --header-height: 100px;
+  }
+}
 :root[data-theme='light'] {
   color-scheme: light;
 }
