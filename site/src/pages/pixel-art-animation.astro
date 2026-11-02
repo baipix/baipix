@@ -80,8 +80,8 @@ const faq = [
     a: 'Showing the frames before and after the one you draw, faded under it, so you can see where things come from and where they go. Baipix tints them red before and blue after.',
   },
   {
-    q: 'Can I export a sprite sheet for a game?',
-    a: 'Animated GIF is there today. For a game engine, Layers + sprite sheet already exports a sheet with its TexturePacker JSON.',
+    q: 'Can I use the animation in a game?',
+    a: 'A PNG sequence exports every frame as its own PNG, in a .zip, for game engines and tools that take frames apart. An .aseprite file keeps every frame with its duration, to finish it in Aseprite.',
   },
   {
     q: 'Is it free?',
@@ -244,8 +244,11 @@ const faq = [
           <p class="muted">With the board's background, or without it, for a sprite on any page.</p>
         </article>
         <article class="card">
-          <h3>Every board at once</h3>
-          <p class="muted">All boards exports one GIF per board, in a .zip: each animation of a character.</p>
+          <h3>Or frame by frame</h3>
+          <p class="muted">
+            A PNG sequence, one file per frame, for a game engine. Or an .aseprite file with every frame, to
+            finish it there.
+          </p>
         </article>
       </div>
     </section>

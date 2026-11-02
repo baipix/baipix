@@ -31,7 +31,7 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Animation:** a timeline of frames under the canvas, a duration for each, onion skin, playback with Enter or Space, frames to copy, paste, reverse or empty, and animated GIF export.
 - **Symmetry** around axes you can drag anywhere, **tile preview** for seamless textures, rulers and guides, a reference image to trace over.
 - **Rendering for design work:** choose the exported pixel size and a gap between pixels (LED / dot-matrix look), previewed live on the canvas.
-- **Export:** PNG, animated GIF, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files to keep working in Aseprite, tilesets, every board at once as a .zip, `.baipix` project files, Lospec `.hex` palettes.
+- **Export:** PNG, animated GIF, PNG sequences, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files with every frame to keep working in Aseprite, tilesets, every board at once as a .zip, `.baipix` project files, Lospec `.hex` palettes.
 - **Local-first:** everything is saved in your browser (IndexedDB), each board's last 50 undo steps included. Nothing is sent anywhere.
 - English, French, Ukrainian, Spanish, Japanese and Italian, opening in your browser's language; light and dark themes. Missing yours? [Add it](CONTRIBUTING.md#adding-a-language).
 
