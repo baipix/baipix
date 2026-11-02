@@ -185,14 +185,13 @@ export function createActions(editor: Editor) {
           palette: editor.getState().palette.colors,
           background: uiStore.get().exportBackground && hasBackground(d) ? d.background : undefined,
         });
-        await report(filename, saveFile(filename, new Blob([bytes as BlobPart])));
 
+        await report(filename, saveFile(filename, new Blob([bytes as BlobPart])));
         return;
       }
 
       if (format === 'gif') {
         const blob = await gifBlobOf(doc(), onlyActiveLayer);
-
         await report(filename, saveFile(filename, blob, 'image/gif'));
         return;
       }
