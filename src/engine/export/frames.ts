@@ -1,7 +1,7 @@
 import { flattenFrame } from '../composite';
 import type { Layer, PixelDoc } from '../document';
 import { celOf, DEFAULT_DURATION, frameCount } from '../frames';
-import { spriteSheetGrid } from './spriteSheet';
+import { composeSpriteSheet } from './spriteSheet';
 
 interface Size {
   width: number;
@@ -22,40 +22,6 @@ export interface FrameSpriteSheet {
   columns: number;
   rows: number;
   durations: number[];
-}
-
-/**
- * Places frame pixel buffers on a grid, left to right and top to bottom.
- * Cells left after the last frame remain transparent.
- */
-export function composeFrameSpriteSheet(
-  frames: readonly Uint32Array[],
-  width: number,
-  height: number,
-  columns: number | null = null,
-) {
-  const grid = spriteSheetGrid(frames.length, columns, width, height);
-  const frameSize = width * height;
-
-  if (frames.some((pixels) => pixels.length !== frameSize)) {
-    throw new RangeError('Frame pixel buffer does not match document dimensions.');
-  }
-
-  const pixels = new Uint32Array(grid.width * grid.height);
-
-  frames.forEach((frame, index) => {
-    const left = (index % grid.columns) * width;
-    const top = Math.floor(index / grid.columns) * height;
-
-    for (let y = 0; y < height; y++) {
-      pixels.set(frame.subarray(y * width, (y + 1) * width), (top + y) * grid.width + left);
-    }
-  });
-
-  return {
-    pixels,
-    ...grid,
-  };
 }
 
 /**
@@ -84,7 +50,7 @@ export function frameSpriteSheet(
     });
   });
 
-  const sheet = composeFrameSpriteSheet(frames, doc.width, doc.height, columns);
+  const sheet = composeSpriteSheet(frames, doc.width, doc.height, columns);
 
   return {
     ...sheet,
