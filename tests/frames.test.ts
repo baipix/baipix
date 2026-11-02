@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
 import { flattenFrame } from '../src/engine/composite';
-import { addFrame, celOf, normalizeFrames, onionFrames, showFrame } from '../src/engine/frames';
+import {
+  addFrame,
+  celOf,
+  deleteFrames,
+  isStill,
+  normalizeFrames,
+  onionFrames,
+  showFrame,
+  stillUnder,
+} from '../src/engine/frames';
 import { createDocument } from '../src/engine/document';
 import { documentFromJson, documentToJson, deserializeDocument } from '../src/storage/fileFormat';
 import { packHistories, unpackHistories } from '../src/storage/history';
@@ -191,6 +200,122 @@ describe('animation frames in the browser', () => {
   });
 });
 
+describe('several frames at once', () => {
+  it('deletes the picked frames in one step, and undoes them in one', () => {
+    const e = editor();
+    for (let i = 1; i < 5; i++) e.addFrame();
+    const ids = doc(e).frames!.map((f) => f.id);
+    e.deleteFrames([1, 3]);
+    expect(doc(e).frames!.map((f) => f.id)).toEqual([ids[0], ids[2], ids[4]]);
+    e.undo();
+    expect(doc(e).frames!.map((f) => f.id)).toEqual(ids);
+  });
+
+  it('reverses the picked frames in their places, the shown one still shown', () => {
+    const e = editor();
+    for (let i = 1; i < 5; i++) e.addFrame();
+    const ids = doc(e).frames!.map((f) => f.id);
+    e.setFrame(1);
+    e.reverseFrames([1, 2, 4]);
+    expect(doc(e).frames!.map((f) => f.id)).toEqual([ids[0], ids[4], ids[2], ids[3], ids[1]]);
+    expect(doc(e).frames![doc(e).activeFrame!].id).toBe(ids[1]);
+    e.undo();
+    expect(doc(e).frames!.map((f) => f.id)).toEqual(ids);
+  });
+
+  it('moves the pixels with their frames', () => {
+    const e = editor();
+    e.addFrame();
+    dot(e, 2, 2);
+    e.reverseFrames([0, 1]);
+    e.setFrame(0);
+    expect(at(e, 2, 2)).toBe(RED);
+    e.setFrame(1);
+    expect(at(e, 2, 2)).not.toBe(RED);
+  });
+
+  it('keeps one frame when all are picked', () => {
+    const e = editor();
+    e.addFrame();
+    e.addFrame();
+    deleteFrames(doc(e), [0, 1, 2]);
+    expect(doc(e).frames).toBeUndefined();
+  });
+
+  it('sets the duration of the picked frames only', () => {
+    const e = editor();
+    e.addFrame();
+    e.addFrame();
+    e.setFrameDuration(250, [0, 2]);
+    expect(doc(e).frames!.map((f) => f.duration)).toEqual([250, 100, 250]);
+  });
+});
+
+describe('copying frames', () => {
+  it('pastes copied frames after the shown one, with their pixels and durations', () => {
+    const e = editor();
+    e.addFrame();
+    dot(e, 2, 2);
+    e.setFrameDuration(300, [1]);
+    e.copyFrames([1]);
+    e.setFrame(0);
+    e.pasteFrames();
+    const d = doc(e);
+    expect(d.frames!.length).toBe(3);
+    expect(d.activeFrame).toBe(1);
+    expect(d.frames![1].duration).toBe(300);
+    expect(at(e, 2, 2)).toBe(RED);
+    e.undo();
+    expect(doc(e).frames!.length).toBe(2);
+  });
+
+  it('pastes on another board of the same size, matching layers by name', () => {
+    const e = editor();
+    dot(e, 1, 1);
+    e.copyFrames([0]);
+    e.newFile(8, 8, 'Other');
+    e.pasteFrames();
+    expect(doc(e).frames!.length).toBe(2);
+    expect(at(e, 1, 1)).toBe(RED);
+  });
+
+  it("doesn't paste on a board of another size", () => {
+    const e = editor();
+    e.copyFrames([0]);
+    e.newFile(16, 16, 'Big');
+    expect(e.canPasteFrames()).toBe(false);
+    e.pasteFrames();
+    expect(doc(e).frames).toBeUndefined();
+  });
+});
+
+describe('empty frames', () => {
+  it('keeps the scenery and empties what moves', () => {
+    const e = editor();
+    dot(e, 0, 0); // The sky, on the bottom layer.
+    e.addLayer();
+    e.addFrame();
+    dot(e, 3, 3); // The character moves on the second frame.
+    e.addFrame(true);
+    const d = doc(e);
+    expect(d.activeFrame).toBe(2);
+    expect(at(e, 0, 0, 0)).toBe(RED);
+    expect(d.layers[1].pixels.every((c) => c === 0)).toBe(true);
+  });
+
+  it('on a single frame, empties only the active layer', () => {
+    const e = editor();
+    dot(e, 0, 0);
+    e.addLayer();
+    dot(e, 1, 1);
+    e.addFrame(true);
+    expect(at(e, 0, 0, 0)).toBe(RED);
+    expect(at(e, 1, 1, 1)).toBe(0);
+    e.setFrame(0);
+    expect(at(e, 1, 1, 1)).toBe(RED);
+  });
+});
+
 describe('onion skin', () => {
   const walk = (frames: number, shown: number) => {
     const e = editor();
@@ -210,6 +335,30 @@ describe('onion skin', () => {
   it("doesn't loop around the ends", () => {
     const frames = onionFrames(walk(3, 0), { before: 2, after: 5, opacity: 0.5 }).map((o) => o.frame);
     expect(frames).toEqual([2, 1]);
+  });
+
+  it('goes over the still layers at the bottom, under the first one that moves', () => {
+    const e = editor();
+    dot(e, 0, 0); // A sky on the bottom layer, the same on every frame.
+    e.addLayer();
+    e.addLayer();
+    e.addFrame();
+    dot(e, 2, 2); // On the top layer, on the new frame only: it moves.
+    const d = doc(e);
+    expect(d.layers.map((l) => isStill(d, l))).toEqual([true, true, false]);
+    expect(stillUnder(d)).toBe(2);
+  });
+
+  it('stops at a layer that moves, even with still ones above', () => {
+    const e = editor();
+    e.addLayer();
+    e.setActiveLayer(0);
+    e.addFrame();
+    dot(e, 1, 1);
+    const d = doc(e);
+    expect(isStill(d, d.layers[0])).toBe(false);
+    expect(isStill(d, d.layers[1])).toBe(true);
+    expect(stillUnder(d)).toBe(0);
   });
 
   it('merges another frame without showing it', () => {

@@ -92,6 +92,9 @@ export interface Scene {
   /** The frames around the shown one, tinted, under it (see CanvasView's onion). When there are,
    * `composite` leaves out the background, painted here under them, as for the reference. */
   onion?: SceneOnion[];
+  /** With the onion skin, the still layers at the bottom (a sky, the ground), which `composite`
+   * leaves out: painted under the onion skin, or an opaque one would hide it. */
+  onionUnder?: CanvasImageSource;
   /** Grid line color for each pixel, same size as `composite` (see grid.ts). */
   gridInk: CanvasImageSource;
   /** When set, `composite` leaves out the background: it is painted here, under the reference. */
@@ -456,6 +459,7 @@ export function drawScene(
     ctx.drawImage(ref.image, X + r.x * s, Y + r.y * s, r.w * s, r.h * s);
     ctx.restore();
   }
+  if (scene.onionUnder) ctx.drawImage(scene.onionUnder, X, Y, cw, ch);
   // The onion skin under the frame being drawn, so it stays sharp over the ghosts.
   for (const o of onion) {
     ctx.globalAlpha = o.opacity;
@@ -791,17 +795,8 @@ function drawLoupe(
         ctx.fillRect(x + i * cell, y + j * cell, cell, cell);
       }
   }
-  ctx.drawImage(
-    scene.composite,
-    loupe.at.x - half,
-    loupe.at.y - half,
-    LOUPE_PIXELS,
-    LOUPE_PIXELS,
-    x,
-    y,
-    size,
-    size,
-  );
+  for (const image of scene.onionUnder ? [scene.onionUnder, scene.composite] : [scene.composite])
+    ctx.drawImage(image, loupe.at.x - half, loupe.at.y - half, LOUPE_PIXELS, LOUPE_PIXELS, x, y, size, size);
   ctx.fillStyle = theme.grid;
   for (let i = 1; i < LOUPE_PIXELS; i++) {
     ctx.fillRect(x + i * cell, y, 1, size);

@@ -47,6 +47,16 @@ export function ExportPreview() {
   const previewHeight = layerSheet ? layerSheet.height : doc.height;
   const g = renderGeometry(previewWidth, previewHeight, doc.render.pixelSize, doc.render.gap);
   const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
+  // "Active layer only" on an empty layer: an empty image, which looks like a broken preview.
+  const active = doc.layers[doc.activeLayer];
+  const emptyLayer = useMemo(
+    () => {
+      void revision;
+      return onlyLayer && format !== 'aseprite' && !!active && !active.pixels.some((c) => alpha(c) > 0);
+    },
+    // The document changes in place: its revision says when.
+    [onlyLayer, format, active, revision],
+  );
 
   useEffect(() => {
     let frame = 0;
@@ -154,6 +164,8 @@ export function ExportPreview() {
       <p className="export-size">
         {layerSheetPreview?.status === 'empty' ? (
           t('toast.noVisibleLayers')
+        ) : emptyLayer ? (
+          t('export.layerEmpty', { name: active.name })
         ) : layerSheetPreview?.status === 'tooLarge' ? (
           t('toast.exportTooLarge', { size: MAX_EXPORT_SIZE })
         ) : (

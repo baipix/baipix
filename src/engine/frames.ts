@@ -134,14 +134,20 @@ export function bakeEffectsOnEveryFrame(doc: PixelDoc, layer: Layer): void {
   });
 }
 
-/** Adds a frame after `at`, a copy of it, and shows it. */
-export function addFrame(doc: PixelDoc, at = activeFrame(doc)): void {
+/**
+ * Adds a frame after `at`, a copy of it, and shows it. An `empty` one keeps only the scenery: the
+ * layers that are the same on every frame (a sky, the ground); on a board of one frame, where every
+ * layer is, only the active layer is left empty.
+ */
+export function addFrame(doc: PixelDoc, at = activeFrame(doc), empty = false): void {
   const n = frameCount(doc);
   if (n >= MAX_FRAMES) return;
   at = Math.min(n - 1, Math.max(0, at));
   normalizeFrames(doc);
   const duration = doc.frames?.[at].duration ?? DEFAULT_DURATION;
-  const copies = doc.layers.map((layer): Cel => {
+  const kept = (layer: Layer, i: number) => !empty || (n > 1 ? isStill(doc, layer) : i !== doc.activeLayer);
+  const copies = doc.layers.map((layer, i): Cel => {
+    if (!kept(layer, i)) return { pixels: new Uint32Array(doc.width * doc.height) };
     const { pixels, outside } = celOf(doc, layer, at);
     return { pixels: pixels.slice(), ...(outside && { outside }) };
   });
@@ -170,6 +176,31 @@ export function deleteFrame(doc: PixelDoc, f: number): boolean {
   return true;
 }
 
+/** Deletes the given frames, the last first; the board keeps at least one. */
+export function deleteFrames(doc: PixelDoc, frames: number[]): boolean {
+  let deleted = false;
+  for (const f of [...new Set(frames)].sort((a, b) => b - a)) deleted = deleteFrame(doc, f) || deleted;
+  return deleted;
+}
+
+/**
+ * Reverses the order of the given frames, in the places they hold (the others don't move), keeping
+ * the shown frame shown: a loop that goes back.
+ */
+export function reverseFrames(doc: PixelDoc, frames: number[]): boolean {
+  const at = [...new Set(frames)].filter((f) => f >= 0 && f < frameCount(doc)).sort((a, b) => a - b);
+  if (!doc.frames || at.length < 2) return false;
+  const shown = doc.frames[activeFrame(doc)];
+  const reorder = <T>(list: T[]) => {
+    const picked = at.map((f) => list[f]).reverse();
+    at.forEach((f, i) => (list[f] = picked[i]));
+  };
+  reorder(doc.frames);
+  for (const layer of doc.layers) reorder(layer.cels!);
+  doc.activeFrame = doc.frames.indexOf(shown);
+  return true;
+}
+
 /** Moves frame `from` to index `to`, keeping the shown frame shown. */
 export function moveFrame(doc: PixelDoc, from: number, to: number): boolean {
   const n = frameCount(doc);
@@ -188,6 +219,45 @@ export function setDuration(doc: PixelDoc, ms: number, frames?: number[]): void 
   doc.frames?.forEach((frame, f) => {
     if (!frames || frames.includes(f)) frame.duration = d;
   });
+}
+
+/** Frames copied to paste elsewhere: each one's duration and its layers' pixels. */
+export interface FrameCopy {
+  duration: number;
+  layers: { id: string; name: string; pixels: Uint32Array }[];
+}
+
+/** Copies the given frames, in order. */
+export function copyFrames(doc: PixelDoc, frames: number[]): FrameCopy[] {
+  return [...new Set(frames)]
+    .filter((f) => f >= 0 && f < frameCount(doc))
+    .sort((a, b) => a - b)
+    .map((f) => ({
+      duration: doc.frames?.[f].duration ?? DEFAULT_DURATION,
+      layers: doc.layers.map((l) => ({ id: l.id, name: l.name, pixels: celOf(doc, l, f).pixels.slice() })),
+    }));
+}
+
+/**
+ * Pastes copied frames after frame `after`, and shows the last one. Each layer takes the pixels of
+ * the same layer, found by id (the same board) or else by name (another board); a layer with no
+ * match is left empty. Only on a board of the same size: false otherwise.
+ */
+export function pasteFrames(doc: PixelDoc, after: number, copies: FrameCopy[]): boolean {
+  const size = doc.width * doc.height;
+  if (!copies.length || copies.some((c) => c.layers.some((l) => l.pixels.length !== size))) return false;
+  if (frameCount(doc) + copies.length > MAX_FRAMES) return false;
+  copies.forEach((copy, i) => {
+    addFrame(doc, after + i, true);
+    for (const layer of doc.layers) {
+      const match =
+        copy.layers.find((l) => l.id === layer.id) ?? copy.layers.find((l) => l.name === layer.name);
+      layer.pixels = match ? match.pixels.slice() : new Uint32Array(size);
+      delete layer.outside;
+    }
+    doc.frames![activeFrame(doc)].duration = copy.duration;
+  });
+  return true;
 }
 
 /** Copies a board's frames and cels for a copy of it: cels are never changed in place, so shared. */
@@ -224,4 +294,27 @@ export function onionFrames(
       if (frame >= 0 && frame < n) out.push({ frame, side, opacity: (opacity * (count - d + 1)) / count });
     }
   return out;
+}
+
+/** Whether a layer has the same pixels on every frame: scenery that doesn't move. */
+export function isStill(doc: PixelDoc, layer: Layer): boolean {
+  const shown = layer.pixels;
+  for (let f = 0; f < frameCount(doc); f++) {
+    const { pixels } = celOf(doc, layer, f);
+    if (pixels === shown) continue;
+    if (pixels.length !== shown.length) return false;
+    for (let i = 0; i < shown.length; i++) if (pixels[i] !== shown[i]) return false;
+  }
+  return true;
+}
+
+/**
+ * How many layers at the bottom of the stack, outside any group, are the same on every frame: a sky,
+ * a room, the ground. The onion skin goes over them, as over the board's background color, or an
+ * opaque one would hide it.
+ */
+export function stillUnder(doc: PixelDoc): number {
+  let k = 0;
+  while (k < doc.layers.length && !doc.layers[k].group && isStill(doc, doc.layers[k])) k++;
+  return k;
 }

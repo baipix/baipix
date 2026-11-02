@@ -52,9 +52,14 @@ import {
   addFrame,
   bakeEffectsOnEveryFrame,
   deleteFrame,
+  deleteFrames,
   eachFrame,
   frameCount,
   moveFrame,
+  copyFrames,
+  pasteFrames,
+  type FrameCopy,
+  reverseFrames,
   normalizeFrames,
   onEachFrame,
   setCels,
@@ -486,6 +491,8 @@ export class Editor {
   /** The isometric grid's cell width last picked, for the next file it's turned on in. */
   private isoCell = DEFAULT_ISO_CELL;
   private clipboard: PixelBlock | null = null;
+  /** Frames copied in the timeline, to paste on this board or another one of the same size. */
+  private frameClip: FrameCopy[] | null = null;
   /** Whole layers copied (the last copy wins over `clipboard`). */
   private layerClip: LayerFragment | null = null;
   /** A repeat grid being set up: what it repeats, and how things were, to lay it out again or drop it. */
@@ -2032,9 +2039,9 @@ export class Editor {
     this.commit(persist);
   }
 
-  /** Adds a frame after the shown one, a copy of it, and shows it. */
-  addFrame(): void {
-    this.edit((doc) => addFrame(doc));
+  /** Adds a frame after the shown one, a copy of it or an `empty` one (see frames.ts), and shows it. */
+  addFrame(empty = false): void {
+    this.edit((doc) => addFrame(doc, undefined, empty));
   }
 
   /** Deletes frame `f` (the shown one by default); a board keeps at least one. */
@@ -2042,6 +2049,38 @@ export class Editor {
     if (frameCount(this.doc) < 2) return false;
     this.edit((doc) => deleteFrame(doc, f));
     return true;
+  }
+
+  /** Deletes several frames at once, in one step to undo; a board keeps at least one. */
+  deleteFrames(frames: number[]): boolean {
+    if (frameCount(this.doc) < 2 || !frames.length) return false;
+    this.edit((doc) => deleteFrames(doc, frames));
+    return true;
+  }
+
+  /** Reverses the order of the given frames, in their places. */
+  reverseFrames(frames: number[]): void {
+    if (new Set(frames).size < 2) return;
+    this.edit((doc) => reverseFrames(doc, frames));
+  }
+
+  /** Copies the given frames, to paste with pasteFrames. */
+  copyFrames(frames: number[]): void {
+    const copies = copyFrames(this.doc, frames);
+    if (copies.length) this.frameClip = copies;
+  }
+
+  /** Whether there are copied frames this board can take (the same size). */
+  canPasteFrames(): boolean {
+    const size = this.doc.width * this.doc.height;
+    return !!this.frameClip?.every((c) => c.layers.every((l) => l.pixels.length === size));
+  }
+
+  /** Pastes the copied frames after the shown one. */
+  pasteFrames(): void {
+    const clip = this.frameClip;
+    if (!clip || !this.canPasteFrames()) return;
+    this.edit((doc) => pasteFrames(doc, activeFrame(doc), clip));
   }
 
   /** Moves frame `from` to `to`. */
