@@ -6,12 +6,14 @@ import { fr } from '../src/i18n/fr';
 import { uk } from '../src/i18n/uk';
 import { es } from '../src/i18n/es';
 import { ja } from '../src/i18n/ja';
+import { it as itDictionary } from '../src/i18n/it';
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
   uk,
   es,
   ja,
+  it: itDictionary,
 };
 
 const getPlaceholders = (text: string): string[] =>
@@ -33,7 +35,7 @@ describe('browser language selection', () => {
   });
 
   it('falls back to English without a notice when no language is supported', () => {
-    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'it-IT'])).toEqual({
+    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'pt-BR'])).toEqual({
       locale: 'en',
       preference: 'auto',
       notify: false,
