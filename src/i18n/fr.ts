@@ -584,9 +584,12 @@ export const fr: Record<MessageKey, string> = {
   'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
   'export.allBoards': 'Les {count} plans dans un .zip',
   'export.layers': 'Calques + planche de sprites (ZIP)',
+  'export.frames': 'Images + planche de sprites (ZIP)',
   'export.columns': 'Colonnes',
   'export.layersHint':
     'Un ZIP contenant un PNG par calque visible et une planche de sprites avec les calques en grille, autant par ligne que de colonnes, et son JSON pour les moteurs de jeu. Utilise la taille des pixels et l’espacement actuels.',
+  'export.framesHint':
+    'Un ZIP avec une planche de sprites contenant chaque image de l’animation et son JSON pour les moteurs de jeu. Colonnes définit le nombre d’images par ligne. Utilise la taille des pixels et l’espacement actuels ; la durée de chaque image est conservée dans le JSON.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Largeur des tuiles',
   'export.tileHeight': 'Hauteur des tuiles',

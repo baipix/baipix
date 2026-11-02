@@ -587,9 +587,12 @@ export const es: Record<MessageKey, string> = {
     'Por ahora, las capas, los grupos, los modos de fusión y la paleta se exportan en una sola imagen.',
   'export.allBoards': 'Los {count} tableros en un archivo .zip',
   'export.layers': 'Capas + hoja de sprites (ZIP)',
+  'export.frames': 'Fotogramas + hoja de sprites (ZIP)',
   'export.columns': 'Columnas',
   'export.layersHint':
     'Un ZIP con un PNG por cada capa visible y una hoja de sprites con las capas en una cuadrícula, tantas por fila como columnas, y su JSON para motores de juego. Usa el tamaño de píxel y el espacio actuales.',
+  'export.framesHint':
+    'Un ZIP con una hoja de sprites que contiene todos los fotogramas de la animación y su JSON para motores de juego. Columnas establece cuántos fotogramas van en cada fila. Utiliza el tamaño de píxel y el espacio actuales; la duración de cada fotograma se conserva en el JSON.',
   'export.tileset': 'Conjunto de baldosas (Godot, Tiled)',
   'export.tileWidth': 'Ancho de las baldosas',
   'export.tileHeight': 'Alto de las baldosas',
