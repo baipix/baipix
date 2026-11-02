@@ -727,6 +727,9 @@ export const es: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Ampliar o reducir',
   'shortcuts.actualSize': 'Zoom al 100 %',
   'shortcuts.mirror': 'Simetrías',
+  'shortcuts.animation': 'Animación',
+  'shortcuts.play': 'Reproducir, pausar',
+  'shortcuts.stepFrame': 'Fotograma anterior, siguiente',
 
   'toast.saved': '{name} guardado.',
   'toast.alreadySorted': 'Las capas ya están ordenadas por profundidad: el dibujo más bajo queda delante.',

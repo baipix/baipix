@@ -719,6 +719,9 @@ export const it: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Zoom',
   'shortcuts.actualSize': 'Zoom al 100%',
   'shortcuts.mirror': 'Simmetrie',
+  'shortcuts.animation': 'Animazione',
+  'shortcuts.play': 'Riproduci, pausa',
+  'shortcuts.stepFrame': 'Fotogramma precedente, successivo',
 
   'toast.saved': '{name} salvato.',
   'toast.alreadySorted': 'I livelli sono già ordinati per profondità: il disegno più in basso sta davanti.',

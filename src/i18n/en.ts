@@ -712,6 +712,9 @@ export const en = {
   'shortcuts.zoom': 'Zoom',
   'shortcuts.actualSize': 'Zoom to 100 %',
   'shortcuts.mirror': 'Symmetry',
+  'shortcuts.animation': 'Animation',
+  'shortcuts.play': 'Play, pause',
+  'shortcuts.stepFrame': 'Previous, next frame',
 
   'toast.saved': '{name} saved.',
   'toast.alreadySorted': 'The layers are already in depth order: the lowest drawing in front.',
