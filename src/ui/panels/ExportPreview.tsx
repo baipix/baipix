@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import { alpha, toCss } from '../../engine/color';
 import { flatten } from '../../engine/composite';
 import { hasBackground } from '../../engine/document';
+import { frameCount } from '../../engine/frames';
 import { MAX_EXPORT_SIZE, renderGeometry } from '../../engine/export/svg';
+import { frameSheetGrid, frameSpriteSheet } from '../../engine/export/frames';
 import { exportableLayers, layerSheetGrid, layerSpriteSheet } from '../../engine/export/layers';
 import { useT } from '../../i18n';
 import { pixelsToCanvas } from '../../io/png';
@@ -22,11 +24,17 @@ export function ExportPreview() {
   const revision = useEditorState((s) => s.revision);
   const format = uiStore.use((s) => s.exportFormat);
   const activeLayerOnly = uiStore.use((s) => s.exportActiveLayer);
-  const onlyLayer = format !== 'layers' && activeLayerOnly;
   const includeBackground = uiStore.use((s) => s.exportBackground);
   const columns = uiStore.use((s) => s.exportSheetColumns);
+
+  const allBoards = uiStore.use((s) => s.exportAllBoards);
+  const boardCount = useEditorState((s) => s.boards.length);
+  const everyBoard = allBoards && boardCount > 1;
+
+  const onlyLayer = format !== 'layers' && activeLayerOnly && !(format === 'frames' && everyBoard);
+  const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
+
   const layerSheetPreview = useMemo(() => {
-    // The document may be mutated in place; revision invalidates this memo when pixels change.
     void revision;
 
     if (format !== 'layers') return null;
@@ -36,27 +44,59 @@ export function ExportPreview() {
 
     const { width, height } = layerSheetGrid(layers.length, columns, doc.width, doc.height);
     const geometry = renderGeometry(width, height, doc.render.pixelSize, doc.render.gap);
+
     if (geometry.width > MAX_EXPORT_SIZE || geometry.height > MAX_EXPORT_SIZE) {
       return { status: 'tooLarge' as const, width, height };
     }
 
     return { status: 'ready' as const, ...layerSpriteSheet(doc, layers, columns) };
   }, [doc, format, revision, columns]);
+
   const layerSheet = layerSheetPreview?.status === 'ready' ? layerSheetPreview : null;
-  const previewWidth = layerSheet ? layerSheet.width : doc.width;
-  const previewHeight = layerSheet ? layerSheet.height : doc.height;
+
+  const frameSheetPreview = useMemo(() => {
+    void revision;
+    if (format !== 'frames') return null;
+
+    const grid = frameSheetGrid(frameCount(doc), columns, doc.width, doc.height);
+    const geometry = renderGeometry(grid.width, grid.height, doc.render.pixelSize, doc.render.gap);
+
+    if (geometry.width > MAX_EXPORT_SIZE || geometry.height > MAX_EXPORT_SIZE) {
+      return { status: 'tooLarge' as const, width: grid.width, height: grid.height };
+    }
+
+    return {
+      status: 'ready' as const,
+      ...frameSpriteSheet(doc, columns, {
+        includeBackground: withBackground,
+        ...(onlyLayer && { onlyLayer: doc.layers[doc.activeLayer] }),
+      }),
+    };
+  }, [doc, format, revision, columns, withBackground, onlyLayer]);
+
+  // Resolve both preview types only after their calculations are complete.
+  const frameSheet = frameSheetPreview?.status === 'ready' ? frameSheetPreview : null;
+  const spriteSheet = format === 'layers' ? layerSheet : format === 'frames' ? frameSheet : null;
+
+  const previewWidth = spriteSheet ? spriteSheet.width : doc.width;
+  const previewHeight = spriteSheet ? spriteSheet.height : doc.height;
+
   const g = renderGeometry(previewWidth, previewHeight, doc.render.pixelSize, doc.render.gap);
-  const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
+
   // "Active layer only" on an empty layer: an empty image, which looks like a broken preview.
   const active = doc.layers[doc.activeLayer];
-  const emptyLayer = useMemo(
-    () => {
-      void revision;
-      return onlyLayer && format !== 'aseprite' && !!active && !active.pixels.some((c) => alpha(c) > 0);
-    },
-    // The document changes in place: its revision says when.
-    [onlyLayer, format, active, revision],
-  );
+
+  const emptyLayer = useMemo(() => {
+    void revision;
+
+    if (!onlyLayer || format === 'aseprite' || !active) return false;
+
+    if (format === 'frames') {
+      return !!frameSheet && !frameSheet.pixels.some((c) => alpha(c) > 0);
+    }
+
+    return !active.pixels.some((c) => alpha(c) > 0);
+  }, [onlyLayer, format, active, frameSheet, revision]);
 
   useEffect(() => {
     let frame = 0;
@@ -77,7 +117,7 @@ export function ExportPreview() {
 
       const { doc } = editor.getLive();
       const ui = uiStore.get();
-      const sheet = format === 'layers' ? layerSheet : null;
+      const sheet = spriteSheet;
       const previewWidth = sheet ? sheet.width : doc.width;
       const previewHeight = sheet ? sheet.height : doc.height;
       const geometry = renderGeometry(previewWidth, previewHeight, doc.render.pixelSize, doc.render.gap);
@@ -107,12 +147,13 @@ export function ExportPreview() {
       // mix with it.
       const pixels =
         sheet?.pixels ??
-        (format === 'layers'
+        (format === 'layers' || format === 'frames'
           ? new Uint32Array(previewWidth * previewHeight)
           : flatten(
               doc,
               onlyLayer ? { onlyLayer: doc.layers[doc.activeLayer] } : { includeBackground: withBackground },
             ));
+
       const step = (geometry.pixelSize + geometry.gap) * f;
       if (geometry.gap > 0 && step >= 3) {
         const size = Math.max(1, geometry.pixelSize * f);
@@ -154,7 +195,7 @@ export function ExportPreview() {
       mo.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [editor, format, layerSheet]);
+  }, [editor, format, spriteSheet, everyBoard]);
 
   return (
     <div className="export-preview-wrap">
@@ -166,7 +207,7 @@ export function ExportPreview() {
           t('toast.noVisibleLayers')
         ) : emptyLayer ? (
           t('export.layerEmpty', { name: active.name })
-        ) : layerSheetPreview?.status === 'tooLarge' ? (
+        ) : layerSheetPreview?.status === 'tooLarge' || frameSheetPreview?.status === 'tooLarge' ? (
           t('toast.exportTooLarge', { size: MAX_EXPORT_SIZE })
         ) : (
           <>
