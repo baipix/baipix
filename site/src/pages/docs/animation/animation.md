@@ -4,6 +4,11 @@ title: Animation
 description: 'Animate pixel art in Baipix: a timeline of frames under the canvas, a duration for each, onion skin, playback, and animated GIF export.'
 ---
 
+<figure class="shot">
+  <img class="for-light" src="../../shots/animation-light.webp" width="1440" height="900" alt="The slime from the animation page in the editor, mid-jump on frame 6 of 14, the timeline open under the canvas with a row per layer, and the onion skin showing the frames before in red and after in blue." loading="lazy" />
+  <img class="for-dark" src="../../shots/animation-dark.webp" width="1440" height="900" alt="The slime from the animation page in the editor, mid-jump on frame 6 of 14, the timeline open under the canvas with a row per layer, and the onion skin showing the frames before in red and after in blue." loading="lazy" />
+</figure>
+
 ## The timeline
 
 **Animate**, the film button beside Export (<kbd>Shift</kbd>+<kbd>A</kbd>, or **View › Timeline**), opens the timeline under the canvas: a row per layer, the top one first, and a column per frame.
@@ -32,6 +37,11 @@ Right-click a frame's number for its menu: new frames, copy, paste, reverse and 
 - **Reverse frames** swaps their order in the places they hold, to make a loop come back;
 - **Delete** removes them all, in one step to undo.
 
+<figure class="shot">
+  <img class="for-light" src="../../shots/frame-menu-light.webp" width="649" height="377" alt="Frames 6 to 9 picked in the timeline, light violet, and the frame menu open: new frame, new empty frame, copy 4 frames, paste frames, reverse frames, delete 4 frames." loading="lazy" />
+  <img class="for-dark" src="../../shots/frame-menu-dark.webp" width="649" height="377" alt="Frames 6 to 9 picked in the timeline, light violet, and the frame menu open: new frame, new empty frame, copy 4 frames, paste frames, reverse frames, delete 4 frames." loading="lazy" />
+</figure>
+
 ## Play
 
 **Play** in the timeline, <kbd>Enter</kbd>, or a tap on <kbd>Space</kbd> plays the frames in a loop, each for its duration; the same again pauses. Held, <kbd>Space</kbd> still pans the view. <kbd>,</kbd> and <kbd>.</kbd> step to the previous and next frame. The preview window plays along, at its own size.
@@ -49,6 +59,11 @@ The ghost button in the timeline turns on the **onion skin**: the frames around 
 The onion skin never ends up in an export: it's only there to draw by.
 
 ## Export a GIF
+
+<figure class="shot">
+  <img class="for-light" src="../../shots/export-gif-light.webp" width="432" height="540" alt="The Export dialog on the slime, with GIF picked as the format, at 8×." loading="lazy" />
+  <img class="for-dark" src="../../shots/export-gif-dark.webp" width="432" height="540" alt="The Export dialog on the slime, with GIF picked as the format, at 8×." loading="lazy" />
+</figure>
 
 In the Export dialog, pick **GIF**: an animated image that loops forever, every frame with its duration rounded to 10 ms, at the pixel size picked. It keeps the drawing's exact colors up to 255 of them. Fully transparent pixels stay transparent, or the background fills them if you include it. See [Export](../../export/export/).
 
