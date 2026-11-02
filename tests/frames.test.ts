@@ -251,6 +251,44 @@ describe('several frames at once', () => {
   });
 });
 
+describe('copying frames', () => {
+  it('pastes copied frames after the shown one, with their pixels and durations', () => {
+    const e = editor();
+    e.addFrame();
+    dot(e, 2, 2);
+    e.setFrameDuration(300, [1]);
+    e.copyFrames([1]);
+    e.setFrame(0);
+    e.pasteFrames();
+    const d = doc(e);
+    expect(d.frames!.length).toBe(3);
+    expect(d.activeFrame).toBe(1);
+    expect(d.frames![1].duration).toBe(300);
+    expect(at(e, 2, 2)).toBe(RED);
+    e.undo();
+    expect(doc(e).frames!.length).toBe(2);
+  });
+
+  it('pastes on another board of the same size, matching layers by name', () => {
+    const e = editor();
+    dot(e, 1, 1);
+    e.copyFrames([0]);
+    e.newFile(8, 8, 'Other');
+    e.pasteFrames();
+    expect(doc(e).frames!.length).toBe(2);
+    expect(at(e, 1, 1)).toBe(RED);
+  });
+
+  it("doesn't paste on a board of another size", () => {
+    const e = editor();
+    e.copyFrames([0]);
+    e.newFile(16, 16, 'Big');
+    expect(e.canPasteFrames()).toBe(false);
+    e.pasteFrames();
+    expect(doc(e).frames).toBeUndefined();
+  });
+});
+
 describe('empty frames', () => {
   it('keeps the scenery and empties what moves', () => {
     const e = editor();

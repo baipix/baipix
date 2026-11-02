@@ -221,6 +221,45 @@ export function setDuration(doc: PixelDoc, ms: number, frames?: number[]): void 
   });
 }
 
+/** Frames copied to paste elsewhere: each one's duration and its layers' pixels. */
+export interface FrameCopy {
+  duration: number;
+  layers: { id: string; name: string; pixels: Uint32Array }[];
+}
+
+/** Copies the given frames, in order. */
+export function copyFrames(doc: PixelDoc, frames: number[]): FrameCopy[] {
+  return [...new Set(frames)]
+    .filter((f) => f >= 0 && f < frameCount(doc))
+    .sort((a, b) => a - b)
+    .map((f) => ({
+      duration: doc.frames?.[f].duration ?? DEFAULT_DURATION,
+      layers: doc.layers.map((l) => ({ id: l.id, name: l.name, pixels: celOf(doc, l, f).pixels.slice() })),
+    }));
+}
+
+/**
+ * Pastes copied frames after frame `after`, and shows the last one. Each layer takes the pixels of
+ * the same layer, found by id (the same board) or else by name (another board); a layer with no
+ * match is left empty. Only on a board of the same size: false otherwise.
+ */
+export function pasteFrames(doc: PixelDoc, after: number, copies: FrameCopy[]): boolean {
+  const size = doc.width * doc.height;
+  if (!copies.length || copies.some((c) => c.layers.some((l) => l.pixels.length !== size))) return false;
+  if (frameCount(doc) + copies.length > MAX_FRAMES) return false;
+  copies.forEach((copy, i) => {
+    addFrame(doc, after + i, true);
+    for (const layer of doc.layers) {
+      const match =
+        copy.layers.find((l) => l.id === layer.id) ?? copy.layers.find((l) => l.name === layer.name);
+      layer.pixels = match ? match.pixels.slice() : new Uint32Array(size);
+      delete layer.outside;
+    }
+    doc.frames![activeFrame(doc)].duration = copy.duration;
+  });
+  return true;
+}
+
 /** Copies a board's frames and cels for a copy of it: cels are never changed in place, so shared. */
 export const cloneCels = (cels: Layer['cels']): Layer['cels'] => cels && cels.slice();
 
