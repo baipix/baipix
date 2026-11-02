@@ -121,6 +121,7 @@ describe('spriteSheetJson', () => {
     );
 
     expect(json.frames['a.png'].frame).toEqual({ x: 0, y: 0, w: 15, h: 7 });
+    expect(json.frames['a.png']).not.toHaveProperty('duration');
     expect(json.frames['b.png'].frame).toEqual({ x: 16, y: 0, w: 15, h: 7 });
     expect(json.frames['c.png'].frame).toEqual({ x: 0, y: 8, w: 15, h: 7 });
     expect(json.frames['c.png'].sourceSize).toEqual({ w: 15, h: 7 });

@@ -36,8 +36,8 @@ interface Size {
 
 /**
  * The sheet's data file for game engines, in the TexturePacker / Aseprite "hash" format that
- * Phaser, Godot importers and Unity read: each layer's frame on the sheet, in exported pixels.
- * `cell` is one layer's exported size and `gap` the space between pixels, which also separates
+ * Phaser, Godot importers and Unity read: each item's frame on the sheet, in exported pixels.
+ * `cell` is one item's exported size and `gap` the space between pixels, which also separates
  * the cells, as it does on the sheet.
  */
 export function spriteSheetJson(
@@ -48,7 +48,16 @@ export function spriteSheetJson(
   gap: number,
   sheet: Size,
   version: string,
+  durations?: number[],
 ): string {
+  if (durations !== undefined && names.length !== durations.length) {
+    throw new RangeError('Every item must have a corresponding duration.');
+  }
+
+  if (durations !== undefined && (!Number.isInteger(columns) || columns < 1 || columns > names.length)) {
+    throw new RangeError('Columns must be between 1 and the number of frames.');
+  }
+
   const frames = Object.fromEntries(
     names.map((name, index) => {
       const frame = {
@@ -57,18 +66,19 @@ export function spriteSheetJson(
         w: cell.width,
         h: cell.height,
       };
-      return [
-        name,
-        {
-          frame,
-          rotated: false,
-          trimmed: false,
-          spriteSourceSize: { x: 0, y: 0, w: cell.width, h: cell.height },
-          sourceSize: { w: cell.width, h: cell.height },
-        },
-      ];
+
+      const metadata = {
+        frame,
+        rotated: false,
+        trimmed: false,
+        spriteSourceSize: { x: 0, y: 0, w: cell.width, h: cell.height },
+        sourceSize: { w: cell.width, h: cell.height },
+      };
+
+      return [name, durations === undefined ? metadata : { ...metadata, duration: durations[index] }];
     }),
   );
+
   const meta = {
     app: 'https://baipix.app',
     version,
@@ -77,5 +87,6 @@ export function spriteSheetJson(
     size: { w: sheet.width, h: sheet.height },
     scale: '1',
   };
+
   return JSON.stringify({ frames, meta }, null, 2);
 }

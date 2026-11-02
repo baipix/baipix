@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { createDocument } from '../src/engine/document';
 import { addFrame } from '../src/engine/frames';
-import { frameSpriteSheet, frameSpriteSheetJson } from '../src/engine/export/frames';
+import { frameSpriteSheet } from '../src/engine/export/frames';
+import { spriteSheetJson } from '../src/engine/export/layers';
 
 const RED = pack(255, 0, 0);
 const GREEN = pack(0, 255, 0);
@@ -54,18 +55,18 @@ describe('frameSpriteSheet', () => {
   });
 });
 
-describe('frameSpriteSheetJson', () => {
+describe('spriteSheetJson with duration', () => {
   it('stores frame coordinates and durations in TexturePacker JSON Hash format', () => {
     const json = JSON.parse(
-      frameSpriteSheetJson(
+      spriteSheetJson(
         'sprite-sheet.png',
         ['frame-0001', 'frame-0002', 'frame-0003'],
-        [80, 150, 250],
         2,
         { width: 10, height: 5 },
         1,
         { width: 21, height: 11 },
         '1.0.0',
+        [80, 150, 250],
       ),
     );
 
@@ -103,16 +104,31 @@ describe('frameSpriteSheetJson', () => {
 
   it('rejects a duration list that does not match the frame count', () => {
     expect(() =>
-      frameSpriteSheetJson(
+      spriteSheetJson(
         'sprite-sheet.png',
         ['frame-0001', 'frame-0002'],
-        [100],
         2,
         { width: 10, height: 10 },
         0,
         { width: 20, height: 10 },
         '1.0.0',
+        [100],
       ),
-    ).toThrow('Every frame must have a corresponding duration.');
+    ).toThrow('Every item must have a corresponding duration.');
+  });
+
+  it('rejects an invalid column count', () => {
+    expect(() =>
+      spriteSheetJson(
+        'sprite-sheet.png',
+        ['frame-0001'],
+        2,
+        { width: 10, height: 10 },
+        0,
+        { width: 20, height: 10 },
+        '1.0.0',
+        [100],
+      ),
+    ).toThrow('Columns must be between 1 and the number of frames.');
   });
 });

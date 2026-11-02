@@ -8,7 +8,7 @@ import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
-import { frameSpriteSheet, frameSpriteSheetJson } from '../engine/export/frames';
+import { frameSpriteSheet } from '../engine/export/frames';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
 import { exportableLayers, layerSpriteSheet, spriteSheetJson } from '../engine/export/layers';
 import { spriteSheetGrid } from '../engine/export/spriteSheet';
@@ -195,15 +195,15 @@ export function createActions(editor: Editor) {
 
     const frameNames = sheet.durations.map((_, index) => `frame-${String(index + 1).padStart(4, '0')}.png`);
 
-    const json = frameSpriteSheetJson(
+    const json = spriteSheetJson(
       sheetName,
       frameNames,
-      sheet.durations,
       grid.columns,
       cellGeometry,
       sheetGeometry.gap,
       sheetGeometry,
       __APP_VERSION__,
+      sheet.durations,
     );
 
     return [
