@@ -3,6 +3,7 @@
 // (?screenshot=…, see src/ui/screenshotMode.ts), and writes site/public/docs/shots/<name>-<theme>.webp:
 // the whole editor with numbered badges on its parts, close-ups of each part, the files screen and the
 // New file dialog. Prints each picture's size in CSS pixels, for its width in the docs.
+// ONLY=name,name takes only those pictures again.
 // Needs Google Chrome (or CHROME=/path/to/chrome).
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync } from 'node:fs';
@@ -49,6 +50,13 @@ const BOARD = `const c = [...document.querySelectorAll('canvas')].sort((a, b) =>
   const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
   // Room above for the board's name, below for its size.
   return JSON.stringify({ x, y: y - 22, right: x + d.width * z, bottom: y + d.height * z + 30 });`;
+/** The slime from the animation page, its timeline open on a frame mid-jump, the onion skin on. */
+const SLIME = `__ed.addDocuments(ff.fileFromJson(await (await fetch('/site/src/art/slime.baipix')).text()));
+  await wait(300);
+  ui.uiStore.set((s) => ({ timeline: true, onion: { ...s.onion, on: true, before: 2, after: 2 } }));
+  __ed.setFrame(5);
+  await wait(300);
+  (await import('/src/ui/viewport.ts')).viewport.fit(__ed.getState().doc);`;
 /** The top of the window, down to `bottom`: a screen whose content stops early. */
 const TOP = (bottom) => `return JSON.stringify({ x: 0, y: 0, right: ${WIDTH}, bottom: ${bottom} });`;
 
@@ -178,7 +186,32 @@ const SHOTS = [
       vp.zoomTo(2.8);
       vp.centerOn(115, 98);`,
   },
+  // Animation: the timeline with the onion skin, the frame menu on picked frames, the GIF export.
+  { name: 'animation', setup: SLIME },
+  {
+    name: 'frame-menu',
+    setup: `${SLIME}
+      ui.uiStore.set((s) => ({ onion: { ...s.onion, on: false } }));
+      await wait(200);
+      const frames = document.querySelectorAll('.timeline-frame');
+      frames[8].dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+      await wait(200);
+      const r = frames[7].getBoundingClientRect();
+      frames[7].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 12, clientY: r.top + 12 }));`,
+    // The timeline as far as its frames go, not its empty right side.
+    area: `const t = document.querySelector('.timeline').getBoundingClientRect();
+      const m = document.querySelector('.menu').getBoundingClientRect();
+      const last = [...document.querySelectorAll('.timeline-frame')].at(-1).getBoundingClientRect();
+      return JSON.stringify({ x: t.left, y: m.top, right: Math.max(m.right, last.right) + 120, bottom: t.bottom });`,
+  },
+  {
+    name: 'export-gif',
+    setup: `${SLIME} ui.uiStore.set({ exportFormat: 'gif' }); ui.openDialog({ type: 'export' });`,
+    frame: ['.dialog'],
+  },
 ];
+const only = process.env.ONLY?.split(',');
+const shots = only ? SHOTS.filter((s) => only.includes(s.name)) : SHOTS;
 
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe' });
 const chrome = spawn(
@@ -253,7 +286,7 @@ await send('Emulation.setDeviceMetricsOverride', {
   mobile: false,
 });
 for (const theme of ['dark', 'light']) {
-  for (const shot of SHOTS) {
+  for (const shot of shots) {
     // A fresh editor for each picture, as the screenshot mode opens it.
     await send('Page.navigate', { url: `http://localhost:${PORT}/?screenshot=${theme}` });
     await sleep(4000);
