@@ -720,6 +720,9 @@ export const uk: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Масштаб',
   'shortcuts.actualSize': 'Масштаб 100 %',
   'shortcuts.mirror': 'Симетрія',
+  'shortcuts.animation': 'Анімація',
+  'shortcuts.play': 'Відтворити, пауза',
+  'shortcuts.stepFrame': 'Попередній, наступний кадр',
 
   'toast.saved': '{name} збережено.',
   'toast.alreadySorted': 'Шари вже впорядковані за глибиною: найнижчий малюнок розташовано попереду.',

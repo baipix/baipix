@@ -715,6 +715,9 @@ export const ja: Record<MessageKey, string> = {
   'shortcuts.zoom': 'ズーム',
   'shortcuts.actualSize': '100%にズーム',
   'shortcuts.mirror': '対称',
+  'shortcuts.animation': 'アニメーション',
+  'shortcuts.play': '再生、一時停止',
+  'shortcuts.stepFrame': '前のフレーム、次のフレーム',
 
   'toast.saved': '{name}を保存しました。',
   'toast.alreadySorted': 'レイヤーはすでに奥行き順に並んでいます。画面の下にある絵ほど手前です。',

@@ -720,6 +720,9 @@ export const fr: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Zoomer',
   'shortcuts.actualSize': 'Zoom à 100 %',
   'shortcuts.mirror': 'Symétries',
+  'shortcuts.animation': 'Animation',
+  'shortcuts.play': 'Lire, mettre en pause',
+  'shortcuts.stepFrame': 'Frame précédente, suivante',
 
   'toast.saved': '{name} enregistré.',
   'toast.alreadySorted': 'Les calques sont déjà triés par profondeur : le dessin le plus bas devant.',
