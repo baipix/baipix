@@ -12,7 +12,6 @@ import { exportableLayers } from '../../engine/export/layers';
 import { DEFAULT_LIGHT, LIGHT_HEIGHT } from '../../engine/light';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
 import { uniqueColors } from '../../engine/region';
-import { ANIMATION } from '../features';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -774,8 +773,11 @@ export function ExportOptions() {
             }}
           />
           <span className="field-suffix">
-            .
-            {format === 'tileset' || format === 'layers' || format === 'frames' || everyBoard
+            {format === 'tileset' ||
+            format === 'layers' ||
+            format === 'sequence' ||
+            format === 'frames' ||
+            everyBoard
               ? 'zip'
               : format}
           </span>
@@ -789,12 +791,13 @@ export function ExportOptions() {
             aria-label={t('export.format')}
           >
             <option value="png">PNG</option>
-            {ANIMATION && <option value="gif">GIF</option>}
+            <option value="gif">GIF</option>
+            <option value="sequence">{t('export.sequence')}</option>
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
             <option value="layers">{t('export.layers')}</option>
-            {ANIMATION && <option value="frames">{t('export.frames')}</option>}
+            <option value="frames">{t('export.frames')}</option>
           </select>
         </label>
       </Row>
@@ -815,6 +818,7 @@ export function ExportOptions() {
         />
       )}
       {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
+      {format === 'sequence' && <p className="hint">{t('export.sequenceHint')}</p>}
       {format === 'layers' && <LayerSheetOptions />}
       {format === 'layers' && <p className="hint">{t('export.layersHint')}</p>}
       {format === 'frames' && <FrameSheetOptions />}

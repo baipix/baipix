@@ -207,6 +207,7 @@ export const it: Record<MessageKey, string> = {
     'I colori passano a quelli della palette nello stesso ordine, dal più scuro al più chiaro: ricolora mantenendo ombre e luci.',
   'remap.count': 'Colori',
   'remap.replacePalette': 'Sostituisci anche la palette del file',
+  'remap.background': 'Rimappa anche lo sfondo',
   'adjust.open': 'Regola il livello…',
   'adjust.hue': 'Tonalità',
   'adjust.saturation': 'Saturazione',
@@ -579,7 +580,9 @@ export const it: Record<MessageKey, string> = {
 
   'export.button': 'Esporta',
   'export.format': 'Formato',
-  'export.asepriteHint': 'Livelli, gruppi, metodi di fusione e palette, per ora su un solo fotogramma.',
+  'export.asepriteHint': 'Livelli, gruppi, metodi di fusione, palette e ogni fotogramma con la sua durata.',
+  'export.sequence': 'Sequenza PNG (ZIP)',
+  'export.sequenceHint': 'Un PNG per fotogramma, numerati in ordine, in un .zip.',
   'export.allBoards': 'Tutte le {count} tavole, in un .zip',
   'export.layers': 'Livelli + sprite sheet (ZIP)',
   'export.frames': 'Fotogrammi + sprite sheet (ZIP)',
@@ -722,6 +725,9 @@ export const it: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Zoom',
   'shortcuts.actualSize': 'Zoom al 100%',
   'shortcuts.mirror': 'Simmetrie',
+  'shortcuts.animation': 'Animazione',
+  'shortcuts.play': 'Riproduci, pausa',
+  'shortcuts.stepFrame': 'Fotogramma precedente, successivo',
 
   'toast.saved': '{name} salvato.',
   'toast.alreadySorted': 'I livelli sono già ordinati per profondità: il disegno più in basso sta davanti.',

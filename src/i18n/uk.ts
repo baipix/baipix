@@ -207,6 +207,7 @@ export const uk: Record<MessageKey, string> = {
     'Кожен колір замінюється кольором палітри з відповідною світлотою: найтемніший — на найтемніший, найсвітліший — на найсвітліший. Це дає змогу перефарбувати малюнок, зберігши тіні та світлі ділянки.',
   'remap.count': 'Кольори',
   'remap.replacePalette': 'Також замінити палітру файлу',
+  'remap.background': 'Також перепризначити фон',
   'adjust.open': 'Коригувати шар…',
   'adjust.hue': 'Відтінок',
   'adjust.saturation': 'Насиченість',
@@ -580,7 +581,9 @@ export const uk: Record<MessageKey, string> = {
 
   'export.button': 'Експортувати',
   'export.format': 'Формат',
-  'export.asepriteHint': 'Наразі шари, групи, режими змішування й палітра зберігаються в одному кадрі.',
+  'export.asepriteHint': 'Шари, групи, режими змішування, палітра й кожен кадр із його тривалістю.',
+  'export.sequence': 'Послідовність PNG (ZIP)',
+  'export.sequenceHint': 'Окремий PNG для кожного кадру, пронумерований по порядку, у ZIP-файлі.',
   'export.allBoards': 'Усі артборди ({count}) у ZIP-файлі',
   'export.layers': 'Шари та спрайт-лист (ZIP)',
   'export.frames': 'Кадри та спрайт-лист (ZIP)',
@@ -723,6 +726,9 @@ export const uk: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Масштаб',
   'shortcuts.actualSize': 'Масштаб 100 %',
   'shortcuts.mirror': 'Симетрія',
+  'shortcuts.animation': 'Анімація',
+  'shortcuts.play': 'Відтворити, пауза',
+  'shortcuts.stepFrame': 'Попередній, наступний кадр',
 
   'toast.saved': '{name} збережено.',
   'toast.alreadySorted': 'Шари вже впорядковані за глибиною: найнижчий малюнок розташовано попереду.',

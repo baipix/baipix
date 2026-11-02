@@ -207,6 +207,7 @@ export const fr: Record<MessageKey, string> = {
     'Les couleurs vont vers celles de la palette dans le même ordre, de la plus sombre à la plus claire : change les couleurs en gardant ombres et lumières.',
   'remap.count': 'Couleurs',
   'remap.replacePalette': 'Remplacer aussi la palette du fichier',
+  'remap.background': 'Remapper aussi le fond',
   'adjust.open': 'Ajuster le calque…',
   'adjust.hue': 'Teinte',
   'adjust.saturation': 'Saturation',
@@ -581,7 +582,9 @@ export const fr: Record<MessageKey, string> = {
 
   'export.button': 'Exporter',
   'export.format': 'Format',
-  'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
+  'export.asepriteHint': 'Calques, groupes, modes de fusion, palette, et chaque image avec sa durée.',
+  'export.sequence': 'Suite de PNG (ZIP)',
+  'export.sequenceHint': 'Un PNG par image, numérotés dans l’ordre, dans un .zip.',
   'export.allBoards': 'Les {count} plans dans un .zip',
   'export.layers': 'Calques + planche de sprites (ZIP)',
   'export.frames': 'Images + planche de sprites (ZIP)',
@@ -723,6 +726,9 @@ export const fr: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Zoomer',
   'shortcuts.actualSize': 'Zoom à 100 %',
   'shortcuts.mirror': 'Symétries',
+  'shortcuts.animation': 'Animation',
+  'shortcuts.play': 'Lire, mettre en pause',
+  'shortcuts.stepFrame': 'Frame précédente, suivante',
 
   'toast.saved': '{name} enregistré.',
   'toast.alreadySorted': 'Les calques sont déjà triés par profondeur : le dessin le plus bas devant.',

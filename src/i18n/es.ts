@@ -207,6 +207,7 @@ export const es: Record<MessageKey, string> = {
     'Los colores se asignan a los de la paleta en el mismo orden, del más oscuro al más claro: cambia los colores conservando las sombras y las luces.',
   'remap.count': 'Colores',
   'remap.replacePalette': 'Reemplazar también la paleta del archivo',
+  'remap.background': 'Reasignar también el fondo',
   'adjust.open': 'Ajustar la capa…',
   'adjust.hue': 'Tono',
   'adjust.saturation': 'Saturación',
@@ -584,7 +585,9 @@ export const es: Record<MessageKey, string> = {
   'export.button': 'Exportar',
   'export.format': 'Formato',
   'export.asepriteHint':
-    'Por ahora, las capas, los grupos, los modos de fusión y la paleta se exportan en una sola imagen.',
+    'Las capas, los grupos, los modos de fusión, la paleta y cada fotograma con su duración.',
+  'export.sequence': 'Secuencia PNG (ZIP)',
+  'export.sequenceHint': 'Un PNG por fotograma, numerados en orden, en un .zip.',
   'export.allBoards': 'Los {count} tableros en un archivo .zip',
   'export.layers': 'Capas + hoja de sprites (ZIP)',
   'export.frames': 'Fotogramas + hoja de sprites (ZIP)',
@@ -730,6 +733,9 @@ export const es: Record<MessageKey, string> = {
   'shortcuts.zoom': 'Ampliar o reducir',
   'shortcuts.actualSize': 'Zoom al 100 %',
   'shortcuts.mirror': 'Simetrías',
+  'shortcuts.animation': 'Animación',
+  'shortcuts.play': 'Reproducir, pausar',
+  'shortcuts.stepFrame': 'Fotograma anterior, siguiente',
 
   'toast.saved': '{name} guardado.',
   'toast.alreadySorted': 'Las capas ya están ordenadas por profundidad: el dibujo más bajo queda delante.',

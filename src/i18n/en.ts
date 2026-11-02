@@ -206,6 +206,7 @@ export const en = {
     'Colors go to palette colors in the same order, darkest to darkest: recolors and keeps shadows and highlights.',
   'remap.count': 'Colors',
   'remap.replacePalette': "Also replace the file's palette",
+  'remap.background': 'Also remap the background',
   'adjust.open': 'Adjust the layer…',
   'adjust.hue': 'Hue',
   'adjust.saturation': 'Saturation',
@@ -575,7 +576,9 @@ export const en = {
 
   'export.button': 'Export',
   'export.format': 'Format',
-  'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
+  'export.asepriteHint': 'Layers, groups, blend modes, the palette, and every frame with its duration.',
+  'export.sequence': 'PNG sequence (ZIP)',
+  'export.sequenceHint': 'One PNG per frame, named in order, in a .zip.',
   'export.allBoards': 'All {count} boards, in a .zip',
   'export.layers': 'Layers + sprite sheet (ZIP)',
   'export.frames': 'Frames + sprite sheet (ZIP)',
@@ -715,6 +718,9 @@ export const en = {
   'shortcuts.zoom': 'Zoom',
   'shortcuts.actualSize': 'Zoom to 100 %',
   'shortcuts.mirror': 'Symmetry',
+  'shortcuts.animation': 'Animation',
+  'shortcuts.play': 'Play, pause',
+  'shortcuts.stepFrame': 'Previous, next frame',
 
   'toast.saved': '{name} saved.',
   'toast.alreadySorted': 'The layers are already in depth order: the lowest drawing in front.',

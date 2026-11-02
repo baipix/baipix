@@ -307,6 +307,11 @@ h2 {
   --tint-b: var(--sky);
   --accent: light-dark(#c2453a, #ff9a8a);
 }
+[data-tone='animation'] {
+  --tint-a: var(--pink);
+  --tint-b: var(--butter);
+  --accent: light-dark(#c43d6b, #ff8fae);
+}
 [data-tone='export'] {
   --tint-a: var(--butter);
   --tint-b: var(--mint);

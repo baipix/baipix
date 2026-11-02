@@ -207,6 +207,7 @@ export const ja: Record<MessageKey, string> = {
     '色を、パレットの色へ明るさの順に対応させます（いちばん暗い色はいちばん暗い色へ）。色を変えても、影とハイライトは保たれます。',
   'remap.count': '色数',
   'remap.replacePalette': 'ファイルのパレットも置き換える',
+  'remap.background': '背景も置き換える',
   'adjust.open': 'レイヤーを調整…',
   'adjust.hue': '色相',
   'adjust.saturation': '彩度',
@@ -577,7 +578,9 @@ export const ja: Record<MessageKey, string> = {
   'export.button': '書き出し',
   'export.format': '形式',
   'export.asepriteHint':
-    'レイヤー、グループ、合成モード、パレットを書き出します。今のところ1フレームのみです。',
+    'レイヤー、グループ、合成モード、パレット、そして各フレームとその表示時間を書き出します。',
+  'export.sequence': 'PNG連番（ZIP）',
+  'export.sequenceHint': 'フレームごとに1枚のPNGを、順番どおりの名前で.zipにまとめます。',
   'export.allBoards': 'ボード{count}個すべてを.zipで',
   'export.layers': 'レイヤー＋スプライトシート（ZIP）',
   'export.frames': 'フレーム＋スプライトシート（ZIP）',
@@ -718,6 +721,9 @@ export const ja: Record<MessageKey, string> = {
   'shortcuts.zoom': 'ズーム',
   'shortcuts.actualSize': '100%にズーム',
   'shortcuts.mirror': '対称',
+  'shortcuts.animation': 'アニメーション',
+  'shortcuts.play': '再生、一時停止',
+  'shortcuts.stepFrame': '前のフレーム、次のフレーム',
 
   'toast.saved': '{name}を保存しました。',
   'toast.alreadySorted': 'レイヤーはすでに奥行き順に並んでいます。画面の下にある絵ほど手前です。',

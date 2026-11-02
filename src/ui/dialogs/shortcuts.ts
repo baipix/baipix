@@ -60,6 +60,16 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
     ],
   },
   {
+    title: 'shortcuts.animation',
+    items: [
+      ['timeline.title', 'Shift+A'],
+      ['shortcuts.play', 'Enter / Space'],
+      ['shortcuts.stepFrame', ', / .'],
+      ['timeline.add', 'Alt+N'],
+      ['timeline.addEmpty', 'Alt+B'],
+    ],
+  },
+  {
     title: 'shortcuts.view',
     items: [
       ['shortcuts.pan', 'Space + drag'],

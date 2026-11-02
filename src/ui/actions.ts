@@ -27,7 +27,17 @@ import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
 /** Every export format, also to check the one read back from a save. */
-export const EXPORT_FORMATS = ['png', 'gif', 'frames', 'svg', 'aseprite', 'tileset', 'layers'] as const;
+export const EXPORT_FORMATS = [
+  'png',
+  'gif',
+  'sequence',
+  'frames',
+  'svg',
+  'aseprite',
+  'tileset',
+  'layers',
+] as const;
+
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
@@ -90,8 +100,8 @@ export function createActions(editor: Editor) {
       : toLayeredSvg(d, geometry, background);
   }
 
-  /** Renders the board's frames and encodes them as an animated GIF. */
-  async function gifBlobOf(d: PixelDoc, onlyActiveLayer: boolean, quiet = false): Promise<Blob> {
+  /** Renders the board's frames one by one, at the pixel size picked, with their durations. */
+  function renderFrames(d: PixelDoc, onlyActiveLayer: boolean, quiet = false) {
     const geometry = renderGeometry(d.width, d.height, d.render.pixelSize, d.render.gap);
 
     if (!quiet && geometry.pixelSize !== d.render.pixelSize) {
@@ -113,20 +123,32 @@ export function createActions(editor: Editor) {
         );
 
         const background = withBackground && geometry.gap > 0 ? d.background : 0;
-        const canvas = renderToCanvas(pixels, d.width, d.height, geometry, background);
+
+        yield {
+          canvas: renderToCanvas(pixels, d.width, d.height, geometry, background),
+          duration: d.frames?.[f].duration ?? DEFAULT_DURATION,
+        };
+      }
+    }
+    return { geometry, frames: frames() };
+  }
+
+  /** Renders the board's frames and encodes them as an animated GIF. */
+  async function gifBlobOf(d: PixelDoc, onlyActiveLayer: boolean, quiet = false): Promise<Blob> {
+    const { geometry, frames } = renderFrames(d, onlyActiveLayer, quiet);
+
+    function* rgba() {
+      for (const { canvas, duration } of frames) {
         const context = canvas.getContext('2d');
 
         if (!context) {
           throw new Error('Unable to read the rendered GIF frame.');
         }
 
-        yield {
-          rgba: context.getImageData(0, 0, geometry.width, geometry.height).data,
-          duration: d.frames?.[f].duration ?? DEFAULT_DURATION,
-        };
+        yield { rgba: context.getImageData(0, 0, geometry.width, geometry.height).data, duration };
       }
     }
-    const bytes = await encodeGif(frames(), geometry.width, geometry.height);
+    const bytes = await encodeGif(rgba(), geometry.width, geometry.height);
 
     return new Blob([bytes as BlobPart], { type: 'image/gif' });
   }
@@ -195,6 +217,21 @@ export function createActions(editor: Editor) {
     ];
   }
 
+  /**
+   * The board's frames as PNGs, named in order after `name` (`slime-01.png`, `slime-02.png`…),
+   * with as many digits as the last frame needs, two at least.
+   */
+  async function pngSequenceOf(d: PixelDoc, name: string, onlyActiveLayer: boolean, quiet = false) {
+    const digits = Math.max(2, String(frameCount(d)).length);
+    const files: { name: string; data: Uint8Array }[] = [];
+    for (const { canvas } of renderFrames(d, onlyActiveLayer, quiet).frames) {
+      const png = await canvasToBlob(canvas);
+      const n = String(files.length + 1).padStart(digits, '0');
+      files.push({ name: `${name}-${n}.png`, data: new Uint8Array(await png.arrayBuffer()) });
+    }
+    return files;
+  }
+
   /** The drawing as code: the SVG with its layers, the rest made from the drawing merged. */
   function codeText(language: CodeLanguage, onlyActiveLayer: boolean, quiet = false): string {
     const { d, pixels, geometry, background } = renderInput(onlyActiveLayer, quiet);
@@ -259,6 +296,14 @@ export function createActions(editor: Editor) {
 
       const filename = `${baseName()}.${format}`;
 
+      // A PNG per frame, in a .zip.
+      if (format === 'sequence') {
+        const zipName = `${baseName()}.zip`;
+        const files = await pngSequenceOf(doc(), baseName(), onlyActiveLayer);
+        await report(zipName, saveFile(zipName, new Blob([zip(files) as BlobPart]), 'application/zip'));
+        return;
+      }
+
       // Aseprite: the layers as they are, to keep working on them there.
       if (format === 'aseprite') {
         const d = doc();
@@ -291,7 +336,8 @@ export function createActions(editor: Editor) {
 
     /**
      * Every board of the file in one .zip, each in `format` (PNG, SVG or Aseprite) and named after
-     * it, as each would be exported on its own: its pixel size, the background if asked for.
+     * it, as each would be exported on its own: its pixel size, the background if asked for. A PNG
+     * sequence goes in a folder per board.
      */
     async exportAllBoards(format: Exclude<ExportFormat, 'tileset' | 'layers'>) {
       const boards = editor.fileBoards();
@@ -329,6 +375,16 @@ export function createActions(editor: Editor) {
           if (!frameFiles) return;
 
           files.push(...frameFiles);
+          continue;
+        }
+
+        if (format === 'sequence') {
+          const name = nameOf(d).slice(0, -'.sequence'.length);
+
+          for (const file of await pngSequenceOf(d, name, false, true)) {
+            files.push({ name: `${name}/${file.name}`, data: file.data });
+          }
+
           continue;
         }
 
