@@ -8,8 +8,10 @@ import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
+import { frameSpriteSheet } from '../engine/export/frames';
 import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
-import { exportableLayers, layerSheetGrid, layerSpriteSheet, spriteSheetJson } from '../engine/export/layers';
+import { exportableLayers, layerSpriteSheet, spriteSheetJson } from '../engine/export/layers';
+import { spriteSheetGrid } from '../engine/export/spriteSheet';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
 import { t } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
@@ -26,10 +28,36 @@ import { leaveHome, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
 /** Every export format, also to check the one read back from a save. */
-export const EXPORT_FORMATS = ['png', 'gif', 'sequence', 'svg', 'aseprite', 'tileset', 'layers'] as const;
+export const EXPORT_FORMATS = [
+  'png',
+  'gif',
+  'sequence',
+  'frames',
+  'svg',
+  'aseprite',
+  'tileset',
+  'layers',
+] as const;
+
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
+
+function uniqueArchiveName(filename: string, usedNames: Set<string>): string {
+  const dot = filename.lastIndexOf('.');
+  const stem = dot > 0 ? filename.slice(0, dot) : filename;
+  const extension = dot > 0 ? filename.slice(dot) : '';
+
+  let name = filename;
+
+  for (let n = 2; usedNames.has(name); n++) {
+    name = `${stem} ${n}${extension}`;
+  }
+
+  usedNames.add(name);
+
+  return name;
+}
 
 /** User-level commands shared by menus, buttons and shortcuts. */
 export function createActions(editor: Editor) {
@@ -126,6 +154,70 @@ export function createActions(editor: Editor) {
     return new Blob([bytes as BlobPart], { type: 'image/gif' });
   }
 
+  /** Builds a frame sprite sheet and its TexturePacker / Aseprite JSON metadata. */
+  async function frameSpriteSheetFiles(
+    d: PixelDoc,
+    sheetName: string,
+    jsonName: string,
+    columns: number | null,
+    withBackground: boolean,
+    onlyLayer?: PixelDoc['layers'][number],
+    quiet = false,
+  ): Promise<{ name: string; data: Uint8Array }[] | null> {
+    const grid = spriteSheetGrid(frameCount(d), columns, d.width, d.height);
+
+    const sheetGeometry = renderGeometry(grid.width, grid.height, d.render.pixelSize, d.render.gap);
+
+    // Check the final dimensions before allocating the combined pixel buffer.
+    if (sheetGeometry.width > MAX_EXPORT_SIZE || sheetGeometry.height > MAX_EXPORT_SIZE) {
+      toast(t('toast.exportTooLarge', { size: MAX_EXPORT_SIZE }));
+      return null;
+    }
+
+    if (!quiet && sheetGeometry.pixelSize !== d.render.pixelSize) {
+      toast(t('toast.exportShrunk', { size: sheetGeometry.pixelSize }));
+    }
+
+    const sheet = frameSpriteSheet(d, grid.columns, {
+      includeBackground: withBackground && !onlyLayer,
+      ...(onlyLayer && { onlyLayer }),
+    });
+
+    const cellGeometry = renderGeometry(d.width, d.height, sheetGeometry.pixelSize, sheetGeometry.gap);
+
+    // The frame pixels already contain the background.
+    // Fill the gaps between pixels with it as well.
+    const background = withBackground && !onlyLayer && sheetGeometry.gap > 0 ? d.background : 0;
+
+    const canvas = renderToCanvas(sheet.pixels, sheet.width, sheet.height, sheetGeometry, background);
+
+    const blob = await canvasToBlob(canvas);
+
+    const frameNames = sheet.durations.map((_, index) => `frame-${String(index + 1).padStart(4, '0')}.png`);
+
+    const json = spriteSheetJson(
+      sheetName,
+      frameNames,
+      grid.columns,
+      cellGeometry,
+      sheetGeometry.gap,
+      sheetGeometry,
+      __APP_VERSION__,
+      sheet.durations,
+    );
+
+    return [
+      {
+        name: sheetName,
+        data: new Uint8Array(await blob.arrayBuffer()),
+      },
+      {
+        name: jsonName,
+        data: new TextEncoder().encode(json),
+      },
+    ];
+  }
+
   /**
    * The board's frames as PNGs, named in order after `name` (`slime-01.png`, `slime-02.png`…),
    * with as many digits as the last frame needs, two at least.
@@ -201,6 +293,7 @@ export function createActions(editor: Editor) {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
       if (format === 'tileset') return actions.exportTileset(onlyActiveLayer);
       if (format === 'layers') return actions.exportLayers();
+      if (format === 'frames') return actions.exportFrames(onlyActiveLayer);
 
       const filename = `${baseName()}.${format}`;
 
@@ -250,6 +343,7 @@ export function createActions(editor: Editor) {
     async exportAllBoards(format: Exclude<ExportFormat, 'tileset' | 'layers'>) {
       const boards = editor.fileBoards();
       const used = new Set<string>();
+      const usedFrameNames = new Set<string>();
       const nameOf = (d: PixelDoc) => {
         const base = safeFileName(d.name) || 'board';
         let name = base;
@@ -260,6 +354,26 @@ export function createActions(editor: Editor) {
       const withBackground = (d: PixelDoc) => uiStore.get().exportBackground && hasBackground(d);
       const files = [];
       for (const d of boards) {
+        if (format === 'frames') {
+          const base = safeFileName(d.name) || 'board';
+          const sheetName = uniqueArchiveName(`${base}-sprite-sheet.png`, usedFrameNames);
+          const jsonName = uniqueArchiveName(`${base}-sprite-sheet.json`, usedFrameNames);
+          const frameFiles = await frameSpriteSheetFiles(
+            d,
+            sheetName,
+            jsonName,
+            uiStore.get().exportSheetColumns,
+            withBackground(d),
+            undefined,
+            true,
+          );
+
+          // Do not create a partial archive if one board cannot be exported.
+          if (!frameFiles) return;
+
+          files.push(...frameFiles);
+          continue;
+        }
         if (format === 'sequence') {
           const name = nameOf(d).slice(0, -'.sequence'.length);
           for (const file of await pngSequenceOf(d, name, false, true))
@@ -286,6 +400,7 @@ export function createActions(editor: Editor) {
           // Over the background when it's included, as on the canvas (see pictureInput).
           const over = alpha(background) > 0;
           const pixels = flatten(d, { includeBackground: over });
+
           const png = await canvasToBlob(
             renderToCanvas(pixels, d.width, d.height, geometry, over && geometry.gap > 0 ? background : 0),
           );
@@ -293,7 +408,30 @@ export function createActions(editor: Editor) {
         }
         files.push({ name: nameOf(d), data });
       }
+
       const filename = `${safeFileName(fileNameOf(doc()))}.zip`;
+      await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
+    },
+
+    /** Exports all animation frames as one sprite sheet and its JSON metadata. */
+    async exportFrames(onlyActiveLayer = false) {
+      const d = doc();
+      const name = baseName();
+
+      const withBackground = !onlyActiveLayer && uiStore.get().exportBackground && hasBackground(d);
+
+      const files = await frameSpriteSheetFiles(
+        d,
+        `${name}-sprite-sheet.png`,
+        `${name}-sprite-sheet.json`,
+        uiStore.get().exportSheetColumns,
+        withBackground,
+        onlyActiveLayer ? d.layers[d.activeLayer] : undefined,
+      );
+
+      if (!files) return;
+
+      const filename = `${name}.zip`;
       await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
     },
 
@@ -311,7 +449,7 @@ export function createActions(editor: Editor) {
       }
 
       const columns = uiStore.get().exportSheetColumns;
-      const grid = layerSheetGrid(layers.length, columns, d.width, d.height);
+      const grid = spriteSheetGrid(layers.length, columns, d.width, d.height);
       const sheetGeometry = renderGeometry(grid.width, grid.height, d.render.pixelSize, d.render.gap);
 
       // renderGeometry stops shrinking at 1×, so the sheet may still exceed the limit.

@@ -585,9 +585,12 @@ export const it: Record<MessageKey, string> = {
   'export.sequenceHint': 'Un PNG per fotogramma, numerati in ordine, in un .zip.',
   'export.allBoards': 'Tutte le {count} tavole, in un .zip',
   'export.layers': 'Livelli + sprite sheet (ZIP)',
+  'export.frames': 'Fotogrammi + sprite sheet (ZIP)',
   'export.columns': 'Colonne',
   'export.layersHint':
     'Uno ZIP con un PNG per ogni livello visibile e uno sprite sheet con i livelli in griglia, tanti per riga quante sono le colonne, più il suo JSON per i motori di gioco. Usa la dimensione dei pixel e la spaziatura attuali.',
+  'export.framesHint':
+    'Uno ZIP con uno sprite sheet contenente tutti i fotogrammi dell’animazione e il relativo JSON per i motori di gioco. Colonne stabilisce quanti fotogrammi disporre per riga. Usa la dimensione dei pixel e la spaziatura attuali; la durata di ogni fotogramma viene mantenuta nel JSON.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Larghezza delle tessere',
   'export.tileHeight': 'Altezza delle tessere',

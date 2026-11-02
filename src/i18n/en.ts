@@ -581,9 +581,12 @@ export const en = {
   'export.sequenceHint': 'One PNG per frame, named in order, in a .zip.',
   'export.allBoards': 'All {count} boards, in a .zip',
   'export.layers': 'Layers + sprite sheet (ZIP)',
+  'export.frames': 'Frames + sprite sheet (ZIP)',
   'export.columns': 'Columns',
   'export.layersHint':
     'A ZIP with one PNG per visible layer and a sprite sheet with the layers in a grid, as many to a row as the columns, and its JSON for game engines. Uses the current pixel size and gap.',
+  'export.framesHint':
+    'A ZIP with a sprite sheet of every animation frame and its JSON for game engines. Columns sets how many frames go on a row. Uses the current pixel size and gap; each frame duration is kept in the JSON.',
   'export.tileset': 'Tileset (Godot, Tiled)',
   'export.tileWidth': 'Tile width',
   'export.tileHeight': 'Tile height',

@@ -67,7 +67,7 @@ export interface UiState {
   homeOrder: 'asc' | 'desc';
   homeView: 'grid' | 'list';
   uiHidden: boolean;
-  exportFormat: 'png' | 'gif' | 'sequence' | 'svg' | 'aseprite' | 'tileset' | 'layers';
+  exportFormat: 'png' | 'gif' | 'sequence' | 'frames' | 'svg' | 'aseprite' | 'tileset' | 'layers';
   /** The language picked in the Code dialog. */
   exportCode: CodeLanguage;
   exportActiveLayer: boolean;
@@ -75,7 +75,7 @@ export interface UiState {
   exportTileWidth: number;
   exportTileHeight: number;
   exportTileDrop: boolean;
-  /** Layers + sprite sheet export: how many layers go on a row of the sheet, all of them when null. */
+  /** Sprite sheet export: how many layers or frames go on a row, all of them when null. */
   exportSheetColumns: number | null;
   /** Export every board of the file at once, in a .zip. */
   exportAllBoards: boolean;

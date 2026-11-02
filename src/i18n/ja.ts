@@ -583,9 +583,12 @@ export const ja: Record<MessageKey, string> = {
   'export.sequenceHint': 'フレームごとに1枚のPNGを、順番どおりの名前で.zipにまとめます。',
   'export.allBoards': 'ボード{count}個すべてを.zipで',
   'export.layers': 'レイヤー＋スプライトシート（ZIP）',
+  'export.frames': 'フレーム＋スプライトシート（ZIP）',
   'export.columns': '列数',
   'export.layersHint':
     '表示中のレイヤーごとのPNGと、レイヤーを格子状に並べたスプライトシート（1行に並べる数は「列数」で指定）、ゲームエンジン用のJSONをまとめたZIPです。現在のピクセルサイズと間隔を使います。',
+  'export.framesHint':
+    'アニメーションのすべてのフレームをまとめたスプライトシートと、ゲームエンジン用のJSONを含むZIPです。「列数」で1行に並べるフレーム数を指定します。現在のピクセルサイズと間隔を使用し、各フレームの表示時間もJSONに保存します。',
   'export.tileset': 'タイルセット（Godot、Tiled）',
   'export.tileWidth': 'タイルの幅',
   'export.tileHeight': 'タイルの高さ',
