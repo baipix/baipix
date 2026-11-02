@@ -790,11 +790,11 @@ export function ExportOptions() {
           >
             <option value="png">PNG</option>
             {ANIMATION && <option value="gif">GIF</option>}
-            {ANIMATION && <option value="frames">{t('export.frames')}</option>}
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
             <option value="layers">{t('export.layers')}</option>
+            {ANIMATION && <option value="frames">{t('export.frames')}</option>}
           </select>
         </label>
       </Row>
