@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- The editor in Italian (View › Language › Italiano). ([#630](https://github.com/baipix/baipix/pull/630))
 - The editor in Japanese (View › Language › 日本語). ([#645](https://github.com/baipix/baipix/pull/645))
 - A light for each board, to shade by: in the new Light section, drag a lamp around a pixel sphere, or type its angle and height; faint lines and a sun on the canvas show where it comes from, and the sun can be dragged around the board to turn it; a drop shadow can follow it, falling away from the light and longer the lower it is. ([#609](https://github.com/baipix/baipix/pull/609))
 - Shift with the up and down arrows changes a number field by 10, as in Figma: sizes, opacities, tile sizes, in the panels and the dialogs. ([#606](https://github.com/baipix/baipix/pull/606))
@@ -24,9 +25,16 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The Tileset export remembers its tile size and Leave out empty and repeated tiles after a reload. ([#600](https://github.com/baipix/baipix/pull/600))
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))
 
+### Website
+
+- The site's icon is a file now, so search engines show it next to baipix.app. ([#643](https://github.com/baipix/baipix/pull/643))
+
 ### Thanks
 
-- [@rogervokma-stack](https://github.com/rogervokma-stack) for the Japanese translation, the editor's fifth language. ([#645](https://github.com/baipix/baipix/pull/645))
+- [@mrCabez](https://github.com/mrCabez) for the Italian translation, the editor's sixth language. ([#630](https://github.com/baipix/baipix/pull/630))
+
+- [@rogervokma-stack](https://github.com/rogervokma-stack) for the Japanese translation, the editor's fifth language, and its review as a native speaker. ([#645](https://github.com/baipix/baipix/pull/645), [#669](https://github.com/baipix/baipix/pull/669))
+- [@mykola-lp](https://github.com/mykola-lp) for end-to-end tests that run the editor in a real browser: files, saving, history, layers, boards and two tabs at once. ([#621](https://github.com/baipix/baipix/pull/621), [#635](https://github.com/baipix/baipix/pull/635), [#639](https://github.com/baipix/baipix/pull/639), [#640](https://github.com/baipix/baipix/pull/640), [#641](https://github.com/baipix/baipix/pull/641))
 - [@mykola-lp](https://github.com/mykola-lp) for a clearer autosave hook and its first tests. ([#611](https://github.com/baipix/baipix/pull/611))
 - [@mykola-lp](https://github.com/mykola-lp) for clearer Aseprite and code exports, and the tests that pin them down. ([#616](https://github.com/baipix/baipix/pull/616), [#617](https://github.com/baipix/baipix/pull/617))
 
