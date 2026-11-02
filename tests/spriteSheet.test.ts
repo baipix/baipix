@@ -35,6 +35,15 @@ describe('spriteSheetGrid', () => {
     });
   });
 
+  it('creates one column when requested', () => {
+    expect(spriteSheetGrid(5, 1, 4, 4)).toEqual({
+      columns: 1,
+      rows: 5,
+      width: 4,
+      height: 20,
+    });
+  });
+
   it('rejects an empty sprite sheet', () => {
     expect(() => spriteSheetGrid(0, null, 4, 2)).toThrow('A sprite sheet must contain at least one item.');
   });

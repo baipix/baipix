@@ -36,7 +36,7 @@ export function ExportPreview() {
   const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
 
   const layerSheetPreview = useMemo(() => {
-    // The document may be mutated in place; revision invalidates these memos when pixels change.
+    // The document may be mutated in place; revision invalidates this memo when pixels change.
     void revision;
 
     if (format !== 'layers') return null;
