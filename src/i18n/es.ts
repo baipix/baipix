@@ -586,6 +586,8 @@ export const es: Record<MessageKey, string> = {
   'export.format': 'Formato',
   'export.asepriteHint':
     'Las capas, los grupos, los modos de fusión, la paleta y cada fotograma con su duración.',
+  'export.sequence': 'Secuencia PNG (ZIP)',
+  'export.sequenceHint': 'Un PNG por fotograma, numerados en orden, en un .zip.',
   'export.allBoards': 'Los {count} tableros en un archivo .zip',
   'export.layers': 'Capas + hoja de sprites (ZIP)',
   'export.columns': 'Columnas',

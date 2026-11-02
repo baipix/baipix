@@ -737,7 +737,10 @@ export function ExportOptions() {
             }}
           />
           <span className="field-suffix">
-            .{format === 'tileset' || format === 'layers' || everyBoard ? 'zip' : format}
+            .
+            {format === 'tileset' || format === 'layers' || format === 'sequence' || everyBoard
+              ? 'zip'
+              : format}
           </span>
         </label>
       </Row>
@@ -750,6 +753,7 @@ export function ExportOptions() {
           >
             <option value="png">PNG</option>
             <option value="gif">GIF</option>
+            <option value="sequence">{t('export.sequence')}</option>
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
@@ -774,6 +778,7 @@ export function ExportOptions() {
         />
       )}
       {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
+      {format === 'sequence' && <p className="hint">{t('export.sequenceHint')}</p>}
       {format === 'layers' && <LayerSheetOptions />}
       {format === 'layers' && <p className="hint">{t('export.layersHint')}</p>}
       {format === 'tileset' && <TilesetOptions />}
