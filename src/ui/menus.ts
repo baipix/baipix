@@ -6,7 +6,8 @@ import { LOCALES, getLocale, setLocale, t } from '../i18n';
 import type { Actions } from './actions';
 import type { MenuItem } from './components/Menu';
 import { getTheme, setTheme, type ThemePreference } from './theme';
-import { openAdjust, openDialog, toast, uiStore } from './uiStore';
+import { ANIMATION } from './features';
+import { openAdjust, openDialog, toast, toggleTimeline, uiStore } from './uiStore';
 
 import { viewport } from './viewport';
 import { ALIGNS } from './components/ToolOptionsBar';
@@ -430,6 +431,16 @@ export const MENU_BAR: MenuBarMenu[] = [
           checked: !!s.doc.isoGrid,
           onSelect: () => editor.toggleIsoGrid(),
         },
+        ...(ANIMATION
+          ? [
+              {
+                label: t('timeline.title'),
+                shortcut: 'Shift+A',
+                checked: uiStore.get().timeline,
+                onSelect: toggleTimeline,
+              },
+            ]
+          : []),
         {
           label: t('menu.preview'),
           shortcut: 'Shift+P',
@@ -494,10 +505,6 @@ export const MENU_BAR: MenuBarMenu[] = [
     ],
   },
 ];
-
-/** The Help menu, also opened from the button in the window's bottom right corner. */
-export const helpMenu = (editor: Editor, actions: Actions): MenuItem[] =>
-  MENU_BAR.find((m) => m.id === 'help')!.items(editor, actions);
 
 export const togglePreview = () => uiStore.set((u) => ({ preview: { ...u.preview, open: !u.preview.open } }));
 

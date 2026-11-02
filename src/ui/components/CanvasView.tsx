@@ -4,12 +4,13 @@ import { normalizeAngle } from '../../engine/light';
 /** Which sides of a board a drag pulls (two for a corner). */
 type BoardSides = { left: boolean; right: boolean; top: boolean; bottom: boolean };
 import { pack, toHex } from '../../engine/color';
-import { flatten } from '../../engine/composite';
+import { flatten, flattenFrame } from '../../engine/composite';
+import { frameCount, onionFrames } from '../../engine/frames';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
 import { clipSelection, type Selection } from '../../engine/selection';
 import { isShown } from '../../engine/groups';
-import { isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
+import { hasBackground, isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
 import type { ToolId } from '../../engine/tools';
 import { t as translate, useT } from '../../i18n';
@@ -27,6 +28,7 @@ import {
   type BrushPreview,
   type SceneBoard,
   type SceneFloating,
+  type SceneOnion,
   type SceneReference,
   drawRulers,
   guidePosition,
@@ -34,6 +36,8 @@ import {
 } from '../render/drawScene';
 import { readTheme, type Theme } from '../render/theme';
 import { BRUSH_TOOLS, SHAPE_IDS } from '../tools';
+import { ANIMATION } from '../features';
+import { playbackStore } from '../playback';
 import { hoverStore, uiStore } from '../uiStore';
 import { referenceColorAt } from '../referenceColors';
 import { COMPONENT_MIME } from '../dragTypes';
@@ -79,6 +83,9 @@ function unionBounds(layers: Layer[], width: number, height: number): Rect | nul
 /** How far around the light's sun a press still takes it, in CSS pixels. */
 const SUN_REACH = 6;
 
+/** The onion skin's tints, half over the frames' own colors: red before, blue after. */
+const ONION_TINT = { before: 'rgba(255, 59, 48, 0.5)', after: 'rgba(47, 128, 255, 0.5)' };
+
 export function CanvasView() {
   const editor = useEditor();
   const actions = useActions();
@@ -114,6 +121,9 @@ export function CanvasView() {
     let theme: Theme = readTheme();
     let hover: { x: number; y: number } | null = null;
     let compositeDirty = true;
+    /** `composite` leaves the background out (see updateComposite). */
+    let backgroundApart = false;
+    let onionShown = false;
     let frame = 0;
     const motionMedia = matchMedia('(prefers-reduced-motion: reduce)');
     let reduceMotion = motionMedia.matches;
@@ -319,9 +329,10 @@ export function CanvasView() {
         composite.height = ink.height = doc.height;
       }
       const pixels = flatten(doc);
-      // A visible reference sits between the background and the layers: the renderer paints the
-      // background itself, under it.
-      const layers = doc.reference?.visible ? flatten(doc, { includeBackground: false }) : pixels;
+      // A visible reference, or the onion skin, sits between the background and the layers: the
+      // renderer paints the background itself, under them.
+      backgroundApart = !!doc.reference?.visible || onionShown;
+      const layers = backgroundApart ? flatten(doc, { includeBackground: false }) : pixels;
       const image = cctx.createImageData(doc.width, doc.height);
       new Uint32Array(image.data.buffer).set(layers);
       cctx.putImageData(image, 0, 0);
@@ -345,6 +356,32 @@ export function CanvasView() {
       c.getContext('2d')!.putImageData(image, 0, 0);
       boardImages.set(doc.id, { key, canvas: c });
       return c;
+    };
+    // The onion skin: the frames around the shown one, tinted, merged again only when the board
+    // changes. Hidden while playing, and with the timeline, where it's turned on.
+    let onionKey = '';
+    let onionImages: SceneOnion[] = [];
+    const onion = (): SceneOnion[] => {
+      const { doc, revision } = editor.getState();
+      const { onion: o, timeline } = uiStore.get();
+      if (!ANIMATION || !o.on || !timeline || playbackStore.get().playing || frameCount(doc) < 2) return [];
+      const key = `${doc.id}:${revision}:${o.before}:${o.after}:${o.opacity}`;
+      if (key === onionKey) return onionImages;
+      onionKey = key;
+      onionImages = onionFrames(doc, o).map(({ frame, side, opacity }) => {
+        const c = document.createElement('canvas');
+        c.width = doc.width;
+        c.height = doc.height;
+        const cx = c.getContext('2d')!;
+        const image = new ImageData(doc.width, doc.height);
+        new Uint32Array(image.data.buffer).set(flattenFrame(doc, frame, { includeBackground: false }));
+        cx.putImageData(image, 0, 0);
+        cx.globalCompositeOperation = 'source-atop';
+        cx.fillStyle = ONION_TINT[side];
+        cx.fillRect(0, 0, c.width, c.height);
+        return { image: c, opacity };
+      });
+      return onionImages;
     };
     /** What the layers being moved push off the board, one image per layer, cached by its pixels. */
     let floatingImages = new Map<Uint32Array, HTMLCanvasElement>();
@@ -430,6 +467,11 @@ export function CanvasView() {
 
     const draw = (now = performance.now()) => {
       frame = 0;
+      const onionLayers = onion();
+      if (onionLayers.length > 0 !== onionShown) {
+        onionShown = !onionShown;
+        compositeDirty = true;
+      }
       if (compositeDirty) updateComposite();
       const live = editor.getLive();
       const state = editor.getState();
@@ -501,6 +543,7 @@ export function CanvasView() {
         {
           doc: live.doc,
           composite,
+          onion: onionLayers,
           gridInk: ink,
           reference: sceneReference(live.doc),
           view: live.view,
@@ -714,6 +757,8 @@ export function CanvasView() {
     const unsubs = [
       editor.onPixels(pixelsChanged),
       viewport.subscribe(request),
+      uiStore.subscribe(request),
+      playbackStore.subscribe(request),
       editor.subscribe(() => {
         viewport.showDocument(editor.getState().doc);
         syncGap();
@@ -739,7 +784,12 @@ export function CanvasView() {
       if (compositeDirty) updateComposite();
       const d = cctx.getImageData(p.x, p.y, 1, 1).data;
       // Nothing drawn there: the reference image's color, if it shows, as the eyedropper picks it.
-      const under = !d[3] && doc.reference?.visible ? referenceColorAt(doc, p.x, p.y) : 0;
+      const under =
+        !d[3] && doc.reference?.visible
+          ? referenceColorAt(doc, p.x, p.y)
+          : !d[3] && backgroundApart && hasBackground(doc)
+            ? doc.background
+            : 0;
       hoverStore.set({ x: p.x, y: p.y, color: d[3] ? pack(d[0], d[1], d[2], d[3]) : under || null });
     };
 

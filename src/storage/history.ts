@@ -61,6 +61,16 @@ export function packHistories(histories: BoardHistory[], steps = HISTORY_STEPS):
         ...l,
         pixels: pixelRef(l.pixels),
         ...(l.outside && { outside: { ...l.outside, pixels: pixelRef(l.outside.pixels) } }),
+        // The other frames' pixels, pooled too: steps share most of them.
+        ...(l.cels && {
+          cels: l.cels.map(
+            (c) =>
+              c && {
+                pixels: pixelRef(c.pixels),
+                ...(c.outside && { outside: { ...c.outside, pixels: pixelRef(c.outside.pixels) } }),
+              },
+          ),
+        }),
       })),
       ...(s.doc.reference && { reference: { ...s.doc.reference, src: textRef(s.doc.reference.src) } }),
     },
@@ -81,18 +91,35 @@ export function unpackHistories(stored: StoredHistory | null | undefined): Board
     return [];
   const pixels = (k: unknown): Uint32Array | null =>
     typeof k === 'number' && stored.pool[k] instanceof Uint32Array ? stored.pool[k].slice() : null;
+  // Cels are never changed in place: the steps share them, as they did before the reload.
+  const shared = (k: unknown): Uint32Array | null =>
+    typeof k === 'number' && stored.pool[k] instanceof Uint32Array ? stored.pool[k] : null;
   const unpack = (raw: unknown): Snapshot | null => {
-    const s = raw as Snapshot & { doc: { layers: { pixels: unknown; outside?: { pixels: unknown } }[] } };
+    type Packed = { pixels: unknown; outside?: { pixels: unknown } };
+    const s = raw as Snapshot & { doc: { layers: (Packed & { cels?: (Packed | null)[] })[] } };
     if (!s?.doc || !Array.isArray(s.doc.layers)) return null;
     const layers = [];
     for (const l of s.doc.layers) {
       const px = pixels(l.pixels);
       if (!px) return null;
       const outside = l.outside ? pixels(l.outside.pixels) : null;
+      const cels = Array.isArray(l.cels)
+        ? l.cels.map((c) => {
+            if (!c) return null;
+            const cel = shared(c.pixels);
+            const off = c.outside ? shared(c.outside.pixels) : null;
+            return (
+              cel && { pixels: cel, ...(c.outside && off && { outside: { ...c.outside, pixels: off } }) }
+            );
+          })
+        : undefined;
+      // A frame that doesn't read loses the step, like a layer.
+      if (cels && cels.some((c, f) => !c && f !== s.doc.activeFrame)) return null;
       layers.push({
         ...l,
         pixels: px,
         ...(l.outside && outside && { outside: { ...l.outside, pixels: outside } }),
+        ...(cels && { cels }),
       });
     }
     const ref = s.doc.reference as unknown as { src: unknown } | undefined;

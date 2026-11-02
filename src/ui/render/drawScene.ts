@@ -89,6 +89,9 @@ export interface Scene {
   doc: PixelDoc;
   /** Flattened image (doc size, background included). */
   composite: CanvasImageSource;
+  /** The frames around the shown one, tinted, under it (see CanvasView's onion). When there are,
+   * `composite` leaves out the background, painted here under them, as for the reference. */
+  onion?: SceneOnion[];
   /** Grid line color for each pixel, same size as `composite` (see grid.ts). */
   gridInk: CanvasImageSource;
   /** When set, `composite` leaves out the background: it is painted here, under the reference. */
@@ -123,6 +126,12 @@ export interface Scene {
   free?: SceneFloating | null;
   /** The Move tool's rectangle selecting layers, in art pixels of the active board. */
   marquee?: Rect | null;
+}
+
+/** A frame of the onion skin, the board's size. */
+export interface SceneOnion {
+  image: CanvasImageSource;
+  opacity: number;
 }
 
 /** Pixels outside the active board, at their place relative to it, in art pixels. */
@@ -427,11 +436,12 @@ export function drawScene(
   else if (!free) ctx.fillRect(0, 0, cw, ch);
   ctx.restore();
   const ref = scene.reference;
+  const onion = scene.onion ?? [];
+  if ((ref || onion.length) && hasBackground(doc)) {
+    ctx.fillStyle = toCss(doc.background);
+    ctx.fillRect(X, Y, cw, ch);
+  }
   if (ref) {
-    if (hasBackground(doc)) {
-      ctx.fillStyle = toCss(doc.background);
-      ctx.fillRect(X, Y, cw, ch);
-    }
     const r = ref.rect;
     ctx.save();
     // Clipped to the canvas, except when selected, so it can be placed from outside too.
@@ -445,6 +455,12 @@ export function drawScene(
     ctx.globalAlpha = ref.opacity;
     ctx.drawImage(ref.image, X + r.x * s, Y + r.y * s, r.w * s, r.h * s);
     ctx.restore();
+  }
+  // The onion skin under the frame being drawn, so it stays sharp over the ghosts.
+  for (const o of onion) {
+    ctx.globalAlpha = o.opacity;
+    ctx.drawImage(o.image, X, Y, cw, ch);
+    ctx.globalAlpha = 1;
   }
   ctx.drawImage(scene.composite, X, Y, cw, ch);
   // Layers outside the boards, over them, like objects beside the frames in Figma.

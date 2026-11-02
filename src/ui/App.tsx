@@ -3,6 +3,7 @@ import { openFromUrl } from './openFromUrl';
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
+import { ONION } from '../engine/frames';
 import { resolveLocaleSelection, setLocale, t, useT } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
 import type { StorageAdapter } from '../storage/workspace';
@@ -15,12 +16,12 @@ import { startTourOnce, Tour } from './components/Tour';
 import { FloatingPreview } from './components/FloatingPreview';
 import { ColorAdjustPanel } from './components/ColorAdjustPanel';
 import { Coordinates } from './components/Coordinates';
-import { IconButton } from './components/IconButton';
 import { MenuBar } from './components/MenuBar';
-import { MenuHost, openMenu } from './components/Menu';
+import { MenuHost } from './components/Menu';
 import { MobileBar } from './components/MobileBar';
 import { MobileColors } from './components/MobileColors';
 import { PanelResizer } from './components/PanelResizer';
+import { Timeline } from './components/Timeline';
 import { ToolOptionsBar } from './components/ToolOptionsBar';
 import { Toasts } from './components/Toasts';
 import { Toolbar } from './components/Toolbar';
@@ -29,12 +30,12 @@ import { Dialogs } from './dialogs/Dialogs';
 import { EditorContext } from './EditorContext';
 import { refreshTrash, StorageContext } from './StorageContext';
 import { CHANGELOG_URL } from './links';
-import { helpMenu } from './menus';
 import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
 import { useShiftArrowSteps } from './hooks/useShiftArrowSteps';
 import { leaveHome, showEmptyHome } from './home';
+import { ANIMATION } from './features';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
 import { RightPanel } from './panels/RightPanel';
@@ -74,6 +75,18 @@ const tileSide = (n: unknown): number =>
 /** Layers on a row of the sprite sheet, from a save: a whole number from 1, all of them when missing. */
 const sheetColumns = (n: unknown): number | null =>
   typeof n === 'number' && Number.isFinite(n) && n >= 1 ? Math.round(n) : null;
+
+/** The onion skin from a save: off, one frame each side at 40% when missing. */
+function onionSkin(o: unknown): UiState['onion'] {
+  const v = (o ?? {}) as Partial<UiState['onion']>;
+  const count = (n: unknown) =>
+    typeof n === 'number' && Number.isFinite(n) ? Math.min(ONION.max, Math.max(0, Math.round(n))) : 1;
+  const opacity =
+    typeof v.opacity === 'number' && Number.isFinite(v.opacity)
+      ? Math.min(1, Math.max(0.05, v.opacity))
+      : 0.4;
+  return { on: !!v.on, before: count(v.before), after: count(v.after), opacity };
+}
 
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */
 function useRestore(editor: Editor, storage: StorageAdapter): boolean {
@@ -129,6 +142,8 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
               : 'react',
             exportActiveLayer: !!ui.exportActiveLayer,
             layersFolded: !!ui.layersFolded,
+            timeline: !!ui.timeline,
+            onion: onionSkin(ui.onion),
             homeSort: ui.homeSort === 'name' ? 'name' : 'modified',
             homeOrder: ui.homeOrder === 'asc' ? 'asc' : 'desc',
             homeView: ui.homeView === 'list' ? 'list' : 'grid',
@@ -218,7 +233,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   useT();
   const actions = useMemo(() => createActions(editor), [editor]);
   const ready = useRestore(editor, storage);
-  const { uiHidden, sheet, panelWidths, home } = uiStore.use((s) => s);
+  const { uiHidden, sheet, panelWidths, home, timeline } = uiStore.use((s) => s);
   // A file with no board: no size, coordinates or preview to show.
   const noBoard = useSyncExternalStore(editor.subscribe, () => !isBoard(editor.getState().doc));
   useKeyboardShortcuts(editor, actions);
@@ -254,7 +269,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
               <MobileBar />
               <MobileColors />
               {!noBoard && <Coordinates />}
-              {/* The window's bottom right corner: the version, which opens what's new, and the Help menu. */}
+              {/* The window's bottom right corner: the version, which opens what's new. */}
               <div className="help-corner">
                 <button
                   type="button"
@@ -264,15 +279,9 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
                 >
                   v{__APP_VERSION__}
                 </button>
-                <IconButton
-                  className="icon-btn large help-button"
-                  icon="help"
-                  iconSize={18}
-                  label={t('menu.help')}
-                  onClick={(e) => openMenu(e.currentTarget, helpMenu(editor, actions))}
-                />
               </div>
               {!noBoard && <FloatingPreview />}
+              {!noBoard && timeline && ANIMATION && <Timeline />}
               <ToolOptionsBar />
               <Toolbar />
             </main>

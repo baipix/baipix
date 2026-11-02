@@ -736,6 +736,50 @@ function SurfacesBlock() {
           </div>
         </Specimen>
         <Specimen
+          label="Timeline"
+          wide
+          use="The active board's frames under the canvas, the whole width: a row per layer, a column per frame, a dot where the layer is drawn, a ring where it's empty. The frame shown is violet, the cell being drawn on filled. The Animate button beside Export opens it."
+        >
+          <div className="timeline ds-static ds-timeline">
+            <div className="timeline-bar">
+              <span className="timeline-title">Timeline</span>
+              <IconButton icon="first" label="First frame" />
+              <IconButton icon="play" label="Play" />
+              <span className="timeline-count">2 / 4</span>
+              <span className="timeline-spacer" />
+              <IconButton icon="plus" label="New frame" />
+              <IconButton icon="trash" label="Delete frame" />
+              <IconButton icon="close" label="Hide the timeline" />
+            </div>
+            <div
+              className="timeline-grid"
+              style={{ gridTemplateColumns: 'var(--timeline-names) repeat(4, 24px)' }}
+            >
+              <span className="timeline-corner" />
+              {[1, 2, 3, 4].map((n) => (
+                <button key={n} type="button" className={`timeline-frame${n === 2 ? ' is-active' : ''}`}>
+                  {n}
+                </button>
+              ))}
+              {['Face', 'Body'].map((name, row) => (
+                <div key={name} className="timeline-row" role="row">
+                  <span className={`timeline-name${row === 1 ? ' is-active' : ''}`}>{name}</span>
+                  {[0, 1, 2, 3].map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      aria-label={`${name}, frame ${f + 1}`}
+                      className={`timeline-cel${f === 1 ? ' in-frame' : ''}${f === 1 && row === 1 ? ' is-active' : ''}`}
+                    >
+                      <span className={row === 0 && f === 3 ? 'timeline-dot is-empty' : 'timeline-dot'} />
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Specimen>
+        <Specimen
           label="Tabs"
           use="Kinds of content in one panel (Design / Export, the Adjustments). The current one is underlined."
         >

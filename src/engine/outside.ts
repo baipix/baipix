@@ -1,3 +1,4 @@
+import type { Cel } from './frames';
 /**
  * The part of a layer that lies outside the canvas, kept so that moving the layer back (or making
  * the canvas bigger) brings those pixels back. `x`, `y` are in canvas pixels and can be negative;
@@ -75,6 +76,23 @@ export function reframe(
   const kept = new Uint32Array(w * h);
   for (let k = 0; k < out.length; k += 3) kept[(out[k + 1] - minY) * w + (out[k] - minX)] = out[k + 2];
   return { pixels: inside, outside: { x: minX, y: minY, w, h, pixels: kept } };
+}
+
+/** A layer's cels (its pixels on the other animation frames) reframed like its pixels (see `reframe`). */
+export function reframeCels(
+  cels: (Cel | null)[] | undefined,
+  width: number,
+  height: number,
+  dx: number,
+  dy: number,
+  toWidth: number,
+  toHeight: number,
+): (Cel | null)[] | undefined {
+  return cels?.map((cel) => {
+    if (!cel) return null;
+    const r = reframe(cel.pixels, width, height, cel.outside, dx, dy, toWidth, toHeight);
+    return { pixels: r.pixels, ...(r.outside && { outside: r.outside }) };
+  });
 }
 
 /**

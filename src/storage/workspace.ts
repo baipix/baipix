@@ -32,9 +32,14 @@ interface StoredOutside {
 
 /**
  * A file in the browser's workspace: the .baipix content, plus what isn't in .baipix files (the
- * reference image, and each layer's pixels outside the canvas, by layer index).
+ * reference image, and each layer's pixels outside the canvas, by layer index, and on the other
+ * animation frames in `celsOutside`, by layer then frame).
  */
-export type StoredFile = BaipixFile & { reference?: ReferenceImage; outside?: (StoredOutside | null)[] };
+export type StoredFile = BaipixFile & {
+  reference?: ReferenceImage;
+  outside?: (StoredOutside | null)[];
+  celsOutside?: ((StoredOutside | null)[] | null)[];
+};
 
 export interface StoredWorkspace {
   version: 1;
@@ -79,6 +84,11 @@ export const storeFile = (d: PixelDoc): StoredFile => ({
   ...(d.layers.some((l) => l.outside) && {
     outside: d.layers.map((l) => (l.outside ? storeOutside(l.outside) : null)),
   }),
+  ...(d.layers.some((l) => l.cels?.some((c) => c?.outside)) && {
+    celsOutside: d.layers.map(
+      (l) => l.cels?.map((c) => (c?.outside ? storeOutside(c.outside) : null)) ?? null,
+    ),
+  }),
 });
 
 /** A stored board read back, or null when it can't be: one unreadable board never costs the others. */
@@ -91,6 +101,13 @@ export function readStoredFile(f: StoredFile): PixelDoc | null {
       const outside = readOutside(o);
       if (outside && doc.layers[i]) doc.layers[i].outside = outside;
     });
+    f.celsOutside?.forEach((list, i) =>
+      list?.forEach((o, k) => {
+        const cel = doc.layers[i]?.cels?.[k];
+        const outside = readOutside(o);
+        if (cel && outside) doc.layers[i].cels![k] = { ...cel, outside };
+      }),
+    );
     return doc;
   } catch {
     return null;

@@ -10,6 +10,7 @@
 
 - Colors are packed `uint32` values in the same byte order as `ImageData` (`0xAABBGGRR`), so pixel buffers are copied to canvases without conversion.
 - A `PixelDoc` holds its layers (bottom to top), background, and render settings (exported pixel size and gap).
+- Animation frames (`engine/frames.ts`) share the board's layers: only the pixels change from frame to frame. The shown frame's pixels are each layer's `pixels`, so tools, exports and everything else work on it unchanged; the other frames wait in each layer's `cels`, never changed in place, so undo steps share them. Commands that act on a whole layer (merging, applying effects, resizing the canvas) run on every frame with `eachFrame`.
 - Each open file has its own `History` of snapshots. Pixel art documents are small, so full snapshots are simpler and more robust than diffs; the stack is capped by a memory budget.
 
 ## Editor notifications
@@ -33,4 +34,4 @@ A tool is an object with `onDown`, `onMove` and optional `onUp`, receiving a `St
 
 ## File format
 
-`.baipix` files are JSON (`storage/fileFormat.ts`). Each layer is an indexed palette plus run-length encoded indices: compact, diff-friendly and readable without an image decoder. The format is versioned; readers must reject newer versions.
+`.baipix` files are JSON (`storage/fileFormat.ts`). Each layer is an indexed palette plus run-length encoded indices: compact, diff-friendly and readable without an image decoder. Frames add each layer's `cels`, encoded the same way, beside the shown frame's pixels, so a version without frames still opens the shown one. The format is versioned; readers must reject newer versions.

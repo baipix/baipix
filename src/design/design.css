@@ -246,6 +246,10 @@ body {
   width: 200px;
   height: 120px;
 }
+.ds-timeline {
+  width: 100%;
+  max-height: none;
+}
 .ds-tabs {
   width: 220px;
   background: var(--panel);

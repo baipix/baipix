@@ -17,6 +17,7 @@ import { normalizeComponents } from '../engine/components';
 import { cleanEffects, type LayerEffect } from '../engine/effects';
 import { normalizeGroups } from '../engine/groups';
 import { clamp } from '../engine/math';
+import { clampDuration, createFrame, MAX_FRAMES, normalizeFrames, type Cel } from '../engine/frames';
 
 /**
  * `.baipix` files are plain JSON. Each layer is stored as an indexed palette plus run-length
@@ -52,6 +53,11 @@ export interface BaipixLayer {
   colors: number[];
   /** Flat list of [colorIndex, runLength] pairs, row-major. */
   runs: number[];
+  /**
+   * Its pixels on each animation frame, encoded the same way; null on the active frame, whose
+   * pixels are `colors` and `runs` (so a version without frames still shows that one).
+   */
+  cels?: ({ colors: number[]; runs: number[] } | null)[];
 }
 
 export interface BaipixFile {
@@ -79,6 +85,10 @@ export interface BaipixFile {
   light?: BoardLight;
   /** A board of a file with several: its file and its place in it (missing: a file of its own). */
   board?: BoardPlace;
+  /** Animation frames, with how long each shows in ms (missing: a single frame). */
+  frames?: { duration: number }[];
+  /** The frame shown, an index in `frames`. */
+  activeFrame?: number;
   /** Last change, in ms since the epoch. */
   updatedAt?: number;
   layers: BaipixLayer[];
@@ -158,6 +168,10 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
     ...(doc.isoGridVertical && { isoGridVertical: true }),
     ...(doc.light && { light: { ...doc.light } }),
     ...(doc.board && { board: { ...doc.board } }),
+    ...(doc.frames && {
+      frames: doc.frames.map((f) => ({ duration: f.duration })),
+      activeFrame: doc.activeFrame ?? 0,
+    }),
     ...(doc.updatedAt !== undefined && { updatedAt: doc.updatedAt }),
     ...(doc.palette && {
       palette: {
@@ -185,6 +199,7 @@ export function serializeDocument(doc: PixelDoc): BaipixFile {
       }),
       ...(l.effects?.length && { effects: l.effects.map((e) => ({ ...e, color: e.color >>> 0 })) }),
       ...encodePixels(l.pixels),
+      ...(l.cels && { cels: l.cels.map((c) => c && encodePixels(c.pixels)) }),
     })),
     ...(groups.length && {
       groups: groups.map((g) => ({
@@ -348,6 +363,7 @@ export function deserializeDocument(data: unknown, inFile = false): PixelDoc {
     ...(groups && { groups }),
     ...(readPalette(f.palette) ?? {}),
   };
+  readFrames(doc, f.frames, f.activeFrame, Array.isArray(f.layers) ? f.layers : []);
   normalizeGroups(doc);
   readComponents(layers, Array.isArray(f.layers) ? f.layers : []);
   (Array.isArray(f.layers) ? f.layers : []).forEach((l, i) => {
@@ -356,6 +372,33 @@ export function deserializeDocument(data: unknown, inFile = false): PixelDoc {
   });
   if (!inFile) normalizeComponents([doc]);
   return doc;
+}
+
+/** Animation frames from a file: their durations, and each layer's pixels on them. */
+function readFrames(doc: PixelDoc, raw: unknown, active: unknown, layers: Partial<BaipixLayer>[]): void {
+  if (!Array.isArray(raw) || raw.length < 2) return;
+  const list = raw.slice(0, MAX_FRAMES) as Partial<{ duration: unknown }>[];
+  doc.frames = list.map((f) => createFrame(clampDuration(Number(f?.duration))));
+  const shown = clamp(Math.round(Number(active)) || 0, 0, doc.frames.length - 1);
+  doc.activeFrame = shown;
+  const size = doc.width * doc.height;
+  doc.layers.forEach((layer, i) => {
+    const cels = layers[i]?.cels;
+    layer.cels = doc.frames!.map((_, k): Cel | null => {
+      if (k === shown) return null;
+      const c = Array.isArray(cels) ? cels[k] : null;
+      // A frame missing from the file shows the layer as it is on the active one.
+      if (!c || typeof c !== 'object') return { pixels: layer.pixels.slice() };
+      return {
+        pixels: decodePixels(
+          Array.isArray(c.colors) ? c.colors : [],
+          Array.isArray(c.runs) ? c.runs : [],
+          size,
+        ),
+      };
+    });
+  });
+  normalizeFrames(doc);
 }
 
 /** A board's place from a file: its file id and name, and whole-pixel coordinates. */
