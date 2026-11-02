@@ -22,7 +22,7 @@ const { wide = false } = Astro.props as { wide?: boolean };
 <header class="site-header">
   <div class:list={['nav', wide ? 'container-wide' : 'container']}>
     <a class="brand" href={base} aria-label="Baipix home">
-      <Logo size={18} />
+      <Logo size={24} />
       <span>Baipix</span>
     </a>
     <nav class="nav-links">
@@ -87,18 +87,23 @@ const { wide = false } = Astro.props as { wide?: boolean };
     gap: 32px;
     height: var(--header-height);
   }
+  /* Like Linear's: the brand alone on the left, the links on the right, then a line and the buttons. */
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-right: auto;
+    font-size: 19px;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
   .nav-links {
     display: flex;
-    gap: 24px;
-    margin-right: auto;
-    font-size: 14px;
+    align-items: center;
+    gap: 28px;
+    padding-right: 32px;
+    border-right: 1px solid var(--line);
+    font-size: 15px;
     color: var(--muted);
   }
   .nav-links a,
@@ -129,6 +134,7 @@ const { wide = false } = Astro.props as { wide?: boolean };
     }
     .nav-links {
       gap: 18px;
+      padding-right: 20px;
     }
     .star-label {
       display: none;
@@ -144,14 +150,13 @@ const { wide = false } = Astro.props as { wide?: boolean };
     }
     .brand {
       height: 60px;
-      margin-right: auto;
     }
     .nav-links {
       order: 1;
       width: 100%;
       height: 40px;
-      align-items: center;
-      margin: 0;
+      padding-right: 0;
+      border-right: 0;
       overflow-x: auto;
       scrollbar-width: none;
     }
