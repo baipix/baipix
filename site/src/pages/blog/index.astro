@@ -17,8 +17,8 @@ const used = (Object.keys(CATEGORIES) as Category[]).filter((c) => posts.some((p
   description="News and tutorials from Baipix, the free pixel art editor in your browser: releases, how to draw and animate, and why it's made the way it is."
 >
   <Nav />
-  {/* As on the other pages: the files screen's lit grid behind the title. */}
-  <section class="blog-hero">
+  {/* As on the other pages: the files screen's lit grid behind the top, the newest post included. */}
+  <div class="blog-page">
     <div class="hero-glow" aria-hidden="true">
       <PixelGlow />
     </div>
@@ -31,42 +31,42 @@ const used = (Object.keys(CATEGORIES) as Category[]).filter((c) => posts.some((p
         RSS feed
       </a>
     </header>
-  </section>
-  <main class="blog container-wide">
-    {featured ? (
-      <>
-        <PostCard post={featured} featured />
-        {rest.length > 0 && (
-          <section class="blog-all" aria-labelledby="all-posts">
-            <div class="blog-bar">
-              <h2 id="all-posts">All posts</h2>
-              {used.length > 1 && (
-                <div class="blog-filters" role="group" aria-label="Category">
-                  <button type="button" class="chip" aria-pressed="true" data-filter="">
-                    All
-                  </button>
-                  {used.map((c) => (
-                    <button type="button" class="chip" aria-pressed="false" data-filter={c}>
-                      {CATEGORIES[c].label}
+    <main class="blog container-wide">
+      {featured ? (
+        <>
+          <PostCard post={featured} featured />
+          {rest.length > 0 && (
+            <section class="blog-all" aria-labelledby="all-posts">
+              <div class="blog-bar">
+                <h2 id="all-posts">All posts</h2>
+                {used.length > 1 && (
+                  <div class="blog-filters" role="group" aria-label="Category">
+                    <button type="button" class="chip" aria-pressed="true" data-filter="">
+                      All
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <ul class="blog-grid">
-              {rest.map((post) => (
-                <li data-category={post.category}>
-                  <PostCard post={post} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </>
-    ) : (
-      <p class="muted">The first posts are on their way.</p>
-    )}
-  </main>
+                    {used.map((c) => (
+                      <button type="button" class="chip" aria-pressed="false" data-filter={c}>
+                        {CATEGORIES[c].label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <ul class="blog-grid">
+                {rest.map((post) => (
+                  <li data-category={post.category}>
+                    <PostCard post={post} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      ) : (
+        <p class="muted">The first posts are on their way.</p>
+      )}
+    </main>
+  </div>
   <Footer wide />
 </Base>
 
@@ -84,20 +84,23 @@ const used = (Object.keys(CATEGORIES) as Category[]).filter((c) => posts.some((p
 
 <style>
   .blog {
+    position: relative;
     padding: 8px 0 96px;
   }
-  .blog-hero {
+  .blog-page {
     position: relative;
-    padding: 56px 0 40px;
+    padding-top: 56px;
     overflow: hidden;
   }
   .hero-glow {
     position: absolute;
-    inset: 0;
+    inset: 0 0 auto;
+    height: 760px;
     pointer-events: none;
   }
   .blog-head {
     position: relative;
+    padding-bottom: 40px;
     display: flex;
     align-items: end;
     justify-content: space-between;
@@ -170,7 +173,7 @@ const used = (Object.keys(CATEGORIES) as Category[]).filter((c) => posts.some((p
     list-style: none;
   }
   @media (max-width: 640px) {
-    .blog-hero {
+    .blog-page {
       padding-top: 32px;
     }
     .blog-head {
