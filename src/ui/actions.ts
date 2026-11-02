@@ -344,7 +344,6 @@ export function createActions(editor: Editor) {
       const boards = editor.fileBoards();
       const used = new Set<string>();
       const usedFrameNames = new Set<string>();
-
       const nameOf = (d: PixelDoc) => {
         const base = safeFileName(d.name) || 'board';
         let name = base;
@@ -352,16 +351,13 @@ export function createActions(editor: Editor) {
         used.add(name);
         return `${name}.${format}`;
       };
-
       const withBackground = (d: PixelDoc) => uiStore.get().exportBackground && hasBackground(d);
       const files = [];
-
       for (const d of boards) {
         if (format === 'frames') {
           const base = safeFileName(d.name) || 'board';
           const sheetName = uniqueArchiveName(`${base}-sprite-sheet.png`, usedFrameNames);
           const jsonName = uniqueArchiveName(`${base}-sprite-sheet.json`, usedFrameNames);
-
           const frameFiles = await frameSpriteSheetFiles(
             d,
             sheetName,
@@ -378,22 +374,15 @@ export function createActions(editor: Editor) {
           files.push(...frameFiles);
           continue;
         }
-
         if (format === 'sequence') {
           const name = nameOf(d).slice(0, -'.sequence'.length);
-
-          for (const file of await pngSequenceOf(d, name, false, true)) {
+          for (const file of await pngSequenceOf(d, name, false, true))
             files.push({ name: `${name}/${file.name}`, data: file.data });
-          }
-
           continue;
         }
-
         const geometry = renderGeometry(d.width, d.height, d.render.pixelSize, d.render.gap);
         const background: Color = withBackground(d) ? d.background : 0;
-
         let data: Uint8Array;
-
         if (format === 'aseprite')
           data = await toAseprite(d, {
             // The file's palette, or the drawing's colors when that's its palette (stored empty).

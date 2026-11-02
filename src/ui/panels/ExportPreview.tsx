@@ -35,6 +35,7 @@ export function ExportPreview() {
   const onlyLayer = format !== 'layers' && activeLayerOnly && !(format === 'frames' && everyBoard);
   const withBackground = format !== 'layers' && includeBackground && !onlyLayer && hasBackground(doc);
 
+  // The document may be mutated in place; revision invalidates these memos when pixels change.
   const layerSheetPreview = useMemo(() => {
     void revision;
 
@@ -97,6 +98,7 @@ export function ExportPreview() {
     }
 
     return !active.pixels.some((c) => alpha(c) > 0);
+    // The document changes in place: its revision says when.
   }, [onlyLayer, format, active, frameSheet, revision]);
 
   useEffect(() => {
