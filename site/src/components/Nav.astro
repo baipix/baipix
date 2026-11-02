@@ -15,12 +15,11 @@ const links = [
   { href: `${base}#install`, label: 'Get started' },
 ];
 const here = Astro.url.pathname;
-/** As wide as the docs, instead of the pages' column. */
-const { wide = false } = Astro.props as { wide?: boolean };
 ---
 
 <header class="site-header">
-  <div class:list={['nav', wide ? 'container-wide' : 'container']}>
+  {/* As wide as the docs on every page, so it doesn't change size from a page to the docs. */}
+  <div class="nav container-wide">
     <a class="brand" href={base} aria-label="Baipix home">
       <Logo size={18} />
       <span>Baipix</span>
