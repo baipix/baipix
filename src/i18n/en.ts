@@ -576,7 +576,7 @@ export const en = {
 
   'export.button': 'Export',
   'export.format': 'Format',
-  'export.asepriteHint': 'Layers, groups, blend modes and the palette, on a single frame for now.',
+  'export.asepriteHint': 'Layers, groups, blend modes, the palette, and every frame with its duration.',
   'export.allBoards': 'All {count} boards, in a .zip',
   'export.layers': 'Layers + sprite sheet (ZIP)',
   'export.columns': 'Columns',

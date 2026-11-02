@@ -582,7 +582,7 @@ export const fr: Record<MessageKey, string> = {
 
   'export.button': 'Exporter',
   'export.format': 'Format',
-  'export.asepriteHint': 'Calques, groupes, modes de fusion et palette, sur une seule image pour l’instant.',
+  'export.asepriteHint': 'Calques, groupes, modes de fusion, palette, et chaque image avec sa durée.',
   'export.allBoards': 'Les {count} plans dans un .zip',
   'export.layers': 'Calques + planche de sprites (ZIP)',
   'export.columns': 'Colonnes',

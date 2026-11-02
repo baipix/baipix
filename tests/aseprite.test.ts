@@ -5,6 +5,7 @@ import { toAseprite } from '../src/engine/export/aseprite';
 
 const RED = pack(255, 0, 0);
 const BLUE = pack(0, 0, 255, 128);
+const GREEN = pack(0, 255, 0);
 
 /** Reads an .aseprite file back, following the spec on its own (not the writer's code). */
 async function read(bytes: Uint8Array) {
@@ -20,12 +21,6 @@ async function read(bytes: Uint8Array) {
     colors: v.getUint16(32, true),
   };
   let at = 128;
-  const frame = {
-    size: v.getUint32(at, true),
-    magic: v.getUint16(at + 4, true),
-    chunks: v.getUint32(at + 12, true),
-  };
-  at += 16;
   const layers: {
     flags: number;
     type: number;
@@ -34,46 +29,73 @@ async function read(bytes: Uint8Array) {
     opacity: number;
     name: string;
   }[] = [];
-  const cels: { layer: number; x: number; y: number; w: number; h: number; pixels: Uint32Array }[] = [];
+  type Cel = { layer: number; x: number; y: number; w: number; h: number; pixels: Uint32Array };
+  const frames: {
+    size: number;
+    magic: number;
+    chunks: number;
+    duration: number;
+    cels: Cel[];
+    links: number[][];
+  }[] = [];
   let palette: number[][] = [];
-  for (let k = 0; k < frame.chunks; k++) {
-    const size = v.getUint32(at, true);
-    expect(size).toBeGreaterThanOrEqual(6);
-    const type = v.getUint16(at + 4, true);
-    const d = at + 6;
-    if (type === 0x2004) {
-      const length = v.getUint16(d + 16, true);
-      layers.push({
-        flags: v.getUint16(d, true),
-        type: v.getUint16(d + 2, true),
-        level: v.getUint16(d + 4, true),
-        blend: v.getUint16(d + 10, true),
-        opacity: v.getUint8(d + 12),
-        name: new TextDecoder().decode(bytes.slice(d + 18, d + 18 + length)),
-      });
-    } else if (type === 0x2005) {
-      expect(v.getUint16(d + 7, true)).toBe(2); // compressed image
-      const w = v.getUint16(d + 16, true);
-      const h = v.getUint16(d + 18, true);
-      const stream = new Blob([bytes.slice(d + 20, at + size)])
-        .stream()
-        .pipeThrough(new DecompressionStream('deflate'));
-      const raw = new Uint8Array(await new Response(stream).arrayBuffer());
-      cels.push({
-        layer: v.getUint16(d, true),
-        x: v.getInt16(d + 2, true),
-        y: v.getInt16(d + 4, true),
-        w,
-        h,
-        pixels: new Uint32Array(raw.buffer),
-      });
-    } else if (type === 0x2019) {
-      const n = v.getUint32(d, true);
-      palette = Array.from({ length: n }, (_, i) => [...bytes.slice(d + 20 + i * 6 + 2, d + 20 + i * 6 + 6)]);
+  for (let n = 0; n < header.frames; n++) {
+    const frame = {
+      size: v.getUint32(at, true),
+      magic: v.getUint16(at + 4, true),
+      duration: v.getUint16(at + 8, true),
+      chunks: v.getUint32(at + 12, true),
+      cels: [] as Cel[],
+      // Linked cels: [layer, frame linked to].
+      links: [] as number[][],
+    };
+    const end = at + frame.size;
+    at += 16;
+    for (let k = 0; k < frame.chunks; k++) {
+      const size = v.getUint32(at, true);
+      expect(size).toBeGreaterThanOrEqual(6);
+      const type = v.getUint16(at + 4, true);
+      const d = at + 6;
+      if (type === 0x2004) {
+        const length = v.getUint16(d + 16, true);
+        layers.push({
+          flags: v.getUint16(d, true),
+          type: v.getUint16(d + 2, true),
+          level: v.getUint16(d + 4, true),
+          blend: v.getUint16(d + 10, true),
+          opacity: v.getUint8(d + 12),
+          name: new TextDecoder().decode(bytes.slice(d + 18, d + 18 + length)),
+        });
+      } else if (type === 0x2005 && v.getUint16(d + 7, true) === 1) {
+        frame.links.push([v.getUint16(d, true), v.getUint16(d + 16, true)]);
+      } else if (type === 0x2005) {
+        expect(v.getUint16(d + 7, true)).toBe(2); // compressed image
+        const w = v.getUint16(d + 16, true);
+        const h = v.getUint16(d + 18, true);
+        const stream = new Blob([bytes.slice(d + 20, at + size)])
+          .stream()
+          .pipeThrough(new DecompressionStream('deflate'));
+        const raw = new Uint8Array(await new Response(stream).arrayBuffer());
+        frame.cels.push({
+          layer: v.getUint16(d, true),
+          x: v.getInt16(d + 2, true),
+          y: v.getInt16(d + 4, true),
+          w,
+          h,
+          pixels: new Uint32Array(raw.buffer),
+        });
+      } else if (type === 0x2019) {
+        const count = v.getUint32(d, true);
+        palette = Array.from({ length: count }, (_, i) => [
+          ...bytes.slice(d + 20 + i * 6 + 2, d + 20 + i * 6 + 6),
+        ]);
+      }
+      at += size;
     }
-    at += size;
+    expect(at).toBe(end);
+    frames.push(frame);
   }
-  return { header, frame, layers, cels, palette, end: at };
+  return { header, frame: frames[0], frames, layers, cels: frames[0].cels, palette, end: at };
 }
 
 describe('export to Aseprite', () => {
@@ -209,5 +231,46 @@ describe('export to Aseprite', () => {
 
     expect(f.layers.map((layer) => layer.name)).toEqual(['Empty but present', 'Layer 2']);
     expect(f.cels).toEqual([]);
+  });
+
+  it('writes every frame with its duration, linking the cels that stay the same', async () => {
+    const e = new Editor();
+    e.newFile(4, 4);
+    e.addLayer();
+    const layers = () => e.getState().doc.layers;
+    layers()[0].name = 'Ground';
+    layers()[0].pixels[12] = BLUE;
+    layers()[1].name = 'Ball';
+    layers()[1].pixels[0] = RED;
+    e.addFrame();
+    layers()[1].pixels.fill(0);
+    layers()[1].pixels[5] = RED;
+    e.addFrame(true);
+    e.setFrameDuration(250, [2]);
+    const bytes = await toAseprite(e.getState().doc, { palette: [RED, BLUE], background: GREEN });
+    const f = await read(bytes);
+
+    expect(f.header).toMatchObject({ size: bytes.length, frames: 3 });
+    expect(f.end).toBe(bytes.length);
+    expect(f.frames.map((x) => x.duration)).toEqual([100, 100, 250]);
+    // The layers once, on the first frame.
+    expect(f.layers.map((l) => l.name)).toEqual(['Background', 'Ground', 'Ball']);
+    expect(f.frames[0].cels.map((c) => [c.layer, c.x, c.y])).toEqual([
+      [0, 0, 0],
+      [1, 0, 3],
+      [2, 0, 0],
+    ]);
+    // The ball moves: a cel of its own; the background and the ground stay: linked to the first frame.
+    expect(f.frames[1].cels.map((c) => [c.layer, c.x, c.y])).toEqual([[2, 1, 1]]);
+    expect(f.frames[1].links).toEqual([
+      [0, 0],
+      [1, 0],
+    ]);
+    // An empty frame for the ball: no cel at all for it.
+    expect(f.frames[2].cels).toEqual([]);
+    expect(f.frames[2].links).toEqual([
+      [0, 0],
+      [1, 0],
+    ]);
   });
 });

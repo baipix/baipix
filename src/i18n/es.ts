@@ -585,7 +585,7 @@ export const es: Record<MessageKey, string> = {
   'export.button': 'Exportar',
   'export.format': 'Formato',
   'export.asepriteHint':
-    'Por ahora, las capas, los grupos, los modos de fusión y la paleta se exportan en una sola imagen.',
+    'Las capas, los grupos, los modos de fusión, la paleta y cada fotograma con su duración.',
   'export.allBoards': 'Los {count} tableros en un archivo .zip',
   'export.layers': 'Capas + hoja de sprites (ZIP)',
   'export.columns': 'Columnas',

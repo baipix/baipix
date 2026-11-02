@@ -53,3 +53,7 @@ The onion skin never ends up in an export: it's only there to draw by.
 In the Export dialog, pick **GIF**: an animated image that loops forever, every frame with its duration rounded to 10 ms, at the pixel size picked. It keeps the drawing's exact colors up to 255 of them. Fully transparent pixels stay transparent, or the background fills them if you include it. See [Export](../../export/export/).
 
 With **All boards**, each board's animation is a GIF of its own, in a .zip.
+
+## Keep working in Aseprite
+
+Pick **Aseprite** to open the animation there: every frame comes along with its duration, and so do the layers, groups, blend modes and the palette. A layer that stays the same from one frame to the next becomes a linked cel, as Aseprite makes them, so it stays one drawing there too.
