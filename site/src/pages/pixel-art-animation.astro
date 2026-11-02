@@ -1,0 +1,473 @@
+---
+import Cta from '../components/Cta.astro';
+import Faq from '../components/Faq.astro';
+import Footer from '../components/Footer.astro';
+import GuideHero from '../components/GuideHero.astro';
+import Nav from '../components/Nav.astro';
+import Flipbook from '../components/Flipbook.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Base from '../layouts/Base.astro';
+import '../styles/guide.css';
+import { blue, green, pack, red, alpha } from '../../../src/engine/color';
+import { flattenFrame } from '../../../src/engine/composite';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+import { slime, slimeFrames as frames } from '../slime';
+import slimeUrl from '../art/slime.baipix?url';
+
+const base = import.meta.env.BASE_URL;
+
+const { width: w, height: h } = slime;
+const total = frames.reduce((sum, f) => sum + f.duration, 0);
+
+/**
+ * The onion skin as the editor shows it, on the slime alone (its sky and ground hidden): the frames
+ * around the shown one under it, half tinted, red before and blue after.
+ */
+const character = slime.layers.filter((l) => !['Sky', 'Ground'].includes(l.name));
+const alone = { ...slime, layers: character };
+const alonePixels = Array.from({ length: frames.length }, (_, f) =>
+  flattenFrame(alone, f, { includeBackground: false }),
+);
+// Cropped around the slime over the whole jump, with a little room.
+let [x0, y0, x1, y1] = [w, h, 0, 0];
+alonePixels.forEach((pixels) =>
+  pixels.forEach((c, i) => {
+    if (alpha(c) === 0) return;
+    const x = i % w;
+    const y = Math.floor(i / w);
+    [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+  }),
+);
+[x0, y0, x1, y1] = [
+  Math.max(0, x0 - 2),
+  Math.max(0, y0 - 2),
+  Math.min(w - 1, x1 + 2),
+  Math.min(h - 1, y1 + 1),
+];
+const [cw, ch] = [x1 - x0 + 1, y1 - y0 + 1];
+const cropSvg = (pixels: Uint32Array) => {
+  const out = new Uint32Array(cw * ch);
+  for (let y = 0; y < ch; y++) out.set(pixels.subarray((y0 + y) * w + x0, (y0 + y) * w + x0 + cw), y * cw);
+  return toSvg(out, cw, ch, renderGeometry(cw, ch, 1, 0));
+};
+// The editor's tints (CanvasView's ONION_TINT), half over the frame's own colors.
+const tint = (pixels: Uint32Array, [tr, tg, tb]: number[]) =>
+  pixels.map((c) =>
+    alpha(c) === 0 ? 0 : pack((red(c) + tr) >> 1, (green(c) + tg) >> 1, (blue(c) + tb) >> 1, alpha(c)),
+  );
+const onionFramesSvg = alonePixels.map((pixels) => ({
+  shown: cropSvg(pixels),
+  before: cropSvg(tint(pixels, [255, 59, 48])),
+  after: cropSvg(tint(pixels, [47, 128, 255])),
+}));
+const ONION_START = 4;
+
+const faq = [
+  {
+    q: 'Can I make pixel art animations in the browser?',
+    a: 'Yes. Baipix has a timeline under the canvas: add frames, set how long each one shows, play it back, then export an animated GIF. It runs in your browser, with nothing to install.',
+  },
+  {
+    q: 'How many frames does a pixel art animation need?',
+    a: 'Fewer than you think. A walk cycle often has 4 to 8 frames, an idle loop 2 to 4. The slime on this page jumps in 14, some held longer than others.',
+  },
+  {
+    q: 'Can each frame have its own duration?',
+    a: 'Yes. Every frame has its own duration in milliseconds, so a pose can hold while the fast moves flash by. The GIF export keeps them.',
+  },
+  {
+    q: 'What is onion skinning?',
+    a: 'Showing the frames before and after the one you draw, faded under it, so you can see where things come from and where they go. Baipix tints them red before and blue after.',
+  },
+  {
+    q: 'Can I export a sprite sheet for a game?',
+    a: 'Animated GIF is there today. For a game engine, Layers + sprite sheet already exports a sheet with its TexturePacker JSON.',
+  },
+  {
+    q: 'Is it free?',
+    a: 'Yes. Baipix is free and open source (MIT). It runs in your browser, with no account, and your drawings stay on your device.',
+  },
+];
+---
+
+<Base
+  title="Pixel art animation · Frames, onion skin and GIF export | Baipix"
+  description="Animate pixel art in your browser, for free: a timeline of frames, a duration for each one, onion skin to see the frames around, playback, and animated GIF export."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main class="guide" data-tone="animation">
+    <GuideHero
+      eyebrow="Pixel art animation"
+      title="Pixel art animation"
+      open={slimeUrl}
+      more={{ href: '#timeline', text: 'The tools' }}
+    >
+      Baipix has a timeline under the canvas: frames you add, reorder and time one by one, onion skin to see
+      the frames around, and playback as you draw. Then export it as an animated GIF.
+    </GuideHero>
+
+    <section class="showcase container" aria-label="A slime jumping, frame by frame">
+      <figure class="frame showcase-art">
+        <Flipbook frames={frames} label="A green slime squashes, jumps and lands" />
+        <figcaption class="muted">
+          A slime drawn and animated in Baipix: 14 frames, {total} ms in all. The squash before the jump and
+          the hang at the top hold longest. Open the editor to play it and change it.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="timeline" class="cards container">
+      <SectionHead label="The tools" />
+      <h2>Frames, under the canvas.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>The timeline</h3>
+          <p class="muted">
+            Animate, or Shift+A, opens it under the canvas: one row per layer, one column per frame. Click a
+            cell to draw there.
+          </p>
+        </article>
+        <article class="card">
+          <h3>New frames from the last</h3>
+          <p class="muted">
+            Alt+N adds a frame that copies the one you're on, so you only redraw what moves; Alt+B an empty
+            one that keeps the scenery. Drag frames to reorder them, Shift-click to pick several.
+          </p>
+        </article>
+        <article class="card">
+          <h3>A duration per frame</h3>
+          <p class="muted">
+            Each frame shows for as long as you set, from 10 ms to 10 s. Hold the key poses, flash the fast
+            ones.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Play as you draw</h3>
+          <p class="muted">
+            Enter or a tap on Space plays and pauses, comma and period step through the frames. The preview
+            panel plays along, at its own size.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="onion" class="cards container">
+      <SectionHead label="Onion skin" />
+      <h2>See where it comes from.</h2>
+      <div class="onion-block">
+        <figure class="frame onion-figure" data-onion data-start={ONION_START}>
+          <div
+            class="onion-art"
+            role="img"
+            aria-label="The slime on one frame of its jump, with the frames around it tinted under it"
+          >
+            {onionFramesSvg.map((f, i) => (
+              <>
+                <div class="pix" data-ghost="before" data-of={i} hidden set:html={f.before} />
+                <div class="pix" data-ghost="after" data-of={i} hidden set:html={f.after} />
+                <div class="pix" data-shown={i} hidden={i !== ONION_START} set:html={f.shown} />
+              </>
+            ))}
+          </div>
+          <div class="onion-controls">
+            <div class="onion-step">
+              <button type="button" class="btn onion-btn" data-step="-1" aria-label="Previous frame">
+                ‹
+              </button>
+              <output class="onion-label" data-label aria-live="polite">
+                Frame {ONION_START + 1} of {frames.length}
+              </output>
+              <button type="button" class="btn onion-btn" data-step="1" aria-label="Next frame">
+                ›
+              </button>
+            </div>
+            <label class="onion-field">
+              <span class="onion-swatch" data-side="before"></span>Before
+              <input type="number" min="0" max="5" value="1" data-count="before" />
+            </label>
+            <label class="onion-field">
+              <span class="onion-swatch" data-side="after"></span>After
+              <input type="number" min="0" max="5" value="1" data-count="after" />
+            </label>
+            <label class="onion-field onion-opacity">
+              Opacity
+              <input type="range" min="0" max="100" value="40" data-opacity />
+            </label>
+          </div>
+        </figure>
+        <div class="onion-text">
+          <p class="muted">
+            The onion skin shows the frames around the one you draw, faded under it: red for the ones before,
+            blue for the ones after. Up to five on each side, fainter the further they are, with the opacity
+            you pick.
+          </p>
+          <p class="muted">
+            Step through the slime's jump here: the red shows where it's coming from, the blue where it's
+            going. On the squash, the blue already rises; at the top, red and blue almost meet, so the hang
+            reads.
+          </p>
+          <p class="muted">
+            Turn it on from the timeline. It never ends up in an export, it's only there to draw by.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="gif" class="cards container">
+      <SectionHead label="Export" />
+      <h2>An animated GIF, ready to share.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Every frame, its timing</h3>
+          <p class="muted">
+            The GIF keeps each frame's duration, loops forever, and keeps the drawing's exact colors.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Sharp at any size</h3>
+          <p class="muted">
+            Pixel size from 1× to 32×, with the pixel gap if you use one. No blur, the pixels stay square.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Transparent or not</h3>
+          <p class="muted">With the board's background, or without it, for a sprite on any page.</p>
+        </article>
+        <article class="card">
+          <h3>Every board at once</h3>
+          <p class="muted">All boards exports one GIF per board, in a .zip: each animation of a character.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="how" class="steps container">
+      <SectionHead label="How to start" />
+      <h2>From one pose to a loop.</h2>
+      <ol class="step-list">
+        <li>
+          <span class="step-n">1</span>
+          <div>
+            <h3>Draw the first pose</h3>
+            <p class="muted">
+              The background on its own layer, the character on others. Only the layers that move change from
+              frame to frame.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div>
+            <h3>Add the key frames</h3>
+            <p class="muted">
+              Alt+N copies the frame, then move or redraw what changes. Turn on the onion skin to keep the
+              motion even.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div>
+            <h3>Time it and export</h3>
+            <p class="muted">
+              Press Enter to watch it loop, adjust the durations until it feels right, then export a GIF.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="tips" class="cards container">
+      <SectionHead label="Tips" />
+      <h2>Lively pixel art animation.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Squash and stretch</h3>
+          <p class="muted">
+            Flatten before a jump, stretch on the way up and down. The slime keeps the same amount of green.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Few frames, good timing</h3>
+          <p class="muted">
+            Four well-timed frames read better than twelve even ones. Change durations before adding frames.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Anticipate</h3>
+          <p class="muted">
+            A small move the other way before the big one: down before up, back before a throw.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Loop cleanly</h3>
+          <p class="muted">
+            The last frame should lead back into the first. Watch the loop a few times with Enter.
+          </p>
+        </article>
+      </div>
+      <p class="muted guide-more">
+        Every frame command is in the <a href={`${base}docs/animation/animation/`}>animation docs</a>. To
+        bring a frame into a design, see
+        <a href={`${base}pixel-art-to-svg/`}>Pixel art to SVG</a>.
+      </p>
+    </section>
+
+    <Faq items={faq} />
+
+    <Cta />
+  </main>
+
+  <Footer />
+</Base>
+
+<script>
+  // The onion skin as the editor works it out (onionFrames): `before` and `after` frames on each side,
+  // no wrapping around, the nearest the most opaque, all under the frame shown.
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-onion]')) {
+    const shown = [...demo.querySelectorAll<HTMLElement>('[data-shown]')];
+    const ghosts = [...demo.querySelectorAll<HTMLElement>('[data-ghost]')];
+    const label = demo.querySelector<HTMLOutputElement>('[data-label]')!;
+    const count = (side: string) => demo.querySelector<HTMLInputElement>(`[data-count="${side}"]`)!;
+    const opacity = demo.querySelector<HTMLInputElement>('[data-opacity]')!;
+    const n = shown.length;
+    let frame = Number(demo.dataset.start ?? 0);
+    const draw = () => {
+      const o = Number(opacity.value) / 100;
+      shown.forEach((el, i) => (el.hidden = i !== frame));
+      for (const el of ghosts) {
+        const side = el.dataset.ghost!;
+        const of = Number(el.dataset.of);
+        const k = Math.min(5, Math.max(0, Number(count(side).value) || 0));
+        const d = side === 'before' ? frame - of : of - frame;
+        el.hidden = d < 1 || d > k;
+        if (el.hidden) continue;
+        el.style.opacity = String((o * (k - d + 1)) / k);
+        // The farthest at the bottom, the frame shown on top.
+        el.style.zIndex = String(10 - d);
+      }
+      shown[frame].style.zIndex = '20';
+      label.textContent = `Frame ${frame + 1} of ${n}`;
+    };
+    for (const button of demo.querySelectorAll<HTMLButtonElement>('[data-step]'))
+      button.addEventListener('click', () => {
+        frame = Math.min(n - 1, Math.max(0, frame + Number(button.dataset.step)));
+        draw();
+      });
+    for (const input of demo.querySelectorAll('input')) input.addEventListener('input', draw);
+    draw();
+  }
+</script>
+
+<style>
+  .showcase {
+    margin-top: 64px;
+  }
+  .showcase-art {
+    gap: 20px;
+  }
+  .showcase-art :global(.flipbook) {
+    width: min(100%, 880px);
+  }
+  .showcase-art figcaption {
+    max-width: 640px;
+    text-align: center;
+    font-size: 14px;
+  }
+  .onion-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    margin-top: 40px;
+    align-items: center;
+  }
+  .onion-figure {
+    gap: 24px;
+  }
+  .onion-art {
+    display: grid;
+    width: min(100%, 320px);
+  }
+  .onion-art > .pix {
+    grid-area: 1 / 1;
+  }
+  .onion-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px 20px;
+    font-size: 14px;
+  }
+  .onion-step {
+    display: flex;
+    flex-basis: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .onion-btn {
+    width: 44px;
+    padding: 0;
+    font-size: 20px;
+  }
+  .onion-label {
+    min-width: 9ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .onion-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .onion-field input[type='number'] {
+    width: 52px;
+    height: 32px;
+    padding: 0 6px;
+    border: 2px solid var(--line-strong);
+    border-radius: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+  .onion-field input[type='range'] {
+    width: 96px;
+    accent-color: var(--accent);
+  }
+  .onion-swatch {
+    width: 10px;
+    height: 10px;
+  }
+  .onion-swatch[data-side='before'] {
+    background: rgb(255 59 48);
+  }
+  .onion-swatch[data-side='after'] {
+    background: rgb(47 128 255);
+  }
+  .onion-text {
+    display: grid;
+    gap: 16px;
+  }
+  .guide-more {
+    margin-top: 32px;
+  }
+  .guide-more a {
+    color: var(--text);
+    text-decoration: underline;
+  }
+  @media (max-width: 760px) {
+    .onion-block {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

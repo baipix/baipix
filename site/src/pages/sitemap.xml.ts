@@ -10,6 +10,7 @@ export const GET: APIRoute = ({ site }) => {
     `${base}pixel-art-to-svg/`,
     `${base}pixel-art-for-figma/`,
     `${base}isometric-pixel-art/`,
+    `${base}pixel-art-animation/`,
     `${base}docs/`,
     ...DOC_PAGES.map((p) => `${base}docs/${p.slug}/`),
     `${base}app/`,

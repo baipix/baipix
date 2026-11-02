@@ -1,6 +1,7 @@
 ---
 import ArrowIcon from '../components/ArrowIcon.astro';
 import Cta from '../components/Cta.astro';
+import Flipbook from '../components/Flipbook.astro';
 import Footer from '../components/Footer.astro';
 import Gallery from '../components/Gallery.astro';
 import Nav from '../components/Nav.astro';
@@ -10,6 +11,8 @@ import Screenshots from '../components/Screenshots.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import { APP_URL, REPO_URL } from '../links';
+import slimeUrl from '../art/slime.baipix?url';
+import { slimeFrames } from '../slime';
 
 const base = import.meta.env.BASE_URL;
 const ARROW = ['...#...', '....#..', '.....#.', '#######', '.....#.', '....#..', '...#...'];
@@ -117,6 +120,13 @@ const features = [
         <PixelGlow />
       </div>
       <div class="container hero-inner">
+        <a class="news" href={`${base}pixel-art-animation/`}>
+          <span class="news-tag">New</span>
+          <span>
+            Baipix animates now<span class="news-more">: frames, onion skin, GIF</span>
+          </span>
+          <ArrowIcon />
+        </a>
         <h1>
           Pixel art has never been this easy<span class="pixel-dot" aria-hidden="true"></span>
         </h1>
@@ -195,6 +205,28 @@ const features = [
             </span>
           </article>
         ))}
+      </div>
+    </section>
+
+    <section id="animation" class="animate container" data-tone="animation">
+      <SectionHead label="New: animation" />
+      <div class="animate-card">
+        <div class="animate-text">
+          <h2>Make it move.</h2>
+          <p class="muted">
+            A timeline under the canvas: add frames, give each its own duration, see the ones around with the
+            onion skin, play it as you draw. Then export an animated GIF.
+          </p>
+          <div class="animate-actions">
+            <a class="btn btn-dark" href={`${APP_URL}?open=${encodeURIComponent(slimeUrl)}`}>
+              Animate the slime <ArrowIcon />
+            </a>
+            <a class="btn" href={`${base}pixel-art-animation/`}>
+              How it works
+            </a>
+          </div>
+        </div>
+        <Flipbook frames={slimeFrames} label="A green slime squashes, jumps and lands, frame by frame" />
       </div>
     </section>
 
@@ -322,6 +354,71 @@ const features = [
     height: 14px;
     /* Same tint as the frame it escaped from. */
     background: var(--line-strong);
+  }
+
+  /* The news above the title: a violet pill, as the editor marks what's new or selected. */
+  .news {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    padding: 4px 14px 4px 4px;
+    background: light-dark(rgba(110, 86, 207, 0.12), rgba(158, 140, 252, 0.18));
+    color: light-dark(#5039ad, #c4b8ff);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .news:hover {
+    background: light-dark(rgba(110, 86, 207, 0.2), rgba(158, 140, 252, 0.26));
+  }
+  .news-tag {
+    padding: 3px 8px;
+    background: light-dark(#6e56cf, #7558db);
+    color: #fff;
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 480px) {
+    .news-more {
+      display: none;
+    }
+  }
+
+  /* ---- Animation ---- */
+  section.animate {
+    padding-top: 120px;
+  }
+  .animate-card {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 40px;
+    align-items: center;
+    margin-top: 40px;
+    padding: 40px;
+    background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
+  }
+  .animate-text {
+    display: grid;
+    gap: 16px;
+  }
+  .animate-text p {
+    font-size: 17px;
+  }
+  .animate-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  @media (max-width: 760px) {
+    .animate-card {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 24px;
+    }
   }
 
   /* ---- Sections ---- */
