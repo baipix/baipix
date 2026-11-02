@@ -7,6 +7,7 @@ import { alpha, opaque, pack, toCss, toHex } from '../../engine/color';
 import { BLEND_MODE_GROUPS } from '../../engine/composite';
 import type { GroupBlendMode } from '../../engine/groups';
 import { hasBackground, isBoard, isEmptyBoard, MAX_SIZE } from '../../engine/document';
+import { frameCount } from '../../engine/frames';
 import { exportableLayers } from '../../engine/export/layers';
 import { DEFAULT_LIGHT, LIGHT_HEIGHT } from '../../engine/light';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
@@ -701,6 +702,40 @@ function LayerSheetOptions() {
   );
 }
 
+/** Animation frames + sprite sheet: how many frames go on a row. */
+function FrameSheetOptions() {
+  const t = useT();
+  const editor = useEditor();
+  const doc = useEditorState((s) => s.doc);
+
+  useEditorState((s) => s.revision);
+
+  const boardCount = useEditorState((s) => s.boards.length);
+  const allBoards = uiStore.use((s) => s.exportAllBoards);
+
+  const boards = editor.fileBoards();
+
+  const count =
+    allBoards && boardCount > 1
+      ? Math.max(frameCount(doc), ...boards.map((board) => frameCount(board)))
+      : frameCount(doc);
+
+  if (count < 2) return null;
+
+  return (
+    <Row label={t('export.columns')}>
+      <NumberField
+        value={Math.min(uiStore.get().exportSheetColumns ?? count, count)}
+        min={1}
+        max={count}
+        ariaLabel={t('export.columns')}
+        scrubHint={t('common.dragToAdjust')}
+        onChange={(v) => uiStore.set({ exportSheetColumns: v >= count ? null : v })}
+      />
+    </Row>
+  );
+}
+
 /** The export's options and buttons, in the Export dialog (the top bar's Export button). */
 export function ExportOptions() {
   const t = useT();
@@ -738,7 +773,10 @@ export function ExportOptions() {
             }}
           />
           <span className="field-suffix">
-            .{format === 'tileset' || format === 'layers' || everyBoard ? 'zip' : format}
+            .
+            {format === 'tileset' || format === 'layers' || format === 'frames' || everyBoard
+              ? 'zip'
+              : format}
           </span>
         </label>
       </Row>
@@ -755,6 +793,7 @@ export function ExportOptions() {
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
             <option value="layers">{t('export.layers')}</option>
+            <option value="frames">{t('export.frames')}</option>
           </select>
         </label>
       </Row>
@@ -777,6 +816,8 @@ export function ExportOptions() {
       {format === 'aseprite' && <p className="hint">{t('export.asepriteHint')}</p>}
       {format === 'layers' && <LayerSheetOptions />}
       {format === 'layers' && <p className="hint">{t('export.layersHint')}</p>}
+      {format === 'frames' && <FrameSheetOptions />}
+      {format === 'frames' && <p className="hint">{t('export.framesHint')}</p>}
       {format === 'tileset' && <TilesetOptions />}
       {/* Tiles stay transparent: the background is the game's. */}
       {hasBackground(doc) &&
