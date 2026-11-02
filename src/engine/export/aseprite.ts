@@ -1,15 +1,16 @@
 import type { Color } from '../color';
 import type { BlendMode } from '../composite';
 import type { Layer, LayerGroup, PixelDoc } from '../document';
+import { celOf, DEFAULT_DURATION, frameCount } from '../frames';
 import { layerTree, type LayerNode } from '../groups';
 import { pixelBounds } from '../region';
 
 /**
- * The drawing as an `.aseprite` file, to keep working on it in Aseprite: one
- * frame, the layers with their names, visibility, lock, opacity and blend
- * modes, the groups, and the palette. Written by hand from Aseprite's file
- * spec (https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md):
- * little-endian, a 128-byte header, then a frame made of chunks.
+ * The drawing as an `.aseprite` file, to keep working on it in Aseprite: every
+ * frame with its duration, the layers with their names, visibility, lock,
+ * opacity and blend modes, the groups, and the palette. Written by hand from
+ * Aseprite's file spec (https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md):
+ * little-endian, a 128-byte header, then the frames, each made of chunks.
  */
 
 const BLEND: Record<BlendMode, number> = {
@@ -226,20 +227,15 @@ interface CroppedCel {
   pixels: Uint32Array;
 }
 
-/** Creates the smallest cel image for a drawable entry; groups have no pixel data. */
-function cropCel(entry: Entry, W: number, H: number): CroppedCel | undefined {
-  let sourcePixels: Uint32Array | undefined;
+/** An entry's pixels on frame `f`; groups have no pixel data. */
+function entryPixels(doc: PixelDoc, entry: Entry, f: number): Uint32Array | undefined {
+  if (entry.kind === 'background') return new Uint32Array(doc.width * doc.height).fill(entry.background);
+  if (entry.kind === 'layer') return celOf(doc, entry.layer, f).pixels;
+  return undefined;
+}
 
-  if (entry.kind === 'background') {
-    sourcePixels = new Uint32Array(W * H).fill(entry.background);
-  } else if (entry.kind === 'layer') {
-    sourcePixels = entry.layer.pixels;
-  } else {
-    sourcePixels = undefined;
-  }
-
-  if (!sourcePixels) return undefined;
-
+/** Creates the smallest cel image for an entry's pixels. */
+function cropCel(sourcePixels: Uint32Array, W: number, H: number): CroppedCel | undefined {
   const bounds = pixelBounds(sourcePixels, W, H);
   if (!bounds) return undefined;
 
@@ -255,8 +251,14 @@ function cropCel(entry: Entry, W: number, H: number): CroppedCel | undefined {
 }
 
 /** Adds one cel chunk; the caller awaits each entry to preserve chunk order. */
-async function addCelChunk(chunks: Writer[], entry: Entry, W: number, H: number): Promise<void> {
-  const cel = cropCel(entry, W, H);
+async function addCelChunk(
+  chunks: Writer[],
+  entry: Entry,
+  pixels: Uint32Array,
+  W: number,
+  H: number,
+): Promise<void> {
+  const cel = cropCel(pixels, W, H);
 
   if (!cel) return;
 
@@ -276,6 +278,22 @@ async function addCelChunk(chunks: Writer[], entry: Entry, W: number, H: number)
     writer.data(compressed);
   });
 }
+
+/** Adds a cel that shows the same pixels as the entry's cel on an earlier frame, as Aseprite links them. */
+function addLinkedCelChunk(chunks: Writer[], entry: Entry, frame: number): void {
+  addChunk(chunks, CEL_CHUNK, (writer) => {
+    writer.word(entry.index);
+    writer.short(0);
+    writer.short(0);
+    writer.byte(255);
+    writer.word(1); // linked cel
+    writer.short(0); // z-index
+    writer.zeros(5);
+    writer.word(frame);
+  });
+}
+
+const samePixels = (a: Uint32Array, b: Uint32Array) => a === b || a.every((c, i) => c === b[i]);
 
 /** Serializes the optional palette chunk, limited to the colors supplied by the caller. */
 function addPaletteChunk(chunks: Writer[], palette: Color[]): void {
@@ -297,41 +315,54 @@ function addPaletteChunk(chunks: Writer[], palette: Color[]): void {
   });
 }
 
-/** Builds a one-frame Aseprite file from the document and its export options. */
+/** Builds an Aseprite file with every frame of the document, from its export options. */
 export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promise<Uint8Array> {
   const { width: W, height: H } = doc;
   const entries = buildLayerEntries(doc, options.background);
-  const chunks: Writer[] = [];
-
-  // The palette.
   const palette = options.palette.slice(0, 256);
-  addPaletteChunk(chunks, palette);
+  const frames = new Writer();
+  const count = frameCount(doc);
+  // Where each entry's pixels were last written in full: the same pixels on a later frame link to it.
+  const written = new Map<Entry, { frame: number; pixels: Uint32Array }>();
 
-  // The layers.
-  for (const entry of entries) addLayerChunk(chunks, entry);
+  for (let f = 0; f < count; f++) {
+    const chunks: Writer[] = [];
 
-  // A cel per drawn layer, cropped to what's drawn.
-  for (const entry of entries) await addCelChunk(chunks, entry, W, H);
+    // The palette and the layers, once, on the first frame.
+    if (f === 0) {
+      addPaletteChunk(chunks, palette);
+      for (const entry of entries) addLayerChunk(chunks, entry);
+    }
 
-  // The frame: its header, then the chunks.
-  const frame = new Writer();
-  const frameSize = 16 + chunks.reduce((n, c) => n + c.length, 0);
+    // A cel per drawn layer, cropped to what's drawn, or linked when it's as on an earlier frame.
+    for (const entry of entries) {
+      const pixels = entryPixels(doc, entry, f);
+      if (!pixels) continue;
+      const last = written.get(entry);
+      if (last && samePixels(last.pixels, pixels)) {
+        if (pixelBounds(pixels, W, H)) addLinkedCelChunk(chunks, entry, last.frame);
+        continue;
+      }
+      written.set(entry, { frame: f, pixels });
+      await addCelChunk(chunks, entry, pixels, W, H);
+    }
 
-  frame.dword(frameSize);
-  frame.word(0xf1fa);
-  frame.word(Math.min(chunks.length, 0xffff));
-  frame.word(100); // duration, ms
-  frame.zeros(2);
-  frame.dword(chunks.length);
-
-  for (const c of chunks) frame.data(c.done());
+    // The frame: its header, then the chunks.
+    frames.dword(16 + chunks.reduce((n, c) => n + c.length, 0));
+    frames.word(0xf1fa);
+    frames.word(Math.min(chunks.length, 0xffff));
+    frames.word(doc.frames?.[f].duration ?? DEFAULT_DURATION); // ms
+    frames.zeros(2);
+    frames.dword(chunks.length);
+    for (const c of chunks) frames.data(c.done());
+  }
 
   // The header.
   const file = new Writer();
 
-  file.dword(128 + frameSize);
+  file.dword(128 + frames.length);
   file.word(0xa5e0);
-  file.word(1); // frames
+  file.word(count); // frames
   file.word(W);
   file.word(H);
   file.word(32); // RGBA
@@ -349,7 +380,7 @@ export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promi
   file.word(16); // grid width
   file.word(16); // grid height
   file.zeros(84);
-  file.data(frame.done());
+  file.data(frames.done());
 
   return file.done();
 }

@@ -581,7 +581,7 @@ export const uk: Record<MessageKey, string> = {
 
   'export.button': 'Експортувати',
   'export.format': 'Формат',
-  'export.asepriteHint': 'Наразі шари, групи, режими змішування й палітра зберігаються в одному кадрі.',
+  'export.asepriteHint': 'Шари, групи, режими змішування, палітра й кожен кадр із його тривалістю.',
   'export.allBoards': 'Усі артборди ({count}) у ZIP-файлі',
   'export.layers': 'Шари та спрайт-лист (ZIP)',
   'export.columns': 'Стовпці',

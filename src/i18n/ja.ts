@@ -578,7 +578,7 @@ export const ja: Record<MessageKey, string> = {
   'export.button': '書き出し',
   'export.format': '形式',
   'export.asepriteHint':
-    'レイヤー、グループ、合成モード、パレットを書き出します。今のところ1フレームのみです。',
+    'レイヤー、グループ、合成モード、パレット、そして各フレームとその表示時間を書き出します。',
   'export.allBoards': 'ボード{count}個すべてを.zipで',
   'export.layers': 'レイヤー＋スプライトシート（ZIP）',
   'export.columns': '列数',
