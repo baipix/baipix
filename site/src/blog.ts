@@ -9,6 +9,11 @@ import { flatten } from '../../src/engine/composite';
 import { renderGeometry, toSvg } from '../../src/engine/export/svg';
 import { fileFromJson } from '../../src/storage/fileFormat';
 
+/** Who writes: their pixel avatar (in site/public) and their GitHub profile. */
+export const AUTHORS: Record<string, { avatar: string; url: string }> = {
+  'Todo-bai': { avatar: 'blog/todo-bai.svg', url: 'https://github.com/Todo-bai' },
+};
+
 export const CATEGORIES = {
   news: { label: 'News', tone: 'start' },
   tutorial: { label: 'Tutorials', tone: 'shapes' },
