@@ -1,20 +1,11 @@
 import { flatten } from '../composite';
 import type { Layer, PixelDoc } from '../document';
 import { isShown } from '../groups';
+import { spriteSheetGrid } from './spriteSheet';
 
 /** Layers eligible for export, in the document's bottom-to-top order. */
 export function exportableLayers(doc: PixelDoc): Layer[] {
   return doc.layers.filter((layer) => isShown(doc, layer));
-}
-
-/**
- * The sheet's grid for `count` layers, `columns` to a row (all on one row when null, never more
- * columns than layers), and its size in document pixels.
- */
-export function layerSheetGrid(count: number, columns: number | null, width: number, height: number) {
-  const cols = Math.max(1, Math.min(columns ?? count, count));
-  const rows = Math.max(1, Math.ceil(count / cols));
-  return { columns: cols, rows, width: width * cols, height: height * rows };
 }
 
 /**
@@ -33,7 +24,7 @@ export function composeLayerSpriteSheet(
   if (layers.some((pixels) => pixels.length !== layerSize))
     throw new RangeError('Layer pixel buffer does not match document dimensions');
 
-  const grid = layerSheetGrid(layers.length, columns, width, height);
+  const grid = spriteSheetGrid(layers.length, columns, width, height);
   const sheet = new Uint32Array(grid.width * grid.height);
 
   layers.forEach((pixels, index) => {
@@ -59,7 +50,7 @@ export function layerSpriteSheet(
     doc.height,
     columns,
   );
-  const { width, height } = layerSheetGrid(layers.length, columns, doc.width, doc.height);
+  const { width, height } = spriteSheetGrid(layers.length, columns, doc.width, doc.height);
 
   return { layers, pixels, width, height };
 }

@@ -2,12 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { pack } from '../src/engine/color';
 import { createDocument, createLayer } from '../src/engine/document';
-import {
-  exportableLayers,
-  layerSheetGrid,
-  layerSpriteSheet,
-  spriteSheetJson,
-} from '../src/engine/export/layers';
+import { exportableLayers, layerSpriteSheet, spriteSheetJson } from '../src/engine/export/layers';
+import { spriteSheetGrid } from '../src/engine/export/spriteSheet';
 
 function documentWithLayers(...names: string[]) {
   const doc = createDocument('Test', 4, 4);
@@ -103,9 +99,9 @@ describe('exportableLayers', () => {
   });
 
   it('never makes more columns than layers', () => {
-    expect(layerSheetGrid(3, 10, 4, 4)).toEqual({ columns: 3, rows: 1, width: 12, height: 4 });
-    expect(layerSheetGrid(5, null, 4, 4)).toEqual({ columns: 5, rows: 1, width: 20, height: 4 });
-    expect(layerSheetGrid(5, 1, 4, 4)).toEqual({ columns: 1, rows: 5, width: 4, height: 20 });
+    expect(spriteSheetGrid(3, 10, 4, 4)).toEqual({ columns: 3, rows: 1, width: 12, height: 4 });
+    expect(spriteSheetGrid(5, null, 4, 4)).toEqual({ columns: 5, rows: 1, width: 20, height: 4 });
+    expect(spriteSheetGrid(5, 1, 4, 4)).toEqual({ columns: 1, rows: 5, width: 4, height: 20 });
   });
 
   it('keeps visible layers that contain no pixels', () => {

@@ -4,8 +4,9 @@ import { flatten } from '../../engine/composite';
 import { hasBackground } from '../../engine/document';
 import { frameCount } from '../../engine/frames';
 import { MAX_EXPORT_SIZE, renderGeometry } from '../../engine/export/svg';
-import { frameSheetGrid, frameSpriteSheet } from '../../engine/export/frames';
-import { exportableLayers, layerSheetGrid, layerSpriteSheet } from '../../engine/export/layers';
+import { frameSpriteSheet } from '../../engine/export/frames';
+import { exportableLayers, layerSpriteSheet } from '../../engine/export/layers';
+import { spriteSheetGrid } from '../../engine/export/spriteSheet';
 import { useT } from '../../i18n';
 import { pixelsToCanvas } from '../../io/png';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -42,7 +43,7 @@ export function ExportPreview() {
     const layers = exportableLayers(doc);
     if (!layers.length) return { status: 'empty' as const };
 
-    const { width, height } = layerSheetGrid(layers.length, columns, doc.width, doc.height);
+    const { width, height } = spriteSheetGrid(layers.length, columns, doc.width, doc.height);
     const geometry = renderGeometry(width, height, doc.render.pixelSize, doc.render.gap);
 
     if (geometry.width > MAX_EXPORT_SIZE || geometry.height > MAX_EXPORT_SIZE) {
@@ -58,7 +59,7 @@ export function ExportPreview() {
     void revision;
     if (format !== 'frames') return null;
 
-    const grid = frameSheetGrid(frameCount(doc), columns, doc.width, doc.height);
+    const grid = spriteSheetGrid(frameCount(doc), columns, doc.width, doc.height);
     const geometry = renderGeometry(grid.width, grid.height, doc.render.pixelSize, doc.render.gap);
 
     if (geometry.width > MAX_EXPORT_SIZE || geometry.height > MAX_EXPORT_SIZE) {

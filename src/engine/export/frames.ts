@@ -1,6 +1,7 @@
 import { flattenFrame } from '../composite';
 import type { Layer, PixelDoc } from '../document';
 import { celOf, DEFAULT_DURATION, frameCount } from '../frames';
+import { spriteSheetGrid } from './spriteSheet';
 
 interface Size {
   width: number;
@@ -24,34 +25,6 @@ export interface FrameSpriteSheet {
 }
 
 /**
- * The sheet's grid for `count` frames, `columns` to a row.
- * When columns is null, all frames go on one row.
- */
-export function frameSheetGrid(count: number, columns: number | null, width: number, height: number) {
-  if (!Number.isInteger(count) || count < 1) {
-    throw new RangeError('A sprite sheet must contain at least one frame.');
-  }
-
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) {
-    throw new RangeError('Frame dimensions must be positive integers.');
-  }
-
-  if (columns !== null && (!Number.isInteger(columns) || columns < 1)) {
-    throw new RangeError('Columns must be a positive integer.');
-  }
-
-  const cols = Math.min(columns ?? count, count);
-  const rows = Math.ceil(count / cols);
-
-  return {
-    columns: cols,
-    rows,
-    width: width * cols,
-    height: height * rows,
-  };
-}
-
-/**
  * Places frame pixel buffers on a grid, left to right and top to bottom.
  * Cells left after the last frame remain transparent.
  */
@@ -61,7 +34,7 @@ export function composeFrameSpriteSheet(
   height: number,
   columns: number | null = null,
 ) {
-  const grid = frameSheetGrid(frames.length, columns, width, height);
+  const grid = spriteSheetGrid(frames.length, columns, width, height);
   const frameSize = width * height;
 
   if (frames.some((pixels) => pixels.length !== frameSize)) {
