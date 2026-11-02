@@ -11,6 +11,7 @@ import { exportableLayers } from '../../engine/export/layers';
 import { DEFAULT_LIGHT, LIGHT_HEIGHT } from '../../engine/light';
 import { PALETTE_PRESETS, presetColors, sortByLightness } from '../../engine/palette';
 import { uniqueColors } from '../../engine/region';
+import { ANIMATION } from '../features';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -749,6 +750,7 @@ export function ExportOptions() {
             aria-label={t('export.format')}
           >
             <option value="png">PNG</option>
+            {ANIMATION && <option value="gif">GIF</option>}
             <option value="svg">SVG</option>
             <option value="aseprite">Aseprite</option>
             <option value="tileset">{t('export.tileset')}</option>
