@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import SectionHead from '../components/SectionHead.astro';
 import SectionTabs from '../components/SectionTabs.astro';
 import Nav from '../components/Nav.astro';
+import PixelGlow from '../components/PixelGlow.astro';
 import PixelIcon from '../components/PixelIcon.astro';
 import PixelPlay from '../components/PixelPlay.astro';
 import Base from '../layouts/Base.astro';
@@ -62,7 +63,10 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
 
   <main>
     <section class="hero">
-      <div class="container">
+      <div class="hero-glow" aria-hidden="true">
+        <PixelGlow />
+      </div>
+      <div class="container hero-inner">
         <p class="eyebrow">Draw</p>
         <h1>
           Sprites, icons, tiles and whole scenes<span class="pixel-dot" aria-hidden="true"></span>
@@ -81,13 +85,13 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
           </a>
         </div>
       </div>
-      <figure class="hero-art">
-        <PixelPlay
-          animation={anim.hero}
-          label="A pixel art city by the water at dusk, its last pixels landing one by one."
-        />
-      </figure>
     </section>
+    <figure class="hero-art container">
+      <PixelPlay
+        animation={anim.hero}
+        label="A pixel art city by the water at dusk, its last pixels landing one by one."
+      />
+    </figure>
 
     <SectionTabs items={SECTIONS} label="Sections of the page" />
 
@@ -1467,8 +1471,20 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
   }
 
   /* ---- Hero ---- */
+  /* As on the guides: the files screen's lit grid behind the title. */
   .hero {
-    padding-top: 72px;
+    position: relative;
+    /* Room under the buttons for their side, which the hero would otherwise clip. */
+    padding: 72px 0 16px;
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
   }
   /* The same pixel typeface as the section labels. */
   .eyebrow {
@@ -1505,18 +1521,11 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
     gap: 12px;
     margin-top: 32px;
   }
-  /*
-   * Edge to edge. The picture is 2.5 times wider than tall, so on very wide screens it would get
-   * very tall: past 560 px it's cropped top and bottom instead, more from the water than the sky.
-   */
+  /* In the page's column, like the guides' pictures, not edge to edge. */
   .hero-art {
-    margin: 56px 0 0;
+    margin-top: 40px;
+    margin-bottom: 0;
     background: #1f1b5c;
-  }
-  .hero-art :global(.pixel-play) {
-    height: min(40vw, 560px);
-    object-fit: cover;
-    object-position: 50% 35%;
   }
 
   /* A link to a section lands its head line just under the section bar, not its top padding. */
