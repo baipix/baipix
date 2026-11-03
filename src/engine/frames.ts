@@ -81,6 +81,29 @@ export function normalizeFrames(doc: PixelDoc): void {
 }
 
 /**
+ * A layer taken off the board when its frames were `ids` (frame `shown` showing), fitted to the
+ * board's frames as they are now: each frame still there gets its own pixels back, wherever it
+ * moved, a frame added since gets none, and a frame deleted since takes its pixels with it.
+ */
+export function refitCels(doc: PixelDoc, layer: Layer, ids: string[], shown: number): Layer {
+  const own: Cel = { pixels: layer.pixels, ...(layer.outside && { outside: layer.outside }) };
+  const cels = new Map(ids.map((id, f) => [id, f === shown ? own : layer.cels?.[f]]));
+  const active = activeFrame(doc);
+  const fitted = (doc.frames ?? []).map(
+    (frame): Cel => cels.get(frame.id) ?? { pixels: new Uint32Array(doc.width * doc.height) },
+  );
+  const { pixels, outside } = fitted[active];
+  const refitted: Layer = {
+    ...layer,
+    pixels: pixels.slice(),
+    cels: fitted.map((c, f) => (f === active ? null : c)),
+  };
+  if (outside) refitted.outside = outside;
+  else delete refitted.outside;
+  return refitted;
+}
+
+/**
  * Shows frame `f`: each layer puts its pixels away in its cels and takes the frame's. The frame's
  * pixels are copied in, so what's drawn on them never changes a cel shared with the undo history.
  */
