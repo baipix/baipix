@@ -110,7 +110,7 @@ export const uiStore = createStore<UiState>({
   panelWidths: { left: PANEL_LIMITS.left.default, right: PANEL_LIMITS.right.default },
   layersFolded: false,
   timeline: false,
-  onion: { on: false, before: 1, after: 1, opacity: 0.4 },
+  onion: { on: false, before: 1, after: 1, opacity: 0.4, loop: false },
   homeSort: 'modified',
   homeOrder: 'desc',
   homeView: 'grid',

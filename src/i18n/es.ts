@@ -580,6 +580,7 @@ export const es: Record<MessageKey, string> = {
   'timeline.onionBefore': 'Antes',
   'timeline.onionAfter': 'Después',
   'timeline.onionOpacity': 'Opacidad del papel cebolla',
+  'timeline.onionLoop': 'Bucle: antes del primer fotograma, los últimos',
   'display.isoCell': 'Celda',
   'display.isoVertical': 'Líneas verticales',
 
