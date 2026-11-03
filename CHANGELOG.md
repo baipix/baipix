@@ -29,7 +29,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
-- The files screen (drawings and trash) fills wide windows again: the toolbar and the grid no longer stop at 1600px with an empty band on the right, and the grid fits more columns past that size. ([#697](https://github.com/baipix/baipix/issues/697))
+- The files screen (drawings and trash) fills wide windows: the toolbar and the grid no longer stop at 1600px with an empty band on the right, and the grid fits more columns past that size. ([#699](https://github.com/baipix/baipix/pull/699))
 - The Layers + sprite sheet export remembers its columns after a reload. ([#602](https://github.com/baipix/baipix/pull/602))
 - The Tileset export remembers its tile size and Leave out empty and repeated tiles after a reload. ([#600](https://github.com/baipix/baipix/pull/600))
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))
@@ -47,6 +47,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@bfs2021](https://github.com/bfs2021) for letting the files screen fill wide windows. ([#699](https://github.com/baipix/baipix/pull/699))
 - [@mykola-lp](https://github.com/mykola-lp) for the frames sprite sheet export, with its JSON for game engines. ([#674](https://github.com/baipix/baipix/pull/674))
 - [@mykola-lp](https://github.com/mykola-lp) for the GIF export, which takes animations out of Baipix. ([#644](https://github.com/baipix/baipix/pull/644))
 - [@mrCabez](https://github.com/mrCabez) for the Italian translation, the editor's sixth language. ([#630](https://github.com/baipix/baipix/pull/630))
