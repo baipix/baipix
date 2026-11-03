@@ -4477,7 +4477,7 @@ export class Editor {
         mastersMoved.add(layer.id);
       }
     }
-    for (const id of new Set([...instancesOf, ...mastersMoved])) syncInstances(this.doc, id);
+    for (const id of new Set([...instancesOf, ...mastersMoved])) syncInstances(this.doc, id, true);
     this.pixelsChanged();
   }
 
