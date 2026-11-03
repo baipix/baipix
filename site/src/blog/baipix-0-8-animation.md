@@ -176,6 +176,7 @@ Several people worked on this release. Thank you.
 - [@mrCabez](https://github.com/mrCabez) translated Baipix into Italian.
 - [@rogervokma-stack](https://github.com/rogervokma-stack) translated it into Japanese, and checked it as a native speaker.
 - [@jalal-sadat](https://github.com/jalal-sadat) fixed some React warnings, his first contribution.
+- [@bfs2021](https://github.com/bfs2021) made the files screen fill wide windows.
 
 ## Try it
 
