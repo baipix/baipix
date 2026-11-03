@@ -127,7 +127,6 @@ function Bubble({ index }: { index: number }) {
   }, []);
 
   // Above what's low on the screen, to the left of the right panel, else below.
-
   useLayoutEffect(() => {
     const b = bubble.current;
     if (
