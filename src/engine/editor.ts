@@ -73,6 +73,7 @@ import {
   setCels,
   setDuration,
   showFrame,
+  type Cel,
 } from './frames';
 import {
   clipSelection,
@@ -627,7 +628,8 @@ export class Editor {
     }[];
   } | null = null;
   private adjusting: {
-    layers: { id: string; base: Uint32Array }[];
+    /** With every frame adjusted, `cels` are the layer's other frames as they were. */
+    layers: { id: string; base: Uint32Array; cels?: (Cel | null)[] }[];
     rect: Rect;
     /** The file's background before the adjustment (a remap may change it too). */
     background: Color;
@@ -3677,8 +3679,13 @@ export class Editor {
   /**
    * Starts adjusting colors of the active layer (or all layers), limited to the selection if any.
    * Previews are live and not in the history; `applyAdjust` makes one undo step.
+   *
+   * With `allFrames`, every frame of the animation is adjusted, not only the shown one, the
+   * selection's area on each of them (a selection is the board's, the same on every frame). The
+   * preview shows the shown frame only, so a slider stays quick on a long animation: the other
+   * frames change when it's applied, in the same undo step.
    */
-  beginAdjust(allLayers: boolean): void {
+  beginAdjust(allLayers: boolean, allFrames = false): void {
     this.cancelStroke();
     this.cancelAdjust();
     const doc = this.doc;
@@ -3689,7 +3696,11 @@ export class Editor {
       return;
     }
     this.adjusting = {
-      layers: layers.map((l) => ({ id: l.id, base: l.pixels.slice() })),
+      layers: layers.map((l) => ({
+        id: l.id,
+        base: l.pixels.slice(),
+        ...(allFrames && frameCount(doc) > 1 && l.cels && { cels: l.cels.slice() }),
+      })),
       rect: clipRect(this.targetRect(), doc.width, doc.height),
       background: doc.background,
     };
@@ -3697,29 +3708,45 @@ export class Editor {
 
   /**
    * Rewrites the adjusted layers from their original pixels, through `change` (none: as they were),
-   * and sets the background (by default, the one from before).
+   * and sets the background (by default, the one from before). With `everyFrame`, the other frames
+   * too, when every frame is adjusted.
    */
-  private writeAdjustment(change: PixelChange | null, background = this.adjusting!.background): void {
+  private writeAdjustment(
+    change: PixelChange | null,
+    background = this.adjusting!.background,
+    everyFrame = false,
+  ): void {
     const { layers, rect } = this.adjusting!;
     const width = this.doc.width;
     this.doc.background = background;
     const sel = this.active.selection;
-    for (const { id, base } of layers) {
-      const layer = this.doc.layers.find((l) => l.id === id);
-      if (!layer) continue;
-      const out = change ? change(base, width, rect) : base;
+    const changed = (base: Uint32Array) => {
+      const out = change!(base, width, rect);
       // A selection of any shape: what's in its rectangle but not selected stays as it was.
-      if (change && sel?.mask)
+      if (sel?.mask)
         for (let y = rect.y; y < rect.y + rect.h; y++)
           for (let x = rect.x; x < rect.x + rect.w; x++)
             if (!inSelection(sel, x, y)) out[y * width + x] = base[y * width + x];
-      layer.pixels.set(out);
+      return out;
+    };
+    for (const { id, base, cels } of layers) {
+      const layer = this.doc.layers.find((l) => l.id === id);
+      if (!layer) continue;
+      layer.pixels.set(change ? changed(base) : base);
+      // Cels are never changed in place (the history shares them): new ones.
+      if (everyFrame && cels && layer.cels?.length === cels.length)
+        layer.cels = cels.map((c) => (c && change ? { ...c, pixels: changed(c.pixels) } : c));
     }
   }
 
+  /** An adjusted layer's original pixels on each frame being adjusted: the shown one, or every one. */
+  private adjustedPixels({ base, cels }: { base: Uint32Array; cels?: (Cel | null)[] }): Uint32Array[] {
+    return cels ? cels.map((c) => c?.pixels ?? base) : [base];
+  }
+
   /**
-   * The colors being adjusted (opaque, from the original pixels of the layers and area being
-   * adjusted) and how many pixels have each: what a remap starts from. With `background`, the
+   * The colors being adjusted (opaque, from the original pixels of the layers, frames and area
+   * being adjusted) and how many pixels have each: what a remap starts from. With `background`, the
    * background's color too, counted where none of these layers covers it.
    */
   adjustedColors(background = false): Map<Color, number> {
@@ -3728,18 +3755,23 @@ export class Editor {
     const { layers, rect } = this.adjusting;
     const width = this.doc.width;
     const add = (c: Color, n = 1) => used.set(opaque(c), (used.get(opaque(c)) ?? 0) + n);
-    for (const { base } of layers)
-      for (let y = rect.y; y < rect.y + rect.h; y++)
-        for (let x = rect.x; x < rect.x + rect.w; x++) {
-          const c = base[y * width + x];
-          if (alpha(c)) add(c);
-        }
+    // Each frame's pixels of every adjusted layer.
+    const frames = layers.map((l) => this.adjustedPixels(l));
+    const pixelsOn = frames.length ? frames[0].map((_, f) => frames.map((p) => p[f] ?? p[0])) : [];
+    for (const pixels of pixelsOn)
+      for (const base of pixels)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) {
+            const c = base[y * width + x];
+            if (alpha(c)) add(c);
+          }
     const bg = this.adjusting.background;
     if (background && alpha(bg)) {
       let bare = 0;
-      for (let y = rect.y; y < rect.y + rect.h; y++)
-        for (let x = rect.x; x < rect.x + rect.w; x++)
-          if (layers.every(({ base }) => !alpha(base[y * width + x]))) bare++;
+      for (const pixels of pixelsOn)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++)
+            if (pixels.every((base) => !alpha(base[y * width + x]))) bare++;
       add(bg, Math.max(1, bare));
     }
     return used;
@@ -3820,7 +3852,7 @@ export class Editor {
     // The colors of the drawing follow the pixels on their own: nothing to swap or set.
     const ownColors = palette && base.key !== 'drawing';
     if (ownColors) this.active.history.top()!.palette = this.savedPalette();
-    this.writeAdjustment(change, background);
+    this.writeAdjustment(change, background, true);
     this.adjusting = null;
     if (ownColors) this.usePalette(palette(base.colors));
     this.commit();

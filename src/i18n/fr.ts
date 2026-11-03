@@ -214,6 +214,7 @@ export const fr: Record<MessageKey, string> = {
   'adjust.brightness': 'Luminosité',
   'adjust.layer': 'Calque actif',
   'adjust.allLayers': 'Tous les calques',
+  'adjust.allFrames': 'Toutes les frames',
   'adjust.palette': 'Adapter la palette',
   'adjust.selectionOnly': 'Limité à la sélection.',
   'theme.system': 'Thème du système',

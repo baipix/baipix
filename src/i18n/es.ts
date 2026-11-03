@@ -214,6 +214,7 @@ export const es: Record<MessageKey, string> = {
   'adjust.brightness': 'Brillo',
   'adjust.layer': 'Capa activa',
   'adjust.allLayers': 'Todas las capas',
+  'adjust.allFrames': 'Todos los fotogramas',
   'adjust.palette': 'Adaptar la paleta',
   'adjust.selectionOnly': 'Solo se aplica a la selección.',
   'theme.system': 'Tema del sistema',

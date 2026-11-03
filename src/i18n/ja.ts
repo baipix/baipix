@@ -214,6 +214,7 @@ export const ja: Record<MessageKey, string> = {
   'adjust.brightness': '明るさ',
   'adjust.layer': '選択中のレイヤー',
   'adjust.allLayers': 'すべてのレイヤー',
+  'adjust.allFrames': 'すべてのフレーム',
   'adjust.palette': 'パレットも調整',
   'adjust.selectionOnly': '選択範囲内のみ。',
   'theme.system': 'システムのテーマ',
