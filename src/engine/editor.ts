@@ -1,6 +1,13 @@
 import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
 import { readLight, shadowOffset, type BoardLight } from './light';
-import { blendOver, flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
+import {
+  blendOver,
+  flatten,
+  flattenFrame,
+  mergeLayerInto,
+  type BlendMode,
+  type FlattenOptions,
+} from './composite';
 import {
   hasBackground,
   activeLayer,
@@ -433,6 +440,11 @@ export class Editor {
   private secondary: Color;
   /** The colors the drawing uses, for a palette in 'drawing' mode: worked out once per change. */
   private drawingColors: { doc: PixelDoc; revision: number; colors: Color[] } | null = null;
+  /**
+   * Each frame's colors as of the last saved change, so stepping through frames or playing them
+   * only works out the shown one again.
+   */
+  private frameColors: { doc: PixelDoc; revision: number; colors: Color[][] } | null = null;
   /** The palette's index for the shading tools, built once per set of colors. */
   private paletteCache: { colors: Color[]; index: PaletteIndex } | null = null;
 
@@ -467,11 +479,28 @@ export class Editor {
     }
   }
 
+  /** The colors of every frame, so they stay the same from one frame to the next. */
   private colorsOfDrawing(): Color[] {
     const c = this.drawingColors;
     if (c && c.doc === this.doc && c.revision === this.revision) return c.colors;
-    const colors = sortByLightness(uniqueColors(this.flatten({ includeBackground: false })));
-    this.drawingColors = { doc: this.doc, revision: this.revision, colors };
+    const doc = this.doc;
+    const found = new Set(uniqueColors(this.flatten({ includeBackground: false })));
+    const n = frameCount(doc);
+    if (n > 1) {
+      let f = this.frameColors;
+      if (!f || f.doc !== doc || f.revision !== this.contentRevision || f.colors.length !== n) {
+        const colors = Array.from({ length: n }, (_, i) =>
+          uniqueColors(flattenFrame(doc, i, { includeBackground: false })),
+        );
+        f = this.frameColors = { doc, revision: this.contentRevision, colors };
+      }
+      // The shown frame's own colors are the ones just found: a preview may be changing them.
+      f.colors.forEach((frame, i) => {
+        if (i !== activeFrame(doc)) for (const color of frame) if (found.size < 256) found.add(color);
+      });
+    }
+    const colors = sortByLightness([...found]);
+    this.drawingColors = { doc, revision: this.revision, colors };
     return colors;
   }
 

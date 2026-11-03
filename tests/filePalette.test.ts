@@ -27,6 +27,20 @@ describe('the palette belongs to the file', () => {
     expect(e.getState().palette.colors).toEqual([RED]);
   });
 
+  it('takes the colors of every frame, whichever one is shown', () => {
+    const e = new Editor();
+    e.setPalettePreset('drawing');
+    dot(e, 0, RED);
+    e.addFrame(true);
+    e.addFrame(true);
+    dot(e, 1, BLUE);
+    e.setFrame(0);
+    expect(new Set(e.getState().palette.colors)).toEqual(new Set([RED, BLUE]));
+    // Playing doesn't change them either.
+    e.setFrame(1, false);
+    expect(new Set(e.getState().palette.colors)).toEqual(new Set([RED, BLUE]));
+  });
+
   it('is each file’s own: switching files switches palettes', () => {
     const e = new Editor();
     e.setPalettePreset('pico8');
