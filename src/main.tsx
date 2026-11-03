@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { installAgentApi } from './agent/install';
 import { Editor } from './engine/editor';
 import { getLocale } from './i18n';
 import { IndexedDbStorage } from './storage/indexedDb';
@@ -28,6 +29,8 @@ initTheme();
 const editor = new Editor(editorLabels());
 // The eyedropper reads the reference image too, decoded here.
 editor.setReferenceSampler(referenceColorAt);
+// Agents draw through the same editor: window.baipix (see src/agent/api.ts).
+installAgentApi(editor);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

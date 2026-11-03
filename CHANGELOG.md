@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- An API for AI agents, on `window.baipix`: an agent driving the browser draws with the same tools as you, with plain colors and pixel coordinates, and can look at its drawing as text or as a PNG. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an agent at.
 - Animation: Animate, beside Export, opens a timeline under the canvas, with a row per layer and a column per frame. Add a frame (a copy of the one shown), delete or drag frames to reorder them, give each its own duration, and play them in a loop with Enter or a tap on Space; comma and period step through them. Animated files show a film badge on the files screen, and `.baipix` files keep their frames. ([#629](https://github.com/baipix/baipix/pull/629), [#664](https://github.com/baipix/baipix/pull/664))
 - Onion skin, from the timeline: the frames before in red and after in blue, faded under the one you draw, up to five on each side. A sky or a ground painted on its own layer stays under it. ([#638](https://github.com/baipix/baipix/pull/638), [#650](https://github.com/baipix/baipix/pull/650))
 - Export an animation as a GIF: every frame with its duration, looping, with its exact colors, transparent or on the background, at the pixel size picked; with All boards, one GIF per board in a .zip. ([#644](https://github.com/baipix/baipix/pull/644))
