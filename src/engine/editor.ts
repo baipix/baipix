@@ -3830,8 +3830,11 @@ export class Editor {
     background?: Color,
   ): void {
     if (!this.adjusting) return;
+    const before = this.doc.background;
     this.writeAdjustment(change, background);
     const a = this.adjusting;
+    // The background's swatch in the right panel follows the preview, not only the canvas.
+    if (this.doc.background !== before) this.select();
     if (palette) {
       a.basePalette ??= this.palette;
       this.palette = { ...a.basePalette, colors: palette(a.basePalette.colors) };

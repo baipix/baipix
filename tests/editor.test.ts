@@ -665,6 +665,19 @@ describe('Editor', () => {
     expect(layer(e)[0]).toBe(RED);
   });
 
+  it('tells the panels when a remap preview changes the background', () => {
+    const e = new Editor();
+    const BLUE = pack(0, 0, 255);
+    const GREEN = pack(0, 255, 0);
+    e.setBackground(BLUE);
+    e.beginAdjust(false);
+    let told = 0;
+    e.subscribe(() => told++);
+    e.previewMap((c) => (c === BLUE ? GREEN : c), null, true);
+    expect(told).toBeGreaterThan(0);
+    expect(e.getState().doc.background).toBe(GREEN);
+  });
+
   describe('adjusting an animation', () => {
     const BLUE = pack(0, 0, 255);
     const GREEN = pack(0, 255, 0);
