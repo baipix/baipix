@@ -165,3 +165,22 @@ describe('my palettes', () => {
     expect(back.palette?.colors).toEqual([RED, BLUE]);
   });
 });
+
+describe('a palette from the drawing', () => {
+  it('takes the colors of every frame, not only the one shown', () => {
+    const RED = pack(255, 0, 0);
+    const BLUE = pack(0, 0, 255);
+    const e = new Editor();
+    const dot = (color: number, x: number) => {
+      e.setColor('primary', color);
+      e.beginStroke({ x, y: 0 }, false, { shift: false });
+      e.endStroke();
+    };
+    dot(RED, 0);
+    e.addFrame();
+    dot(BLUE, 1);
+    e.setFrame(0);
+    e.paletteFromDrawing();
+    expect(e.getState().palette.colors).toEqual(expect.arrayContaining([RED, BLUE]));
+  });
+});

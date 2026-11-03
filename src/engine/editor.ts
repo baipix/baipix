@@ -3044,7 +3044,11 @@ export class Editor {
   }
 
   paletteFromDrawing(): void {
-    const colors = uniqueColors(this.flatten());
+    // Every frame's colors, not only the shown one's: the palette is the whole animation's.
+    const seen = new Set<Color>();
+    for (let f = 0; f < frameCount(this.doc) && seen.size < 256; f++)
+      for (const c of uniqueColors(flattenFrame(this.doc, f))) seen.add(c);
+    const colors = [...seen].slice(0, 256);
     if (!colors.length) {
       this.notice({ type: 'emptyDrawing' });
       return;
