@@ -61,7 +61,7 @@ export function Dialog({
     };
     el.addEventListener('cancel', onCancel);
     return () => el.removeEventListener('cancel', onCancel);
-  }, [onClose]);
+  }, [onClose, focusField]);
   // A click on the backdrop closes it, like Escape. Only a click that starts and ends there: a drag
   // from a field (selecting its text) that ends outside keeps it open. What the dialog holds (a menu
   // opened from it, a toast) is its child, never the dialog itself, so it never counts.
