@@ -28,7 +28,7 @@ Here's what's in this release.
 | [For game engines](#for-a-game-engine)   | A PNG sequence, or a sprite sheet with its JSON                       |
 | [Aseprite](#to-keep-going-in-aseprite)   | Every frame and its duration, in an .aseprite file                    |
 | [Light](#a-light-to-shade-by)            | A light for each board, and a shadow that follows it                  |
-| [Remap](#remap-takes-the-background-too) | The background goes to the new palette too                            |
+| [Colors](#colors-on-every-frame)         | Adjustments and Remap change every frame, the background too          |
 | [Languages](#italian-and-japanese)       | Italian and Japanese                                                  |
 
 ## A timeline under the canvas
@@ -78,6 +78,8 @@ With onion skin on, the frames before the one you're drawing show in red, and th
 </figure>
 
 You can show up to five frames on each side. A sky or a ground painted on its own layer stays under it all.
+
+For an animation that loops, the arrows next to the opacity turn on **Loop**. On the first frame, the last ones show before it in red, and on the last frame, the first ones show after it in blue.
 
 ## A GIF
 
@@ -138,13 +140,15 @@ You drag the lamp around the little sphere, or type its angle and height. The sp
 
 **Add a shadow that follows it** puts a drop shadow on the layer. It falls away from the light, and gets longer when the light is low. Move the light, and the shadow moves with it. It's all in the [shading docs](/docs/colors/shade-and-lighten/#the-light).
 
-## Remap takes the background too
+## Colors on every frame
+
+Colors, Remap and Outline change the whole animation now, in one undo. **All frames** is ticked by default, untick it to change only the frame you're on. Remap also takes the colors that only show on other frames.
 
 Remap swaps your drawing's colors for the ones of another palette. Until now it left the board's background alone, so a night scene could end up on a background from the old palette.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/remap-light.webp" width="1100" height="688" alt="The Remap tab of the Adjustments panel, with Also remap the background ticked." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/remap-dark.webp" width="1100" height="688" alt="The Remap tab of the Adjustments panel, with Also remap the background ticked." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/remap-light.webp" width="1100" height="688" alt="The slime with the Remap tab of the Adjustments panel open, All frames and Also remap the background ticked." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/remap-dark.webp" width="1100" height="688" alt="The slime with the Remap tab of the Adjustments panel open, All frames and Also remap the background ticked." loading="lazy" />
 </figure>
 
 Now the background goes to the new palette too, in the same undo. If you want to keep it as it is, untick **Also remap the background**.

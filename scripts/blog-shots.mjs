@@ -141,10 +141,10 @@ const SHOTS = [
       return JSON.stringify({ x, y: 76, right: ${WIDTH}, bottom: 760 });`,
     width: 1200,
   },
-  // Remap on a board with a background: the panel and its Also remap the background box.
+  // Remap on an animated board with a background: its All frames and Also remap the background boxes.
   {
     name: 'remap',
-    setup: `${load('/gallery/starry-night.baipix')} ${BG} ui.openAdjust('all', 'remap');`,
+    setup: `${SLIME} ${BG} ui.openAdjust('all', 'remap');`,
     frame: ['.adjust-panel'],
   },
   // The editor in Japanese.
