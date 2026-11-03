@@ -213,6 +213,7 @@ export const en = {
   'adjust.brightness': 'Brightness',
   'adjust.layer': 'Active layer',
   'adjust.allLayers': 'All layers',
+  'adjust.allFrames': 'All frames',
   'adjust.palette': 'Adjust the palette too',
   'adjust.selectionOnly': 'Limited to the selection.',
   'theme.system': 'System theme',

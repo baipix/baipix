@@ -214,6 +214,7 @@ export const uk: Record<MessageKey, string> = {
   'adjust.brightness': 'Яскравість',
   'adjust.layer': 'Активний шар',
   'adjust.allLayers': 'Усі шари',
+  'adjust.allFrames': 'Усі кадри',
   'adjust.palette': 'Також налаштувати палітру',
   'adjust.selectionOnly': 'Лише в межах виділення.',
   'theme.system': 'Системна тема',

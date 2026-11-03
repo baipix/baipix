@@ -11,6 +11,8 @@ description: 'Adjust pixel art colors in Baipix: hue, saturation and brightness,
 
 **Image › Adjustments** (<kbd>Ctrl</kbd>+<kbd>U</kbd>) opens a panel with three tabs. You see the result on the canvas as you go, then Apply or Cancel. With a selection, only the selection changes.
 
+On an animation, **All frames** (on by default) changes every frame at once, in one undo step; untick it to change only the frame you're on.
+
 ## Colors
 
 Hue, saturation and brightness, for the **active layer** or **all layers**. **Adjust the palette too** changes the palette's colors with them, so the drawing and its palette stay together.
