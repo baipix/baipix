@@ -1040,6 +1040,30 @@ describe('replaceColor', () => {
     expect(e.replaceColor(RED, pack(0, 0, 255))).toBe(0);
     expect(layer(e)[0]).toBe(RED);
   });
+
+  it('replaces it on every frame, as one undo step', () => {
+    const e = new Editor();
+    const BLUE = pack(0, 0, 255);
+    e.setColor('primary', RED);
+    drag(e, [[0, 0]]);
+    e.addFrame(true);
+    e.addFrame(true);
+    drag(e, [
+      [1, 0],
+      [2, 0],
+    ]);
+    e.setFrame(1);
+    expect(e.replaceColor(RED, BLUE)).toBe(3);
+    e.setFrame(0);
+    expect(layer(e)[0]).toBe(BLUE);
+    e.setFrame(2);
+    expect([layer(e)[1], layer(e)[2]]).toEqual([BLUE, BLUE]);
+    e.undo();
+    e.setFrame(2);
+    expect([layer(e)[1], layer(e)[2]]).toEqual([RED, RED]);
+    e.setFrame(0);
+    expect(layer(e)[0]).toBe(RED);
+  });
 });
 
 describe('Fresh files', () => {

@@ -51,6 +51,7 @@ import {
   activeFrame,
   addFrame,
   bakeEffectsOnEveryFrame,
+  celOf,
   deleteFrame,
   deleteFrames,
   eachFrame,
@@ -2943,30 +2944,36 @@ export class Editor {
   }
 
   /**
-   * Replaces a color with another in every unlocked layer (each pixel keeps its opacity), and in
-   * the palette: one undo step for both. Returns how many pixels changed.
+   * Replaces a color with another in every unlocked layer, on every frame (each pixel keeps its
+   * opacity), and in the palette: one undo step for all. Returns how many pixels changed.
    */
   replaceColor(from: Color, to: Color): number {
     const a = opaque(from);
     const b = opaque(to);
     if (a === b || !alpha(to)) return 0;
-    const layers = this.doc.layers.filter((l) => !l.locked);
-    const hits = layers.map((l) => l.pixels.some((c) => alpha(c) > 0 && opaque(c) === a));
+    const doc = this.doc;
+    const layers = doc.layers.filter((l) => !l.locked);
+    const has = (px: Uint32Array) => px.some((c) => alpha(c) > 0 && opaque(c) === a);
+    const hits = layers.map((l) =>
+      [...Array(frameCount(doc)).keys()].some((f) => has(celOf(doc, l, f).pixels)),
+    );
     const inPalette = this.palette.colors.includes(a);
     if (!hits.some(Boolean) && !inPalette) return 0;
     this.cancelStroke();
     this.checkpoint();
     this.active.history.top()!.palette = this.savedPalette();
     let count = 0;
-    layers.forEach((layer, k) => {
-      if (!hits[k]) return;
-      const px = layer.pixels;
-      for (let i = 0; i < px.length; i++)
-        if (alpha(px[i]) > 0 && opaque(px[i]) === a) {
-          px[i] = withAlpha(b, alpha(px[i]));
-          count++;
-        }
-    });
+    eachFrame(doc, () =>
+      layers.forEach((layer, k) => {
+        if (!hits[k]) return;
+        const px = layer.pixels;
+        for (let i = 0; i < px.length; i++)
+          if (alpha(px[i]) > 0 && opaque(px[i]) === a) {
+            px[i] = withAlpha(b, alpha(px[i]));
+            count++;
+          }
+      }),
+    );
     // The swatch takes the new color, unless the palette has it already (or is the drawing's).
     if (inPalette && this.palette.key !== 'drawing')
       this.usePalette(this.palette.colors.map((c) => (c === a ? b : c)));
