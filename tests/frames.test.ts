@@ -371,3 +371,64 @@ describe('onion skin', () => {
     expect(doc(e).activeFrame).toBe(0);
   });
 });
+
+describe('frames during a color adjustment', () => {
+  const HUE = { hue: 120, saturation: 100, brightness: 100 };
+
+  // Two frames, a red dot on the first and a blue one on the second, the second shown.
+  function walk() {
+    const e = editor();
+    dot(e, 1, 1);
+    e.addFrame(true);
+    e.setColor('primary', BLUE);
+    dot(e, 2, 2);
+    e.copyFrames([0]);
+    return e;
+  }
+
+  // Every frame's pixels, by showing each in turn.
+  function frames(e: Editor) {
+    const shown = doc(e).activeFrame ?? 0;
+    const all = Array.from({ length: doc(e).frames?.length ?? 1 }, (_, f) => {
+      e.setFrame(f, false);
+      return doc(e).layers.map((l) => [...l.pixels]);
+    });
+    e.setFrame(shown, false);
+    return all;
+  }
+
+  const changes: [string, (e: Editor) => void][] = [
+    ['deleting', (e) => e.deleteFrame(1)],
+    ['adding', (e) => e.addFrame()],
+    ['pasting', (e) => e.pasteFrames()],
+    ['moving', (e) => e.moveFrame(1, 0)],
+    ['reversing', (e) => e.reverseFrames([0, 1])],
+  ];
+
+  for (const [name, change] of changes) {
+    it(`${name} frames waits for the end of a cancelled adjustment`, () => {
+      const e = walk();
+      const before = frames(e);
+      e.beginAdjust(true);
+      e.previewAdjust(HUE);
+      change(e);
+      e.cancelAdjust();
+      expect(frames(e)).toEqual(before);
+      expect(doc(e).activeFrame).toBe(1);
+    });
+
+    it(`${name} frames waits for the end of an applied adjustment`, () => {
+      const e = walk();
+      const before = frames(e);
+      e.beginAdjust(true);
+      e.previewAdjust(HUE);
+      change(e);
+      e.applyAdjust(HUE, false);
+      expect(frames(e)[0]).toEqual(before[0]);
+      expect(frames(e)).toHaveLength(2);
+      expect(at(e, 2, 2)).not.toBe(BLUE);
+      e.undo();
+      expect(frames(e)).toEqual(before);
+    });
+  }
+});
