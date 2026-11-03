@@ -223,6 +223,12 @@ export function Timeline() {
               label="◐"
               onChange={(v) => setOnion({ opacity: v / 100 })}
             />
+            <IconButton
+              icon="loop"
+              label={t('timeline.onionLoop')}
+              pressed={!!onion.loop}
+              onClick={() => setOnion({ loop: !onion.loop })}
+            />
           </div>
         )}
         <span className="timeline-spacer" />

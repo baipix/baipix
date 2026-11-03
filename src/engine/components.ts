@@ -1,4 +1,5 @@
 import { createLayer, type Layer, type PixelDoc } from './document';
+import { activeFrame, celOf, frameCount, type Cel } from './frames';
 import type { Rect } from './math';
 
 /**
@@ -94,8 +95,16 @@ export function clampFrame(doc: PixelDoc, r: Rect): ComponentFrame {
 }
 
 /**
+ * What each cel of an instance off the shown frame was drawn from: the master's pixels on that
+ * frame (a cel, so never changed in place), its frame and the instance's place. While they stay the
+ * same, the cel is right as it is.
+ */
+const drawnFrom = new WeakMap<Cel, { src: Uint32Array; key: string }>();
+
+/**
  * Draws `master`'s sprite (on `from`, its document) into `target`'s pixels (on `doc`) at the
- * instance's position, clearing the rest. Returns whether any pixel changed.
+ * instance's position, clearing the rest, on every frame of `doc` (or only the shown one). Returns
+ * whether any pixel changed.
  */
 function render(
   from: PixelDoc,
@@ -103,48 +112,89 @@ function render(
   doc: PixelDoc,
   target: Layer,
   at: { x: number; y: number },
+  onlyShown = false,
 ): boolean {
   const frame = master.component!;
   const { width: W, height: H } = doc;
   const MW = from.width;
   const MH = from.height;
+  const draw = (src: Uint32Array, out: Uint32Array) => {
+    for (let sy = 0; sy < frame.h; sy++) {
+      const ty = at.y + sy;
+      if (ty < 0 || ty >= H) continue;
+      for (let sx = 0; sx < frame.w; sx++) {
+        const tx = at.x + sx;
+        if (tx < 0 || tx >= W) continue;
+        // A master dragged partly off the canvas: its frame follows it, what's outside is empty.
+        const fx = frame.x + sx;
+        const fy = frame.y + sy;
+        if (fx < 0 || fy < 0 || fx >= MW || fy >= MH) continue;
+        out[ty * W + tx] = src[fy * MW + fx];
+      }
+    }
+  };
+  // Frame f shows the master's frame f. A master on another board loops when that board has fewer
+  // frames, like a sprite's own animation, and a board without frames shows its first: which frame
+  // the master's board shows never changes the other boards.
+  const source = (f: number) => celOf(from, master, from === doc ? f : f % frameCount(from)).pixels;
+  const shown = activeFrame(doc);
   // Drawn in place when the size is right: this runs on every pointer move while dragging. The
   // copy kept to tell whether anything changed is cheap next to what it saves: the other boards
   // are only drawn again when their instances did.
   const before = target.pixels.length === W * H ? target.pixels.slice() : null;
   const out = before ? target.pixels.fill(0) : new Uint32Array(W * H);
-  for (let sy = 0; sy < frame.h; sy++) {
-    const ty = at.y + sy;
-    if (ty < 0 || ty >= H) continue;
-    for (let sx = 0; sx < frame.w; sx++) {
-      const tx = at.x + sx;
-      if (tx < 0 || tx >= W) continue;
-      // A master dragged partly off the canvas: its frame follows it, what's outside is empty.
-      const fx = frame.x + sx;
-      const fy = frame.y + sy;
-      if (fx < 0 || fy < 0 || fx >= MW || fy >= MH) continue;
-      out[ty * W + tx] = master.pixels[fy * MW + fx];
-    }
-  }
+  draw(source(shown), out);
   target.pixels = out;
   // An instance has nothing off the canvas of its own: its master keeps the sprite.
   delete target.outside;
-  if (!before) return true;
-  for (let i = 0; i < out.length; i++) if (out[i] !== before[i]) return true;
-  return false;
+  let changed = !before || differs(out, before);
+  const n = frameCount(doc);
+  if (n < 2 || onlyShown) return changed;
+  // The other frames, each a new cel. All of an instance's cels come from its master, so ones that
+  // don't fit the board (a layer pasted from another one) are simply drawn again.
+  if (target.cels?.length !== n || target.cels[shown] !== null)
+    target.cels = Array.from({ length: n }, () => null);
+  const cels = target.cels;
+  const key = `${frame.x},${frame.y},${frame.w},${frame.h},${at.x},${at.y},${W},${H}`;
+  for (let f = 0; f < n; f++) {
+    if (f === shown) continue;
+    const src = source(f);
+    const old = cels[f];
+    const last = old && drawnFrom.get(old);
+    // Drawing on the master's shown frame leaves what's drawn from its other frames as it is.
+    if (last && last.src === src && last.key === key) continue;
+    const pixels = new Uint32Array(W * H);
+    draw(src, pixels);
+    const cel = old && !old.outside && !differs(pixels, old.pixels) ? old : { pixels };
+    if (cel !== old) {
+      cels[f] = cel;
+      changed = true;
+    }
+    // The master's shown pixels are drawn on in place: a cel drawn from them is never known current.
+    if (src === master.pixels) drawnFrom.delete(cel);
+    else drawnFrom.set(cel, { src, key });
+  }
+  return changed;
 }
 
+const differs = (a: Uint32Array, b: Uint32Array): boolean => {
+  if (a.length !== b.length) return true;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return true;
+  return false;
+};
+
 /**
- * Renders every instance (or only those of `masterId`) from its master. Call after a master's
- * pixels or frame change, or an instance moves.
+ * Renders every instance (or only those of `masterId`) from its master, on every frame of its
+ * board. Call after a master's pixels or frame change, or an instance moves. `onlyShown` draws the
+ * shown frame only, for a drag: the change's commit draws the others.
  */
-export function syncInstances(doc: PixelDoc, masterId?: string): boolean {
+export function syncInstances(doc: PixelDoc, masterId?: string, onlyShown = false): boolean {
   let changed = false;
   for (const layer of doc.layers) {
     const ref = layer.instance;
     if (!ref || (masterId && ref.of !== masterId)) continue;
     const master = masterOf(doc, ref.of);
-    if (master && render(master.doc, master.layer, doc, layer, ref)) changed = true;
+    if (master && render(master.doc, master.layer, doc, layer, ref, onlyShown)) changed = true;
   }
   return changed;
 }

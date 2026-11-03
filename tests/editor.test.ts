@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { createDocument } from '../src/engine/document';
 import { DEFAULT_TILE_OPACITY, Editor } from '../src/engine/editor';
+import { celOf } from '../src/engine/frames';
+import { outlinePixels } from '../src/engine/outline';
 import { documentFromJson, documentToJson } from '../src/storage/fileFormat';
 
 const RED = pack(255, 0, 0);
@@ -663,6 +665,98 @@ describe('Editor', () => {
     expect(layer(e)[0]).toBe(RED);
   });
 
+  it('tells the panels when a remap preview changes the background', () => {
+    const e = new Editor();
+    const BLUE = pack(0, 0, 255);
+    const GREEN = pack(0, 255, 0);
+    e.setBackground(BLUE);
+    e.beginAdjust(false);
+    let told = 0;
+    e.subscribe(() => told++);
+    e.previewMap((c) => (c === BLUE ? GREEN : c), null, true);
+    expect(told).toBeGreaterThan(0);
+    expect(e.getState().doc.background).toBe(GREEN);
+  });
+
+  describe('adjusting an animation', () => {
+    const BLUE = pack(0, 0, 255);
+    const GREEN = pack(0, 255, 0);
+    // Three frames with a red pixel at 0; a blue one at 1 on the last frame only. Shows the first.
+    const animation = () => {
+      const e = new Editor();
+      e.setColor('primary', RED);
+      drag(e, [[0, 0]]);
+      e.addFrame();
+      e.addFrame();
+      e.setColor('primary', BLUE);
+      drag(e, [[1, 0]]);
+      e.setFrame(0);
+      return e;
+    };
+    const on = (e: Editor, f: number) => {
+      const doc = e.getState().doc;
+      return celOf(doc, doc.layers[doc.activeLayer], f).pixels;
+    };
+    const frames = (e: Editor) => [0, 1, 2].map((f) => [...on(e, f)]);
+    const toGreen = (c: number) => (c === RED || c === BLUE ? GREEN : c);
+
+    it('remaps every frame as one undo step', () => {
+      const e = animation();
+      e.beginAdjust(false, true);
+      e.applyMap(toGreen, null);
+      expect(on(e, 0)[0]).toBe(GREEN);
+      expect(on(e, 2)[0]).toBe(GREEN);
+      e.undo();
+      expect(on(e, 0)[0]).toBe(RED);
+      expect(on(e, 2)[0]).toBe(RED);
+    });
+
+    it('remaps a color found only on another frame', () => {
+      const e = animation();
+      e.beginAdjust(false);
+      expect(e.adjustedColors().has(BLUE)).toBe(false);
+      e.cancelAdjust();
+      e.beginAdjust(false, true);
+      expect(e.adjustedColors().get(RED)).toBe(3);
+      expect(e.adjustedColors().has(BLUE)).toBe(true);
+      e.applyMap(toGreen, null);
+      expect(on(e, 2)[1]).toBe(GREEN);
+    });
+
+    it('leaves every frame as it was when cancelled', () => {
+      const e = animation();
+      const before = frames(e);
+      e.beginAdjust(false, true);
+      e.previewMap(toGreen, null);
+      expect(on(e, 0)[0]).toBe(GREEN);
+      e.cancelAdjust();
+      expect(frames(e)).toEqual(before);
+    });
+
+    it('changes only the shown frame without all frames', () => {
+      const e = animation();
+      e.beginAdjust(false, false);
+      e.applyMap(toGreen, null);
+      expect(on(e, 0)[0]).toBe(GREEN);
+      expect(on(e, 1)[0]).toBe(RED);
+      expect(on(e, 2)[0]).toBe(RED);
+      expect(on(e, 2)[1]).toBe(BLUE);
+    });
+
+    it('outlines every frame', () => {
+      const e = animation();
+      const { width } = e.getState().doc;
+      e.beginAdjust(false, true);
+      e.applyChange((base, w, rect) =>
+        outlinePixels(base, w, rect, { place: 'outside', corners: false, color: GREEN }),
+      );
+      // Below the red pixel, on every frame.
+      for (const f of [0, 1, 2]) expect(on(e, f)[width]).toBe(GREEN);
+      e.undo();
+      for (const f of [0, 1, 2]) expect(on(e, f)[width]).toBe(0);
+    });
+  });
+
   it('previews the adjustment on the palette, and cancelling gives it back', () => {
     const e = new Editor();
     // A file starts with the colors of its drawing: these tests need a preset.
@@ -1038,6 +1132,30 @@ describe('replaceColor', () => {
     drag(e, [[0, 0]]);
     e.setLayerLocked(0, true);
     expect(e.replaceColor(RED, pack(0, 0, 255))).toBe(0);
+    expect(layer(e)[0]).toBe(RED);
+  });
+
+  it('replaces it on every frame, as one undo step', () => {
+    const e = new Editor();
+    const BLUE = pack(0, 0, 255);
+    e.setColor('primary', RED);
+    drag(e, [[0, 0]]);
+    e.addFrame(true);
+    e.addFrame(true);
+    drag(e, [
+      [1, 0],
+      [2, 0],
+    ]);
+    e.setFrame(1);
+    expect(e.replaceColor(RED, BLUE)).toBe(3);
+    e.setFrame(0);
+    expect(layer(e)[0]).toBe(BLUE);
+    e.setFrame(2);
+    expect([layer(e)[1], layer(e)[2]]).toEqual([BLUE, BLUE]);
+    e.undo();
+    e.setFrame(2);
+    expect([layer(e)[1], layer(e)[2]]).toEqual([RED, RED]);
+    e.setFrame(0);
     expect(layer(e)[0]).toBe(RED);
   });
 });

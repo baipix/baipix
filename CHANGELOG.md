@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Loop, next to the onion skin's fields: on the first frame the last ones show before it, and on the last frame the first ones after it, for animations that play in a loop. ([#702](https://github.com/baipix/baipix/pull/702))
 - Animation: Animate, beside Export, opens a timeline under the canvas, with a row per layer and a column per frame. Add a frame (a copy of the one shown), delete or drag frames to reorder them, give each its own duration, and play them in a loop with Enter or a tap on Space; comma and period step through them. Animated files show a film badge on the files screen, and `.baipix` files keep their frames. ([#629](https://github.com/baipix/baipix/pull/629), [#664](https://github.com/baipix/baipix/pull/664))
 - Onion skin, from the timeline: the frames before in red and after in blue, faded under the one you draw, up to five on each side. A sky or a ground painted on its own layer stays under it. ([#638](https://github.com/baipix/baipix/pull/638), [#650](https://github.com/baipix/baipix/pull/650))
 - Export an animation as a GIF: every frame with its duration, looping, with its exact colors, transparent or on the background, at the pixel size picked; with All boards, one GIF per board in a .zip. ([#644](https://github.com/baipix/baipix/pull/644))
@@ -22,6 +23,9 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Colors, Remap and Outline change every frame of an animation, in one undo step, with All frames ticked (the default); Remap also maps the colors that only show on other frames. ([#708](https://github.com/baipix/baipix/pull/708))
+- Replace with the primary color everywhere replaces it on every frame, and a palette built from the drawing takes every frame's colors. ([#706](https://github.com/baipix/baipix/pull/706), [#709](https://github.com/baipix/baipix/pull/709))
+- The Drawing colors palette comes from every frame, so it stays the same while stepping through them. ([#707](https://github.com/baipix/baipix/pull/707))
 - Remap takes the file's background along to the new palette, in the same undo step; untick Also remap the background to keep it. ([#681](https://github.com/baipix/baipix/pull/681))
 - With Active layer only ticked on an empty layer, the Export dialog says the layer is empty instead of showing a blank preview that looks broken. ([#667](https://github.com/baipix/baipix/pull/667))
 - File › Export, Ctrl+E and Ctrl+S open the Export dialog, as the Export button does, instead of exporting straight away in the last format picked. ([#651](https://github.com/baipix/baipix/pull/651))
@@ -29,6 +33,11 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Adding, deleting, pasting, moving or reversing frames with the Adjustments panel open no longer writes one frame's pixels onto another: frames wait for the adjustment to end. ([#703](https://github.com/baipix/baipix/pull/703))
+- A component's instance shows its master on every frame, not only the one shown, so exports come out right; a master with fewer frames on another board loops. ([#704](https://github.com/baipix/baipix/pull/704))
+- The toast's Undo after deleting a layer puts each drawing back on its own frame, even when frames were deleted, moved or added since. ([#705](https://github.com/baipix/baipix/pull/705))
+- The background's swatch follows a Remap's preview, not only the canvas. ([#701](https://github.com/baipix/baipix/pull/701))
+- The files screen (drawings and trash) fills wide windows: the toolbar and the grid no longer stop at 1600px with an empty band on the right, and the grid fits more columns past that size. ([#699](https://github.com/baipix/baipix/pull/699))
 - The Layers + sprite sheet export remembers its columns after a reload. ([#602](https://github.com/baipix/baipix/pull/602))
 - The Tileset export remembers its tile size and Leave out empty and repeated tiles after a reload. ([#600](https://github.com/baipix/baipix/pull/600))
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))
@@ -46,6 +55,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@bfs2021](https://github.com/bfs2021) for letting the files screen fill wide windows. ([#699](https://github.com/baipix/baipix/pull/699))
 - [@mykola-lp](https://github.com/mykola-lp) for the frames sprite sheet export, with its JSON for game engines. ([#674](https://github.com/baipix/baipix/pull/674))
 - [@mykola-lp](https://github.com/mykola-lp) for the GIF export, which takes animations out of Baipix. ([#644](https://github.com/baipix/baipix/pull/644))
 - [@mrCabez](https://github.com/mrCabez) for the Italian translation, the editor's sixth language. ([#630](https://github.com/baipix/baipix/pull/630))

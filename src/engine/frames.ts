@@ -81,6 +81,29 @@ export function normalizeFrames(doc: PixelDoc): void {
 }
 
 /**
+ * A layer taken off the board when its frames were `ids` (frame `shown` showing), fitted to the
+ * board's frames as they are now: each frame still there gets its own pixels back, wherever it
+ * moved, a frame added since gets none, and a frame deleted since takes its pixels with it.
+ */
+export function refitCels(doc: PixelDoc, layer: Layer, ids: string[], shown: number): Layer {
+  const own: Cel = { pixels: layer.pixels, ...(layer.outside && { outside: layer.outside }) };
+  const cels = new Map(ids.map((id, f) => [id, f === shown ? own : layer.cels?.[f]]));
+  const active = activeFrame(doc);
+  const fitted = (doc.frames ?? []).map(
+    (frame): Cel => cels.get(frame.id) ?? { pixels: new Uint32Array(doc.width * doc.height) },
+  );
+  const { pixels, outside } = fitted[active];
+  const refitted: Layer = {
+    ...layer,
+    pixels: pixels.slice(),
+    cels: fitted.map((c, f) => (f === active ? null : c)),
+  };
+  if (outside) refitted.outside = outside;
+  else delete refitted.outside;
+  return refitted;
+}
+
+/**
  * Shows frame `f`: each layer puts its pixels away in its cels and takes the frame's. The frame's
  * pixels are copied in, so what's drawn on them never changes a cel shared with the undo history.
  */
@@ -269,31 +292,41 @@ export interface OnionSkin {
   after: number;
   /** Opacity of the nearest ones, 0 to 1; the farther ones fade. */
   opacity: number;
+  /** For a looping animation: past the ends, the frames from the other end. */
+  loop?: boolean;
 }
 
 export const ONION = { max: 5 };
 
 /**
  * The frames the onion skin shows around the active one, the nearest last so they lie on top, each
- * with its opacity: the nearest at `opacity`, each step farther fading by an equal share. It doesn't
- * loop around: the first frame has nothing before it.
+ * with its opacity: the nearest at `opacity`, each step farther fading by an equal share. Without
+ * `loop`, the first frame has nothing before it; with it, the last ones come before it. A frame is
+ * shown once at most, on the side it's nearest, and never the shown one itself.
  */
 export function onionFrames(
   doc: PixelDoc,
-  { before, after, opacity }: OnionSkin,
+  { before, after, opacity, loop }: OnionSkin,
 ): { frame: number; side: 'before' | 'after'; opacity: number }[] {
   const n = frameCount(doc);
   const at = activeFrame(doc);
   const out: { frame: number; side: 'before' | 'after'; opacity: number }[] = [];
-  for (const [side, count, dir] of [
-    ['before', before, -1],
-    ['after', after, 1],
-  ] as const)
-    for (let d = count; d >= 1; d--) {
-      const frame = at + d * dir;
-      if (frame >= 0 && frame < n) out.push({ frame, side, opacity: (opacity * (count - d + 1)) / count });
+  const taken = new Set([at]);
+  // The nearest are taken first, so a frame both sides reach goes to the nearer one.
+  for (let d = 1; d <= Math.max(before, after); d++)
+    for (const [side, count, dir] of [
+      ['before', before, -1],
+      ['after', after, 1],
+    ] as const) {
+      if (d > count) continue;
+      let frame = at + d * dir;
+      if (loop) frame = ((frame % n) + n) % n;
+      if (frame < 0 || frame >= n || taken.has(frame)) continue;
+      taken.add(frame);
+      out.push({ frame, side, opacity: (opacity * (count - d + 1)) / count });
     }
-  return out;
+  // The farthest first, the nearest last: they lie on top.
+  return out.sort((a, b) => a.opacity - b.opacity || (a.side === 'before' ? -1 : 1));
 }
 
 /** Whether a layer has the same pixels on every frame: scenery that doesn't move. */

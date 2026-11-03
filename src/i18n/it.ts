@@ -214,6 +214,7 @@ export const it: Record<MessageKey, string> = {
   'adjust.brightness': 'Luminosità',
   'adjust.layer': 'Livello attivo',
   'adjust.allLayers': 'Tutti i livelli',
+  'adjust.allFrames': 'Tutti i fotogrammi',
   'adjust.palette': 'Regola anche la palette',
   'adjust.selectionOnly': 'Limitato alla selezione.',
   'theme.system': 'Tema di sistema',
@@ -575,6 +576,7 @@ export const it: Record<MessageKey, string> = {
   'timeline.onionBefore': 'Prima',
   'timeline.onionAfter': 'Dopo',
   'timeline.onionOpacity': 'Opacità della carta cipolla',
+  'timeline.onionLoop': 'Loop: prima del primo fotogramma, gli ultimi',
   'display.isoCell': 'Cella',
   'display.isoVertical': 'Linee verticali',
 

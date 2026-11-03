@@ -214,6 +214,7 @@ export const uk: Record<MessageKey, string> = {
   'adjust.brightness': 'Яскравість',
   'adjust.layer': 'Активний шар',
   'adjust.allLayers': 'Усі шари',
+  'adjust.allFrames': 'Усі кадри',
   'adjust.palette': 'Також налаштувати палітру',
   'adjust.selectionOnly': 'Лише в межах виділення.',
   'theme.system': 'Системна тема',
@@ -576,6 +577,7 @@ export const uk: Record<MessageKey, string> = {
   'timeline.onionBefore': 'До',
   'timeline.onionAfter': 'Після',
   'timeline.onionOpacity': 'Непрозорість кальки',
+  'timeline.onionLoop': 'Цикл: перед першим кадром — останні',
   'display.isoCell': 'Комірка',
   'display.isoVertical': 'Вертикальні лінії',
 

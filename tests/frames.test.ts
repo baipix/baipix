@@ -337,6 +337,32 @@ describe('onion skin', () => {
     expect(frames).toEqual([2, 1]);
   });
 
+  it('loops around the ends when asked, for a looping animation', () => {
+    const frames = (shown: number) =>
+      onionFrames(walk(6, shown), { before: 2, after: 1, opacity: 0.4, loop: true }).map((o) => [
+        o.frame,
+        o.side,
+      ]);
+    expect(frames(0)).toEqual([
+      [4, 'before'],
+      [5, 'before'],
+      [1, 'after'],
+    ]);
+    expect(frames(5)).toEqual([
+      [3, 'before'],
+      [4, 'before'],
+      [0, 'after'],
+    ]);
+  });
+
+  it('shows a frame once, on its nearer side, and never the shown one, however short the loop', () => {
+    const shown = onionFrames(walk(3, 0), { before: 5, after: 5, opacity: 0.5, loop: true });
+    expect(shown.map((o) => [o.frame, o.side])).toEqual([
+      [2, 'before'],
+      [1, 'after'],
+    ]);
+  });
+
   it('goes over the still layers at the bottom, under the first one that moves', () => {
     const e = editor();
     dot(e, 0, 0); // A sky on the bottom layer, the same on every frame.
@@ -370,4 +396,126 @@ describe('onion skin', () => {
     expect(flattenFrame(doc(e), 0)[1 * 8 + 1]).not.toBe(RED);
     expect(doc(e).activeFrame).toBe(0);
   });
+});
+
+describe('a deleted layer brought back', () => {
+  // A layer with a dot at x = f on each frame f, and nothing else; it's deleted on frame 0.
+  function deleted() {
+    const e = editor();
+    e.addLayer();
+    const id = doc(e).layers[1].id;
+    for (let f = 0; f < 3; f++) {
+      if (f) e.addFrame(true);
+      dot(e, f, 0);
+    }
+    e.setFrame(0);
+    e.deleteLayer();
+    return { e, id };
+  }
+
+  // Where the layer has its dots, frame by frame.
+  const dots = (e: Editor, id: string) => {
+    const layer = doc(e).layers.find((l) => l.id === id)!;
+    return doc(e).frames!.map((_, f) => [0, 1, 2].filter((x) => celOf(doc(e), layer, f).pixels[x] === RED));
+  };
+
+  it('keeps its drawings on their frames when a frame was deleted', () => {
+    const { e, id } = deleted();
+    e.deleteFrame(0);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[1], [2]]);
+    expect(at(e, 1, 0)).toBe(RED);
+  });
+
+  it('keeps its drawings on their frames when a frame was moved', () => {
+    const { e, id } = deleted();
+    e.moveFrame(0, 2);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[1], [2], [0]]);
+    expect(at(e, 0, 0)).toBe(RED);
+  });
+
+  it('is empty on a frame added since', () => {
+    const { e, id } = deleted();
+    e.addFrame();
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[0], [], [1], [2]]);
+    expect(doc(e).layers[doc(e).activeLayer].pixels.some((c) => c !== 0)).toBe(false);
+  });
+
+  it('keeps its drawings on their frames when the frames were reversed', () => {
+    const { e, id } = deleted();
+    e.reverseFrames([0, 1, 2]);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[2], [1], [0]]);
+    expect(at(e, 0, 0)).toBe(RED);
+  });
+
+  it("isn't brought back once the board is down to one frame", () => {
+    const { e } = deleted();
+    e.deleteFrames([1, 2]);
+    expect(e.restoreDeleted()).toBe(false);
+    expect(doc(e).layers).toHaveLength(1);
+  });
+});
+
+describe('frames during a color adjustment', () => {
+  const HUE = { hue: 120, saturation: 100, brightness: 100 };
+
+  // Two frames, a red dot on the first and a blue one on the second, the second shown.
+  function walk() {
+    const e = editor();
+    dot(e, 1, 1);
+    e.addFrame(true);
+    e.setColor('primary', BLUE);
+    dot(e, 2, 2);
+    e.copyFrames([0]);
+    return e;
+  }
+
+  // Every frame's pixels, by showing each in turn.
+  function frames(e: Editor) {
+    const shown = doc(e).activeFrame ?? 0;
+    const all = Array.from({ length: doc(e).frames?.length ?? 1 }, (_, f) => {
+      e.setFrame(f, false);
+      return doc(e).layers.map((l) => [...l.pixels]);
+    });
+    e.setFrame(shown, false);
+    return all;
+  }
+
+  const changes: [string, (e: Editor) => void][] = [
+    ['deleting', (e) => e.deleteFrame(1)],
+    ['adding', (e) => e.addFrame()],
+    ['pasting', (e) => e.pasteFrames()],
+    ['moving', (e) => e.moveFrame(1, 0)],
+    ['reversing', (e) => e.reverseFrames([0, 1])],
+  ];
+
+  for (const [name, change] of changes) {
+    it(`${name} frames waits for the end of a cancelled adjustment`, () => {
+      const e = walk();
+      const before = frames(e);
+      e.beginAdjust(true);
+      e.previewAdjust(HUE);
+      change(e);
+      e.cancelAdjust();
+      expect(frames(e)).toEqual(before);
+      expect(doc(e).activeFrame).toBe(1);
+    });
+
+    it(`${name} frames waits for the end of an applied adjustment`, () => {
+      const e = walk();
+      const before = frames(e);
+      e.beginAdjust(true);
+      e.previewAdjust(HUE);
+      change(e);
+      e.applyAdjust(HUE, false);
+      expect(frames(e)[0]).toEqual(before[0]);
+      expect(frames(e)).toHaveLength(2);
+      expect(at(e, 2, 2)).not.toBe(BLUE);
+      e.undo();
+      expect(frames(e)).toEqual(before);
+    });
+  }
 });

@@ -2702,7 +2702,6 @@ body.is-dragging-swatch * {
 .home-main {
   flex: 1;
   min-width: 0;
-  max-width: 1600px;
   padding: 0 32px calc(48px + env(safe-area-inset-bottom, 0px));
 }
 /* No drawing yet: the welcome in the main area, the templates as cards. */
@@ -3495,7 +3494,7 @@ body.is-dragging-swatch * {
   display: flex;
   gap: 4px;
 }
-.timeline-onion > * {
+.timeline-onion > :not(.icon-btn) {
   width: 76px;
 }
 .timeline-spacer {

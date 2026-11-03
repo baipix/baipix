@@ -214,6 +214,7 @@ export const es: Record<MessageKey, string> = {
   'adjust.brightness': 'Brillo',
   'adjust.layer': 'Capa activa',
   'adjust.allLayers': 'Todas las capas',
+  'adjust.allFrames': 'Todos los fotogramas',
   'adjust.palette': 'Adaptar la paleta',
   'adjust.selectionOnly': 'Solo se aplica a la selección.',
   'theme.system': 'Tema del sistema',
@@ -579,6 +580,7 @@ export const es: Record<MessageKey, string> = {
   'timeline.onionBefore': 'Antes',
   'timeline.onionAfter': 'Después',
   'timeline.onionOpacity': 'Opacidad del papel cebolla',
+  'timeline.onionLoop': 'Bucle: antes del primer fotograma, los últimos',
   'display.isoCell': 'Celda',
   'display.isoVertical': 'Líneas verticales',
 
