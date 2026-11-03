@@ -104,6 +104,11 @@ function Bubble({ index }: { index: number }) {
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const target = step ? unionRect(step.target()) : null;
 
+  const targetLeft = target?.left;
+  const targetTop = target?.top;
+  const targetWidth = target?.width;
+  const targetHeight = target?.height;
+
   useEffect(() => {
     step?.prepare?.();
     // Let the tab or section open, then measure.
@@ -124,26 +129,34 @@ function Bubble({ index }: { index: number }) {
   // Above what's low on the screen, to the left of the right panel, else below.
   useLayoutEffect(() => {
     const b = bubble.current;
-    if (!b || !target) return setPos(null);
+    if (
+      !b ||
+      targetLeft === undefined ||
+      targetTop === undefined ||
+      targetWidth === undefined ||
+      targetHeight === undefined
+    ) {
+      return setPos(null);
+    }
     const { offsetWidth: w, offsetHeight: h } = b;
     const gap = 14;
     let left: number;
     let top: number;
-    if (target.left > innerWidth * 0.6) {
-      left = target.left - w - gap;
-      top = target.top + target.height / 2 - h / 2;
-    } else if (target.top > innerHeight / 2) {
-      left = target.left + target.width / 2 - w / 2;
-      top = target.top - h - gap;
+    if (targetLeft > innerWidth * 0.6) {
+      left = targetLeft - w - gap;
+      top = targetTop + targetHeight / 2 - h / 2;
+    } else if (targetTop > innerHeight / 2) {
+      left = targetLeft + targetWidth / 2 - w / 2;
+      top = targetTop - h - gap;
     } else {
-      left = target.left + target.width / 2 - w / 2;
-      top = target.top + target.height + gap;
+      left = targetLeft + targetWidth / 2 - w / 2;
+      top = targetTop + targetHeight + gap;
     }
     setPos({
       left: Math.max(8, Math.min(innerWidth - w - 8, left)),
       top: Math.max(8, Math.min(innerHeight - h - 8, top)),
     });
-  }, [index, target?.left, target?.top, target?.width, target?.height]);
+  }, [index, targetLeft, targetTop, targetWidth, targetHeight]);
 
   if (!step) return null;
   const last = index === STEPS.length - 1;
