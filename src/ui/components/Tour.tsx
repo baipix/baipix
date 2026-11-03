@@ -104,7 +104,6 @@ function Bubble({ index }: { index: number }) {
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const target = step ? unionRect(step.target()) : null;
 
-  //============== Jalal Sadat: Use individual target coordinates to avoid depending on a newly created target object.================
   const targetLeft = target?.left;
   const targetTop = target?.top;
   const targetWidth = target?.width;
@@ -129,17 +128,17 @@ function Bubble({ index }: { index: number }) {
 
   // Above what's low on the screen, to the left of the right panel, else below.
 
-  // Jalal Sadat: Updated target handling to fix the missing dependency warning.
   useLayoutEffect(() => {
     const b = bubble.current;
     if (
-      !b || 
-      targetLeft === undefined || 
-      targetTop === undefined || 
-      targetWidth === undefined || 
-      targetHeight === undefined){
-       return setPos(null);
-      }
+      !b ||
+      targetLeft === undefined ||
+      targetTop === undefined ||
+      targetWidth === undefined ||
+      targetHeight === undefined
+    ) {
+      return setPos(null);
+    }
     const { offsetWidth: w, offsetHeight: h } = b;
     const gap = 14;
     let left: number;

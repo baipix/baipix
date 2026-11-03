@@ -40,7 +40,6 @@ export function CodeDialog() {
   const code = useMemo(
     () => actions.codePreview(language, onlyLayer),
     // The drawing changes with the revision, and the board with the doc: the code follows them.
-    // These dependencies intentionally invalidate the cached preview.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [actions, language, onlyLayer, revision, doc],
   );
