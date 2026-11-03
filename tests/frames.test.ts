@@ -337,6 +337,32 @@ describe('onion skin', () => {
     expect(frames).toEqual([2, 1]);
   });
 
+  it('loops around the ends when asked, for a looping animation', () => {
+    const frames = (shown: number) =>
+      onionFrames(walk(6, shown), { before: 2, after: 1, opacity: 0.4, loop: true }).map((o) => [
+        o.frame,
+        o.side,
+      ]);
+    expect(frames(0)).toEqual([
+      [4, 'before'],
+      [5, 'before'],
+      [1, 'after'],
+    ]);
+    expect(frames(5)).toEqual([
+      [3, 'before'],
+      [4, 'before'],
+      [0, 'after'],
+    ]);
+  });
+
+  it('shows a frame once, on its nearer side, and never the shown one, however short the loop', () => {
+    const shown = onionFrames(walk(3, 0), { before: 5, after: 5, opacity: 0.5, loop: true });
+    expect(shown.map((o) => [o.frame, o.side])).toEqual([
+      [2, 'before'],
+      [1, 'after'],
+    ]);
+  });
+
   it('goes over the still layers at the bottom, under the first one that moves', () => {
     const e = editor();
     dot(e, 0, 0); // A sky on the bottom layer, the same on every frame.
@@ -431,4 +457,65 @@ describe('a deleted layer brought back', () => {
     expect(e.restoreDeleted()).toBe(false);
     expect(doc(e).layers).toHaveLength(1);
   });
+});
+
+describe('frames during a color adjustment', () => {
+  const HUE = { hue: 120, saturation: 100, brightness: 100 };
+
+  // Two frames, a red dot on the first and a blue one on the second, the second shown.
+  function walk() {
+    const e = editor();
+    dot(e, 1, 1);
+    e.addFrame(true);
+    e.setColor('primary', BLUE);
+    dot(e, 2, 2);
+    e.copyFrames([0]);
+    return e;
+  }
+
+  // Every frame's pixels, by showing each in turn.
+  function frames(e: Editor) {
+    const shown = doc(e).activeFrame ?? 0;
+    const all = Array.from({ length: doc(e).frames?.length ?? 1 }, (_, f) => {
+      e.setFrame(f, false);
+      return doc(e).layers.map((l) => [...l.pixels]);
+    });
+    e.setFrame(shown, false);
+    return all;
+  }
+
+  const changes: [string, (e: Editor) => void][] = [
+    ['deleting', (e) => e.deleteFrame(1)],
+    ['adding', (e) => e.addFrame()],
+    ['pasting', (e) => e.pasteFrames()],
+    ['moving', (e) => e.moveFrame(1, 0)],
+    ['reversing', (e) => e.reverseFrames([0, 1])],
+  ];
+
+  for (const [name, change] of changes) {
+    it(`${name} frames waits for the end of a cancelled adjustment`, () => {
+      const e = walk();
+      const before = frames(e);
+      e.beginAdjust(true);
+      e.previewAdjust(HUE);
+      change(e);
+      e.cancelAdjust();
+      expect(frames(e)).toEqual(before);
+      expect(doc(e).activeFrame).toBe(1);
+    });
+
+    it(`${name} frames waits for the end of an applied adjustment`, () => {
+      const e = walk();
+      const before = frames(e);
+      e.beginAdjust(true);
+      e.previewAdjust(HUE);
+      change(e);
+      e.applyAdjust(HUE, false);
+      expect(frames(e)[0]).toEqual(before[0]);
+      expect(frames(e)).toHaveLength(2);
+      expect(at(e, 2, 2)).not.toBe(BLUE);
+      e.undo();
+      expect(frames(e)).toEqual(before);
+    });
+  }
 });

@@ -3494,7 +3494,7 @@ body.is-dragging-swatch * {
   display: flex;
   gap: 4px;
 }
-.timeline-onion > * {
+.timeline-onion > :not(.icon-btn) {
   width: 76px;
 }
 .timeline-spacer {

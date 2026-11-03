@@ -27,6 +27,20 @@ describe('the palette belongs to the file', () => {
     expect(e.getState().palette.colors).toEqual([RED]);
   });
 
+  it('takes the colors of every frame, whichever one is shown', () => {
+    const e = new Editor();
+    e.setPalettePreset('drawing');
+    dot(e, 0, RED);
+    e.addFrame(true);
+    e.addFrame(true);
+    dot(e, 1, BLUE);
+    e.setFrame(0);
+    expect(new Set(e.getState().palette.colors)).toEqual(new Set([RED, BLUE]));
+    // Playing doesn't change them either.
+    e.setFrame(1, false);
+    expect(new Set(e.getState().palette.colors)).toEqual(new Set([RED, BLUE]));
+  });
+
   it('is each file’s own: switching files switches palettes', () => {
     const e = new Editor();
     e.setPalettePreset('pico8');
@@ -149,5 +163,24 @@ describe('my palettes', () => {
     const back = documentFromJson(documentToJson(e.getState().doc));
     expect(back.palette?.key.startsWith('mine:')).toBe(true);
     expect(back.palette?.colors).toEqual([RED, BLUE]);
+  });
+});
+
+describe('a palette from the drawing', () => {
+  it('takes the colors of every frame, not only the one shown', () => {
+    const RED = pack(255, 0, 0);
+    const BLUE = pack(0, 0, 255);
+    const e = new Editor();
+    const dot = (color: number, x: number) => {
+      e.setColor('primary', color);
+      e.beginStroke({ x, y: 0 }, false, { shift: false });
+      e.endStroke();
+    };
+    dot(RED, 0);
+    e.addFrame();
+    dot(BLUE, 1);
+    e.setFrame(0);
+    e.paletteFromDrawing();
+    expect(e.getState().palette.colors).toEqual(expect.arrayContaining([RED, BLUE]));
   });
 });

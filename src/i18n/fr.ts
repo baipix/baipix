@@ -214,6 +214,7 @@ export const fr: Record<MessageKey, string> = {
   'adjust.brightness': 'Luminosité',
   'adjust.layer': 'Calque actif',
   'adjust.allLayers': 'Tous les calques',
+  'adjust.allFrames': 'Toutes les frames',
   'adjust.palette': 'Adapter la palette',
   'adjust.selectionOnly': 'Limité à la sélection.',
   'theme.system': 'Thème du système',
@@ -577,6 +578,7 @@ export const fr: Record<MessageKey, string> = {
   'timeline.onionBefore': 'Avant',
   'timeline.onionAfter': 'Après',
   'timeline.onionOpacity': 'Opacité de la pelure d’oignon',
+  'timeline.onionLoop': 'Boucle : avant la première frame, les dernières',
   'display.isoCell': 'Case',
   'display.isoVertical': 'Lignes verticales',
 

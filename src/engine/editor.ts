@@ -1,6 +1,13 @@
 import { adjustColor, alpha, opaque, toOklab, withAlpha, type Color, type ColorAdjustment } from './color';
 import { readLight, shadowOffset, type BoardLight } from './light';
-import { blendOver, flatten, mergeLayerInto, type BlendMode, type FlattenOptions } from './composite';
+import {
+  blendOver,
+  flatten,
+  flattenFrame,
+  mergeLayerInto,
+  type BlendMode,
+  type FlattenOptions,
+} from './composite';
 import {
   hasBackground,
   activeLayer,
@@ -51,6 +58,7 @@ import {
   activeFrame,
   addFrame,
   bakeEffectsOnEveryFrame,
+  celOf,
   deleteFrame,
   deleteFrames,
   eachFrame,
@@ -66,6 +74,7 @@ import {
   setCels,
   setDuration,
   showFrame,
+  type Cel,
 } from './frames';
 import {
   clipSelection,
@@ -440,6 +449,11 @@ export class Editor {
   private secondary: Color;
   /** The colors the drawing uses, for a palette in 'drawing' mode: worked out once per change. */
   private drawingColors: { doc: PixelDoc; revision: number; colors: Color[] } | null = null;
+  /**
+   * Each frame's colors as of the last saved change, so stepping through frames or playing them
+   * only works out the shown one again.
+   */
+  private frameColors: { doc: PixelDoc; revision: number; colors: Color[][] } | null = null;
   /** The palette's index for the shading tools, built once per set of colors. */
   private paletteCache: { colors: Color[]; index: PaletteIndex } | null = null;
 
@@ -474,11 +488,28 @@ export class Editor {
     }
   }
 
+  /** The colors of every frame, so they stay the same from one frame to the next. */
   private colorsOfDrawing(): Color[] {
     const c = this.drawingColors;
     if (c && c.doc === this.doc && c.revision === this.revision) return c.colors;
-    const colors = sortByLightness(uniqueColors(this.flatten({ includeBackground: false })));
-    this.drawingColors = { doc: this.doc, revision: this.revision, colors };
+    const doc = this.doc;
+    const found = new Set(uniqueColors(this.flatten({ includeBackground: false })));
+    const n = frameCount(doc);
+    if (n > 1) {
+      let f = this.frameColors;
+      if (!f || f.doc !== doc || f.revision !== this.contentRevision || f.colors.length !== n) {
+        const colors = Array.from({ length: n }, (_, i) =>
+          uniqueColors(flattenFrame(doc, i, { includeBackground: false })),
+        );
+        f = this.frameColors = { doc, revision: this.contentRevision, colors };
+      }
+      // The shown frame's own colors are the ones just found: a preview may be changing them.
+      f.colors.forEach((frame, i) => {
+        if (i !== activeFrame(doc)) for (const color of frame) if (found.size < 256) found.add(color);
+      });
+    }
+    const colors = sortByLightness([...found]);
+    this.drawingColors = { doc, revision: this.revision, colors };
     return colors;
   }
 
@@ -604,7 +635,8 @@ export class Editor {
     }[];
   } | null = null;
   private adjusting: {
-    layers: { id: string; base: Uint32Array }[];
+    /** With every frame adjusted, `cels` are the layer's other frames as they were. */
+    layers: { id: string; base: Uint32Array; cels?: (Cel | null)[] }[];
     rect: Rect;
     /** The file's background before the adjustment (a remap may change it too). */
     background: Color;
@@ -2044,11 +2076,19 @@ export class Editor {
   /* ------------------------------------------------------------------ animation frames */
 
   /**
+   * A stroke, an adjustment or a resize under way: it holds the shown frame's pixels (to write
+   * back on cancel or apply), so frames can't be shown, added, deleted or moved until it ends.
+   */
+  private get framesLocked(): boolean {
+    return !!(this.stroke || this.adjusting || this.scaling);
+  }
+
+  /**
    * Shows frame `f`, to draw on it. Not an undo step, like picking a layer. Playing passes
    * `persist` false: a frame shown for a tenth of a second isn't worth a save.
    */
   setFrame(f: number, persist = true): void {
-    if (this.stroke || this.adjusting || this.scaling) return;
+    if (this.framesLocked) return;
     if (f === activeFrame(this.doc) || f < 0 || f >= frameCount(this.doc)) return;
     if (this.repeatSession) this.endRepeat(true);
     if (this.extrudeSession) this.endExtrude(true);
@@ -2058,31 +2098,33 @@ export class Editor {
 
   /** Adds a frame after the shown one, a copy of it or an `empty` one (see frames.ts), and shows it. */
   addFrame(empty = false): void {
+    if (this.framesLocked) return;
     this.edit((doc) => addFrame(doc, undefined, empty));
   }
 
   /** Deletes frame `f` (the shown one by default); a board keeps at least one. */
   deleteFrame(f = activeFrame(this.doc)): boolean {
-    if (frameCount(this.doc) < 2) return false;
+    if (this.framesLocked || frameCount(this.doc) < 2) return false;
     this.edit((doc) => deleteFrame(doc, f));
     return true;
   }
 
   /** Deletes several frames at once, in one step to undo; a board keeps at least one. */
   deleteFrames(frames: number[]): boolean {
-    if (frameCount(this.doc) < 2 || !frames.length) return false;
+    if (this.framesLocked || frameCount(this.doc) < 2 || !frames.length) return false;
     this.edit((doc) => deleteFrames(doc, frames));
     return true;
   }
 
   /** Reverses the order of the given frames, in their places. */
   reverseFrames(frames: number[]): void {
-    if (new Set(frames).size < 2) return;
+    if (this.framesLocked || new Set(frames).size < 2) return;
     this.edit((doc) => reverseFrames(doc, frames));
   }
 
   /** Copies the given frames, to paste with pasteFrames. */
   copyFrames(frames: number[]): void {
+    if (this.framesLocked) return;
     const copies = copyFrames(this.doc, frames);
     if (copies.length) this.frameClip = copies;
   }
@@ -2096,20 +2138,20 @@ export class Editor {
   /** Pastes the copied frames after the shown one. */
   pasteFrames(): void {
     const clip = this.frameClip;
-    if (!clip || !this.canPasteFrames()) return;
+    if (this.framesLocked || !clip || !this.canPasteFrames()) return;
     this.edit((doc) => pasteFrames(doc, activeFrame(doc), clip));
   }
 
   /** Moves frame `from` to `to`. */
   moveFrame(from: number, to: number): void {
     const n = frameCount(this.doc);
-    if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
+    if (this.framesLocked || from === to || from < 0 || to < 0 || from >= n || to >= n) return;
     this.edit((doc) => moveFrame(doc, from, to));
   }
 
   /** Sets how long frames show, in ms: the given ones, or all of them. */
   setFrameDuration(ms: number, frames?: number[]): void {
-    if (!this.doc.frames) return;
+    if (this.framesLocked || !this.doc.frames) return;
     this.edit((doc) => setDuration(doc, ms, frames));
   }
 
@@ -2960,30 +3002,36 @@ export class Editor {
   }
 
   /**
-   * Replaces a color with another in every unlocked layer (each pixel keeps its opacity), and in
-   * the palette: one undo step for both. Returns how many pixels changed.
+   * Replaces a color with another in every unlocked layer, on every frame (each pixel keeps its
+   * opacity), and in the palette: one undo step for all. Returns how many pixels changed.
    */
   replaceColor(from: Color, to: Color): number {
     const a = opaque(from);
     const b = opaque(to);
     if (a === b || !alpha(to)) return 0;
-    const layers = this.doc.layers.filter((l) => !l.locked);
-    const hits = layers.map((l) => l.pixels.some((c) => alpha(c) > 0 && opaque(c) === a));
+    const doc = this.doc;
+    const layers = doc.layers.filter((l) => !l.locked);
+    const has = (px: Uint32Array) => px.some((c) => alpha(c) > 0 && opaque(c) === a);
+    const hits = layers.map((l) =>
+      [...Array(frameCount(doc)).keys()].some((f) => has(celOf(doc, l, f).pixels)),
+    );
     const inPalette = this.palette.colors.includes(a);
     if (!hits.some(Boolean) && !inPalette) return 0;
     this.cancelStroke();
     this.checkpoint();
     this.active.history.top()!.palette = this.savedPalette();
     let count = 0;
-    layers.forEach((layer, k) => {
-      if (!hits[k]) return;
-      const px = layer.pixels;
-      for (let i = 0; i < px.length; i++)
-        if (alpha(px[i]) > 0 && opaque(px[i]) === a) {
-          px[i] = withAlpha(b, alpha(px[i]));
-          count++;
-        }
-    });
+    eachFrame(doc, () =>
+      layers.forEach((layer, k) => {
+        if (!hits[k]) return;
+        const px = layer.pixels;
+        for (let i = 0; i < px.length; i++)
+          if (alpha(px[i]) > 0 && opaque(px[i]) === a) {
+            px[i] = withAlpha(b, alpha(px[i]));
+            count++;
+          }
+      }),
+    );
     // The swatch takes the new color, unless the palette has it already (or is the drawing's).
     if (inPalette && this.palette.key !== 'drawing')
       this.usePalette(this.palette.colors.map((c) => (c === a ? b : c)));
@@ -3013,7 +3061,11 @@ export class Editor {
   }
 
   paletteFromDrawing(): void {
-    const colors = uniqueColors(this.flatten());
+    // Every frame's colors, not only the shown one's: the palette is the whole animation's.
+    const seen = new Set<Color>();
+    for (let f = 0; f < frameCount(this.doc) && seen.size < 256; f++)
+      for (const c of uniqueColors(flattenFrame(this.doc, f))) seen.add(c);
+    const colors = [...seen].slice(0, 256);
     if (!colors.length) {
       this.notice({ type: 'emptyDrawing' });
       return;
@@ -3648,8 +3700,13 @@ export class Editor {
   /**
    * Starts adjusting colors of the active layer (or all layers), limited to the selection if any.
    * Previews are live and not in the history; `applyAdjust` makes one undo step.
+   *
+   * With `allFrames`, every frame of the animation is adjusted, not only the shown one, the
+   * selection's area on each of them (a selection is the board's, the same on every frame). The
+   * preview shows the shown frame only, so a slider stays quick on a long animation: the other
+   * frames change when it's applied, in the same undo step.
    */
-  beginAdjust(allLayers: boolean): void {
+  beginAdjust(allLayers: boolean, allFrames = false): void {
     this.cancelStroke();
     this.cancelAdjust();
     const doc = this.doc;
@@ -3660,7 +3717,11 @@ export class Editor {
       return;
     }
     this.adjusting = {
-      layers: layers.map((l) => ({ id: l.id, base: l.pixels.slice() })),
+      layers: layers.map((l) => ({
+        id: l.id,
+        base: l.pixels.slice(),
+        ...(allFrames && frameCount(doc) > 1 && l.cels && { cels: l.cels.slice() }),
+      })),
       rect: clipRect(this.targetRect(), doc.width, doc.height),
       background: doc.background,
     };
@@ -3668,29 +3729,45 @@ export class Editor {
 
   /**
    * Rewrites the adjusted layers from their original pixels, through `change` (none: as they were),
-   * and sets the background (by default, the one from before).
+   * and sets the background (by default, the one from before). With `everyFrame`, the other frames
+   * too, when every frame is adjusted.
    */
-  private writeAdjustment(change: PixelChange | null, background = this.adjusting!.background): void {
+  private writeAdjustment(
+    change: PixelChange | null,
+    background = this.adjusting!.background,
+    everyFrame = false,
+  ): void {
     const { layers, rect } = this.adjusting!;
     const width = this.doc.width;
     this.doc.background = background;
     const sel = this.active.selection;
-    for (const { id, base } of layers) {
-      const layer = this.doc.layers.find((l) => l.id === id);
-      if (!layer) continue;
-      const out = change ? change(base, width, rect) : base;
+    const changed = (base: Uint32Array) => {
+      const out = change!(base, width, rect);
       // A selection of any shape: what's in its rectangle but not selected stays as it was.
-      if (change && sel?.mask)
+      if (sel?.mask)
         for (let y = rect.y; y < rect.y + rect.h; y++)
           for (let x = rect.x; x < rect.x + rect.w; x++)
             if (!inSelection(sel, x, y)) out[y * width + x] = base[y * width + x];
-      layer.pixels.set(out);
+      return out;
+    };
+    for (const { id, base, cels } of layers) {
+      const layer = this.doc.layers.find((l) => l.id === id);
+      if (!layer) continue;
+      layer.pixels.set(change ? changed(base) : base);
+      // Cels are never changed in place (the history shares them): new ones.
+      if (everyFrame && cels && layer.cels?.length === cels.length)
+        layer.cels = cels.map((c) => (c && change ? { ...c, pixels: changed(c.pixels) } : c));
     }
   }
 
+  /** An adjusted layer's original pixels on each frame being adjusted: the shown one, or every one. */
+  private adjustedPixels({ base, cels }: { base: Uint32Array; cels?: (Cel | null)[] }): Uint32Array[] {
+    return cels ? cels.map((c) => c?.pixels ?? base) : [base];
+  }
+
   /**
-   * The colors being adjusted (opaque, from the original pixels of the layers and area being
-   * adjusted) and how many pixels have each: what a remap starts from. With `background`, the
+   * The colors being adjusted (opaque, from the original pixels of the layers, frames and area
+   * being adjusted) and how many pixels have each: what a remap starts from. With `background`, the
    * background's color too, counted where none of these layers covers it.
    */
   adjustedColors(background = false): Map<Color, number> {
@@ -3699,18 +3776,23 @@ export class Editor {
     const { layers, rect } = this.adjusting;
     const width = this.doc.width;
     const add = (c: Color, n = 1) => used.set(opaque(c), (used.get(opaque(c)) ?? 0) + n);
-    for (const { base } of layers)
-      for (let y = rect.y; y < rect.y + rect.h; y++)
-        for (let x = rect.x; x < rect.x + rect.w; x++) {
-          const c = base[y * width + x];
-          if (alpha(c)) add(c);
-        }
+    // Each frame's pixels of every adjusted layer.
+    const frames = layers.map((l) => this.adjustedPixels(l));
+    const pixelsOn = frames.length ? frames[0].map((_, f) => frames.map((p) => p[f] ?? p[0])) : [];
+    for (const pixels of pixelsOn)
+      for (const base of pixels)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) {
+            const c = base[y * width + x];
+            if (alpha(c)) add(c);
+          }
     const bg = this.adjusting.background;
     if (background && alpha(bg)) {
       let bare = 0;
-      for (let y = rect.y; y < rect.y + rect.h; y++)
-        for (let x = rect.x; x < rect.x + rect.w; x++)
-          if (layers.every(({ base }) => !alpha(base[y * width + x]))) bare++;
+      for (const pixels of pixelsOn)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++)
+            if (pixels.every((base) => !alpha(base[y * width + x]))) bare++;
       add(bg, Math.max(1, bare));
     }
     return used;
@@ -3791,7 +3873,7 @@ export class Editor {
     // The colors of the drawing follow the pixels on their own: nothing to swap or set.
     const ownColors = palette && base.key !== 'drawing';
     if (ownColors) this.active.history.top()!.palette = this.savedPalette();
-    this.writeAdjustment(change, background);
+    this.writeAdjustment(change, background, true);
     this.adjusting = null;
     if (ownColors) this.usePalette(palette(base.colors));
     this.commit();
@@ -4494,7 +4576,7 @@ export class Editor {
         mastersMoved.add(layer.id);
       }
     }
-    for (const id of new Set([...instancesOf, ...mastersMoved])) syncInstances(this.doc, id);
+    for (const id of new Set([...instancesOf, ...mastersMoved])) syncInstances(this.doc, id, true);
     this.pixelsChanged();
   }
 

@@ -75,7 +75,7 @@ const tileSide = (n: unknown): number =>
 const sheetColumns = (n: unknown): number | null =>
   typeof n === 'number' && Number.isFinite(n) && n >= 1 ? Math.round(n) : null;
 
-/** The onion skin from a save: off, one frame each side at 40% when missing. */
+/** The onion skin from a save: off, one frame each side at 40%, not looping, when missing. */
 function onionSkin(o: unknown): UiState['onion'] {
   const v = (o ?? {}) as Partial<UiState['onion']>;
   const count = (n: unknown) =>
@@ -84,7 +84,7 @@ function onionSkin(o: unknown): UiState['onion'] {
     typeof v.opacity === 'number' && Number.isFinite(v.opacity)
       ? Math.min(1, Math.max(0.05, v.opacity))
       : 0.4;
-  return { on: !!v.on, before: count(v.before), after: count(v.after), opacity };
+  return { on: !!v.on, before: count(v.before), after: count(v.after), opacity, loop: !!v.loop };
 }
 
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */

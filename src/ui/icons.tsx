@@ -64,6 +64,7 @@ import {
   Plus,
   Pyramid,
   Redo2,
+  Repeat,
   RotateCcw,
   RotateCw,
   Search,
@@ -202,6 +203,7 @@ export const ICONS = {
   pause: Pause,
   first: SkipBack,
   onion: Ghost,
+  loop: Repeat,
   // Named by what moves: the drawing against the left edge, centered across, and so on.
   alignLeft: AlignStartVertical,
   alignCenterX: AlignCenterVertical,

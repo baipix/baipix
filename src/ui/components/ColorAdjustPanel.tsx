@@ -11,6 +11,7 @@ import {
   type ColorAdjustment,
 } from '../../engine/color';
 import { hasBackground } from '../../engine/document';
+import { frameCount } from '../../engine/frames';
 import type { ColorMap } from '../../engine/editor';
 import { outlinePixels, type OutlineOptions } from '../../engine/outline';
 import { PALETTE_PRESETS, presetColors, remapTable, type RemapMode } from '../../engine/palette';
@@ -53,8 +54,8 @@ const NO_REMAP = { target: 'file', mode: 'nearest', replacePalette: false, backg
 
 /**
  * The Adjustments panel, floating: changes to the existing pixels of the active layer or all
- * layers (limited to the selection if any), with a live preview on the canvas. Applying makes one
- * undo step. Its tabs are the kinds of adjustments: Colors shifts hue, saturation and brightness,
+ * layers (limited to the selection if any), on every frame of an animation or the shown one, with a
+ * live preview on the canvas. Applying makes one undo step. Its tabs are the kinds of adjustments: Colors shifts hue, saturation and brightness,
  * Remap moves the drawing to another palette, Outline draws a 1px line around (or along) it.
  */
 export function ColorAdjustPanel() {
@@ -104,6 +105,9 @@ function Panel() {
   const [outline, setOutline] = useState<Outline>(NO_OUTLINE);
   const [adj, setAdj] = useState<ColorAdjustment>(NO_ADJUSTMENT);
   const [allLayers, setAllLayers] = useState(() => uiStore.get().adjustScope === 'all');
+  // An animation is adjusted as a whole unless asked otherwise.
+  const animated = useEditorState((s) => frameCount(s.doc) > 1);
+  const [allFrames, setAllFrames] = useState(true);
   const [palette, setPalette] = useState(false);
   // The file's palette as it was when the panel opened (previews may change the live one).
   const [ownPalette] = useState(filePalette);
@@ -117,9 +121,9 @@ function Panel() {
 
   // Starts (or restarts on scope change) the adjustment; leaving without applying cancels it.
   useEffect(() => {
-    editor.beginAdjust(allLayers);
+    editor.beginAdjust(allLayers, allFrames);
     return () => editor.cancelAdjust();
-  }, [editor, allLayers]);
+  }, [editor, allLayers, allFrames]);
   // The outline is in the primary color: picking another one in the palette updates it live.
   const outlineChange = (
     base: Uint32Array,
@@ -131,7 +135,7 @@ function Panel() {
     const change = changeFor(tab, adj, palette, remap, target, editor.adjustedColors(remapBackground));
     editor.previewMap(change.map, change.palette, change.background && remapBackground);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- outlineChange follows outline and primary
-  }, [editor, tab, adj, palette, remap, target, allLayers, outline, primary, remapBackground]);
+  }, [editor, tab, adj, palette, remap, target, allLayers, allFrames, outline, primary, remapBackground]);
   // Switching files cancels the adjustment in the editor: close the panel too.
   useEffect(() => editor.subscribe(() => !editor.isAdjusting && close()), [editor]);
 
@@ -340,6 +344,7 @@ function Panel() {
             </button>
           ))}
         </div>
+        {animated && <Checkbox checked={allFrames} onChange={setAllFrames} label={t('adjust.allFrames')} />}
         {tab === 'colors' ? (
           <Checkbox checked={palette} onChange={setPalette} label={t('adjust.palette')} />
         ) : tab === 'outline' ? null : (

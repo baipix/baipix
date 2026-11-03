@@ -213,6 +213,7 @@ export const en = {
   'adjust.brightness': 'Brightness',
   'adjust.layer': 'Active layer',
   'adjust.allLayers': 'All layers',
+  'adjust.allFrames': 'All frames',
   'adjust.palette': 'Adjust the palette too',
   'adjust.selectionOnly': 'Limited to the selection.',
   'theme.system': 'System theme',
@@ -571,6 +572,7 @@ export const en = {
   'timeline.onionBefore': 'Before',
   'timeline.onionAfter': 'After',
   'timeline.onionOpacity': 'Onion skin opacity',
+  'timeline.onionLoop': 'Loop: before the first frame, the last ones',
   'display.isoCell': 'Cell',
   'display.isoVertical': 'Vertical lines',
 
