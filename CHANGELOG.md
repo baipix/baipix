@@ -29,6 +29,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The files screen (drawings and trash) fills wide windows again: the toolbar and the grid no longer stop at 1600px with an empty band on the right, and the grid fits more columns past that size. ([#697](https://github.com/baipix/baipix/issues/697))
 - The Layers + sprite sheet export remembers its columns after a reload. ([#602](https://github.com/baipix/baipix/pull/602))
 - The Tileset export remembers its tile size and Leave out empty and repeated tiles after a reload. ([#600](https://github.com/baipix/baipix/pull/600))
 - The Export dialog remembers the Layers + sprite sheet format after a reload, instead of going back to PNG. ([#598](https://github.com/baipix/baipix/pull/598))
