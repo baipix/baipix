@@ -45,7 +45,7 @@ export function applyMove(s: Stroke, dx: number, dy: number): void {
   const state = s.scratch.move as MoveState;
   if (state.instance && s.layer.instance) {
     s.layer.instance = { ...s.layer.instance, x: state.instance.x + dx, y: state.instance.y + dy };
-    syncInstances(s.doc, s.layer.instance.of);
+    syncInstances(s.doc, s.layer.instance.of, true);
     return;
   }
   if (!state.block || !state.cleared || !state.origin) {

@@ -4,15 +4,18 @@ import {
   addInstance,
   detachInstance,
   instancesOf,
+  linkBoards,
   makeComponent,
   masters,
   moveInstance,
   normalizeComponents,
+  syncFileInstances,
   syncInstances,
 } from '../src/engine/components';
-import { flatten } from '../src/engine/composite';
+import { flatten, flattenFrame } from '../src/engine/composite';
 import { Editor } from '../src/engine/editor';
 import { cloneDocument, createDocument, resizeDocument, type PixelDoc } from '../src/engine/document';
+import { addFrame, showFrame } from '../src/engine/frames';
 import { documentFromJson, documentToJson, fileFromJson, serializeDocument } from '../src/storage/fileFormat';
 
 const RED = pack(255, 0, 0);
@@ -329,5 +332,91 @@ describe('components in the editor', () => {
     expect(doc().layers[0].component).toEqual({ x: 1, y: 1, w: 2, h: 1 });
     expect(doc().layers[1].instance).toMatchObject({ x: 9, y: 10 });
     expect(px(1, 8, 9)).toBe(0);
+  });
+});
+
+describe('components on animated boards', () => {
+  /** An 8×8 board of three frames, its component a row of three red pixels that turn blue one by one. */
+  const animated = () => {
+    const e = new Editor();
+    e.newFile(8, 8, 'Walk');
+    e.setColor('primary', RED);
+    e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+    e.moveStroke({ x: 2, y: 0 }, { shift: false });
+    e.endStroke();
+    e.createComponent();
+    e.setColor('primary', BLUE);
+    for (const x of [1, 2]) {
+      e.addFrame();
+      e.beginStroke({ x, y: 0 }, false, { shift: false });
+      e.endStroke();
+    }
+    e.setFrame(0);
+    const doc = () => e.getState().doc;
+    const shows = (f: number, x: number, y: number) =>
+      flattenFrame(doc(), f, { includeBackground: false })[y * 8 + x];
+    return { e, doc, shows };
+  };
+
+  it('shows the master of each frame on that frame, without showing it first', () => {
+    const { e, doc, shows } = animated();
+    e.addInstanceAt(doc().layers[0].id, { x: 4, y: 5 });
+    expect(doc().layers[1].instance).toMatchObject({ x: 3, y: 5 });
+    expect([shows(0, 3, 5), shows(0, 4, 5), shows(0, 5, 5)]).toEqual([RED, RED, RED]);
+    expect([shows(1, 3, 5), shows(1, 4, 5), shows(1, 5, 5)]).toEqual([RED, BLUE, RED]);
+    expect([shows(2, 3, 5), shows(2, 4, 5), shows(2, 5, 5)]).toEqual([RED, BLUE, BLUE]);
+  });
+
+  it('moves the instance on every frame', () => {
+    const { e, doc, shows } = animated();
+    e.addInstanceAt(doc().layers[0].id, { x: 4, y: 5 });
+    e.nudge(0, 1);
+    expect(doc().layers[1].instance).toMatchObject({ x: 3, y: 6 });
+    for (const f of [0, 1, 2]) {
+      expect(shows(f, 3, 5)).toBe(0);
+      expect(shows(f, 3, 6)).toBe(RED);
+    }
+    expect(shows(1, 4, 6)).toBe(BLUE);
+    expect(shows(2, 5, 6)).toBe(BLUE);
+  });
+
+  it('follows the master drawn on another frame, on that frame only', () => {
+    const { e, doc, shows } = animated();
+    e.addInstanceAt(doc().layers[0].id, { x: 4, y: 5 });
+    e.setActiveLayer(0);
+    e.setFrame(2);
+    e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+    e.endStroke();
+    e.setFrame(0);
+    expect([shows(0, 3, 5), shows(1, 3, 5), shows(2, 3, 5)]).toEqual([RED, RED, BLUE]);
+  });
+
+  it('shows a master from another board frame by frame, whatever frame that board shows', () => {
+    // The master's board: red on frame 0, blue on frame 1, showing frame 1.
+    const a = createDocument('A', 8, 8);
+    a.layers[0].pixels[0] = RED;
+    makeComponent(a, 0, { x: 0, y: 0, w: 1, h: 1 });
+    addFrame(a);
+    a.layers[0].pixels[0] = BLUE;
+    // A board of three frames, and one of a single frame.
+    const b = createDocument('B', 8, 8);
+    addFrame(b);
+    addFrame(b);
+    showFrame(b, 0);
+    const c = createDocument('C', 8, 8);
+    linkBoards([a, b, c]);
+    addInstance(b, a.layers[0].id, 4, 4);
+    addInstance(c, a.layers[0].id, 4, 4);
+    const shows = (d: PixelDoc, f: number) => flattenFrame(d, f, { includeBackground: false })[4 * 8 + 4];
+    // The master's board has fewer frames: it loops.
+    expect([shows(b, 0), shows(b, 1), shows(b, 2)]).toEqual([RED, BLUE, RED]);
+    expect(shows(c, 0)).toBe(RED);
+    // The master changes on its frame 0, not shown: every board follows.
+    showFrame(a, 0);
+    a.layers[0].pixels[0] = BLUE;
+    showFrame(a, 1);
+    expect(syncFileInstances(a)).toEqual([b, c]);
+    expect([shows(b, 0), shows(b, 1), shows(b, 2)]).toEqual([BLUE, BLUE, BLUE]);
+    expect(shows(c, 0)).toBe(BLUE);
   });
 });
