@@ -371,3 +371,64 @@ describe('onion skin', () => {
     expect(doc(e).activeFrame).toBe(0);
   });
 });
+
+describe('a deleted layer brought back', () => {
+  // A layer with a dot at x = f on each frame f, and nothing else; it's deleted on frame 0.
+  function deleted() {
+    const e = editor();
+    e.addLayer();
+    const id = doc(e).layers[1].id;
+    for (let f = 0; f < 3; f++) {
+      if (f) e.addFrame(true);
+      dot(e, f, 0);
+    }
+    e.setFrame(0);
+    e.deleteLayer();
+    return { e, id };
+  }
+
+  // Where the layer has its dots, frame by frame.
+  const dots = (e: Editor, id: string) => {
+    const layer = doc(e).layers.find((l) => l.id === id)!;
+    return doc(e).frames!.map((_, f) => [0, 1, 2].filter((x) => celOf(doc(e), layer, f).pixels[x] === RED));
+  };
+
+  it('keeps its drawings on their frames when a frame was deleted', () => {
+    const { e, id } = deleted();
+    e.deleteFrame(0);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[1], [2]]);
+    expect(at(e, 1, 0)).toBe(RED);
+  });
+
+  it('keeps its drawings on their frames when a frame was moved', () => {
+    const { e, id } = deleted();
+    e.moveFrame(0, 2);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[1], [2], [0]]);
+    expect(at(e, 0, 0)).toBe(RED);
+  });
+
+  it('is empty on a frame added since', () => {
+    const { e, id } = deleted();
+    e.addFrame();
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[0], [], [1], [2]]);
+    expect(doc(e).layers[doc(e).activeLayer].pixels.some((c) => c !== 0)).toBe(false);
+  });
+
+  it('keeps its drawings on their frames when the frames were reversed', () => {
+    const { e, id } = deleted();
+    e.reverseFrames([0, 1, 2]);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(dots(e, id)).toEqual([[2], [1], [0]]);
+    expect(at(e, 0, 0)).toBe(RED);
+  });
+
+  it("isn't brought back once the board is down to one frame", () => {
+    const { e } = deleted();
+    e.deleteFrames([1, 2]);
+    expect(e.restoreDeleted()).toBe(false);
+    expect(doc(e).layers).toHaveLength(1);
+  });
+});

@@ -59,6 +59,7 @@ import {
   copyFrames,
   pasteFrames,
   type FrameCopy,
+  refitCels,
   reverseFrames,
   normalizeFrames,
   onEachFrame,
@@ -336,7 +337,13 @@ type Deleted =
       groups?: LayerGroup[];
       /** The empty layer put in when every layer went, taken out again if still empty. */
       placeholder?: Layer;
+      /** The board's frames when they went, and the one shown, to put each cel back on its frame. */
+      frames?: { ids: string[]; shown: number };
     };
+
+/** A board's frames and the one shown, when it has more than one. */
+const framesOf = (doc: PixelDoc) =>
+  doc.frames && { ids: doc.frames.map((f) => f.id), shown: activeFrame(doc) };
 
 type Listener = () => void;
 
@@ -1676,9 +1683,17 @@ export class Editor {
       return true;
     }
     const { width, height } = d.session.doc;
-    const entries = d.kind === 'layer' ? [{ layer: d.layer, index: d.index }] : d.entries;
+    const frames = d.kind === 'layers' ? d.frames : undefined;
+    // Down to one frame, which of them is left can't be told: its cels have nowhere to go.
+    if (frames && !d.session.doc.frames) return false;
+    let entries = d.kind === 'layer' ? [{ layer: d.layer, index: d.index }] : d.entries;
     if (!this.sessions.includes(d.session) || entries.some((x) => x.layer.pixels.length !== width * height))
       return false;
+    // Each cel back on its frame, however the frames changed since.
+    if (frames) {
+      const doc = d.session.doc;
+      entries = entries.map((x) => ({ ...x, layer: refitCels(doc, x.layer, frames.ids, frames.shown) }));
+    }
     this.cancelAdjust();
     this.active = d.session;
     this.edit((doc) => {
@@ -2205,7 +2220,8 @@ export class Editor {
       if (placeholder) doc.layers.push(placeholder);
       doc.activeLayer = Math.min(doc.layers.length - 1, Math.max(0, entries[0].index - 1));
       normalizeGroups(doc);
-      this.deleted = { kind: 'layers', session: this.active, entries, groups, placeholder };
+      const frames = framesOf(doc);
+      this.deleted = { kind: 'layers', session: this.active, entries, groups, placeholder, frames };
       this.active.picked = [doc.layers[doc.activeLayer].id];
     });
     return picked.length;
@@ -2243,7 +2259,8 @@ export class Editor {
       doc.activeLayer = Math.max(0, index - 1);
       normalizeGroups(doc);
       // Its group, if it was the last layer in it, comes back with it.
-      this.deleted = { kind: 'layers', session: this.active, entries: [{ layer, index }], groups };
+      const frames = framesOf(doc);
+      this.deleted = { kind: 'layers', session: this.active, entries: [{ layer, index }], groups, frames };
     });
     return true;
   }
