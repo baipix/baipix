@@ -2029,11 +2029,19 @@ export class Editor {
   /* ------------------------------------------------------------------ animation frames */
 
   /**
+   * A stroke, an adjustment or a resize under way: it holds the shown frame's pixels (to write
+   * back on cancel or apply), so frames can't be shown, added, deleted or moved until it ends.
+   */
+  private get framesLocked(): boolean {
+    return !!(this.stroke || this.adjusting || this.scaling);
+  }
+
+  /**
    * Shows frame `f`, to draw on it. Not an undo step, like picking a layer. Playing passes
    * `persist` false: a frame shown for a tenth of a second isn't worth a save.
    */
   setFrame(f: number, persist = true): void {
-    if (this.stroke || this.adjusting || this.scaling) return;
+    if (this.framesLocked) return;
     if (f === activeFrame(this.doc) || f < 0 || f >= frameCount(this.doc)) return;
     if (this.repeatSession) this.endRepeat(true);
     if (this.extrudeSession) this.endExtrude(true);
@@ -2043,31 +2051,33 @@ export class Editor {
 
   /** Adds a frame after the shown one, a copy of it or an `empty` one (see frames.ts), and shows it. */
   addFrame(empty = false): void {
+    if (this.framesLocked) return;
     this.edit((doc) => addFrame(doc, undefined, empty));
   }
 
   /** Deletes frame `f` (the shown one by default); a board keeps at least one. */
   deleteFrame(f = activeFrame(this.doc)): boolean {
-    if (frameCount(this.doc) < 2) return false;
+    if (this.framesLocked || frameCount(this.doc) < 2) return false;
     this.edit((doc) => deleteFrame(doc, f));
     return true;
   }
 
   /** Deletes several frames at once, in one step to undo; a board keeps at least one. */
   deleteFrames(frames: number[]): boolean {
-    if (frameCount(this.doc) < 2 || !frames.length) return false;
+    if (this.framesLocked || frameCount(this.doc) < 2 || !frames.length) return false;
     this.edit((doc) => deleteFrames(doc, frames));
     return true;
   }
 
   /** Reverses the order of the given frames, in their places. */
   reverseFrames(frames: number[]): void {
-    if (new Set(frames).size < 2) return;
+    if (this.framesLocked || new Set(frames).size < 2) return;
     this.edit((doc) => reverseFrames(doc, frames));
   }
 
   /** Copies the given frames, to paste with pasteFrames. */
   copyFrames(frames: number[]): void {
+    if (this.framesLocked) return;
     const copies = copyFrames(this.doc, frames);
     if (copies.length) this.frameClip = copies;
   }
@@ -2081,20 +2091,20 @@ export class Editor {
   /** Pastes the copied frames after the shown one. */
   pasteFrames(): void {
     const clip = this.frameClip;
-    if (!clip || !this.canPasteFrames()) return;
+    if (this.framesLocked || !clip || !this.canPasteFrames()) return;
     this.edit((doc) => pasteFrames(doc, activeFrame(doc), clip));
   }
 
   /** Moves frame `from` to `to`. */
   moveFrame(from: number, to: number): void {
     const n = frameCount(this.doc);
-    if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
+    if (this.framesLocked || from === to || from < 0 || to < 0 || from >= n || to >= n) return;
     this.edit((doc) => moveFrame(doc, from, to));
   }
 
   /** Sets how long frames show, in ms: the given ones, or all of them. */
   setFrameDuration(ms: number, frames?: number[]): void {
-    if (!this.doc.frames) return;
+    if (this.framesLocked || !this.doc.frames) return;
     this.edit((doc) => setDuration(doc, ms, frames));
   }
 
