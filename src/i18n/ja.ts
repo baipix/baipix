@@ -572,6 +572,7 @@ export const ja: Record<MessageKey, string> = {
   'timeline.onionBefore': '前',
   'timeline.onionAfter': '後',
   'timeline.onionOpacity': 'オニオンスキンの不透明度',
+  'timeline.onionLoop': 'ループ：最初のフレームの前に最後のフレームを表示',
   'display.isoCell': 'セル',
   'display.isoVertical': '縦線',
 

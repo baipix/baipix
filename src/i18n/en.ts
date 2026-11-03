@@ -571,6 +571,7 @@ export const en = {
   'timeline.onionBefore': 'Before',
   'timeline.onionAfter': 'After',
   'timeline.onionOpacity': 'Onion skin opacity',
+  'timeline.onionLoop': 'Loop: before the first frame, the last ones',
   'display.isoCell': 'Cell',
   'display.isoVertical': 'Vertical lines',
 

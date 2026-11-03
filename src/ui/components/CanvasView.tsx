@@ -398,7 +398,7 @@ export function CanvasView() {
         onionKey = '';
         return [];
       }
-      const key = `${doc.id}:${revision}:${o.before}:${o.after}:${o.opacity}`;
+      const key = `${doc.id}:${revision}:${o.before}:${o.after}:${o.opacity}:${!!o.loop}`;
       if (key === onionKey) return onionImages;
       onionKey = key;
       // The still layers at the bottom go under the onion skin, so they're left out of its frames.

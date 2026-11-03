@@ -337,6 +337,32 @@ describe('onion skin', () => {
     expect(frames).toEqual([2, 1]);
   });
 
+  it('loops around the ends when asked, for a looping animation', () => {
+    const frames = (shown: number) =>
+      onionFrames(walk(6, shown), { before: 2, after: 1, opacity: 0.4, loop: true }).map((o) => [
+        o.frame,
+        o.side,
+      ]);
+    expect(frames(0)).toEqual([
+      [4, 'before'],
+      [5, 'before'],
+      [1, 'after'],
+    ]);
+    expect(frames(5)).toEqual([
+      [3, 'before'],
+      [4, 'before'],
+      [0, 'after'],
+    ]);
+  });
+
+  it('shows a frame once, on its nearer side, and never the shown one, however short the loop', () => {
+    const shown = onionFrames(walk(3, 0), { before: 5, after: 5, opacity: 0.5, loop: true });
+    expect(shown.map((o) => [o.frame, o.side])).toEqual([
+      [2, 'before'],
+      [1, 'after'],
+    ]);
+  });
+
   it('goes over the still layers at the bottom, under the first one that moves', () => {
     const e = editor();
     dot(e, 0, 0); // A sky on the bottom layer, the same on every frame.

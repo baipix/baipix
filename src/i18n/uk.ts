@@ -576,6 +576,7 @@ export const uk: Record<MessageKey, string> = {
   'timeline.onionBefore': 'До',
   'timeline.onionAfter': 'Після',
   'timeline.onionOpacity': 'Непрозорість кальки',
+  'timeline.onionLoop': 'Цикл: перед першим кадром — останні',
   'display.isoCell': 'Комірка',
   'display.isoVertical': 'Вертикальні лінії',
 
