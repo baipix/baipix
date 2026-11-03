@@ -738,7 +738,7 @@ function SurfacesBlock() {
         <Specimen
           label="Timeline"
           wide
-          use="The active board's frames under the canvas, the whole width: a row per layer, a column per frame, a dot where the layer is drawn, a ring where it's empty. The frame shown is violet, the cell being drawn on filled; frames picked with Shift or Cmd/Ctrl-click get a light violet. The ghost turns the onion skin on. The Animate button beside Export opens it."
+          use="The active board's frames under the canvas, the whole width: a row per layer, a column per frame, a dot where the layer is drawn, a ring where it's empty. The frame shown is violet, the cell being drawn on filled; frames picked with Shift or Cmd/Ctrl-click get a light violet. The ghost turns the onion skin on, and the arrows next to its fields make it loop around the ends. The Animate button beside Export opens it."
         >
           <div className="timeline ds-static ds-timeline">
             <div className="timeline-bar">

@@ -160,12 +160,7 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
         )[e.code as 'KeyA'];
         if (to && !e.shiftKey) return (e.preventDefault(), editor.align(to));
       }
-      // Frames, like in Aseprite: Alt+N adds one, Alt+B an empty one, comma and period step through, Enter plays.
-      if (e.altKey && !e.shiftKey && (e.code === 'KeyN' || e.code === 'KeyB')) {
-        e.preventDefault();
-        uiStore.set({ timeline: true });
-        return editor.addFrame(e.code === 'KeyB');
-      }
+      // Frames, like in Aseprite: comma and period step through, Enter plays (Alt+N and Alt+B add one, below).
       if (e.key === ',' || e.key === '.') return stepFrame(editor, e.key === ',' ? -1 : 1);
       if (e.key === 'Enter' && uiStore.get().timeline) return (e.preventDefault(), togglePlay(editor));
       if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
@@ -177,6 +172,12 @@ export function useKeyboardShortcuts(editor: Editor, actions: Actions) {
       }
       // A handle held (a scale or a rotation under way): the keys that edit wait for its end.
       if (editor.isScaling) return;
+      // Alt+N adds a frame, Alt+B an empty one.
+      if (e.altKey && !e.shiftKey && (e.code === 'KeyN' || e.code === 'KeyB')) {
+        e.preventDefault();
+        uiStore.set({ timeline: true });
+        return editor.addFrame(e.code === 'KeyB');
+      }
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         if (editor.getState().referenceSelected) return actions.removeReference();

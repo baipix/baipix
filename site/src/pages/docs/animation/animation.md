@@ -54,6 +54,7 @@ The ghost button in the timeline turns on the **onion skin**: the frames around 
 
 - **Before** and **After** set how many frames show on each side, up to five; the farther ones fade more.
 - The **opacity** sets how strong the nearest ones are.
+- **Loop**, the arrows next to it, is for an animation that plays in a loop: on the first frame, the last ones show before it, and on the last frame, the first ones show after it.
 - A background painted on its own layer, like a sky, stays under the onion skin when it's the same on every frame.
 
 The onion skin never ends up in an export: it's only there to draw by.
