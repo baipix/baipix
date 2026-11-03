@@ -149,6 +149,21 @@ const SHARE = [
       button.textContent = 'Copied';
       setTimeout(() => (button.textContent = 'Copy link'), 1500);
     });
+
+  // A picture opens bigger on a click, over the page; a click anywhere or Escape closes it.
+  const box = document.createElement('dialog');
+  box.className = 'post-zoom';
+  box.addEventListener('click', () => box.close());
+  document.body.append(box);
+  for (const img of document.querySelectorAll<HTMLImageElement>('.post-body figure img')) {
+    img.addEventListener('click', () => {
+      const big = img.cloneNode() as HTMLImageElement;
+      big.removeAttribute('class');
+      big.loading = 'eager';
+      box.replaceChildren(big);
+      box.showModal();
+    });
+  }
 </script>
 
 <style>
@@ -240,7 +255,7 @@ const SHARE = [
   .post-body {
     max-width: 680px;
     margin: 56px auto 0;
-    font-size: 17px;
+    font-size: 19px;
   }
   .post-body :global(h2) {
     margin: 48px 0 14px;
@@ -315,12 +330,99 @@ const SHARE = [
   .post-body :global(figcaption) {
     margin-top: 10px;
     color: var(--muted);
+    opacity: 0.7;
     font-size: 14px;
+  }
+  .post-body :global(figure img) {
+    cursor: zoom-in;
+  }
+  /* The screenshots follow the site's theme: the OS setting, or the visitor's pick. */
+  .post-body :global(.for-dark) {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .post-body :global(.for-light) {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .post-body :global(.for-dark) {
+      display: block;
+    }
+  }
+  :global(:root[data-theme='dark']) .post-body :global(.for-light) {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) .post-body :global(.for-dark) {
+    display: block;
+  }
+  /* A picture opened bigger: as large as the window allows, on a dimmed page. */
+  :global(.post-zoom) {
+    max-width: none;
+    max-height: none;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 16px;
+    border: 0;
+    background: transparent;
+    display: none;
+    place-items: center;
+    box-sizing: border-box;
+    cursor: zoom-out;
+  }
+  :global(.post-zoom[open]) {
+    display: grid;
+  }
+  :global(.post-zoom::backdrop) {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  :global(.post-zoom img) {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    image-rendering: auto;
   }
   .post-body :global(img) {
     display: block;
     max-width: 100%;
+    height: auto;
     margin: 8px 0 28px;
+  }
+  /* A screenshot: framed by a line, its caption close under it. */
+  .post-body :global(figure:not(.pixel-figure)) {
+    margin: 8px 0 28px;
+  }
+  .post-body :global(figure:not(.pixel-figure) img) {
+    width: 100%;
+    margin: 0;
+    border: 1px solid var(--line);
+  }
+  /* The pictures that matter most leave the text's column, as wide as the screen allows. */
+  .post-body :global(figure.wide) {
+    width: min(1040px, calc(100vw - 32px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  .post-body :global(figure.wide figcaption) {
+    max-width: 680px;
+    margin-inline: auto;
+  }
+  .post-body :global(table) {
+    width: 100%;
+    margin: 8px 0 28px;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .post-body :global(th),
+  .post-body :global(td) {
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  .post-body :global(th) {
+    color: var(--muted);
+    font-weight: 600;
   }
 
   .post-share {

@@ -1,0 +1,97 @@
+<!doctype html>
+<!-- The 0.8 post's Ecto-1: one frame per #hash (f00.png… from the .baipix), a drawn timeline of its layers under it. Screenshot each at 1072×944, 1.5×, and join them into an animated WebP. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet" />
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+      .c {
+        position: relative;
+        width: 1072px;
+        height: 944px;
+        background: #53bcc9;
+        overflow: hidden;
+        font-family: Inter, sans-serif;
+      }
+      .car {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1072px;
+        height: 672px;
+        image-rendering: pixelated;
+      }
+      .tl {
+        position: absolute;
+        left: 32px;
+        right: 32px;
+        bottom: 32px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.94);
+        border-radius: 14px;
+        display: grid;
+        grid-template-columns: 110px repeat(16, 1fr);
+        row-gap: 4px;
+        column-gap: 6px;
+        align-items: center;
+      }
+      .n {
+        font-size: 14px;
+        font-weight: 500;
+        color: #3d3757;
+        height: 26px;
+        line-height: 26px;
+        white-space: nowrap;
+      }
+      .d {
+        height: 26px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+      }
+      .d::after {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #7a7394;
+      }
+      .d.on {
+        background: #e4dff8;
+      }
+      .d.on.act::after {
+        background: #fff;
+      }
+      .d.act {
+        background: #6e56cf;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="c">
+      <img class="car" id="car" />
+      <div class="tl" id="tl"></div>
+    </div>
+    <script>
+      const f = Number(location.hash.slice(1) || 0);
+      document.getElementById('car').src = 'f' + String(f).padStart(2, '0') + '.png';
+      const layers = ['Roof rack', 'Wheels', 'Body', 'Far wheels', 'Smoke', 'Road', 'Speed lines'];
+      const tl = document.getElementById('tl');
+      layers.forEach((name, r) => {
+        const n = document.createElement('div');
+        n.className = 'n';
+        n.textContent = name;
+        tl.append(n);
+        for (let c = 0; c < 16; c++) {
+          const d = document.createElement('div');
+          d.className = 'd' + (c === f ? ' on' : '') + (c === f && name === 'Body' ? ' act' : '');
+          tl.append(d);
+        }
+      });
+    </script>
+  </body>
+</html>
