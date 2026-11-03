@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- An API for AI agents, on `window.baipix`: an agent driving the browser draws with the same tools as you, with plain colors and pixel coordinates, and can look at its drawing as text or as a PNG. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an agent at.
+
 ### Changed
 
 - On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))
