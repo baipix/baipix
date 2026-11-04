@@ -1759,8 +1759,15 @@ export class Editor {
           ...(doc.groups ?? []),
           ...d.groups.filter((g) => !kept.has(g.id)).map((g) => ({ ...g })),
         ];
-        normalizeGroups(doc);
       }
+      // Back between two layers of a group made since, a layer joins it rather than splitting it.
+      for (const { layer } of entries) {
+        const i = doc.layers.indexOf(layer);
+        const above = doc.layers[i + 1]?.group;
+        const around = groupChain(doc, doc.layers[i - 1]?.group).find((g) => isWithin(doc, above, g.id));
+        if (around && !isWithin(doc, layer.group, around.id)) layer.group = around.id;
+      }
+      normalizeGroups(doc);
       doc.activeLayer = doc.layers.indexOf(entries[entries.length - 1].layer);
       this.active.picked = entries.map((x) => x.layer.id);
     });

@@ -487,3 +487,22 @@ describe('pasting pixels in a group', () => {
     expect(deserializeDocument(serializeDocument(d)).groups).toHaveLength(1);
   });
 });
+
+describe('a deleted layer brought back', () => {
+  it('joins a group made around its place since, rather than splitting it', () => {
+    const e = new Editor();
+    e.newFile(4, 4, 'F');
+    e.addLayer();
+    e.addLayer();
+    e.selectLayer(1, 'single');
+    e.deleteLayer();
+    e.selectLayer(0, 'single');
+    e.selectLayer(1, 'range');
+    e.groupSelection();
+    expect(e.restoreDeleted()).toBe(true);
+    const d = e.getState().doc;
+    const group = d.groups![0].id;
+    expect(d.layers.map((l) => l.group)).toEqual([group, group, group]);
+    expect(deserializeDocument(serializeDocument(d)).groups).toHaveLength(1);
+  });
+});
