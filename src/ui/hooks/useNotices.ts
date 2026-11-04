@@ -31,6 +31,8 @@ const message = (n: Notice): string => {
       return t('toast.instanceLocked');
     case 'componentCreated':
       return t('toast.componentCreated');
+    case 'layerFrames':
+      return t('toast.layerFrames');
     case 'layerToBoard':
       return t('toast.layerToBoard', { board: n.board });
   }

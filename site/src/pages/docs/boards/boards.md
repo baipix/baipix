@@ -28,6 +28,8 @@ A file can hold several boards side by side, each with its own size, layers and 
 
 With the Move tool, drag a layer out of every board and let go: it stays there, visible, listed next to the boards. Drag it onto a board to put it back. A file can even have no board at all, only such layers. Only boards are exported.
 
+A layer that changes from frame to frame stays on its board: outside the boards there are no frames, and another board takes it only if it has as many frames.
+
 ## Export every board
 
 In a file of several boards, Export has an **All boards** option: one file per board, named after it, in a .zip.

@@ -774,6 +774,7 @@ export const es: Record<MessageKey, string> = {
   'toast.pixelsRecovered': 'Píxeles recuperados: {w} × {h}, a partir de una imagen ampliada ×{scale}.',
   'toast.groupTooDeep': 'Los grupos admiten hasta cuatro niveles de profundidad.',
   'toast.instanceLocked': 'Esto es una instancia: dibuja en su componente para modificar todas las copias.',
+  'toast.layerFrames': 'Esta capa está animada: solo puede ir a un tablero con tantos fotogramas.',
   'toast.layerToBoard': 'Movida a {board}.',
   'toast.componentCreated':
     'Componente creado. Arrástralo desde la lista de componentes para colocar copias.',

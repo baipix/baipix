@@ -63,6 +63,7 @@ import {
   deleteFrames,
   eachFrame,
   frameCount,
+  isStill,
   moveFrame,
   copyFrames,
   pasteFrames,
@@ -299,6 +300,7 @@ export type Notice =
   | { type: 'groupTooDeep' }
   | { type: 'instanceLocked' }
   | { type: 'componentCreated' }
+  | { type: 'layerFrames' }
   | { type: 'layerToBoard'; board: string };
 
 export interface Preferences {
@@ -1460,6 +1462,7 @@ export class Editor {
       this.notice({ type: 'layerLocked' });
       return false;
     }
+    if (this.losesFrames(layer, to.doc)) return false;
     this.cancelStroke();
     const src = from.doc;
     const dst = to.doc;
@@ -1635,6 +1638,17 @@ export class Editor {
   }
 
   /**
+   * Whether moving a layer of the active board to `target` (null: outside every board) would lose
+   * some of its frames, the target having fewer: it says so, and the layer stays.
+   */
+  private losesFrames(layer: Layer, target: PixelDoc | null): boolean {
+    const fewer = (target ? frameCount(target) : 1) < frameCount(this.doc);
+    if (!fewer || isStill(this.doc, layer)) return false;
+    this.notice({ type: 'layerFrames' });
+    return true;
+  }
+
+  /**
    * Takes a layer off its board and leaves it where it is on the canvas, outside every board, like
    * an object beside the frames in Figma: a Move tool drag let go beside the boards.
    */
@@ -1645,6 +1659,8 @@ export class Editor {
     if (!layer || isFreeZone(src)) return false;
     const box = layerContent(layer.pixels, src.width, src.height, layer.outside)?.rect;
     if (!box) return false;
+    // Outside the boards there are no frames.
+    if (this.losesFrames(layer, null)) return false;
     // A file of one board becomes a file of boards, its board at (0, 0).
     src.board ??= { file: src.id, fileName: src.name, x: 0, y: 0 };
     if (!this.freeOf(src.board.file)) {
