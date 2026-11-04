@@ -887,7 +887,7 @@ export class Editor {
   undo(): void {
     if (this.repeatSession) return this.endRepeat(false);
     if (this.extrudeSession) return this.endExtrude(false);
-    if (this.stroke || this.adjusting || this.scaling) return;
+    if (this.stroke || this.groupMove || this.adjusting || this.scaling) return;
     // Boards moved, aligned or deleted come back first, like in Figma.
     while (this.fileSteps.length) {
       const step = this.fileSteps.pop()!;
@@ -922,7 +922,7 @@ export class Editor {
   }
 
   redo(): void {
-    if (this.stroke || this.adjusting || this.scaling) return;
+    if (this.stroke || this.groupMove || this.adjusting || this.scaling) return;
     const again = this.fileRedos.pop();
     if (again) {
       this.replaying = true;
@@ -2076,11 +2076,11 @@ export class Editor {
   /* ------------------------------------------------------------------ animation frames */
 
   /**
-   * A stroke, an adjustment or a resize under way: it holds the shown frame's pixels (to write
+   * A stroke, a move of several layers, an adjustment or a resize under way: it holds the shown frame's pixels (to write
    * back on cancel or apply), so frames can't be shown, added, deleted or moved until it ends.
    */
   private get framesLocked(): boolean {
-    return !!(this.stroke || this.adjusting || this.scaling);
+    return !!(this.stroke || this.groupMove || this.adjusting || this.scaling);
   }
 
   /**
