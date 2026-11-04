@@ -1,6 +1,7 @@
 import { BLEND_MODES, type BlendMode } from '../engine/composite';
 import { MAX_SIZE, type Layer, type LayerGroup } from '../engine/document';
 import { cleanEffects } from '../engine/effects';
+import { MAX_FRAMES, type Cel } from '../engine/frames';
 import type { LayerFragment } from '../engine/layerClipboard';
 import { clamp } from '../engine/math';
 import { decodePixels, encodePixels } from './fileFormat';
@@ -32,9 +33,26 @@ export function encodeLayerClip(f: LayerFragment): string {
       ...(l.instance && { instance: { ...l.instance } }),
       ...(l.effects?.length && { effects: l.effects }),
       ...encodePixels(l.pixels),
+      ...(l.cels && { cels: l.cels.map((c) => c && encodePixels(c.pixels)) }),
     })),
     groups: f.groups,
   });
+}
+
+/**
+ * A copied layer's drawings on each frame, its own pixels standing for the frame it was copied on
+ * (null). Left out when they don't read as that, and the paste spreads its pixels on every frame.
+ */
+function readCels(raw: unknown, size: number): (Cel | null)[] | undefined {
+  if (!Array.isArray(raw) || raw.length < 2 || raw.length > MAX_FRAMES) return undefined;
+  if (raw.filter((c) => c === null).length !== 1) return undefined;
+  const cels = raw.map((c): Cel | null | undefined => {
+    if (c === null) return null;
+    const p = c as Record<string, unknown>;
+    if (!p || !Array.isArray(p.colors) || !Array.isArray(p.runs)) return undefined;
+    return { pixels: decodePixels(p.colors as number[], p.runs as number[], size) };
+  });
+  return cels.includes(undefined) ? undefined : (cels as (Cel | null)[]);
 }
 
 const whole = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
@@ -95,6 +113,7 @@ export function decodeLayerClip(json: string): LayerFragment | null {
             }),
           ...(cleanEffects(l.effects) && { effects: cleanEffects(l.effects) }),
           pixels: decodePixels(l.colors as number[], l.runs as number[], width * height),
+          ...(readCels(l.cels, width * height) && { cels: readCels(l.cels, width * height) }),
         };
       });
     const id = typeof data.id === 'string' ? { id: data.id } : {};
