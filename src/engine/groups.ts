@@ -109,10 +109,6 @@ export type LayerItem = { kind: 'layer'; id: string } | { kind: 'group'; id: str
 export const itemLayers = (doc: PixelDoc, item: LayerItem): Layer[] =>
   item.kind === 'layer' ? doc.layers.filter((l) => l.id === item.id) : groupLayers(doc, item.id);
 
-/** The group an item is in. */
-export const itemParent = (doc: PixelDoc, item: LayerItem): string | undefined =>
-  item.kind === 'layer' ? doc.layers.find((l) => l.id === item.id)?.group : findGroup(doc, item.id)?.parent;
-
 /** How many group levels an item adds when put in a group: 0 for a layer, 1 or more for a group. */
 export function itemHeight(doc: PixelDoc, item: LayerItem, depth = 0): number {
   if (item.kind === 'layer') return 0;

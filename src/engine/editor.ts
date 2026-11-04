@@ -493,7 +493,7 @@ export class Editor {
   /** The colors of every frame, so they stay the same from one frame to the next. */
   private colorsOfDrawing(): Color[] {
     const c = this.drawingColors;
-    if (c && c.doc === this.doc && c.revision === this.revision) return c.colors;
+    if (c && c.doc === this.doc && c.revision === this.pixelRevision) return c.colors;
     const doc = this.doc;
     const found = new Set(uniqueColors(this.flatten({ includeBackground: false })));
     const n = frameCount(doc);
@@ -511,7 +511,7 @@ export class Editor {
       });
     }
     const colors = sortByLightness([...found]);
-    this.drawingColors = { doc, revision: this.revision, colors };
+    this.drawingColors = { doc, revision: this.pixelRevision, colors };
     return colors;
   }
 
@@ -672,6 +672,8 @@ export class Editor {
   private myPalettes: MyPalette[] = [];
   private revision = 0;
   private contentRevision = 0;
+  /** Goes up with every change that may touch pixels, saved or not: picking a tool or a layer doesn't. */
+  private pixelRevision = 0;
   private state!: EditorState;
 
   private listeners = new Set<Listener>();
@@ -805,6 +807,7 @@ export class Editor {
       this.linkFiles();
       for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
       if (persist) this.contentRevision++;
+      this.pixelRevision++;
     }
     this.refresh();
     this.listeners.forEach((l) => l());
@@ -1454,8 +1457,8 @@ export class Editor {
   /**
    * Moves a layer of the active board to another board of the file, keeping where it is in the
    * file (what's outside the new board is kept outside it), and makes that board active with the
-   * layer selected. Components and their copies stay on their board: their links don't cross
-   * boards yet. One undo step on each board. Returns false when nothing moved.
+   * layer selected. A component keeps its id, so its instances follow it to the new board. One
+   * undo step on each board. Returns false when nothing moved.
    */
   moveLayerToBoard(layerId: string, boardId: string): boolean {
     const from = this.active;
@@ -1473,8 +1476,6 @@ export class Editor {
     const dx = (src.board?.x ?? 0) - (dst.board?.x ?? 0);
     const dy = (src.board?.y ?? 0) - (dst.board?.y ?? 0);
     const moved = reframe(layer.pixels, src.width, src.height, layer.outside, dx, dy, dst.width, dst.height);
-    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
-    // go when their last one does.
     // Both sides are one step: undone (and redone) together.
     const id = newId('move');
     const link = { from, to, created: !dst.layers.length } as {
@@ -1484,6 +1485,8 @@ export class Editor {
       at?: number;
     };
     this.links.set(id, link);
+    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
+    // go when their last one does.
     const emptied = isFreeZone(src) && src.layers.length === 1;
     if (!emptied) {
       this.edit((doc) => {
@@ -1929,6 +1932,7 @@ export class Editor {
     if (next === (doc[key] ?? size / 2)) return;
     if (next === size / 2) delete doc[key];
     else doc[key] = next;
+    this.touch();
     this.commit();
   }
 
@@ -2874,6 +2878,7 @@ export class Editor {
       this.effectChange = false;
       this.commit();
     } else {
+      this.pixelRevision++;
       this.refresh();
       this.listeners.forEach((l) => l());
       this.pixelsChanged();
@@ -2900,7 +2905,7 @@ export class Editor {
 
   setColor(slot: 'primary' | 'secondary', color: Color): void {
     this[slot] = color >>> 0;
-    this.commit();
+    this.commit(true, false);
   }
 
   /** Moves colors to the front of the recent colors (transparent ones are skipped). */
@@ -3100,7 +3105,7 @@ export class Editor {
     if (this.stroke) this.endStroke();
     if (this.backgroundPick) this.cancelBackgroundPick(false);
     this.tool = tool;
-    this.commit();
+    this.commit(true, false);
   }
 
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
@@ -3852,6 +3857,7 @@ export class Editor {
     if (!this.adjusting) return;
     const before = this.doc.background;
     this.writeAdjustment(change, background);
+    this.pixelRevision++;
     const a = this.adjusting;
     // The background's swatch in the right panel follows the preview, not only the canvas.
     if (this.doc.background !== before) this.select();
@@ -4301,6 +4307,9 @@ export class Editor {
             layer.pixels[ty * doc.width + tx] = block.pixels[by * block.width + bx];
         }
       }
+      // In the active layer's group, right above it, like a new layer.
+      const group = activeLayer(doc).group;
+      if (group) layer.group = group;
       doc.layers.splice(doc.activeLayer + 1, 0, layer);
       doc.activeLayer += 1;
       this.active.selection = {

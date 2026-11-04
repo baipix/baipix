@@ -140,7 +140,20 @@ export function toGpl(colors: Color[], name: string): string {
 
 /** Colors from a palette file: GIMP `.gpl` when it says so, hex codes otherwise (`.hex`, `.txt`…). */
 export const parsePaletteFile = (text: string): Color[] =>
-  /^\s*GIMP Palette/.test(text) ? parseGpl(text) : parseHexList(text);
+  /^\s*GIMP Palette/.test(text) ? parseGpl(text) : (parsePaintNet(text) ?? parseHexList(text));
+
+/**
+ * Paint.NET palette (`.txt`, also on Lospec): comment lines starting with ;, then one AARRGGBB
+ * code per line. The alpha is left out, as colors in a palette are opaque. Null when it isn't one.
+ */
+function parsePaintNet(text: string): Color[] | null {
+  const codes = text
+    .split(/\r?\n/)
+    .map((line) => /^\s*[0-9a-f]{2}([0-9a-f]{6})\s*$/i.exec(line)?.[1])
+    .filter((code): code is string => !!code);
+  if (!codes.length) return null;
+  return parseHexList(codes.join(' '));
+}
 
 /**
  * How lighten and shade pick the next color:

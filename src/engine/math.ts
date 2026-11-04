@@ -20,9 +20,6 @@ export const rectFromPoints = (a: Point, b: Point): Rect => ({
   h: Math.abs(a.y - b.y) + 1,
 });
 
-export const rectContains = (r: Rect | null, x: number, y: number): boolean =>
-  !r || (x >= r.x && y >= r.y && x < r.x + r.w && y < r.y + r.h);
-
 /** Intersects a rectangle with the canvas bounds. */
 export const clipRect = (r: Rect, width: number, height: number): Rect => {
   const x0 = clamp(r.x, 0, width);
