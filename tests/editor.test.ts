@@ -1076,6 +1076,13 @@ describe('Editor', () => {
       expect(e.getState().doc.axisY).toBeUndefined();
     });
 
+    it('marks the board changed, so the autosave keeps a moved axis', () => {
+      const e = new Editor();
+      e.getState().doc.updatedAt = 1000;
+      e.setMirrorAxis('x', 10);
+      expect(e.getState().doc.updatedAt).toBeGreaterThan(1000);
+    });
+
     it('keeps moved axes in files and when resizing', () => {
       const e = new Editor();
       e.setMirrorAxis('x', 10);

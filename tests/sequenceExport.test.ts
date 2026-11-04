@@ -115,4 +115,16 @@ describe('PNG sequence export', () => {
       'ball/ball-03.png',
     ]);
   });
+
+  it('leaves out the layers outside the boards', async () => {
+    const loose = createDocument('slime', 2, 1);
+    loose.board = { file: 'f', fileName: 'slime', x: 10, y: 0, free: true };
+    await setup([slime('slime'), loose]).exportAllBoards('sequence');
+
+    expect(mocks.zipFiles.map((f) => f.name)).toEqual([
+      'slime/slime-01.png',
+      'slime/slime-02.png',
+      'slime/slime-03.png',
+    ]);
+  });
 });

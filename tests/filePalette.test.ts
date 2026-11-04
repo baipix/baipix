@@ -27,6 +27,20 @@ describe('the palette belongs to the file', () => {
     expect(e.getState().palette.colors).toEqual([RED]);
   });
 
+  it('works the colors of the drawing out again only when pixels change', () => {
+    const e = new Editor();
+    e.setPalettePreset('drawing');
+    dot(e, 0, RED);
+    e.addLayer();
+    const colors = e.getState().palette.colors;
+    e.selectLayer(0, 'single');
+    e.setTool('eraser');
+    e.setColor('primary', BLUE);
+    expect(e.getState().palette.colors).toBe(colors);
+    dot(e, 1, BLUE);
+    expect(e.getState().palette.colors).not.toBe(colors);
+  });
+
   it('takes the colors of every frame, whichever one is shown', () => {
     const e = new Editor();
     e.setPalettePreset('drawing');
