@@ -86,8 +86,11 @@ export const DOCS: DocSection[] = [
   },
   {
     title: 'Reference',
-    intro: 'Every keyboard shortcut, read from the editor itself.',
-    pages: [{ slug: 'reference/shortcuts', title: 'Keyboard shortcuts' }],
+    intro: 'Every keyboard shortcut, read from the editor itself, and scripting the editor.',
+    pages: [
+      { slug: 'reference/shortcuts', title: 'Keyboard shortcuts' },
+      { slug: 'reference/scripting', title: 'Scripting' },
+    ],
   },
 ];
 
