@@ -140,11 +140,7 @@ function composeNodes(
       const pixels = withEffects(layer.pixels, width, height, layer.effects);
       // Nothing under it yet: every mode gives the layer as it is.
       if (empty && k === 1) out.set(pixels);
-      else
-        for (let i = 0; i < out.length; i++) {
-          const c = pixels[i];
-          if (c >>> 24) out[i] = blendWith(mode, c, out[i], k);
-        }
+      else layDown(pixels, out, mode, k);
       empty = false;
       continue;
     }
@@ -156,16 +152,25 @@ function composeNodes(
     }
     const own = new Uint32Array(out.length);
     if (!composeNodes(node.children, own, 1, true, width, height)) {
-      const mode = group.blendMode ?? 'normal';
-      const k = group.opacity * opacity;
-      for (let i = 0; i < out.length; i++) {
-        const c = own[i];
-        if (c >>> 24) out[i] = blendWith(mode, c, out[i], k);
-      }
+      layDown(own, out, group.blendMode ?? 'normal', group.opacity * opacity);
       empty = false;
     }
   }
   return empty;
+}
+
+/**
+ * Lays `pixels` over `out` in `mode` at opacity `k`. An opaque pixel in normal mode at full
+ * opacity simply covers what's under it: most pixels of pixel art, so they skip the blending.
+ */
+function layDown(pixels: Uint32Array, out: Uint32Array, mode: BlendMode, k: number): void {
+  const covers = mode === 'normal' && k === 1;
+  for (let i = 0; i < out.length; i++) {
+    const c = pixels[i];
+    const a = c >>> 24;
+    if (a === 255 && covers) out[i] = c;
+    else if (a) out[i] = blendWith(mode, c, out[i], k);
+  }
 }
 
 /**
