@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- An API for AI agents, on `window.baipix`: an agent driving the browser draws with the same tools as you, with plain colors and pixel coordinates, and can look at its drawing as text or as a PNG. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an agent at.
+- Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at.
 
 ### Changed
 

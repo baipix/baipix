@@ -1,6 +1,8 @@
-import { alpha, pack, red, green, blue, type Color } from '../engine/color';
+import { alpha, opaque, pack, red, green, blue, withAlpha, type Color } from '../engine/color';
+import { hasBackground } from '../engine/document';
 import type { Editor, Notice } from '../engine/editor';
 import { activeFrame, frameCount } from '../engine/frames';
+import { PALETTE_PRESETS, presetColors, remapTable, type RemapMode } from '../engine/palette';
 import { TOOLS, type Modifiers, type ToolId, type ToolOptions } from '../engine/tools';
 import { fileFromJson, fileToJson } from '../storage/fileFormat';
 
@@ -56,8 +58,50 @@ export interface LayerInfo {
   active: boolean;
 }
 
+export interface FileEntry {
+  index: number;
+  name: string;
+  width: number;
+  height: number;
+  boards: number;
+  active: boolean;
+}
+
+export interface BoardEntry {
+  index: number;
+  name: string;
+  width: number;
+  height: number;
+  /** Its place in the file, in pixels. */
+  x: number;
+  y: number;
+  active: boolean;
+}
+
+/** What `remap` does: the Remap tab of Adjust colors, on one board or all of them. */
+export interface RemapOptions {
+  /** The palette to go to: a preset key (see `palettes()`) or colors. Default: the file's own. */
+  palette?: string | HexColor[];
+  /** `nearest` snaps each color to the closest one; `lightness` keeps dark to dark, light to light. */
+  mode?: RemapMode;
+  /** Use only this many colors of the palette. Default: all of them. */
+  count?: number;
+  /** The file's palette becomes the colors used. Default: false, as in the panel. */
+  replacePalette?: boolean;
+  /** The background goes to the palette too (not with a selection). Default: true. */
+  background?: boolean;
+  /** Every layer (default) or the active one. Locked layers stay as they are. */
+  layers?: 'all' | 'active';
+  /** The active board (default) or every board of the file. */
+  boards?: 'active' | 'all';
+  /** Every animation frame (default) or the one shown. */
+  frames?: 'all' | 'active';
+}
+
 export interface AgentState {
   file: string;
+  board: string;
+  boards: number;
   width: number;
   height: number;
   tool: ToolId;
@@ -136,7 +180,10 @@ Coordinates are art pixels from the top left (x right, y down). Colors are "#rrg
 Everything goes through the editor's own tools: the interface updates and every change can be undone.
 
 Look:    state()  layers()  pixel(x, y)  pixels()  ascii()  png(scale?)
-Files:   newFile(w, h, name?)  open(baipixJson)  save()
+Files:   files()  selectFile(indexOrName)  newFile(w, h, name?)  open(baipixJson)  save()
+Boards:  boards()  selectBoard(indexOrName)  duplicateBoard(name?, board?)  renameBoard(name, board?)
+         resizeBoard(w, h, offset?)
+Colors:  palettes()  remap({ palette, mode, count, replacePalette, boards: 'all', ... })
 Setup:   tools()  setTool(id)  setOptions({ size, filled, dither, ... })  options()
          setColor(hex, 'primary'|'secondary')  setPalette([hex, ...])
 Draw:    stroke(points, { tool, color, options, secondary, shift })   one gesture, one undo step
@@ -150,7 +197,7 @@ Frames:  addFrame(empty?)  setFrame(i)  setFrameDuration(ms)
 History: undo()  redo()
 Raw:     editor   (the Editor itself, for anything else)
 Tools:   ${TOOL_IDS.join(', ')}
-Guide:   https://baipix.app/agent.md (steps, conventions, isometric volumes)`;
+Guide:   https://baipix.app/agent.md (steps, conventions, variations, isometric volumes)`;
 
 export type AgentApi = ReturnType<typeof createAgentApi>;
 
@@ -170,6 +217,25 @@ export function createAgentApi(editor: Editor, hooks: AgentHooks = {}) {
     if (i < 0 || i >= layers.length || !Number.isInteger(i))
       throw new Error(`No layer ${JSON.stringify(ref)}`);
     return i;
+  };
+
+  /** An item of a list by its index or its name. */
+  const find = <T extends { name: string }>(list: T[], ref: number | string, what: string): T => {
+    const item = typeof ref === 'number' ? list[ref] : list.find((x) => x.name === ref);
+    if (!item)
+      throw new Error(`No ${what} ${JSON.stringify(ref)}. ${what}s: ${list.map((x) => x.name).join(', ')}`);
+    return item;
+  };
+  const boardId = (ref?: number | string): string =>
+    ref === undefined ? doc().id : find(editor.getState().boards, ref, 'board').id;
+
+  /** The colors of `remap`'s palette: a preset's, the ones given, or the file's own. */
+  const remapTarget = (palette: RemapOptions['palette']): Color[] => {
+    if (palette === undefined) return editor.getState().palette.colors;
+    if (Array.isArray(palette)) return palette.map(parseColor);
+    if (!PALETTE_PRESETS[palette])
+      throw new Error(`No palette "${palette}". Palettes: ${Object.keys(PALETTE_PRESETS).join(', ')}`);
+    return presetColors(palette);
   };
 
   const checkTool = (id: string): ToolId => {
@@ -256,7 +322,9 @@ export function createAgentApi(editor: Editor, hooks: AgentHooks = {}) {
       const s = editor.getState();
       const sel = s.selection;
       return {
-        file: s.doc.name,
+        file: s.files.find((f) => f.id === s.activeId)?.name ?? s.doc.name,
+        board: s.doc.name,
+        boards: s.boards.length,
         width: s.doc.width,
         height: s.doc.height,
         tool: s.tool,
@@ -327,6 +395,28 @@ export function createAgentApi(editor: Editor, hooks: AgentHooks = {}) {
 
     /* ---------------------------------------------------------------- files */
 
+    /** The files in this browser's Baipix, the one open among them. */
+    files: (): FileEntry[] => {
+      const s = editor.getState();
+      return s.files.map((f, index) => ({
+        index,
+        name: f.name,
+        width: f.width,
+        height: f.height,
+        boards: f.boards,
+        active: f.id === s.activeId,
+      }));
+    },
+
+    /** Opens one of the files (see `files()`), on the board last used in it. */
+    selectFile: (ref: number | string) => {
+      const s = editor.getState();
+      const name = find(api.files(), ref, 'file').name;
+      editor.switchFile(s.files.find((f) => f.name === name)!.id);
+      opened();
+      return api.state();
+    },
+
     newFile: (width: number, height: number, name?: string) => {
       editor.newFile(width, height, name);
       opened();
@@ -343,6 +433,47 @@ export function createAgentApi(editor: Editor, hooks: AgentHooks = {}) {
     /** The active file as `.baipix` text, every board included. */
     save: (): string => fileToJson(editor.fileBoards()),
 
+    /* ---------------------------------------------------------------- boards */
+
+    /** The boards of the open file: a drawing and its variations, side by side. */
+    boards: (): BoardEntry[] => {
+      const s = editor.getState();
+      return s.boards.map((b, index) => ({
+        index,
+        name: b.name,
+        width: b.width,
+        height: b.height,
+        x: b.x,
+        y: b.y,
+        active: b.id === s.doc.id,
+      }));
+    },
+
+    /** Goes to a board: drawing calls then paint on it. */
+    selectBoard: (ref: number | string) => {
+      editor.switchBoard(boardId(ref));
+      return api.boards();
+    },
+
+    /**
+     * Copies a board (the active one by default), layers and frames included, beside it, and goes
+     * to the copy: the start of a variation.
+     */
+    duplicateBoard: (name?: string, ref?: number | string) => {
+      editor.duplicateBoard(boardId(ref));
+      if (name) editor.renameBoard(doc().id, name);
+      return api.boards();
+    },
+
+    renameBoard: (name: string, ref?: number | string) => editor.renameBoard(boardId(ref), name),
+
+    /**
+     * Changes the active board's size, the drawing kept as it is (centered, or its top left corner at
+     * `offset`): room to redraw it bigger. One undo step.
+     */
+    resizeBoard: (width: number, height: number, offset?: PointInput) =>
+      editor.resize(width, height, offset && toPoint(offset)),
+
     /* ---------------------------------------------------------------- tools and colors */
 
     tools: (): ToolId[] => [...TOOL_IDS],
@@ -354,6 +485,61 @@ export function createAgentApi(editor: Editor, hooks: AgentHooks = {}) {
       editor.setColor(slot, parseColor(hex)),
 
     setPalette: (colors: HexColor[]) => editor.setPaletteColors(colors.map(parseColor)),
+
+    /** The palettes `remap` and `setPalette` can use, by key. */
+    palettes: (): Record<string, { name: string; colors: HexColor[] }> =>
+      Object.fromEntries(
+        Object.entries(PALETTE_PRESETS).map(([key, p]) => [
+          key,
+          { name: p.name, colors: presetColors(key).map((c) => colorToHex(c)!) },
+        ]),
+      ),
+
+    /**
+     * Moves the drawing to another palette, like the Remap tab of Adjust colors. With several boards
+     * or frames, every color goes to the same new color on all of them. One undo step per board and
+     * frame. Returns what each color became.
+     */
+    remap: (o: RemapOptions = {}): Record<HexColor, HexColor> => {
+      const target = remapTarget(o.palette);
+      if (!target.length) throw new Error('The palette to remap to has no colors');
+      const start = doc().id;
+      const ids = o.boards === 'all' ? editor.getState().boards.map((b) => b.id) : [start];
+      const background = () => o.background !== false && hasBackground(doc()) && !editor.getState().selection;
+      // Each board and frame in turn, adjusted as the panel would: all layers, or the active one.
+      const each = (run: () => void) => {
+        try {
+          for (const id of ids) {
+            editor.switchBoard(id);
+            const shown = activeFrame(doc());
+            const frames = o.frames === 'active' ? [shown] : [...Array(frameCount(doc())).keys()];
+            try {
+              for (const f of frames) {
+                editor.setFrame(f, false);
+                lastNotice = null;
+                editor.beginAdjust(o.layers !== 'active');
+                if (!editor.isAdjusting) throw refused(`Cannot remap board "${doc().name}"`);
+                run();
+              }
+            } finally {
+              editor.setFrame(shown, false);
+            }
+          }
+        } finally {
+          editor.switchBoard(start);
+        }
+      };
+      // One table for them all, from every color they use, so a color changes the same way everywhere.
+      const used = new Map<Color, number>();
+      each(() => {
+        for (const [c, n] of editor.adjustedColors(background())) used.set(c, (used.get(c) ?? 0) + n);
+        editor.cancelAdjust();
+      });
+      const { table, colors } = remapTable(used, target, o.mode ?? 'nearest', o.count);
+      const map = (c: Color) => (alpha(c) ? withAlpha(table.get(opaque(c)) ?? opaque(c), alpha(c)) : c);
+      each(() => editor.applyMap(map, o.replacePalette ? () => colors : null, background()));
+      return Object.fromEntries([...table].map(([from, to]) => [colorToHex(from)!, colorToHex(to)!]));
+    },
 
     /* ---------------------------------------------------------------- draw */
 

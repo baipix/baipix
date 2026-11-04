@@ -140,4 +140,72 @@ describe('agent API', () => {
     expect(() => api.png()).toThrow(/browser/);
     expect(() => api.stroke([])).toThrow(/at least one point/);
   });
+
+  it('lists, picks, duplicates and renames boards', () => {
+    const api = setup(4, 4);
+    api.plot([[0, 0, '#ff0000']]);
+    expect(api.boards()).toMatchObject([{ index: 0, name: 'Agent', active: true }]);
+    api.duplicateBoard('Hurt');
+    expect(api.boards().map((b) => [b.name, b.active])).toEqual([
+      ['Agent', false],
+      ['Hurt', true],
+    ]);
+    // The copy is a variation to rework: drawing on it leaves the original as it was.
+    expect(api.pixel(0, 0)).toBe('#ff0000');
+    api.plot([[0, 0, '#ffffff']]);
+    api.selectBoard('Agent');
+    expect(api.pixel(0, 0)).toBe('#ff0000');
+    api.renameBoard('Idle');
+    expect(api.state()).toMatchObject({ board: 'Idle', boards: 2 });
+    expect(() => api.selectBoard('Nope')).toThrow(/No board "Nope"/);
+    api.resizeBoard(6, 5, [0, 0]);
+    expect(api.state()).toMatchObject({ width: 6, height: 5 });
+    expect(api.pixel(0, 0)).toBe('#ff0000');
+  });
+
+  it('lists the files and opens one by name', () => {
+    const api = setup(4, 4);
+    api.plot([[0, 0, '#ff0000']]); // A file left untouched goes away once another one opens.
+    api.newFile(6, 6, 'Other');
+    expect(
+      api
+        .files()
+        .filter((f) => f.name !== 'Untitled')
+        .map((f) => [f.name, f.active]),
+    ).toEqual([
+      ['Agent', false],
+      ['Other', true],
+    ]);
+    expect(api.selectFile('Agent')).toMatchObject({ file: 'Agent', width: 4 });
+  });
+
+  it('remaps every board and frame with one table, one undo step each', () => {
+    const api = setup(2, 1);
+    api.plot([
+      [0, 0, '#202020'],
+      [1, 0, '#e0e0e0'],
+    ]);
+    api.addFrame();
+    api.plot([[0, 0, '#e0e0e0']]);
+    api.setFrame(0);
+    api.duplicateBoard('Copy');
+    api.plot([[1, 0, '#202020']]);
+    const table = api.remap({ palette: ['#000000', '#ffffff'], boards: 'all', replacePalette: true });
+    expect(table).toEqual({ '#202020': '#000000', '#e0e0e0': '#ffffff' });
+    expect(api.ascii().rows).toEqual(['AA']);
+    expect(api.state().palette).toEqual(['#000000', '#ffffff']);
+    api.setFrame(1);
+    expect(api.pixel(0, 0)).toBe('#ffffff');
+    api.selectBoard(0);
+    expect([api.pixel(0, 0), api.pixel(1, 0)]).toEqual(['#000000', '#ffffff']);
+    // One step per frame, the last one first: undoing it shows that frame as it was.
+    api.undo();
+    expect(api.state().frame).toBe(1);
+    expect(api.pixel(0, 0)).toBe('#e0e0e0');
+    api.undo();
+    expect(api.state().frame).toBe(0);
+    expect(api.pixel(0, 0)).toBe('#202020');
+    expect(() => api.remap({ palette: 'nope' })).toThrow(/No palette "nope"/);
+    expect(api.palettes().pico8.colors[0]).toBe('#000000');
+  });
 });
