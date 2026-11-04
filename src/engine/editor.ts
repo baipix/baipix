@@ -1450,8 +1450,8 @@ export class Editor {
   /**
    * Moves a layer of the active board to another board of the file, keeping where it is in the
    * file (what's outside the new board is kept outside it), and makes that board active with the
-   * layer selected. Components and their copies stay on their board: their links don't cross
-   * boards yet. One undo step on each board. Returns false when nothing moved.
+   * layer selected. A component keeps its id, so its instances follow it to the new board. One
+   * undo step on each board. Returns false when nothing moved.
    */
   moveLayerToBoard(layerId: string, boardId: string): boolean {
     const from = this.active;
@@ -1469,8 +1469,6 @@ export class Editor {
     const dx = (src.board?.x ?? 0) - (dst.board?.x ?? 0);
     const dy = (src.board?.y ?? 0) - (dst.board?.y ?? 0);
     const moved = reframe(layer.pixels, src.width, src.height, layer.outside, dx, dy, dst.width, dst.height);
-    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
-    // go when their last one does.
     // Both sides are one step: undone (and redone) together.
     const id = newId('move');
     const link = { from, to, created: !dst.layers.length } as {
@@ -1480,6 +1478,8 @@ export class Editor {
       at?: number;
     };
     this.links.set(id, link);
+    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
+    // go when their last one does.
     const emptied = isFreeZone(src) && src.layers.length === 1;
     if (!emptied) {
       this.edit((doc) => {
