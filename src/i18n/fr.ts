@@ -10,6 +10,7 @@ export const fr: Record<MessageKey, string> = {
   'common.apply': 'Appliquer',
   'common.reset': 'Réinitialiser',
   'common.opacity': 'Opacité',
+  'common.beta': 'Bêta',
   'common.dragToAdjust': 'Glisse pour ajuster',
 
   'default.untitled': 'Sans titre',

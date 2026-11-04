@@ -456,6 +456,15 @@ function FieldsBlock() {
             <span className="caret">▾</span>
           </button>
         </Specimen>
+        <Specimen
+          label="Section badge"
+          use="A word after a section's title, quiet so it doesn't read as an action: Beta on a feature still being tried out (the Light section)."
+        >
+          <h2 className="section-title">
+            <span className="section-name">Light</span>
+            <span className="section-badge">Beta</span>
+          </h2>
+        </Specimen>
         <Specimen label="Checkbox" use="On/off settings. The native checkbox, in the accent color.">
           <Checkbox checked={checked} onChange={setChecked} label="Pixel grid" />
         </Specimen>
