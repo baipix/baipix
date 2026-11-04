@@ -493,7 +493,7 @@ export class Editor {
   /** The colors of every frame, so they stay the same from one frame to the next. */
   private colorsOfDrawing(): Color[] {
     const c = this.drawingColors;
-    if (c && c.doc === this.doc && c.revision === this.revision) return c.colors;
+    if (c && c.doc === this.doc && c.revision === this.pixelRevision) return c.colors;
     const doc = this.doc;
     const found = new Set(uniqueColors(this.flatten({ includeBackground: false })));
     const n = frameCount(doc);
@@ -511,7 +511,7 @@ export class Editor {
       });
     }
     const colors = sortByLightness([...found]);
-    this.drawingColors = { doc, revision: this.revision, colors };
+    this.drawingColors = { doc, revision: this.pixelRevision, colors };
     return colors;
   }
 
@@ -672,6 +672,8 @@ export class Editor {
   private myPalettes: MyPalette[] = [];
   private revision = 0;
   private contentRevision = 0;
+  /** Goes up with every change that may touch pixels, saved or not: picking a tool or a layer doesn't. */
+  private pixelRevision = 0;
   private state!: EditorState;
 
   private listeners = new Set<Listener>();
@@ -805,6 +807,7 @@ export class Editor {
       this.linkFiles();
       for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
       if (persist) this.contentRevision++;
+      this.pixelRevision++;
     }
     this.refresh();
     this.listeners.forEach((l) => l());
@@ -2870,6 +2873,7 @@ export class Editor {
       this.effectChange = false;
       this.commit();
     } else {
+      this.pixelRevision++;
       this.refresh();
       this.listeners.forEach((l) => l());
       this.pixelsChanged();
@@ -2896,7 +2900,7 @@ export class Editor {
 
   setColor(slot: 'primary' | 'secondary', color: Color): void {
     this[slot] = color >>> 0;
-    this.commit();
+    this.commit(true, false);
   }
 
   /** Moves colors to the front of the recent colors (transparent ones are skipped). */
@@ -3096,7 +3100,7 @@ export class Editor {
     if (this.stroke) this.endStroke();
     if (this.backgroundPick) this.cancelBackgroundPick(false);
     this.tool = tool;
-    this.commit();
+    this.commit(true, false);
   }
 
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
@@ -3848,6 +3852,7 @@ export class Editor {
     if (!this.adjusting) return;
     const before = this.doc.background;
     this.writeAdjustment(change, background);
+    this.pixelRevision++;
     const a = this.adjusting;
     // The background's swatch in the right panel follows the preview, not only the canvas.
     if (this.doc.background !== before) this.select();
