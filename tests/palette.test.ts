@@ -37,6 +37,9 @@ Columns: 4
 
   it('tells palette files apart', () => {
     expect(parsePaletteFile('GIMP Palette\n255 0 0 Red\n')).toEqual([pack(255, 0, 0)]);
+    // Paint.NET, as Lospec gives it: AARRGGBB, the alpha left out.
+    const pdn = ';paint.net Palette File\n;Palette Name: Sweetie 16\n;Colors: 2\nFF1a1c2c\nFF5d275d\n';
+    expect(parsePaletteFile(pdn)).toEqual([pack(0x1a, 0x1c, 0x2c), pack(0x5d, 0x27, 0x5d)]);
     expect(parsePaletteFile('1a1c2c\n5d275d\n')).toHaveLength(2);
     expect(parsePaletteFile('nothing here')).toEqual([]);
   });
