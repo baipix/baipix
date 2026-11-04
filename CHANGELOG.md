@@ -23,6 +23,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- The Light section shows a Beta badge: the light may still change, and feedback on it is welcome. ([#713](https://github.com/baipix/baipix/pull/713))
 - Colors, Remap and Outline change every frame of an animation, in one undo step, with All frames ticked (the default); Remap also maps the colors that only show on other frames. ([#708](https://github.com/baipix/baipix/pull/708))
 - Replace with the primary color everywhere replaces it on every frame, and a palette built from the drawing takes every frame's colors. ([#706](https://github.com/baipix/baipix/pull/706), [#709](https://github.com/baipix/baipix/pull/709))
 - The Drawing colors palette comes from every frame, so it stays the same while stepping through them. ([#707](https://github.com/baipix/baipix/pull/707))
@@ -33,6 +34,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Copied or cut layers keep their animation when pasted, in the same file or another one, instead of showing one frame on every frame. ([#714](https://github.com/baipix/baipix/pull/714))
+- Changing frame, playing, undoing or redoing while dragging several layers with the Move tool no longer writes one frame's pixels onto another: they wait for the drag to end. ([#715](https://github.com/baipix/baipix/pull/715))
+- An animated layer dragged out of its board, or onto a board with fewer frames, stays on its board with a message, instead of losing frames. ([#716](https://github.com/baipix/baipix/pull/716))
+- The undo history counts every frame in its memory budget, so a long session on a big animation no longer uses far more memory than it should. ([#717](https://github.com/baipix/baipix/pull/717))
 - Adding, deleting, pasting, moving or reversing frames with the Adjustments panel open no longer writes one frame's pixels onto another: frames wait for the adjustment to end. ([#703](https://github.com/baipix/baipix/pull/703))
 - A component's instance shows its master on every frame, not only the one shown, so exports come out right; a master with fewer frames on another board loops. ([#704](https://github.com/baipix/baipix/pull/704))
 - The toast's Undo after deleting a layer puts each drawing back on its own frame, even when frames were deleted, moved or added since. ([#705](https://github.com/baipix/baipix/pull/705))
