@@ -4297,6 +4297,9 @@ export class Editor {
             layer.pixels[ty * doc.width + tx] = block.pixels[by * block.width + bx];
         }
       }
+      // In the active layer's group, right above it, like a new layer.
+      const group = activeLayer(doc).group;
+      if (group) layer.group = group;
       doc.layers.splice(doc.activeLayer + 1, 0, layer);
       doc.activeLayer += 1;
       this.active.selection = {

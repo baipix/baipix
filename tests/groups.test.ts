@@ -466,3 +466,24 @@ describe('Align a group', () => {
     expect(b2.pixels[4 * 8 + 2]).toBe(RED);
   });
 });
+
+describe('pasting pixels in a group', () => {
+  it('puts them in the active layer’s group, which survives a reload', () => {
+    const e = new Editor();
+    e.newFile(4, 4, 'F');
+    e.addLayer();
+    e.selectLayer(0, 'single');
+    e.selectLayer(1, 'range');
+    e.groupSelection();
+    e.selectLayer(0, 'single');
+    e.getState().doc.layers[0].pixels[0] = RED;
+    e.selectAll();
+    e.copy();
+    e.paste();
+    const d = e.getState().doc;
+    const group = d.groups![0].id;
+    expect(d.layers.map((l) => l.group)).toEqual([group, group, group]);
+    expect(shape(layerTree(d))).toHaveLength(1);
+    expect(deserializeDocument(serializeDocument(d)).groups).toHaveLength(1);
+  });
+});
