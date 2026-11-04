@@ -1928,6 +1928,7 @@ export class Editor {
     if (next === (doc[key] ?? size / 2)) return;
     if (next === size / 2) delete doc[key];
     else doc[key] = next;
+    this.touch();
     this.commit();
   }
 
