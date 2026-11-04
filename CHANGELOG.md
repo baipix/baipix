@@ -23,6 +23,8 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Drawing is lighter on big files: merging the layers, which the canvas does on every move of the pointer and every frame of an animation, is about ten times faster, and picking a layer, a tool or a color no longer works the drawing's colors out again. ([#719](https://github.com/baipix/baipix/pull/719), [#720](https://github.com/baipix/baipix/pull/720))
+- Paint.NET palettes (.txt), as Lospec also gives them, open with their colors. ([#726](https://github.com/baipix/baipix/pull/726))
 - The Light section shows a Beta badge: the light may still change, and feedback on it is welcome. ([#713](https://github.com/baipix/baipix/pull/713))
 - Colors, Remap and Outline change every frame of an animation, in one undo step, with All frames ticked (the default); Remap also maps the colors that only show on other frames. ([#708](https://github.com/baipix/baipix/pull/708))
 - Replace with the primary color everywhere replaces it on every frame, and a palette built from the drawing takes every frame's colors. ([#706](https://github.com/baipix/baipix/pull/706), [#709](https://github.com/baipix/baipix/pull/709))
@@ -34,6 +36,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Pixels pasted in a group stay in it, instead of splitting it in two and losing the group on the next reload. ([#721](https://github.com/baipix/baipix/pull/721))
+- A layer brought back by the toast's Undo joins a group made around its place since, instead of splitting it. ([#722](https://github.com/baipix/baipix/pull/722))
+- A moved symmetry axis is saved, and undoing a step no longer puts it back where it was. ([#723](https://github.com/baipix/baipix/pull/723), [#724](https://github.com/baipix/baipix/pull/724))
+- Export with All boards leaves out the layers outside the boards, instead of adding them as one more picture. ([#725](https://github.com/baipix/baipix/pull/725))
 - Copied or cut layers keep their animation when pasted, in the same file or another one, instead of showing one frame on every frame. ([#714](https://github.com/baipix/baipix/pull/714))
 - Changing frame, playing, undoing or redoing while dragging several layers with the Move tool no longer writes one frame's pixels onto another: they wait for the drag to end. ([#715](https://github.com/baipix/baipix/pull/715))
 - An animated layer dragged out of its board, or onto a board with fewer frames, stays on its board with a message, instead of losing frames. ([#716](https://github.com/baipix/baipix/pull/716))
