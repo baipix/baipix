@@ -5,8 +5,6 @@
  */
 export type Color = number;
 
-export const TRANSPARENT: Color = 0;
-
 export const pack = (r: number, g: number, b: number, a = 255): Color =>
   (((a & 255) << 24) | ((b & 255) << 16) | ((g & 255) << 8) | (r & 255)) >>> 0;
 
