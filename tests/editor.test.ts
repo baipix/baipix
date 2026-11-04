@@ -1083,6 +1083,17 @@ describe('Editor', () => {
       expect(e.getState().doc.updatedAt).toBeGreaterThan(1000);
     });
 
+    it('stays where it was moved when a drawing step is undone', () => {
+      const e = new Editor();
+      e.setColor('primary', RED);
+      drag(e, [[1, 1]]);
+      e.setMirrorAxis('x', 10);
+      e.undo();
+      expect(e.getState().doc.axisX).toBe(10);
+      e.redo();
+      expect(e.getState().doc.axisX).toBe(10);
+    });
+
     it('keeps moved axes in files and when resizing', () => {
       const e = new Editor();
       e.setMirrorAxis('x', 10);

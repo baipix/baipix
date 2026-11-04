@@ -859,9 +859,9 @@ export class Editor {
     const palette = snapshot.palette ?? this.active.doc.palette;
     if (palette) snapshot.doc.palette = palette;
     else delete snapshot.doc.palette;
-    // The reference image and the guides aren't part of the history: undo and redo leave them,
-    // except across a canvas resize, which moved them with the drawing.
-    const { reference, guides, isoGrid, isoGridVertical, light } = this.active.doc;
+    // The reference image, the guides and the symmetry axes aren't part of the history: undo and
+    // redo leave them, except across a canvas resize, which moved them with the drawing.
+    const { reference, guides, axisX, axisY, isoGrid, isoGridVertical, light } = this.active.doc;
     // The isometric grid and the light aren't either, resize or not.
     if (light) snapshot.doc.light = light;
     else delete snapshot.doc.light;
@@ -875,6 +875,10 @@ export class Editor {
       if (!reference) delete snapshot.doc.reference;
       snapshot.doc.guides = guides;
       if (!guides) delete snapshot.doc.guides;
+      if (axisX === undefined) delete snapshot.doc.axisX;
+      else snapshot.doc.axisX = axisX;
+      if (axisY === undefined) delete snapshot.doc.axisY;
+      else snapshot.doc.axisY = axisY;
     }
     // Names and the board's place aren't part of the history either: a board moved or renamed stays
     // so. A resize by the board's sides moved it with its size, so undoing it puts it back.
