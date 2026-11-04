@@ -172,8 +172,6 @@ Baipix speaks Italian and Japanese now, six languages in all. It opens in your b
 
 **Export always asks.** File › Export, <kbd>Ctrl</kbd>+<kbd>E</kbd> and <kbd>Ctrl</kbd>+<kbd>S</kbd> open the Export dialog now, like the Export button. Before, they exported straight away in the last format you'd used.
 
-The rest is in the [changelog](https://github.com/baipix/baipix/blob/main/CHANGELOG.md).
-
 ## Thanks
 
 Several people worked on this release. Thank you.
@@ -187,5 +185,7 @@ Several people worked on this release. Thank you.
 ## Try it
 
 There's nothing to install or update. Open [the editor](/app/), your drawings are where you left them. Click the film next to Export and make something move.
+
+The full list of changes is in the [release notes](https://github.com/baipix/baipix/releases/tag/v0.8.0).
 
 If something doesn't work, or you'd like it to work differently, [tell me on GitHub](https://github.com/baipix/baipix/discussions).
