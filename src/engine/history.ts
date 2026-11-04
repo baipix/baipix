@@ -29,7 +29,24 @@ export const takeSnapshot = (doc: PixelDoc, selection: Selection | null): Snapsh
   selection: selection ? { ...selection } : null,
 });
 
-const snapshotBytes = (s: Snapshot): number => s.doc.width * s.doc.height * 4 * s.doc.layers.length;
+/**
+ * What a stack of snapshots weighs: each layer's pixels, and its drawings on the other frames.
+ * Those are shared between snapshots until they change, so each counts once.
+ */
+function stackBytes(stack: Snapshot[]): number {
+  const seen = new Set<Uint32Array>();
+  let total = 0;
+  for (const { doc } of stack)
+    for (const layer of doc.layers) {
+      total += layer.pixels.length * 4;
+      for (const cel of layer.cels ?? [])
+        if (cel && !seen.has(cel.pixels)) {
+          seen.add(cel.pixels);
+          total += cel.pixels.length * 4;
+        }
+    }
+  return total;
+}
 
 /**
  * Snapshot-based undo/redo. Pixel art documents are small, so full snapshots are simpler
@@ -53,9 +70,8 @@ export class History {
   push(snapshot: Snapshot): void {
     this.undoStack.push(snapshot);
     this.redoStack = [];
-    let total = this.undoStack.reduce((sum, s) => sum + snapshotBytes(s), 0);
-    while (this.undoStack.length > 12 && total > this.budgetBytes) {
-      total -= snapshotBytes(this.undoStack.shift()!);
+    while (this.undoStack.length > 12 && stackBytes(this.undoStack) > this.budgetBytes) {
+      this.undoStack.shift();
     }
   }
 
