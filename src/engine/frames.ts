@@ -283,9 +283,6 @@ export function pasteFrames(doc: PixelDoc, after: number, copies: FrameCopy[]): 
   return true;
 }
 
-/** Copies a board's frames and cels for a copy of it: cels are never changed in place, so shared. */
-export const cloneCels = (cels: Layer['cels']): Layer['cels'] => cels && cels.slice();
-
 export interface OnionSkin {
   /** Frames shown before and after the active one. */
   before: number;

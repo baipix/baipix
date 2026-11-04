@@ -288,5 +288,3 @@ export function ColorPicker() {
     </div>
   );
 }
-
-export const PICKER_WIDTH_PX = PICKER_WIDTH;
