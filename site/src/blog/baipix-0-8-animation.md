@@ -27,7 +27,7 @@ Here's what's in this release.
 | [GIF](#a-gif)                            | Every frame with its duration, looping, exact colors                  |
 | [For game engines](#for-a-game-engine)   | A PNG sequence, or a sprite sheet with its JSON                       |
 | [Aseprite](#to-keep-going-in-aseprite)   | Every frame and its duration, in an .aseprite file                    |
-| [Light](#a-light-to-shade-by)            | A light for each board, and a shadow that follows it                  |
+| [Light](#a-light-to-shade-by-beta)       | A light for each board, and a shadow that follows it                  |
 | [Colors](#colors-on-every-frame)         | Adjustments and Remap change every frame, the background too          |
 | [Languages](#italian-and-japanese)       | Italian and Japanese                                                  |
 
@@ -126,9 +126,11 @@ When a layer doesn't change from one frame to the next, like the sky behind the 
 
 The [animation docs](/docs/animation/animation/) go through all of this in more detail.
 
-## A light to shade by
+## A light to shade by (beta)
 
 Each board can have a light now, to shade by, in the new **Light** section on the right.
+
+This one is still a test. I'm not sure yet it's the right way to do it, so if you try it, [tell me what you think](https://github.com/baipix/baipix/discussions).
 
 <figure class="wide">
   <img class="for-light" src="/blog/0-8/light-light.webp" width="1200" height="750" alt="The hobbit house drawing with faint diagonal lines over it and a small sun in its top left corner, and the Light section on the right: a pixel sphere lit from the top left, an angle of 135° and a height of 40°." loading="lazy" />
