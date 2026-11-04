@@ -764,6 +764,8 @@ export const ja: Record<MessageKey, string> = {
   'toast.groupTooDeep': 'グループは4階層までです。',
   'toast.instanceLocked':
     'これはインスタンスです。すべてのコピーを変えるには、コンポーネント側に描いてください。',
+  'toast.layerFrames':
+    'このレイヤーはアニメーションしています。同じ数以上のフレームがあるボードにだけ移動できます。',
   'toast.layerToBoard': '{board}に移動しました。',
   'toast.componentCreated':
     'コンポーネントを作成しました。コンポーネントの一覧からドラッグすると、コピーを配置できます。',

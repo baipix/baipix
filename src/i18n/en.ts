@@ -759,6 +759,7 @@ export const en = {
   'toast.pixelsRecovered': 'Pixels recovered: {w} × {h}, from an image scaled up ×{scale}.',
   'toast.groupTooDeep': 'Groups go four levels deep.',
   'toast.instanceLocked': 'This is an instance: draw on its component to change every copy.',
+  'toast.layerFrames': 'This layer is animated: it can only go to a board with as many frames.',
   'toast.layerToBoard': 'Moved to {board}.',
   'toast.componentCreated': 'Component created. Drag it from the Components list to place copies.',
   'toast.cut': 'Cut.',
