@@ -12,7 +12,7 @@ Baipix 0.8 is out. Until now, a drawing in Baipix was one still picture. If you 
 
 Now you can animate right in the editor. You add frames, see the ones around the one you're drawing, play them, and take them out as a GIF or as files for a game engine. Your old drawings don't change, they're just animations with one frame.
 
-<figure class="wide">
+<figure>
   <img src="/blog/0-8/ecto-1.webp" width="1072" height="944" alt="The Ecto-1 driving, its wheels turning and smoke behind it, over a simple timeline with a row per layer, from the roof rack to the speed lines, the column of the frame shown moving from 1 to 16." />
   <figcaption>16 frames of 70 ms, and its seven layers. <a href="/app/?open=/blog/0-8/ecto-1.baipix">Open it in Baipix</a> to see how it's made.</figcaption>
 </figure>
@@ -35,7 +35,7 @@ Here's what's in this release.
 
 The **Animate** button, the little film beside Export, opens a timeline under the canvas. There's a row per layer and a column per frame.
 
-<figure class="wide">
+<figure>
   <img class="for-light" src="/blog/0-8/animation-light.webp" width="1440" height="900" alt="The slime in the editor, mid-jump on frame 6 of 14, the timeline open under the canvas with a row per layer, and the onion skin showing the frames before in red and after in blue." loading="lazy" />
   <img class="for-dark" src="/blog/0-8/animation-dark.webp" width="1440" height="900" alt="The slime in the editor, mid-jump on frame 6 of 14, the timeline open under the canvas with a row per layer, and the onion skin showing the frames before in red and after in blue." loading="lazy" />
 </figure>
@@ -71,7 +71,7 @@ Reverse helps for a move that comes back. Copy the frames of the slime going up,
 
 With onion skin on, the frames before the one you're drawing show in red, and the ones after in blue, faded under it. The ghost button in the timeline turns it on and off.
 
-<figure class="wide">
+<figure>
   <img class="for-light" src="/blog/0-8/onion-light.webp" width="1440" height="900" alt="The slime on frame 6, with the next frames faded in blue above it and the frames before in red below, and the timeline under the canvas with the onion skin button on, three frames before and three after, at 70%." loading="lazy" />
   <img class="for-dark" src="/blog/0-8/onion-dark.webp" width="1440" height="900" alt="The slime on frame 6, with the next frames faded in blue above it and the frames before in red below, and the timeline under the canvas with the onion skin button on, three frames before and three after, at 70%." loading="lazy" />
   <figcaption>Where the slime was, in red, and where it's going, in blue.</figcaption>
@@ -132,7 +132,7 @@ Each board can have a light now, to shade by, in the new **Light** section on th
 
 This one is still a test. I'm not sure yet it's the right way to do it, so if you try it, [tell me what you think](https://github.com/baipix/baipix/discussions).
 
-<figure class="wide">
+<figure>
   <img class="for-light" src="/blog/0-8/light-light.webp" width="1200" height="750" alt="The hobbit house drawing with faint diagonal lines over it and a small sun in its top left corner, and the Light section on the right: a pixel sphere lit from the top left, an angle of 135° and a height of 40°." loading="lazy" />
   <img class="for-dark" src="/blog/0-8/light-dark.webp" width="1200" height="750" alt="The hobbit house drawing with faint diagonal lines over it and a small sun in its top left corner, and the Light section on the right: a pixel sphere lit from the top left, an angle of 135° and a height of 40°." loading="lazy" />
   <figcaption>The light comes from the top left. The lines on the canvas show its direction.</figcaption>
@@ -159,7 +159,7 @@ Now the background goes to the new palette too, in the same undo. If you want to
 
 Baipix speaks Italian and Japanese now, six languages in all. It opens in your browser's language when it knows it, and you can change it in View › Language.
 
-<figure class="wide">
+<figure>
   <img class="for-light" src="/blog/0-8/japanese-light.webp" width="1440" height="900" alt="The editor in Japanese, with the ramen shop drawing open." loading="lazy" />
   <img class="for-dark" src="/blog/0-8/japanese-dark.webp" width="1440" height="900" alt="The editor in Japanese, with the ramen shop drawing open." loading="lazy" />
 </figure>
@@ -182,6 +182,8 @@ Several people worked on this release. Thank you.
 - [@jalal-sadat](https://github.com/jalal-sadat) fixed some React warnings, his first contribution.
 - [@bfs2021](https://github.com/bfs2021) made the files screen fill wide windows.
 
+<div class="post-end">
+
 ## Try it
 
 There's nothing to install or update. Open [the editor](/app/), your drawings are where you left them. Click the film next to Export and make something move.
@@ -189,3 +191,5 @@ There's nothing to install or update. Open [the editor](/app/), your drawings ar
 The full list of changes is in the [release notes](https://github.com/baipix/baipix/releases/tag/v0.8.0).
 
 If something doesn't work, or you'd like it to work differently, [tell me on GitHub](https://github.com/baipix/baipix/discussions).
+
+</div>
