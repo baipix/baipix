@@ -10,6 +10,7 @@ export const it: Record<MessageKey, string> = {
   'common.apply': 'Applica',
   'common.reset': 'Ripristina',
   'common.opacity': 'Opacità',
+  'common.beta': 'Beta',
   'common.dragToAdjust': 'Trascina per regolare',
 
   'default.untitled': 'Senza titolo',

@@ -555,6 +555,7 @@ function LightSection() {
     <Section
       id="light"
       title={t('section.light')}
+      badge={t('common.beta')}
       info={t('light.info')}
       aside={
         light ? (

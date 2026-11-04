@@ -10,6 +10,7 @@ export const ja: Record<MessageKey, string> = {
   'common.apply': '適用',
   'common.reset': 'リセット',
   'common.opacity': '不透明度',
+  'common.beta': 'ベータ',
   'common.dragToAdjust': 'ドラッグして調整',
 
   'default.untitled': '名称未設定',

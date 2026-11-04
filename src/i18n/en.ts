@@ -9,6 +9,7 @@ export const en = {
   'common.apply': 'Apply',
   'common.reset': 'Reset',
   'common.opacity': 'Opacity',
+  'common.beta': 'Beta',
   'common.dragToAdjust': 'Drag to adjust',
 
   'default.untitled': 'Untitled',

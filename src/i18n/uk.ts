@@ -10,6 +10,7 @@ export const uk: Record<MessageKey, string> = {
   'common.apply': 'Застосувати',
   'common.reset': 'Скинути',
   'common.opacity': 'Непрозорість',
+  'common.beta': 'Бета',
   'common.dragToAdjust': 'Перетягніть, щоб змінити значення',
 
   'default.untitled': 'Без назви',
