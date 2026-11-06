@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. ([#739](https://github.com/baipix/baipix/pull/739))
+
 ### Website
 
 - The Draw page's Remap example is the car from the animation tutorial: it drives while its colors switch from one palette to the next, on every frame. ([#737](https://github.com/baipix/baipix/pull/737))
