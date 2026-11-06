@@ -2,7 +2,18 @@
 /** A version's changes on the What's new page: New, Better, Fixed, then who to thank, with their avatar. */
 import type { Release } from '../changelog';
 
-const { release } = Astro.props as { release: Release };
+const { release, limit = Infinity } = Astro.props as {
+  release: Release;
+  /** How many lines show at first; the others get `extra`, for the page to show on demand. */
+  limit?: number;
+};
+// Each group's lines, numbered across the groups.
+let shown = 0;
+const groups = release.groups.map((group) => {
+  const first = shown;
+  shown += group.items.length;
+  return { ...group, first };
+});
 // One line per person, with everything they did in this version.
 const people = [...Map.groupBy(release.thanks, (t) => t.login)].map(([login, done]) => ({
   login,
@@ -10,12 +21,12 @@ const people = [...Map.groupBy(release.thanks, (t) => t.login)].map(([login, don
 }));
 ---
 
-{release.groups.map((group) => (
-  <div class:list={['group', `group-${group.kind}`]}>
+{groups.map((group) => (
+  <div class:list={['group', `group-${group.kind}`, { extra: group.first >= limit }]}>
     <h3 class="tag">{group.label}</h3>
     <ul class="items">
-      {group.items.map((item) => (
-        <li set:html={item} />
+      {group.items.map((item, i) => (
+        <li class:list={{ extra: group.first + i >= limit }} set:html={item} />
       ))}
     </ul>
   </div>

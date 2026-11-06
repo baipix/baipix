@@ -14,6 +14,11 @@ import { REPO_URL } from '../../links';
 
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 const newest = releases[0];
+/** Coming next shows this many lines, and the rest on demand. */
+const COMING_LINES = 5;
+const comingCount = comingNext?.groups.reduce((n, g) => n + g.items.length, 0) ?? 0;
+const COUNTED = { new: 'new', better: 'improved', fixed: 'fixed', removed: 'removed' };
+const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED[g.kind]}`).join(', ');
 ---
 
 <Base
@@ -40,8 +45,17 @@ const newest = releases[0];
         {comingNext && (
           <section class="coming" id="next" aria-labelledby="next-title">
             <h2 id="next-title">Coming next</h2>
-            <p class="muted">Already on baipix.app, and in the next version.</p>
-            <ChangeGroups release={comingNext} />
+            <p class="muted">
+              Since {newest.version}: {comingSummary}. Already on baipix.app, and in the next version.
+            </p>
+            {comingCount > COMING_LINES && <input type="checkbox" id="coming-all" class="coming-toggle" />}
+            <ChangeGroups release={comingNext} limit={COMING_LINES} />
+            {comingCount > COMING_LINES && (
+              <label for="coming-all" class="coming-more">
+                <span class="more">Show all {comingCount}</span>
+                <span class="less">Show less</span>
+              </label>
+            )}
           </section>
         )}
 
@@ -190,6 +204,37 @@ const newest = releases[0];
   .coming > p {
     margin: 4px 0 0;
     font-size: 14px;
+  }
+  /* Past its first lines, Coming next shows the rest with Show all: a checkbox, no script. */
+  .coming-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .coming:not(:has(.coming-toggle:checked)) :global(.extra) {
+    display: none;
+  }
+  .coming-more {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 6px 12px;
+    border: 1px solid var(--line-strong);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .coming-more:hover {
+    border-color: var(--text);
+  }
+  .coming-toggle:focus-visible ~ .coming-more {
+    outline: 2px solid #6e56cf;
+    outline-offset: 2px;
+  }
+  .coming-more .less,
+  .coming-toggle:checked ~ .coming-more .more {
+    display: none;
+  }
+  .coming-toggle:checked ~ .coming-more .less {
+    display: inline;
   }
   .series {
     margin-bottom: 40px;
