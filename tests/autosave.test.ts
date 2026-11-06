@@ -32,6 +32,7 @@ const harness = vi.hoisted(() => ({
   uiListeners: new Set<() => void>(),
   localeListeners: new Set<() => void>(),
   refreshTrash: vi.fn(),
+  keepStorage: vi.fn(),
   toast: vi.fn(),
 }));
 
@@ -64,6 +65,10 @@ vi.mock('../src/ui/uiStore', () => ({
 
 vi.mock('../src/ui/StorageContext', () => ({
   refreshTrash: harness.refreshTrash,
+}));
+
+vi.mock('../src/storage/keepStorage', () => ({
+  keepStorage: harness.keepStorage,
 }));
 
 const { useAutosave } = await import('../src/ui/hooks/useAutosave');
@@ -185,6 +190,7 @@ beforeEach(() => {
   });
 
   harness.refreshTrash.mockReset();
+  harness.keepStorage.mockReset();
   harness.toast.mockReset();
   harness.uiListeners.clear();
   harness.localeListeners.clear();
@@ -234,6 +240,38 @@ describe('useAutosave', () => {
         localePreference: 'auto',
       },
     });
+  });
+
+  it('asks the browser to keep the storage once something drawn in this tab is saved', async () => {
+    const drawn = { id: 'drawn', name: 'Drawn', updatedAt: 1 };
+    const editor = makeEditor({ active: drawn, documents: [drawn] });
+    const storage = makeStorage();
+
+    useAutosaveForTest(editor, storage);
+    vi.advanceTimersByTime(600);
+    await vi.waitFor(() => expect(storage.save).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(harness.refreshTrash).toHaveBeenCalled());
+    // Only opened: not asked yet.
+    expect(harness.keepStorage).not.toHaveBeenCalled();
+
+    drawn.updatedAt = Date.now() + 1;
+    harness.uiListeners.forEach((listener) => listener());
+    vi.advanceTimersByTime(600);
+
+    await vi.waitFor(() => expect(harness.keepStorage).toHaveBeenCalledTimes(1));
+  });
+
+  it("doesn't ask to keep the storage for an untouched new file", async () => {
+    const fresh = { id: 'fresh', name: 'Fresh', updatedAt: 1 };
+    const editor = makeEditor({ active: fresh, documents: [fresh], fresh: new Set(['fresh']) });
+    const storage = makeStorage();
+
+    useAutosaveForTest(editor, storage);
+    vi.advanceTimersByTime(600);
+
+    await vi.waitFor(() => expect(storage.save).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(harness.refreshTrash).toHaveBeenCalled());
+    expect(harness.keepStorage).not.toHaveBeenCalled();
   });
 
   it('saves history separately and includes only non-fresh documents', async () => {
