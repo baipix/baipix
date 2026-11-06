@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-06
+
+Baipix animates: a timeline with frames and onion skin, exports as GIF, PNG sequence and sprite sheet, a light to shade by, and the editor in Italian and Japanese.
+
 ### Added
 
 - Loop, next to the onion skin's fields: on the first frame the last ones show before it, and on the last frame the first ones after it, for animations that play in a loop. ([#702](https://github.com/baipix/baipix/pull/702))
@@ -66,6 +70,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@jalal-sadat](https://github.com/jalal-sadat) for clearing the React Hooks warnings in the code. ([#685](https://github.com/baipix/baipix/pull/685))
 - [@bfs2021](https://github.com/bfs2021) for letting the files screen fill wide windows. ([#699](https://github.com/baipix/baipix/pull/699))
 - [@mykola-lp](https://github.com/mykola-lp) for the frames sprite sheet export, with its JSON for game engines. ([#674](https://github.com/baipix/baipix/pull/674))
 - [@mykola-lp](https://github.com/mykola-lp) for the GIF export, which takes animations out of Baipix. ([#644](https://github.com/baipix/baipix/pull/644))
@@ -571,7 +576,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.7...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.8.0...main
+[0.8.0]: https://github.com/baipix/baipix/releases/tag/v0.8.0
 [0.7.7]: https://github.com/baipix/baipix/releases/tag/v0.7.7
 [0.7.6]: https://github.com/baipix/baipix/releases/tag/v0.7.6
 [0.7.5]: https://github.com/baipix/baipix/releases/tag/v0.7.5
