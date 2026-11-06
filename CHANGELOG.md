@@ -4,6 +4,11 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Website
+
+- The Draw page's Remap example is the car from the animation tutorial: it drives while its colors switch from one palette to the next, on every frame. ([#737](https://github.com/baipix/baipix/pull/737))
+- The home page's screenshot loads faster: WebP at the size of the screen, from about 166 KB down to 21–54 KB. ([#736](https://github.com/baipix/baipix/pull/736))
+
 ## [0.8.0] - 2026-11-06
 
 Baipix animates: a timeline with frames and onion skin, exports as GIF, PNG sequence and sprite sheet, a light to shade by, and the editor in Italian and Japanese.
