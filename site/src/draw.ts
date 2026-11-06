@@ -2,7 +2,7 @@
  * Pictures for the Draw page, drawn at build time with the editor's own engine: its shapes,
  * dithering, palettes and SVG export. What the page shows is what the tools do.
  */
-import { BLEND_MODES, flatten } from '../../src/engine/composite';
+import { BLEND_MODES, flatten, flattenFrame } from '../../src/engine/composite';
 import { adjustColor, fromHex, NO_ADJUSTMENT, opaque, toHex, type Color } from '../../src/engine/color';
 import { ditherSecond, type DitherPattern } from '../../src/engine/dither';
 import { renderGeometry, toSvg } from '../../src/engine/export/svg';
@@ -27,7 +27,7 @@ import {
 import { en } from '../../src/i18n/en';
 import { TOOL_LIST } from '../../src/ui/tools';
 import { deserializeDocument } from '../../src/storage/fileFormat';
-import colorsFile from './art/colors.baipix?raw';
+import carFile from './art/car.baipix?raw';
 import { galleryDoc } from './gallery';
 
 /** Sweetie 16, the palette of the pictures below. */
@@ -114,24 +114,31 @@ const HEART = ['.##...##.', '#yy#.###.', '#y######.', '########.', '.######..', 
 // ---- Colors: one drawing, other palettes ------------------------------------------------------
 
 /**
- * The same drawing remapped to other palettes, and with its hue turned: what Image › Adjustments does.
- * Only the colors change, so the drawing is drawn once (one path per color, filled with a CSS
- * variable) and each version is a list of colors for those variables.
+ * The car from the animation tutorial, remapped to other palettes, and with its hue turned: what
+ * Image › Adjustments does, on every frame. Only the colors change, so each frame is drawn once (one
+ * path per color, filled with a CSS variable) and each version is a list of colors for those
+ * variables, shared by every frame.
  */
 function recolor() {
-  const doc = deserializeDocument(JSON.parse(colorsFile));
+  const doc = deserializeDocument(JSON.parse(carFile));
   const { width: w, height: h } = doc;
-  const pixels = flatten(doc);
+  const frames = (doc.frames ?? [{ duration: 100 }]).map((frame, f) => ({
+    duration: frame.duration,
+    pixels: flattenFrame(doc, f),
+  }));
   const used = new Map<Color, number>();
-  for (const c of pixels) if (c >>> 24) used.set(opaque(c), (used.get(opaque(c)) ?? 0) + 1);
+  for (const { pixels } of frames)
+    for (const c of pixels) if (c >>> 24) used.set(opaque(c), (used.get(opaque(c)) ?? 0) + 1);
   const sources = [...used.keys()];
   const index = new Map(sources.map((c, i) => [toHex(c), i]));
-  // The drawing, its fills turned into variables (--c0, --c1…) that default to the original colors.
-  const svg = toSvg(pixels, w, h, renderGeometry(w, h, 1, 0)).replace(
-    /fill="(#[0-9a-f]{6})"/g,
-    (_, hex: string) => `style="fill:var(--c${index.get(hex)},${hex})"`,
-  );
-  const paths = svg.slice(svg.indexOf('>') + 1, svg.lastIndexOf('</svg>')).trim();
+  // Each frame, its fills turned into variables (--c0, --c1…) that default to the original colors.
+  const paths = frames.map(({ pixels }) => {
+    const svg = toSvg(pixels, w, h, renderGeometry(w, h, 1, 0)).replace(
+      /fill="(#[0-9a-f]{6})"/g,
+      (_, hex: string) => `style="fill:var(--c${index.get(hex)},${hex})"`,
+    );
+    return svg.slice(svg.indexOf('>') + 1, svg.lastIndexOf('</svg>')).trim();
+  });
   const version = (map: (c: Color) => Color) => {
     const colors = sources.map(map);
     return {
@@ -146,7 +153,7 @@ function recolor() {
   return {
     w,
     h,
-    paths,
+    frames: frames.map(({ duration }, f) => ({ duration, paths: paths[f] })),
     versions: [
       { label: 'Original', detail: `${used.size} colors`, ...version((c) => c) },
       {
