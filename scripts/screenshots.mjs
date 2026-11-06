@@ -1,16 +1,29 @@
 // The editor's screenshots for the website and the README, taken again from the current interface:
 // npm run screenshots. Starts the dev server, opens the editor in headless Chrome at 1440×900 (2×)
 // in dark and light (?screenshot=…, see src/ui/screenshotMode.ts), and writes
-// site/public/screenshot-dark.png, site/public/screenshot-light.png and docs/screenshot.png.
+// site/public/screenshot-dark.png, site/public/screenshot-light.png and docs/screenshot.png, plus
+// the home page's WebP versions (screenshot-<theme>-<width>.webp).
 // Needs Google Chrome (or CHROME=/path/to/chrome).
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { copyFileSync, existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const PORT = 5199;
+const sharp = createRequire(`${root}site/package.json`)('sharp');
+
+/**
+ * The home page's sizes. The 2× shot and its 1× half (every other pixel, so the interface stays
+ * sharp) compress best losslessly; the phone size is scaled smoothly to stay readable.
+ */
+const WEBP_SIZES = [
+  { width: 2880, webp: { lossless: true } },
+  { width: 1440, kernel: 'nearest', webp: { lossless: true } },
+  { width: 720, kernel: 'lanczos3', webp: { quality: 85 } },
+];
 
 const CHROME =
   process.env.CHROME ??
@@ -64,6 +77,14 @@ try {
     }
 
     console.log(`Wrote ${out}`);
+
+    for (const { width, kernel, webp } of WEBP_SIZES) {
+      const file = `${root}site/public/screenshot-${theme}-${width}.webp`;
+      const image = sharp(out);
+      if (width !== 2880) image.resize({ width, kernel });
+      await image.webp(webp).toFile(file);
+      console.log(`Wrote ${file}`);
+    }
   }
 
   copyFileSync(`${root}site/public/screenshot-dark.png`, `${root}docs/screenshot.png`);
