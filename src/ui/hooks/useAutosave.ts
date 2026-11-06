@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import type { Editor } from '../../engine/editor';
 import { getLocale, getLocalePreference, subscribeLocale, t } from '../../i18n';
+import { keepStorage } from '../../storage/keepStorage';
 import type { StorageAdapter } from '../../storage/workspace';
 
 import { refreshTrash } from '../StorageContext';
@@ -88,11 +89,18 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
   // Workspace and history persistence.
   let workspaceSaveTimer = 0;
   let hasShownSaveFailureToast = false;
+  const openedAt = Date.now();
 
   const saveWorkspace = () => {
+    // Something drawn in this tab, not only files opened or an untouched new one: worth asking the
+    // browser to keep it.
+    const drawn = getNonFreshDocuments(editor).some((document) => (document.updatedAt ?? 0) > openedAt);
     storage
       .save(createWorkspaceSnapshot(editor, uiStore.get()))
-      .then(() => refreshTrash(storage))
+      .then(() => {
+        if (drawn) void keepStorage();
+        return refreshTrash(storage);
+      })
       .catch(() => {
         if (!hasShownSaveFailureToast) {
           toast(t('toast.saveFailed'));
