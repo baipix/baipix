@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Export
-description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, PNG sequences, clean SVG with one path per color, Aseprite files, each layer and a sprite sheet, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
+description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, PNG sequences, clean SVG with one path per color, Aseprite files, sprite sheets of the frames or the layers, tilesets for Godot and Tiled, every board at once, and copy as SVG or PNG.'
 ---
 
 <figure class="shot">
@@ -14,7 +14,7 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, PN
 ## Size and background
 
 - **Pixel size**, 1× to 32×: how many screen pixels each drawing pixel becomes. A 32 × 32 sprite at 8× is a 256 × 256 image.
-- The **gap** set in the Board section spaces the pixels apart, for an LED look, in PNG, GIF and SVG exports.
+- The **gap** set in the Board section spaces the pixels apart, for an LED look, in PNG, GIF, SVG and sprite sheet exports.
 - **Include the background**: the board's background color, or a transparent image.
 - **Active layer only**: just the layer you're on.
 
@@ -25,12 +25,13 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, PN
 - **PNG sequence**: one PNG per frame, named in order (`slime-01.png`, `slime-02.png`…), in a .zip, for tools and pipelines that want the frames apart.
 - **SVG**: vector, light and sharp at any size. Each color is one path, neighboring pixels of the same color merged, so there are no thin lines between them. Layers and groups come out as named groups, with their opacity and blend modes. See [Pixel art to SVG](../../../pixel-art-to-svg/).
 - **Aseprite**: an .aseprite file to keep working there, with the layers, groups, blend modes, the palette, and every frame with its duration.
+- **Frames + sprite sheet**: a .zip with the animation's frames on one sheet, and its JSON in the TexturePacker format, each frame's duration included, for a game engine to play it. **Columns** sets how many frames go on a row.
 - **Layers + sprite sheet**: a .zip with one PNG per visible layer, named after it, and a sheet with the layers side by side, left to right from the bottom layer. **Columns** sets how many go on a row: fewer make a grid, read left to right then top to bottom. A JSON file comes with the sheet, giving each layer's place on it in the TexturePacker format, so Phaser, Unity or a Godot importer cut the frames without setup. Each PNG has the layer's own pixels, at full opacity, for game engines that put sprites together or swap them.
 - **Tileset**: the drawing cut into tiles of W × H pixels, for a game engine. A .zip with the tiles on one PNG sheet, a Tiled tileset and a Tiled map that draws the drawing again; Godot takes the PNG as it is. **Leave out empty and repeated tiles** keeps the sheet small.
 
 ## Every board at once
 
-In a file of several boards, **All boards** exports each one in the format you picked, named after it, in a .zip. For GIF, each board's animation is a GIF of its own. For a PNG sequence, each board's frames go in a folder of their own.
+In a file of several boards, **All boards** exports each one, named after it, in a .zip, in every format but Tileset and Layers + sprite sheet. For GIF, each board's animation is a GIF of its own. For a PNG sequence, each board's frames go in a folder of their own. For Frames + sprite sheet, each board gets its sheet and its JSON.
 
 ## Copy instead of saving
 

@@ -73,7 +73,7 @@ const faq = [
   },
   {
     q: 'Can each frame have its own duration?',
-    a: 'Yes. Every frame has its own duration in milliseconds, so a pose can hold while the fast moves flash by. The GIF export keeps them.',
+    a: 'Yes. Every frame has its own duration in milliseconds, so a pose can hold while the fast moves flash by. The GIF, the sprite sheet and the .aseprite file keep them.',
   },
   {
     q: 'What is onion skinning?',
@@ -81,7 +81,7 @@ const faq = [
   },
   {
     q: 'Can I use the animation in a game?',
-    a: 'A PNG sequence exports every frame as its own PNG, in a .zip, for game engines and tools that take frames apart. An .aseprite file keeps every frame with its duration, to finish it in Aseprite.',
+    a: "Frames + sprite sheet puts every frame on one PNG, with a JSON giving each one's place and duration, which Phaser, Unity or Godot read. A PNG sequence exports every frame as its own PNG, in a .zip. An .aseprite file keeps every frame with its duration, to finish it in Aseprite.",
   },
   {
     q: 'Is it free?',
@@ -92,7 +92,7 @@ const faq = [
 
 <Base
   title="Pixel art animation · Frames, onion skin and GIF export | Baipix"
-  description="Animate pixel art in your browser, for free: a timeline of frames, a duration for each one, onion skin to see the frames around, playback, and animated GIF export."
+  description="Animate pixel art in your browser, for free: a timeline of frames, a duration for each one, onion skin to see the frames around, playback, and export as GIF, sprite sheet, PNG sequence or Aseprite."
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -246,8 +246,8 @@ const faq = [
         <article class="card">
           <h3>Or frame by frame</h3>
           <p class="muted">
-            A PNG sequence, one file per frame, for a game engine. Or an .aseprite file with every frame, to
-            finish it there.
+            A sprite sheet with its JSON for a game engine, a PNG sequence, one file per frame, or an
+            .aseprite file with every frame, to finish it there.
           </p>
         </article>
       </div>

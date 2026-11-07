@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Animation
-description: 'Animate pixel art in Baipix: a timeline of frames under the canvas, a duration for each, onion skin, playback, and animated GIF export.'
+description: 'Animate pixel art in Baipix: a timeline of frames under the canvas, a duration for each, onion skin, playback, and export as GIF, PNG sequence, sprite sheet or Aseprite.'
 ---
 
 <figure class="shot">
@@ -77,3 +77,7 @@ Pick **Aseprite** to open the animation there: every frame comes along with its 
 ## Export the frames apart
 
 Pick **PNG sequence** for one PNG per frame, named in order (`slime-01.png`, `slime-02.png`…), in a .zip, at the pixel size picked, with or without the background. With **All boards**, each board's frames go in a folder of their own.
+
+## A sprite sheet for a game
+
+Pick **Frames + sprite sheet** for every frame on one PNG, as many to a row as the **Columns**, with a JSON in the TexturePacker format that gives each frame's place and duration. Phaser, Unity or a Godot importer play it as it is.
