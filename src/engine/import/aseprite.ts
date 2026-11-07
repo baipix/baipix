@@ -11,6 +11,7 @@ const FILE_MAGIC = 0xa5e0;
 const FRAME_MAGIC = 0xf1fa;
 
 const MAX_CEL_PIXELS = 4_194_304;
+const MAX_USER_DATA_NESTING = 128;
 // Combined budget for source cel data and full-canvas frame buffers.
 const MAX_TOTAL_IMPORT_PIXELS = 16_777_216;
 
@@ -264,6 +265,148 @@ function parseTagsChunk(
   return count;
 }
 
+function parsePropertiesMap(
+  bytes: Uint8Array,
+  view: DataView,
+  start: number,
+  end: number,
+  depth: number,
+): number {
+  if (depth > MAX_USER_DATA_NESTING) {
+    fail('Aseprite user data properties exceed the maximum nesting depth.');
+  }
+
+  assertChunkRange(bytes, start, 4, end);
+
+  const count = view.getUint32(start, true);
+  let at = start + 4;
+
+  // Every property needs at least a string length and a type.
+  if (count > Math.floor((end - at) / 4)) {
+    fail('Invalid Aseprite user data property count.');
+  }
+
+  for (let i = 0; i < count; i++) {
+    at = readString(bytes, view, at, end).next;
+
+    assertChunkRange(bytes, at, 2, end);
+
+    const type = view.getUint16(at, true);
+    at += 2;
+
+    at = parsePropertyValue(bytes, view, at, end, type, depth + 1);
+  }
+
+  return at;
+}
+
+function parsePropertyValue(
+  bytes: Uint8Array,
+  view: DataView,
+  start: number,
+  end: number,
+  type: number,
+  depth: number,
+): number {
+  if (depth > MAX_USER_DATA_NESTING) {
+    fail('Aseprite user data properties exceed the maximum nesting depth.');
+  }
+
+  switch (type) {
+    // bool, int8, uint8
+    case 0x0001:
+    case 0x0002:
+    case 0x0003:
+      assertChunkRange(bytes, start, 1, end);
+      return start + 1;
+
+    // int16, uint16
+    case 0x0004:
+    case 0x0005:
+      assertChunkRange(bytes, start, 2, end);
+      return start + 2;
+
+    // int32, uint32, fixed, float
+    case 0x0006:
+    case 0x0007:
+    case 0x000a:
+    case 0x000b:
+      assertChunkRange(bytes, start, 4, end);
+      return start + 4;
+
+    // int64, uint64, double
+    case 0x0008:
+    case 0x0009:
+    case 0x000c:
+      assertChunkRange(bytes, start, 8, end);
+      return start + 8;
+
+    // string
+    case 0x000d:
+      return readString(bytes, view, start, end).next;
+
+    // point, size
+    case 0x000e:
+    case 0x000f:
+      assertChunkRange(bytes, start, 8, end);
+      return start + 8;
+
+    // rectangle
+    case 0x0010:
+      assertChunkRange(bytes, start, 16, end);
+      return start + 16;
+
+    // vector
+    case 0x0011: {
+      assertChunkRange(bytes, start, 6, end);
+
+      const count = view.getUint32(start, true);
+      const elementType = view.getUint16(start + 4, true);
+
+      let at = start + 6;
+
+      if (elementType === 0) {
+        // Mixed-type vectors store the type before each element.
+        if (count > Math.floor((end - at) / 2)) {
+          fail('Invalid Aseprite user data vector size.');
+        }
+
+        for (let i = 0; i < count; i++) {
+          assertChunkRange(bytes, at, 2, end);
+
+          const itemType = view.getUint16(at, true);
+          at += 2;
+
+          at = parsePropertyValue(bytes, view, at, end, itemType, depth + 1);
+        }
+      } else {
+        if (elementType > 0x0013 || count > end - at) {
+          fail('Invalid Aseprite user data vector type or size.');
+        }
+
+        // Homogeneous vectors store their element type only once.
+        for (let i = 0; i < count; i++) {
+          at = parsePropertyValue(bytes, view, at, end, elementType, depth + 1);
+        }
+      }
+
+      return at;
+    }
+
+    // Nested properties map
+    case 0x0012:
+      return parsePropertiesMap(bytes, view, start, end, depth);
+
+    // UUID
+    case 0x0013:
+      assertChunkRange(bytes, start, 16, end);
+      return start + 16;
+
+    default:
+      fail(`Unsupported Aseprite user data property type: ${type}.`);
+  }
+}
+
 function parseUserDataChunk(bytes: Uint8Array, view: DataView, start: number, end: number): boolean {
   assertChunkRange(bytes, start, 4, end);
 
@@ -282,7 +425,7 @@ function parseUserDataChunk(bytes: Uint8Array, view: DataView, start: number, en
   }
 
   if (flags & 4) {
-    assertChunkRange(bytes, at, 4, end);
+    assertChunkRange(bytes, at, 8, end);
     const propertiesSize = view.getUint32(at, true);
 
     if (propertiesSize < 8) {
@@ -290,7 +433,30 @@ function parseUserDataChunk(bytes: Uint8Array, view: DataView, start: number, en
     }
 
     assertChunkRange(bytes, at, propertiesSize, end);
-    at += propertiesSize;
+
+    const propertiesEnd = at + propertiesSize;
+    const mapCount = view.getUint32(at + 4, true);
+
+    at += 8;
+
+    // Every map needs an extension ID and a property count.
+    if (mapCount > Math.floor((propertiesEnd - at) / 8)) {
+      fail('Invalid Aseprite user data properties map count.');
+    }
+
+    for (let i = 0; i < mapCount; i++) {
+      assertChunkRange(bytes, at, 4, propertiesEnd);
+
+      // Extension entry ID.
+      at += 4;
+      at = parsePropertiesMap(bytes, view, at, propertiesEnd, 0);
+    }
+
+    if (at !== propertiesEnd) {
+      fail('Invalid Aseprite user data properties size.');
+    }
+
+    at = propertiesEnd;
   }
 
   if (at > end) {

@@ -173,6 +173,40 @@ function userDataChunk(text = 'metadata'): Uint8Array {
   return chunk(0x2020, payload);
 }
 
+function word(value: number): Uint8Array {
+  const bytes = new Uint8Array(2);
+  new DataView(bytes.buffer).setUint16(0, value, true);
+  return bytes;
+}
+
+function dword(value: number): Uint8Array {
+  const bytes = new Uint8Array(4);
+  new DataView(bytes.buffer).setUint32(0, value, true);
+  return bytes;
+}
+
+function aseString(value: string): Uint8Array {
+  const bytes = encoder.encode(value);
+  return concatenate([word(bytes.length), bytes]);
+}
+
+function propertyEntry(name: string, type: number, value: Uint8Array): Uint8Array {
+  return concatenate([aseString(name), word(type), value]);
+}
+
+function propertyMap(properties: Uint8Array[]): Uint8Array {
+  return concatenate([dword(properties.length), ...properties]);
+}
+
+function userDataPropertiesChunk(properties: Uint8Array[]): Uint8Array {
+  const map = concatenate([dword(0), propertyMap(properties)]);
+  const maps = concatenate([dword(1), map]);
+  // Size includes its own DWORD, the map count and all map data.
+  const propertyData = concatenate([dword(4 + maps.length), maps]);
+
+  return chunk(0x2020, concatenate([dword(4), propertyData]));
+}
+
 function sliceChunk(name = 'Hitbox'): Uint8Array {
   const nameBytes = encoder.encode(name);
   const payload = new Uint8Array(12 + 2 + nameBytes.length + 20);
@@ -608,6 +642,80 @@ describe('import from Aseprite', () => {
 
   it('rejects Cel Extra chunks without a preceding cel', async () => {
     const bytes = makeFile([{ chunks: [layerChunk(), celExtraChunk()] }]);
+
+    await expectImportError(bytes, 'unreadable');
+  });
+
+  it('validates nested property maps and mixed-type vectors', async () => {
+    const nestedMap = propertyMap([
+      propertyEntry('enabled', 0x0001, new Uint8Array([1])),
+      propertyEntry('title', 0x000d, aseString('nested')),
+    ]);
+
+    const vector = concatenate([
+      dword(2),
+      word(0), // mixed element types
+      word(0x0003),
+      new Uint8Array([7]),
+      word(0x0012),
+      nestedMap,
+    ]);
+
+    const bytes = makeFile([
+      {
+        chunks: [
+          layerChunk(),
+          userDataPropertiesChunk([
+            propertyEntry('settings', 0x0012, nestedMap),
+            propertyEntry('items', 0x0011, vector),
+          ]),
+        ],
+      },
+    ]);
+
+    const { warnings } = await fromAseprite(bytes);
+
+    expect(warnings).toContainEqual({ code: 'userData' });
+  });
+
+  it('rejects unsupported and truncated nested user data properties', async () => {
+    const unsupportedType = makeFile([
+      {
+        chunks: [layerChunk(), userDataPropertiesChunk([propertyEntry('unknown', 0x7777, new Uint8Array())])],
+      },
+    ]);
+
+    const truncatedValue = makeFile([
+      {
+        chunks: [
+          layerChunk(),
+          userDataPropertiesChunk([
+            propertyEntry(
+              'settings',
+              0x0012,
+              propertyMap([propertyEntry('enabled', 0x0001, new Uint8Array())]),
+            ),
+          ]),
+        ],
+      },
+    ]);
+
+    await expectImportError(unsupportedType, 'unreadable');
+    await expectImportError(truncatedValue, 'unreadable');
+  });
+
+  it('rejects user data properties nested beyond 128 levels', async () => {
+    let nested = propertyMap([propertyEntry('value', 0x0001, new Uint8Array([1]))]);
+
+    for (let i = 0; i < 129; i++) {
+      nested = propertyMap([propertyEntry('nested', 0x0012, nested)]);
+    }
+
+    const bytes = makeFile([
+      {
+        chunks: [layerChunk(), userDataPropertiesChunk([propertyEntry('root', 0x0012, nested)])],
+      },
+    ]);
 
     await expectImportError(bytes, 'unreadable');
   });
