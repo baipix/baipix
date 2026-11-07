@@ -103,11 +103,6 @@ Game engines usually want the frames apart. There are two ways to get them.
 
 A **PNG sequence** gives you one PNG per frame, named in order, in a .zip. With All boards, each board gets its own folder.
 
-<figure>
-  <img class="for-light" src="/blog/0-8/export-sequence-light.webp" width="1100" height="688" alt="The Export dialog on the slime, with PNG sequence picked as the format." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/export-sequence-dark.webp" width="1100" height="688" alt="The Export dialog on the slime, with PNG sequence picked as the format." loading="lazy" />
-</figure>
-
 A **sprite sheet** puts every frame on one picture, with a JSON next to it that says where each frame is and how long it lasts. It's the TexturePacker format, which a lot of engines and their plugins read. Columns sets how many frames go on a row.
 
 <figure>
@@ -119,11 +114,6 @@ A **sprite sheet** puts every frame on one picture, with a JSON next to it that 
 ## To keep going in Aseprite
 
 If you also use Aseprite, you can start an animation in Baipix and finish it there, without losing anything on the way. The **Aseprite** export now writes every frame, with its duration.
-
-<figure>
-  <img class="for-light" src="/blog/0-8/export-aseprite-light.webp" width="1100" height="688" alt="The Export dialog on the slime, with Aseprite picked as the format." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/export-aseprite-dark.webp" width="1100" height="688" alt="The Export dialog on the slime, with Aseprite picked as the format." loading="lazy" />
-</figure>
 
 When a layer doesn't change from one frame to the next, like the sky behind the slime, it becomes a linked cel there, which keeps the file small.
 

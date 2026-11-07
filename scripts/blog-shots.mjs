@@ -62,21 +62,29 @@ const TOP = (bottom) => `return JSON.stringify({ x: 0, y: 0, right: ${WIDTH}, bo
 
 /**
  * Each picture: what to set up first (in the page), and the part to frame: selectors, or `area`, code
- * that returns a box; the whole window without either.
+ * that returns a box; the whole window without either. With `focus`, only those parts show, on a
+ * transparent page, and the picture is composed: the parts in the middle of a plain tinted card.
  */
 const BG = `__ed.setBackground(0xff3b2a1d >>> 0, true);`;
 const load = (path) => `__ed.addDocuments(ff.fileFromJson(await (await fetch('${path}')).text()));
   await wait(300);
   (await import('/src/ui/viewport.ts')).viewport.fit(__ed.getState().doc);`;
+/** The timeline, made as wide as its frames; with the frame menu if it's open. */
+const TIMELINE = `const tl = document.querySelector('.timeline');
+  const last = [...document.querySelectorAll('.timeline-frame')].at(-1).getBoundingClientRect();
+  // The timeline as wide as its frames, so it keeps its own right edge.
+  tl.style.width = Math.ceil(last.right + 48 - tl.getBoundingClientRect().left) + 'px';
+  await new Promise((r) => setTimeout(r, 100));
+  const t = tl.getBoundingClientRect();
+  const m = document.querySelector('.menu')?.getBoundingClientRect();
+  return JSON.stringify({ x: t.left, y: Math.min(t.top, m?.top ?? t.top), right: Math.max(t.right, m?.right ?? 0), bottom: t.bottom });`;
 const SHOTS = [
   // The timeline alone, the onion skin off: frames, rows, durations.
   {
     name: 'timeline',
     setup: `${SLIME} ui.uiStore.set((s) => ({ onion: { ...s.onion, on: false } }));`,
-    // As far as its frames go, not its empty right side.
-    area: `const t = document.querySelector('.timeline').getBoundingClientRect();
-      const last = [...document.querySelectorAll('.timeline-frame')].at(-1).getBoundingClientRect();
-      return JSON.stringify({ x: t.left, y: t.top, right: last.right + 60, bottom: t.bottom });`,
+    focus: ['.timeline'],
+    area: TIMELINE,
   },
   // The onion skin up close: the board with the frames around it in red and blue.
   {
@@ -94,19 +102,9 @@ const SHOTS = [
       Object.assign(onion.style, { outline: '2px solid #6e56cf', outlineOffset: '2px' });`,
   },
   {
-    name: 'export-sequence',
-    setup: `${SLIME} ui.uiStore.set({ exportFormat: 'sequence' }); ui.openDialog({ type: 'export' });`,
-    frame: ['.dialog'],
-  },
-  {
     name: 'export-frames',
     setup: `${SLIME} ui.uiStore.set({ exportFormat: 'frames', exportSheetColumns: 5 }); ui.openDialog({ type: 'export' });`,
-    frame: ['.dialog'],
-  },
-  {
-    name: 'export-aseprite',
-    setup: `${SLIME} ui.uiStore.set({ exportFormat: 'aseprite' }); ui.openDialog({ type: 'export' });`,
-    frame: ['.dialog'],
+    focus: ['.dialog'],
   },
   {
     name: 'frame-menu',
@@ -118,12 +116,13 @@ const SHOTS = [
       await wait(200);
       const r = frames[7].getBoundingClientRect();
       frames[7].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 12, clientY: r.top + 12 }));`,
-    frame: ['.menu'],
+    focus: ['.timeline', '.menu'],
+    area: TIMELINE,
   },
   {
     name: 'export-gif',
     setup: `${SLIME} ui.uiStore.set({ exportFormat: 'gif' }); ui.openDialog({ type: 'export' });`,
-    frame: ['.dialog'],
+    focus: ['.dialog'],
   },
   // The whole editor: the slime mid-jump, the timeline and the onion skin.
   { name: 'animation', setup: SLIME },
@@ -145,7 +144,7 @@ const SHOTS = [
   {
     name: 'remap',
     setup: `${SLIME} ${BG} ui.openAdjust('all', 'remap');`,
-    frame: ['.adjust-panel'],
+    focus: ['.adjust-panel'],
   },
   // The editor in Japanese.
   {
@@ -228,6 +227,24 @@ await send('Emulation.setDeviceMetricsOverride', {
   deviceScaleFactor: 2,
   mobile: false,
 });
+/** The composed pictures: 1100 × 688, at 2×, a plain warm card, like the posts on Bluesky. */
+const CARD = { width: 2200, height: 1376, light: '#f3f0e9', dark: '#1d1b18' };
+/** A part of the editor, cut out on a transparent page, in the middle of the card, as big as it fits. */
+async function compose(png, theme, file) {
+  const part = sharp(png);
+  const { width, height } = await part.metadata();
+  const scale = Math.min(1, (CARD.width * 0.88) / width, (CARD.height * 0.84) / height);
+  const w = Math.round(width * scale);
+  const h = Math.round(height * scale);
+  const resized = await part.resize(w, h).png().toBuffer();
+  await sharp({ create: { width: CARD.width, height: CARD.height, channels: 4, background: CARD[theme] } })
+    .composite([
+      { input: resized, left: Math.round((CARD.width - w) / 2), top: Math.round((CARD.height - h) / 2) },
+    ])
+    .webp({ quality: 90 })
+    .toFile(file);
+}
+
 for (const theme of ['dark', 'light']) {
   for (const shot of shots) {
     // A fresh editor for each picture, as the screenshot mode opens it.
@@ -267,6 +284,43 @@ for (const theme of ['dark', 'light']) {
     // The mouse out of the way, so nothing shows its hover state.
     await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: WIDTH - 2, y: HEIGHT - 2 });
     await sleep(400);
+    if (shot.focus) {
+      // Only the parts show: everything else hidden, the page transparent behind them.
+      await run(`
+        const style = document.createElement('style');
+        style.textContent = 'html, body { background: transparent !important; } ::backdrop { background: transparent !important; } body * { visibility: hidden !important; } .shot-focus, .shot-focus * { visibility: visible !important; }';
+        document.head.append(style);
+        ${JSON.stringify(shot.focus)}.forEach((sel) => document.querySelectorAll(sel).forEach((el) => el.classList.add('shot-focus')));`);
+      await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
+      await sleep(200);
+      const box = JSON.parse(
+        await run(
+          shot.area ??
+            `const rects = ${JSON.stringify(shot.focus)}.map((s) => document.querySelector(s).getBoundingClientRect());
+          return JSON.stringify({ x: Math.min(...rects.map((r) => r.left)), y: Math.min(...rects.map((r) => r.top)),
+            right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) });`,
+        ),
+      );
+      // Room around the parts for their whole shadow, which a dialog casts far.
+      const pad = 120;
+      const x = Math.max(0, Math.floor(box.x - pad));
+      const y = Math.max(0, Math.floor(box.y - pad));
+      const part = await send('Page.captureScreenshot', {
+        format: 'png',
+        clip: {
+          x,
+          y,
+          width: Math.min(WIDTH, Math.ceil(box.right + pad)) - x,
+          height: Math.min(HEIGHT, Math.ceil(box.bottom + pad)) - y,
+          scale: 1,
+        },
+      });
+      await send('Emulation.setDefaultBackgroundColorOverride', {});
+      const file = `${out}/${shot.name}-${theme}.webp`;
+      await compose(Buffer.from(part.data, 'base64'), theme, file);
+      console.log(`Wrote ${file} (composed)`);
+      continue;
+    }
     let clip = { x: 0, y: 0, width: WIDTH, height: HEIGHT, scale: 1 };
     if (shot.frame || shot.area) {
       const box = JSON.parse(
