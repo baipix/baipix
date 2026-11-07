@@ -23,7 +23,7 @@ Deleted a file by mistake? It waits in the **Trash**, in the files screen's side
   <img class="for-dark" src="../../shots/trash-dark.webp" width="1440" height="316" alt="The Trash in the files screen’s sidebar, with a drawing deleted three days ago." loading="lazy" />
 </figure>
 
-Your browser's storage is safe from one day to the next, but it isn't a backup: it goes away if you clear the site's data, and a private window forgets everything once it's closed. To keep a drawing for good, or to move it to another computer:
+After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low; Firefox asks you once. Your browser's storage is safe from one day to the next, but it isn't a backup: it goes away if you clear the site's data, and a private window forgets everything once it's closed. To keep a drawing for good, or to move it to another computer:
 
 - **File › Download as .baipix** saves the whole file: its boards, layers, groups, components and palette.
 - **File › Open a .baipix file…** opens it again, anywhere.

@@ -456,18 +456,19 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         class="frame"
         data-recolor
         data-versions={JSON.stringify(ill.recolor.versions.map((v) => v.vars))}
+        data-durations={JSON.stringify(ill.recolor.frames.map((f) => f.duration))}
       >
-        <!-- The drawing, once; the two layers below show it with their own colors. -->
+        <!-- The frames, once; the two layers below show the one shown with their own colors. -->
         <svg width="0" height="0" class="recolor-defs" aria-hidden="true">
           <defs>
-            <g id="recolor-art" set:html={ill.recolor.paths} />
+            <g id="recolor-art">
+              {ill.recolor.frames.map((frame, f) => (
+                <g class="recolor-frame" visibility={f === 0 ? undefined : 'hidden'} set:html={frame.paths} />
+              ))}
+            </g>
           </defs>
         </svg>
-        <div
-          class="recolor"
-          role="img"
-          aria-label="A character drawing, recolored with other palettes in turn."
-        >
+        <div class="recolor" role="img" aria-label="A car driving, recolored with other palettes in turn.">
           {[0, 1].map((layer) => (
             <svg
               class="recolor-art"
@@ -495,7 +496,7 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
           ))}
         </div>
         <figcaption class="cap">
-          One drawing, other palettes: Image › Adjustments, then Remap or Hue.
+          One animation, other palettes: Image › Adjustments, then Remap or Hue, on every frame.
         </figcaption>
       </figure>
     </section>
@@ -1149,10 +1150,24 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
         infos[next].classList.add('is-on');
         current = next;
       };
+      // The car drives: its frames take turns, each for its own duration.
+      const durations: number[] = JSON.parse(recolor.dataset.durations!);
+      const frames = [...recolor.querySelectorAll<SVGGElement>('.recolor-frame')];
+      let frame = 0;
+      let frameTimer = 0;
+      const step = () => {
+        frames[frame].setAttribute('visibility', 'hidden');
+        frame = (frame + 1) % frames.length;
+        frames[frame].removeAttribute('visibility');
+        frameTimer = window.setTimeout(step, durations[frame]);
+      };
       new IntersectionObserver(([entry]) => {
         clearInterval(timer);
-        if (entry.isIntersecting)
+        clearTimeout(frameTimer);
+        if (entry.isIntersecting) {
           timer = window.setInterval(() => show((current + 1) % versions.length), 2400);
+          frameTimer = window.setTimeout(step, durations[frame]);
+        }
       }).observe(recolor);
     }
 

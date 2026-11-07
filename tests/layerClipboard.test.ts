@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pack } from '../src/engine/color';
 import { Editor } from '../src/engine/editor';
+import { celOf } from '../src/engine/frames';
 import {
   layerClipFromHtml,
   layerClipHtml,
@@ -82,6 +83,23 @@ describe('copy and paste whole layers', () => {
     expect(pasted.name).toBe('c');
     expect(pasted.pixels[2]).toBe(RED);
     expect(pasted.outside).toBeDefined(); // the blue pixel at (7, 7)
+  });
+
+  it("keeps an animated layer's frames through the system clipboard", () => {
+    const e = editor();
+    pick(e, 'a');
+    e.addFrame();
+    e.getState().doc.layers[0].pixels[3 * 8 + 3] = BLUE; // only on the second frame
+    e.setFrame(0);
+    const back = layerClipFromHtml(layerClipHtml(e.copyLayers()!))!;
+    const other = editor();
+    other.addFrame();
+    other.pasteLayers(back);
+    const d = other.getState().doc;
+    const pasted = d.layers[d.activeLayer];
+    expect(celOf(d, pasted, 0).pixels[3 * 8 + 3]).toBe(0);
+    expect(celOf(d, pasted, 1).pixels[3 * 8 + 3]).toBe(BLUE);
+    expect(celOf(d, pasted, 1).pixels[0]).toBe(RED);
   });
 
   it('keeps instances linked when their component is there, else makes them plain pixels', () => {

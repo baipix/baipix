@@ -395,8 +395,23 @@ body.is-resizing * {
   text-decoration: underline;
 }
 /* With an info icon, the icon sits right after the title and pushes the aside to the right. */
-.section-name:has(+ .section-info) {
+.section-name:has(+ .section-info),
+.section-name:has(+ .section-badge) {
   flex: 0 1 auto;
+}
+/* A word after the title (Beta): quiet, so it doesn't read as an action. */
+.section-badge {
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--input);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+}
+.section-badge:not(:has(+ .section-info)) {
+  margin-right: auto;
 }
 .section-info {
   display: grid;

@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Every night too, so the roadmap follows GitHub's milestones even on days without a merge.
+  schedule:
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -35,6 +38,9 @@ jobs:
       # Website, served at the root; the editor goes under /app/.
       - run: npm ci --prefix site
       - run: npm run build --prefix site
+        # The roadmap reads the milestones on GitHub; the token lifts the API's rate limit.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: cp -r dist site/dist/app
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

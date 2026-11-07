@@ -8,13 +8,15 @@ interface SectionProps {
   aside?: ReactNode;
   /** Help text, shown in a tooltip on an info icon next to the title (keeps the panel light). */
   info?: string;
+  /** A small word after the title, like Beta for a feature still being tried out. */
+  badge?: string;
   /** Makes the section collapsible from its title. Open/closed is remembered under this key. */
   id?: string;
   children?: ReactNode;
   className?: string;
 }
 
-export function Section({ title, aside, info, id, children, className = '' }: SectionProps) {
+export function Section({ title, aside, info, badge, id, children, className = '' }: SectionProps) {
   const bodyId = useId();
   const collapsed = uiStore.use((s) => !!id && s.collapsed.includes(id));
   const toggle = () =>
@@ -38,6 +40,7 @@ export function Section({ title, aside, info, id, children, className = '' }: Se
         ) : (
           <span className="section-name">{title}</span>
         )}
+        {badge && <span className="section-badge">{badge}</span>}
         {info && (
           <span className="section-info" data-tip={info} aria-label={info} role="img" tabIndex={0}>
             <Icon name="info" size={14} />

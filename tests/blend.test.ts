@@ -85,3 +85,21 @@ describe('Layer blend modes', () => {
     expect(mode()).toBeUndefined();
   });
 });
+
+describe('flatten, quick on opaque pixels', () => {
+  it('gives what blending would: an opaque pixel covers, a see-through one mixes', () => {
+    let seed = 7;
+    const random = () => (seed = (seed * 1103515245 + 12345) >>> 0);
+    for (let i = 0; i < 2000; i++) {
+      const src = pack(random() & 255, random() & 255, random() & 255);
+      const dst = withAlpha(pack(random() & 255, random() & 255, random() & 255), random() & 255);
+      expect(blendWith('normal', src, dst, 1)).toBe(src);
+    }
+    const doc = createDocument('t', 2, 1);
+    doc.layers[0].pixels.set([RED, RED]);
+    const top = createLayer('top', 2, 1);
+    top.pixels.set([GREY, withAlpha(WHITE, 128)]);
+    doc.layers.push(top);
+    expect([...flatten(doc)]).toEqual([GREY, blendWith('normal', withAlpha(WHITE, 128), RED)]);
+  });
+});

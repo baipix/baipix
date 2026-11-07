@@ -56,6 +56,23 @@ describe('layers outside the boards', () => {
     expect(e.getState().doc.layers[0].pixels.some(Boolean)).toBe(false);
   });
 
+  it('keeps an animated layer on its board, and lets a still one go', () => {
+    const e = board();
+    const icons = e.getState().doc.id;
+    const notices: string[] = [];
+    e.onNotice((n) => notices.push(n.type));
+    e.addFrame();
+    const layer = e.getState().doc.layers[0];
+    layer.pixels[0] = RED; // on the second frame only
+    expect(e.moveLayerOut(layer.id)).toBe(false);
+    expect(notices).toContain('layerFrames');
+    expect(e.getState().doc.id).toBe(icons);
+    expect(e.freeZone()).toBeNull();
+    // Without its difference, it's the same on every frame: out it goes.
+    layer.pixels[0] = 0;
+    expect(e.moveLayerOut(layer.id)).toBe(true);
+  });
+
   it('only moves them: the tools draw on a board', () => {
     const e = board();
     drag(e, { x: 14, y: 4 }, 10, 0);

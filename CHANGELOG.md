@@ -4,6 +4,25 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- The version in the editor's corner and at the bottom of the Help menu opens What's new on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))
+- After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. ([#739](https://github.com/baipix/baipix/pull/739))
+
+### Website
+
+- A roadmap page, drawn as a pixel map: what's out, what's being worked on now with the slime jumping on it, and the road to 1.0, read from the milestones on GitHub. ([#754](https://github.com/baipix/baipix/pull/754))
+- What's new is called Release notes. ([#753](https://github.com/baipix/baipix/pull/753))
+- What's new marks each version Major or Minor, so the versions with new features stand out. ([#751](https://github.com/baipix/baipix/pull/751))
+- The home page describes Baipix as it is now, animation and isometric drawing included, for search engines and link previews, and points to Baipix on Wikidata. ([#750](https://github.com/baipix/baipix/pull/750))
+- A What's new page: what changed in the editor, version by version, with what's coming next, the contributors to thank, and an RSS feed. ([#745](https://github.com/baipix/baipix/pull/745))
+- The Draw page's Remap example is the car from the animation tutorial: it drives while its colors switch from one palette to the next, on every frame. ([#737](https://github.com/baipix/baipix/pull/737))
+- The home page's screenshot loads faster: WebP at the size of the screen, from about 166 KB down to 21–54 KB. ([#736](https://github.com/baipix/baipix/pull/736))
+
+## [0.8.0] - 2026-11-06
+
+Baipix animates: a timeline with frames and onion skin, exports as GIF, PNG sequence and sprite sheet, a light to shade by, and the editor in Italian and Japanese.
+
 ### Added
 
 - Loop, next to the onion skin's fields: on the first frame the last ones show before it, and on the last frame the first ones after it, for animations that play in a loop. ([#702](https://github.com/baipix/baipix/pull/702))
@@ -23,6 +42,9 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Drawing is lighter on big files: merging the layers, which the canvas does on every move of the pointer and every frame of an animation, is about ten times faster, and picking a layer, a tool or a color no longer works the drawing's colors out again. ([#719](https://github.com/baipix/baipix/pull/719), [#720](https://github.com/baipix/baipix/pull/720))
+- Paint.NET palettes (.txt), as Lospec also gives them, open with their colors. ([#726](https://github.com/baipix/baipix/pull/726))
+- The Light section shows a Beta badge: the light may still change, and feedback on it is welcome. ([#713](https://github.com/baipix/baipix/pull/713))
 - Colors, Remap and Outline change every frame of an animation, in one undo step, with All frames ticked (the default); Remap also maps the colors that only show on other frames. ([#708](https://github.com/baipix/baipix/pull/708))
 - Replace with the primary color everywhere replaces it on every frame, and a palette built from the drawing takes every frame's colors. ([#706](https://github.com/baipix/baipix/pull/706), [#709](https://github.com/baipix/baipix/pull/709))
 - The Drawing colors palette comes from every frame, so it stays the same while stepping through them. ([#707](https://github.com/baipix/baipix/pull/707))
@@ -33,6 +55,14 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- Pixels pasted in a group stay in it, instead of splitting it in two and losing the group on the next reload. ([#721](https://github.com/baipix/baipix/pull/721))
+- A layer brought back by the toast's Undo joins a group made around its place since, instead of splitting it. ([#722](https://github.com/baipix/baipix/pull/722))
+- A moved symmetry axis is saved, and undoing a step no longer puts it back where it was. ([#723](https://github.com/baipix/baipix/pull/723), [#724](https://github.com/baipix/baipix/pull/724))
+- Export with All boards leaves out the layers outside the boards, instead of adding them as one more picture. ([#725](https://github.com/baipix/baipix/pull/725))
+- Copied or cut layers keep their animation when pasted, in the same file or another one, instead of showing one frame on every frame. ([#714](https://github.com/baipix/baipix/pull/714))
+- Changing frame, playing, undoing or redoing while dragging several layers with the Move tool no longer writes one frame's pixels onto another: they wait for the drag to end. ([#715](https://github.com/baipix/baipix/pull/715))
+- An animated layer dragged out of its board, or onto a board with fewer frames, stays on its board with a message, instead of losing frames. ([#716](https://github.com/baipix/baipix/pull/716))
+- The undo history counts every frame in its memory budget, so a long session on a big animation no longer uses far more memory than it should. ([#717](https://github.com/baipix/baipix/pull/717))
 - Adding, deleting, pasting, moving or reversing frames with the Adjustments panel open no longer writes one frame's pixels onto another: frames wait for the adjustment to end. ([#703](https://github.com/baipix/baipix/pull/703))
 - A component's instance shows its master on every frame, not only the one shown, so exports come out right; a master with fewer frames on another board loops. ([#704](https://github.com/baipix/baipix/pull/704))
 - The toast's Undo after deleting a layer puts each drawing back on its own frame, even when frames were deleted, moved or added since. ([#705](https://github.com/baipix/baipix/pull/705))
@@ -55,6 +85,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Thanks
 
+- [@jalal-sadat](https://github.com/jalal-sadat) for clearing the React Hooks warnings in the code. ([#685](https://github.com/baipix/baipix/pull/685))
 - [@bfs2021](https://github.com/bfs2021) for letting the files screen fill wide windows. ([#699](https://github.com/baipix/baipix/pull/699))
 - [@mykola-lp](https://github.com/mykola-lp) for the frames sprite sheet export, with its JSON for game engines. ([#674](https://github.com/baipix/baipix/pull/674))
 - [@mykola-lp](https://github.com/mykola-lp) for the GIF export, which takes animations out of Baipix. ([#644](https://github.com/baipix/baipix/pull/644))
@@ -560,7 +591,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.7.7...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.8.0...main
+[0.8.0]: https://github.com/baipix/baipix/releases/tag/v0.8.0
 [0.7.7]: https://github.com/baipix/baipix/releases/tag/v0.7.7
 [0.7.6]: https://github.com/baipix/baipix/releases/tag/v0.7.6
 [0.7.5]: https://github.com/baipix/baipix/releases/tag/v0.7.5

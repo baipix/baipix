@@ -519,3 +519,31 @@ describe('frames during a color adjustment', () => {
     });
   }
 });
+
+describe('frames while moving several layers', () => {
+  it('stay on the frame the move started on', () => {
+    const e = editor();
+    dot(e, 0, 0);
+    e.addLayer();
+    dot(e, 0, 1);
+    e.addFrame(true);
+    e.setColor('primary', BLUE);
+    e.selectLayer(0, 'single');
+    dot(e, 5, 5); // the bottom layer's second frame only
+    e.setFrame(0);
+    e.selectLayer(0, 'single');
+    e.selectLayer(1, 'range');
+    e.setTool('move');
+    e.beginStroke({ x: 0, y: 0 }, false, { shift: false });
+    e.moveStroke({ x: 1, y: 0 }, { shift: false });
+    e.setFrame(1, false); // a key pressed, or playback, while dragging
+    e.undo();
+    e.moveStroke({ x: 2, y: 0 }, { shift: false });
+    e.endStroke();
+    expect(doc(e).activeFrame).toBe(0);
+    const bottom = doc(e).layers[0];
+    expect(at(e, 2, 0, 0)).toBe(RED);
+    expect(celOf(doc(e), bottom, 1).pixels[5 * 8 + 5]).toBe(BLUE);
+    expect(celOf(doc(e), bottom, 1).pixels[2]).toBe(0);
+  });
+});

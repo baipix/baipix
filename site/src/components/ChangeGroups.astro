@@ -1,0 +1,175 @@
+---
+/** A version's changes on the release notes page: New, Better, Fixed, then who to thank, with their avatar. */
+import type { Release } from '../changelog';
+
+const { release, limit = Infinity } = Astro.props as {
+  release: Release;
+  /** How many lines show at first; the others get `extra`, for the page to show on demand. */
+  limit?: number;
+};
+// Each group's lines, numbered across the groups.
+let shown = 0;
+const groups = release.groups.map((group) => {
+  const first = shown;
+  shown += group.items.length;
+  return { ...group, first };
+});
+// One line per person, with everything they did in this version.
+const people = [...Map.groupBy(release.thanks, (t) => t.login)].map(([login, done]) => ({
+  login,
+  done: done.map((t) => t.html),
+}));
+---
+
+{groups.map((group) => (
+  <div class:list={['group', `group-${group.kind}`, { extra: group.first >= limit }]}>
+    <h3 class="tag">{group.label}</h3>
+    <ul class="items">
+      {group.items.map((item, i) => (
+        <li class:list={{ extra: group.first + i >= limit }} set:html={item} />
+      ))}
+    </ul>
+  </div>
+))}
+{people.length > 0 && (
+  <div class="group">
+    <h3 class="tag tag-thanks">Thanks</h3>
+    <ul class="thanks">
+      {people.map((p) => (
+        <li>
+          <a class="who" href={`https://github.com/${p.login}`}>
+            <img
+              src={`https://github.com/${p.login}.png?size=56`}
+              width="28"
+              height="28"
+              alt=""
+              loading="lazy"
+            />
+            <span>@{p.login}</span>
+          </a>
+          {p.done.length === 1 ? (
+            <span set:html={` ${p.done[0]}`} />
+          ) : (
+            <ul class="done">
+              {p.done.map((html) => (
+                <li set:html={html} />
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
+<style>
+  .group {
+    margin-top: 20px;
+  }
+  /* A small square label, colored by what it holds. */
+  .tag {
+    display: inline-block;
+    margin: 0 0 10px;
+    padding: 3px 8px;
+    background: var(--surface);
+    color: var(--muted);
+    font:
+      400 11px/1.2 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .group-new .tag {
+    background: var(--mint);
+    color: light-dark(#21875c, #6fe0aa);
+  }
+  .group-better .tag {
+    background: var(--lilac);
+    color: light-dark(#5a46c8, #a99bff);
+  }
+  .group-fixed .tag {
+    background: var(--butter);
+    color: light-dark(#a8501a, #ffad6e);
+  }
+  .tag-thanks {
+    background: var(--pink);
+    color: light-dark(#b8398c, #f08acb);
+  }
+  .items,
+  .thanks {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .items li {
+    position: relative;
+    padding: 5px 0 5px 18px;
+    line-height: 1.55;
+  }
+  .items li::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 2px;
+    width: 6px;
+    height: 6px;
+    background: var(--line-strong);
+  }
+  .items :global(code) {
+    padding: 1px 5px;
+    background: var(--surface);
+    font: 0.88em var(--mono);
+  }
+  /* The pull requests: small and quiet, at the end of the line. */
+  .items :global(.prs),
+  .thanks :global(.prs) {
+    margin-left: 4px;
+    color: var(--muted);
+    font: 12px var(--mono);
+    white-space: nowrap;
+  }
+  .items :global(.prs a:hover),
+  .thanks :global(.prs a:hover) {
+    color: var(--text);
+  }
+  .thanks > li {
+    padding: 8px 0;
+    line-height: 1.55;
+  }
+  .who {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 2px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+  /* Several things from one person, under their name. */
+  .done {
+    margin: 6px 0 0 36px;
+    padding: 0;
+    list-style: none;
+  }
+  .done li {
+    position: relative;
+    padding: 3px 0 3px 14px;
+  }
+  .done li::before {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: 0;
+    width: 4px;
+    height: 4px;
+    background: var(--line-strong);
+  }
+  .who:hover span {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .who img {
+    width: 28px;
+    height: 28px;
+    background: var(--surface);
+    image-rendering: auto;
+  }
+</style>

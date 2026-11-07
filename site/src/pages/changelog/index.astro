@@ -1,0 +1,395 @@
+---
+/**
+ * The release notes: what changed in the editor, version by version, from CHANGELOG.md (see ../../changelog.ts). The newest
+ * version is open, the others show their summary and open on a click or a link to them.
+ */
+import ChangeGroups from '../../components/ChangeGroups.astro';
+import Cta from '../../components/Cta.astro';
+import Footer from '../../components/Footer.astro';
+import Nav from '../../components/Nav.astro';
+import PixelGlow from '../../components/PixelGlow.astro';
+import Base from '../../layouts/Base.astro';
+import { anchor, comingNext, longDate, releases, series } from '../../changelog';
+import { REPO_URL } from '../../links';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const newest = releases[0];
+/** Coming next shows this many lines, and the rest on demand. */
+const COMING_LINES = 5;
+const comingCount = comingNext?.groups.reduce((n, g) => n + g.items.length, 0) ?? 0;
+const COUNTED = { new: 'new', better: 'improved', fixed: 'fixed', removed: 'removed' };
+const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED[g.kind]}`).join(', ');
+---
+
+<Base
+  title="Release notes | Baipix"
+  description={`What changed in Baipix, the free pixel art editor in your browser, version by version. Latest: ${newest.version}.`}
+>
+  <Nav />
+  <div class="changes-page">
+    <div class="hero-glow" aria-hidden="true">
+      <PixelGlow />
+    </div>
+    <header class="changes-head container">
+      <div>
+        <h1>Release notes</h1>
+        <p class="muted">What changed in Baipix, version by version. A new one comes about every week.</p>
+      </div>
+      <a class="changes-rss" href={`${base}changelog/rss.xml`}>
+        RSS feed
+      </a>
+    </header>
+
+    <div class="changes-layout container">
+      <main class="changes">
+        {comingNext && (
+          <section class="coming" id="next" aria-labelledby="next-title">
+            <h2 id="next-title">Coming next</h2>
+            <p class="muted">
+              Since {newest.version}: {comingSummary}. Already on baipix.app, and in the next version. What
+              comes after is on the <a href={`${base}roadmap/`}>roadmap</a>.
+            </p>
+            {comingCount > COMING_LINES && <input type="checkbox" id="coming-all" class="coming-toggle" />}
+            <ChangeGroups release={comingNext} limit={COMING_LINES} />
+            {comingCount > COMING_LINES && (
+              <label for="coming-all" class="coming-more">
+                <span class="more">Show all {comingCount}</span>
+                <span class="less">Show less</span>
+              </label>
+            )}
+          </section>
+        )}
+
+        {series.map((s) => (
+          <section class="series" aria-labelledby={`series-${s.name}`}>
+            <h2 id={`series-${s.name}`} class="series-name">
+              {s.name}
+            </h2>
+            {s.releases.map((release) => (
+              <details class="release" id={anchor(release.version)} open={release === newest}>
+                <summary>
+                  <span class="release-top">
+                    <span class="release-version">{release.version}</span>
+                    {release.version.endsWith('.0') ? (
+                      <span class="release-kind is-major">Major</span>
+                    ) : (
+                      <span class="release-kind">Minor</span>
+                    )}
+                    <span class="muted">{release.date ? longDate(release.date) : 'The first version'}</span>
+                  </span>
+                  {release.summary && <span class="release-summary" set:html={release.summary} />}
+                </summary>
+                <div class="release-body">
+                  <ChangeGroups release={release} />
+                </div>
+              </details>
+            ))}
+          </section>
+        ))}
+        <p class="changes-more muted">
+          Every change, the website's included, is in
+          <a href={`${REPO_URL}/blob/main/CHANGELOG.md`}>CHANGELOG.md</a> and the
+          <a href={`${REPO_URL}/releases`}>releases on GitHub</a>.
+        </p>
+      </main>
+
+      <nav class="changes-toc" aria-labelledby="versions">
+        <p id="versions">Versions</p>
+        <ul>
+          {comingNext && (
+            <li>
+              <a href="#next">Coming next</a>
+            </li>
+          )}
+          {series.map((s) => (
+            <li>
+              <a href={`#${anchor(s.releases[0].version)}`}>{s.name}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <Cta />
+  <Footer />
+</Base>
+
+<script>
+  // A link to a version opens it.
+  const openTarget = () => {
+    const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target instanceof HTMLDetailsElement) target.open = true;
+  };
+  addEventListener('hashchange', openTarget);
+  openTarget();
+
+  // The versions list marks the one being read: the last whose top has gone past the top third.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.changes-toc a')];
+  const targets = links
+    .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+    .filter((el): el is HTMLElement => !!el)
+    .map((el) => el.closest('section') ?? el);
+  const mark = () => {
+    const line = innerHeight / 3;
+    let current = 0;
+    targets.forEach((el, i) => {
+      if (el.getBoundingClientRect().top <= line) current = i;
+    });
+    links.forEach((a, i) => a.toggleAttribute('aria-current', i === current));
+  };
+  if (targets.length) {
+    addEventListener('scroll', mark, { passive: true });
+    addEventListener('resize', mark);
+    mark();
+  }
+</script>
+
+<style>
+  .changes-page {
+    position: relative;
+    padding-top: 56px;
+    /* Clip, not hidden: the versions list stays sticky. */
+    overflow: clip;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 560px;
+    pointer-events: none;
+  }
+  .changes-head {
+    position: relative;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 40px;
+  }
+  .changes-head h1 {
+    margin: 0 0 10px;
+    font-size: clamp(40px, 6vw, 64px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .changes-head p {
+    margin: 0;
+    font-size: 17px;
+  }
+  .changes-rss {
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .changes-rss:hover {
+    color: var(--text);
+  }
+
+  /* ---- The versions on the left, their list on the right, following the scroll ---- */
+  .changes-layout {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 760px) 180px;
+    justify-content: space-between;
+    gap: 48px;
+    padding-bottom: 96px;
+  }
+  .changes h2 {
+    scroll-margin-top: 40px;
+  }
+  .coming {
+    margin-bottom: 48px;
+    padding: 24px 28px;
+    border: 1px dashed var(--line-strong);
+    background: var(--bg);
+  }
+  .coming h2 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .coming > p a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .coming > p {
+    margin: 4px 0 0;
+    font-size: 14px;
+  }
+  /* Past its first lines, Coming next shows the rest with Show all: a checkbox, no script. */
+  .coming-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .coming:not(:has(.coming-toggle:checked)) :global(.extra) {
+    display: none;
+  }
+  .coming-more {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 6px 12px;
+    border: 1px solid var(--line-strong);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .coming-more:hover {
+    border-color: var(--text);
+  }
+  .coming-toggle:focus-visible ~ .coming-more {
+    outline: 2px solid #6e56cf;
+    outline-offset: 2px;
+  }
+  .coming-more .less,
+  .coming-toggle:checked ~ .coming-more .more {
+    display: none;
+  }
+  .coming-toggle:checked ~ .coming-more .less {
+    display: inline;
+  }
+  .series {
+    margin-bottom: 40px;
+  }
+  .series-name {
+    margin: 0 0 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font:
+      400 14px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .release {
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 40px;
+  }
+  .release summary {
+    display: grid;
+    gap: 6px;
+    padding: 20px 28px 20px 0;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+  }
+  .release summary::-webkit-details-marker {
+    display: none;
+  }
+  /* A plus that turns into a minus, on the right. */
+  .release summary::after {
+    content: '+';
+    position: absolute;
+    top: 18px;
+    right: 4px;
+    color: var(--muted);
+    font: 400 20px/1 var(--mono);
+  }
+  .release[open] summary::after {
+    content: '−';
+  }
+  .release-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    font-size: 14px;
+  }
+  .release-version {
+    color: var(--text);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  /* A version with new features (x.y.0) stands out from the small ones in between. */
+  .release-kind {
+    align-self: center;
+    padding: 3px 8px;
+    border: 1px solid var(--line-strong);
+    color: var(--muted);
+    font:
+      400 11px/1.2 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .release-kind.is-major {
+    border-color: #6e56cf;
+    background: #6e56cf;
+    color: #fff;
+  }
+  .release-summary {
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .release[open] .release-summary {
+    color: var(--text);
+    font-size: 17px;
+  }
+  .release-body {
+    padding-bottom: 28px;
+  }
+  .changes-more {
+    margin-top: 32px;
+    font-size: 14px;
+  }
+  .changes-more a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .changes-toc {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+    align-self: start;
+    font-size: 14px;
+  }
+  .changes-toc p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .changes-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-left: 1px solid var(--line);
+  }
+  .changes-toc a {
+    display: block;
+    margin-left: -1px;
+    padding: 6px 0 6px 14px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+  }
+  .changes-toc a:hover {
+    color: var(--text);
+  }
+  .changes-toc a[aria-current] {
+    border-left-color: #6e56cf;
+    color: var(--text);
+    font-weight: 600;
+  }
+  @media (max-width: 960px) {
+    .changes-layout {
+      display: block;
+    }
+    .changes-toc {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .changes-page {
+      padding-top: 32px;
+    }
+    .changes-head {
+      align-items: start;
+      flex-direction: column;
+    }
+    .coming {
+      padding: 20px;
+    }
+  }
+</style>

@@ -1,6 +1,13 @@
 import { alpha, type Color } from '../engine/color';
 import { flatten, flattenFrame } from '../engine/composite';
-import { createDocument, fileNameOf, hasBackground, MAX_SIZE, type PixelDoc } from '../engine/document';
+import {
+  createDocument,
+  fileNameOf,
+  hasBackground,
+  isBoard,
+  MAX_SIZE,
+  type PixelDoc,
+} from '../engine/document';
 import { DEFAULT_DURATION, celOf, frameCount } from '../engine/frames';
 import type { Editor } from '../engine/editor';
 import { uniqueColors, type PixelBlock } from '../engine/region';
@@ -341,7 +348,7 @@ export function createActions(editor: Editor) {
      * sequence goes in a folder per board.
      */
     async exportAllBoards(format: Exclude<ExportFormat, 'tileset' | 'layers'>) {
-      const boards = editor.fileBoards();
+      const boards = editor.fileBoards().filter(isBoard);
       const used = new Set<string>();
       const usedFrameNames = new Set<string>();
       const nameOf = (d: PixelDoc) => {

@@ -63,6 +63,7 @@ import {
   deleteFrames,
   eachFrame,
   frameCount,
+  isStill,
   moveFrame,
   copyFrames,
   pasteFrames,
@@ -299,6 +300,7 @@ export type Notice =
   | { type: 'groupTooDeep' }
   | { type: 'instanceLocked' }
   | { type: 'componentCreated' }
+  | { type: 'layerFrames' }
   | { type: 'layerToBoard'; board: string };
 
 export interface Preferences {
@@ -491,7 +493,7 @@ export class Editor {
   /** The colors of every frame, so they stay the same from one frame to the next. */
   private colorsOfDrawing(): Color[] {
     const c = this.drawingColors;
-    if (c && c.doc === this.doc && c.revision === this.revision) return c.colors;
+    if (c && c.doc === this.doc && c.revision === this.pixelRevision) return c.colors;
     const doc = this.doc;
     const found = new Set(uniqueColors(this.flatten({ includeBackground: false })));
     const n = frameCount(doc);
@@ -509,7 +511,7 @@ export class Editor {
       });
     }
     const colors = sortByLightness([...found]);
-    this.drawingColors = { doc, revision: this.revision, colors };
+    this.drawingColors = { doc, revision: this.pixelRevision, colors };
     return colors;
   }
 
@@ -670,6 +672,8 @@ export class Editor {
   private myPalettes: MyPalette[] = [];
   private revision = 0;
   private contentRevision = 0;
+  /** Goes up with every change that may touch pixels, saved or not: picking a tool or a layer doesn't. */
+  private pixelRevision = 0;
   private state!: EditorState;
 
   private listeners = new Set<Listener>();
@@ -803,6 +807,7 @@ export class Editor {
       this.linkFiles();
       for (const doc of syncFileInstances(this.doc)) if (doc !== this.doc) doc.updatedAt = Date.now();
       if (persist) this.contentRevision++;
+      this.pixelRevision++;
     }
     this.refresh();
     this.listeners.forEach((l) => l());
@@ -854,9 +859,9 @@ export class Editor {
     const palette = snapshot.palette ?? this.active.doc.palette;
     if (palette) snapshot.doc.palette = palette;
     else delete snapshot.doc.palette;
-    // The reference image and the guides aren't part of the history: undo and redo leave them,
-    // except across a canvas resize, which moved them with the drawing.
-    const { reference, guides, isoGrid, isoGridVertical, light } = this.active.doc;
+    // The reference image, the guides and the symmetry axes aren't part of the history: undo and
+    // redo leave them, except across a canvas resize, which moved them with the drawing.
+    const { reference, guides, axisX, axisY, isoGrid, isoGridVertical, light } = this.active.doc;
     // The isometric grid and the light aren't either, resize or not.
     if (light) snapshot.doc.light = light;
     else delete snapshot.doc.light;
@@ -870,6 +875,10 @@ export class Editor {
       if (!reference) delete snapshot.doc.reference;
       snapshot.doc.guides = guides;
       if (!guides) delete snapshot.doc.guides;
+      if (axisX === undefined) delete snapshot.doc.axisX;
+      else snapshot.doc.axisX = axisX;
+      if (axisY === undefined) delete snapshot.doc.axisY;
+      else snapshot.doc.axisY = axisY;
     }
     // Names and the board's place aren't part of the history either: a board moved or renamed stays
     // so. A resize by the board's sides moved it with its size, so undoing it puts it back.
@@ -887,7 +896,7 @@ export class Editor {
   undo(): void {
     if (this.repeatSession) return this.endRepeat(false);
     if (this.extrudeSession) return this.endExtrude(false);
-    if (this.stroke || this.adjusting || this.scaling) return;
+    if (this.stroke || this.groupMove || this.adjusting || this.scaling) return;
     // Boards moved, aligned or deleted come back first, like in Figma.
     while (this.fileSteps.length) {
       const step = this.fileSteps.pop()!;
@@ -922,7 +931,7 @@ export class Editor {
   }
 
   redo(): void {
-    if (this.stroke || this.adjusting || this.scaling) return;
+    if (this.stroke || this.groupMove || this.adjusting || this.scaling) return;
     const again = this.fileRedos.pop();
     if (again) {
       this.replaying = true;
@@ -1448,8 +1457,8 @@ export class Editor {
   /**
    * Moves a layer of the active board to another board of the file, keeping where it is in the
    * file (what's outside the new board is kept outside it), and makes that board active with the
-   * layer selected. Components and their copies stay on their board: their links don't cross
-   * boards yet. One undo step on each board. Returns false when nothing moved.
+   * layer selected. A component keeps its id, so its instances follow it to the new board. One
+   * undo step on each board. Returns false when nothing moved.
    */
   moveLayerToBoard(layerId: string, boardId: string): boolean {
     const from = this.active;
@@ -1460,14 +1469,13 @@ export class Editor {
       this.notice({ type: 'layerLocked' });
       return false;
     }
+    if (this.losesFrames(layer, to.doc)) return false;
     this.cancelStroke();
     const src = from.doc;
     const dst = to.doc;
     const dx = (src.board?.x ?? 0) - (dst.board?.x ?? 0);
     const dy = (src.board?.y ?? 0) - (dst.board?.y ?? 0);
     const moved = reframe(layer.pixels, src.width, src.height, layer.outside, dx, dy, dst.width, dst.height);
-    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
-    // go when their last one does.
     // Both sides are one step: undone (and redone) together.
     const id = newId('move');
     const link = { from, to, created: !dst.layers.length } as {
@@ -1477,6 +1485,8 @@ export class Editor {
       at?: number;
     };
     this.links.set(id, link);
+    // Off the board it leaves: the board keeps a layer, even if it's an empty one. The free layers
+    // go when their last one does.
     const emptied = isFreeZone(src) && src.layers.length === 1;
     if (!emptied) {
       this.edit((doc) => {
@@ -1635,6 +1645,17 @@ export class Editor {
   }
 
   /**
+   * Whether moving a layer of the active board to `target` (null: outside every board) would lose
+   * some of its frames, the target having fewer: it says so, and the layer stays.
+   */
+  private losesFrames(layer: Layer, target: PixelDoc | null): boolean {
+    const fewer = (target ? frameCount(target) : 1) < frameCount(this.doc);
+    if (!fewer || isStill(this.doc, layer)) return false;
+    this.notice({ type: 'layerFrames' });
+    return true;
+  }
+
+  /**
    * Takes a layer off its board and leaves it where it is on the canvas, outside every board, like
    * an object beside the frames in Figma: a Move tool drag let go beside the boards.
    */
@@ -1645,6 +1666,8 @@ export class Editor {
     if (!layer || isFreeZone(src)) return false;
     const box = layerContent(layer.pixels, src.width, src.height, layer.outside)?.rect;
     if (!box) return false;
+    // Outside the boards there are no frames.
+    if (this.losesFrames(layer, null)) return false;
     // A file of one board becomes a file of boards, its board at (0, 0).
     src.board ??= { file: src.id, fileName: src.name, x: 0, y: 0 };
     if (!this.freeOf(src.board.file)) {
@@ -1740,8 +1763,15 @@ export class Editor {
           ...(doc.groups ?? []),
           ...d.groups.filter((g) => !kept.has(g.id)).map((g) => ({ ...g })),
         ];
-        normalizeGroups(doc);
       }
+      // Back between two layers of a group made since, a layer joins it rather than splitting it.
+      for (const { layer } of entries) {
+        const i = doc.layers.indexOf(layer);
+        const above = doc.layers[i + 1]?.group;
+        const around = groupChain(doc, doc.layers[i - 1]?.group).find((g) => isWithin(doc, above, g.id));
+        if (around && !isWithin(doc, layer.group, around.id)) layer.group = around.id;
+      }
+      normalizeGroups(doc);
       doc.activeLayer = doc.layers.indexOf(entries[entries.length - 1].layer);
       this.active.picked = entries.map((x) => x.layer.id);
     });
@@ -1909,6 +1939,7 @@ export class Editor {
     if (next === (doc[key] ?? size / 2)) return;
     if (next === size / 2) delete doc[key];
     else doc[key] = next;
+    this.touch();
     this.commit();
   }
 
@@ -2076,11 +2107,11 @@ export class Editor {
   /* ------------------------------------------------------------------ animation frames */
 
   /**
-   * A stroke, an adjustment or a resize under way: it holds the shown frame's pixels (to write
+   * A stroke, a move of several layers, an adjustment or a resize under way: it holds the shown frame's pixels (to write
    * back on cancel or apply), so frames can't be shown, added, deleted or moved until it ends.
    */
   private get framesLocked(): boolean {
-    return !!(this.stroke || this.adjusting || this.scaling);
+    return !!(this.stroke || this.groupMove || this.adjusting || this.scaling);
   }
 
   /**
@@ -2854,6 +2885,7 @@ export class Editor {
       this.effectChange = false;
       this.commit();
     } else {
+      this.pixelRevision++;
       this.refresh();
       this.listeners.forEach((l) => l());
       this.pixelsChanged();
@@ -2880,7 +2912,7 @@ export class Editor {
 
   setColor(slot: 'primary' | 'secondary', color: Color): void {
     this[slot] = color >>> 0;
-    this.commit();
+    this.commit(true, false);
   }
 
   /** Moves colors to the front of the recent colors (transparent ones are skipped). */
@@ -3080,7 +3112,7 @@ export class Editor {
     if (this.stroke) this.endStroke();
     if (this.backgroundPick) this.cancelBackgroundPick(false);
     this.tool = tool;
-    this.commit();
+    this.commit(true, false);
   }
 
   setOption<K extends keyof ToolOptions>(key: K, value: ToolOptions[K]): void {
@@ -3832,6 +3864,7 @@ export class Editor {
     if (!this.adjusting) return;
     const before = this.doc.background;
     this.writeAdjustment(change, background);
+    this.pixelRevision++;
     const a = this.adjusting;
     // The background's swatch in the right panel follows the preview, not only the canvas.
     if (this.doc.background !== before) this.select();
@@ -4281,6 +4314,9 @@ export class Editor {
             layer.pixels[ty * doc.width + tx] = block.pixels[by * block.width + bx];
         }
       }
+      // In the active layer's group, right above it, like a new layer.
+      const group = activeLayer(doc).group;
+      if (group) layer.group = group;
       doc.layers.splice(doc.activeLayer + 1, 0, layer);
       doc.activeLayer += 1;
       this.active.selection = {
