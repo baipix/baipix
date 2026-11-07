@@ -10,7 +10,7 @@ In the Colors section of the right panel, two overlapping chips: the front one i
 
 - Click the front chip for its picker: a color field, a hex code and an opacity.
 - Click the one behind to bring it to the front, or press <kbd>X</kbd> to swap them.
-- Click a swatch of the palette to draw with it.
+- Click a swatch of the palette to draw with it. Right-click it to use it as the secondary color, replace it with the primary color everywhere (every unlocked layer, on every frame), copy its hex code, or remove it from the palette.
 
 ## The eyedropper
 

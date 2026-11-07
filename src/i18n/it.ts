@@ -306,6 +306,7 @@ export const it: Record<MessageKey, string> = {
   'menu.theme': 'Tema',
   'menu.language': 'Lingua',
   'menu.github': 'Codice sorgente su GitHub',
+  'menu.bluesky': 'Baipix su Bluesky',
   'menu.reportBug': 'Segnala un bug…',
   'menu.suggestIdea': 'Proponi un’idea…',
 
@@ -678,7 +679,7 @@ export const it: Record<MessageKey, string> = {
     'Linea (L), Rettangolo (R), Ellisse (C) e altre nel menu di questo pulsante. Maiusc le mantiene quadrate o rotonde.',
   'tour.colorsTitle': 'Ritoccare i colori',
   'tour.colors':
-    'Scurisci (S) e Schiarisci (O) seguono le rampe della palette, Spray (A) spruzza pixel come una bomboletta.',
+    'Scurisci (S) e Schiarisci (O) seguono le rampe della palette, Spray (P) spruzza pixel come una bomboletta.',
   'tour.warpTitle': 'Deformare senza nuovi colori',
   'tour.warp':
     'Sfoca (F) ammorbidisce i bordi, Rimescola (J) mescola i pixel per creare texture, Fluidifica (W) spinge, gonfia o restringe una parte del disegno. Resta fermo per continuare.',
@@ -689,7 +690,7 @@ export const it: Record<MessageKey, string> = {
   'tour.gap': 'Distanzia i pixel per un effetto LED o a matrice di punti, sulla tela e nelle esportazioni.',
   'tour.exportTitle': 'Esportazione',
   'tour.export':
-    'PNG da 1× a 32×, oppure SVG che mantiene i tuoi livelli, un tracciato per colore: copialo e incollalo direttamente in Figma.',
+    'PNG da 1× a 32×, GIF animata, sprite sheet, file .aseprite, oppure SVG che mantiene i tuoi livelli, un tracciato per colore: copialo e incollalo direttamente in Figma.',
   'tour.next': 'Avanti',
   'tour.done': 'Fine',
   'tour.skip': 'Salta la presentazione',

@@ -1,0 +1,446 @@
+{
+  "past": [
+    {
+      "version": "0.2",
+      "name": "Everyday comfort",
+      "title": "v0.2 · Everyday comfort"
+    },
+    {
+      "version": "0.3",
+      "name": "New tools and a cleaner workspace",
+      "title": "v0.3 · New tools and a cleaner workspace"
+    },
+    {
+      "version": "0.4",
+      "name": "Groups and transforms",
+      "title": "v0.4 · Groups and transforms"
+    },
+    {
+      "version": "0.5",
+      "name": "Components",
+      "title": "v0.5 · Components"
+    },
+    {
+      "version": "0.6",
+      "name": "Palettes and interface",
+      "title": "v0.6 · Palettes and interface"
+    },
+    {
+      "version": "0.7",
+      "name": "Isometric",
+      "title": "v0.7 · Isometric"
+    },
+    {
+      "version": "0.8",
+      "name": "Animation",
+      "title": "v0.8 · Animation"
+    }
+  ],
+  "ahead": [
+    {
+      "version": "0.9",
+      "name": "Drawing and tablets",
+      "title": "v0.9 · Drawing and tablets",
+      "description": "Solid drawing tools: pen pressure, stamp and pattern brushes, outline as you paint, polygons, perfect angles, skew, mixing; and drawing comfortably on a tablet.",
+      "open": 23,
+      "closed": 0,
+      "done": false,
+      "url": "https://github.com/baipix/baipix/milestone/13",
+      "issues": [
+        {
+          "number": 59,
+          "title": "Import from other tools",
+          "url": "https://github.com/baipix/baipix/issues/59"
+        },
+        {
+          "number": 142,
+          "title": "Phones and tablets",
+          "url": "https://github.com/baipix/baipix/issues/142"
+        },
+        {
+          "number": 85,
+          "title": "Open Aseprite files",
+          "url": "https://github.com/baipix/baipix/issues/85"
+        },
+        {
+          "number": 675,
+          "title": "Select and manage multiple files in Drawings and Trash",
+          "url": "https://github.com/baipix/baipix/issues/675"
+        },
+        {
+          "number": 135,
+          "title": "Work offline",
+          "url": "https://github.com/baipix/baipix/issues/135"
+        },
+        {
+          "number": 139,
+          "title": "A layout for tablets",
+          "url": "https://github.com/baipix/baipix/issues/139"
+        },
+        {
+          "number": 268,
+          "title": "Install Baipix as a desktop app (PWA)",
+          "url": "https://github.com/baipix/baipix/issues/268"
+        },
+        {
+          "number": 32,
+          "title": "Touch gestures",
+          "url": "https://github.com/baipix/baipix/issues/32"
+        },
+        {
+          "number": 140,
+          "title": "Stylus: the pen draws, fingers pan",
+          "url": "https://github.com/baipix/baipix/issues/140"
+        },
+        {
+          "number": 525,
+          "title": "Pen pressure sets the brush size",
+          "url": "https://github.com/baipix/baipix/issues/525"
+        },
+        {
+          "number": 526,
+          "title": "Pen pressure sets the dither's density",
+          "url": "https://github.com/baipix/baipix/issues/526"
+        },
+        {
+          "number": 527,
+          "title": "Nature stamp brushes",
+          "url": "https://github.com/baipix/baipix/issues/527"
+        },
+        {
+          "number": 528,
+          "title": "Pattern brush",
+          "url": "https://github.com/baipix/baipix/issues/528"
+        },
+        {
+          "number": 529,
+          "title": "Outline as you paint",
+          "url": "https://github.com/baipix/baipix/issues/529"
+        },
+        {
+          "number": 530,
+          "title": "Preview the brush when the Apple Pencil hovers",
+          "url": "https://github.com/baipix/baipix/issues/530"
+        },
+        {
+          "number": 546,
+          "title": "More palette presets",
+          "url": "https://github.com/baipix/baipix/issues/546"
+        },
+        {
+          "number": 547,
+          "title": "Export the palette as a picture",
+          "url": "https://github.com/baipix/baipix/issues/547"
+        },
+        {
+          "number": 548,
+          "title": "More file templates",
+          "url": "https://github.com/baipix/baipix/issues/548"
+        },
+        {
+          "number": 552,
+          "title": "Perfect angles for lines, without Shift",
+          "url": "https://github.com/baipix/baipix/issues/552"
+        },
+        {
+          "number": 553,
+          "title": "Skew a selection in pixel steps",
+          "url": "https://github.com/baipix/baipix/issues/553"
+        },
+        {
+          "number": 554,
+          "title": "A polygon shape (hexagon, diamond…)",
+          "url": "https://github.com/baipix/baipix/issues/554"
+        },
+        {
+          "number": 555,
+          "title": "A mixing brush that stays in the palette",
+          "url": "https://github.com/baipix/baipix/issues/555"
+        },
+        {
+          "number": 567,
+          "title": "Pick the language from the files screen",
+          "url": "https://github.com/baipix/baipix/issues/567"
+        }
+      ],
+      "firstIssues": 5
+    },
+    {
+      "version": "0.10",
+      "name": "Share and brand work",
+      "title": "v0.10 · Share and brand work",
+      "description": "Links, embeds and exports for design work.",
+      "open": 17,
+      "closed": 4,
+      "done": false,
+      "url": "https://github.com/baipix/baipix/milestone/6",
+      "issues": [
+        {
+          "number": 62,
+          "title": "Share and brand work",
+          "url": "https://github.com/baipix/baipix/issues/62"
+        },
+        {
+          "number": 262,
+          "title": "A library of sprites, shared by every file",
+          "url": "https://github.com/baipix/baipix/issues/262"
+        },
+        {
+          "number": 263,
+          "title": "Library updates: components follow their library item",
+          "url": "https://github.com/baipix/baipix/issues/263"
+        },
+        {
+          "number": 749,
+          "title": "Export an animation as Lottie",
+          "url": "https://github.com/baipix/baipix/issues/749"
+        },
+        {
+          "number": 33,
+          "title": "Keyboard navigation in the panels",
+          "url": "https://github.com/baipix/baipix/issues/33"
+        },
+        {
+          "number": 86,
+          "title": "Share a drawing as a link",
+          "url": "https://github.com/baipix/baipix/issues/86"
+        },
+        {
+          "number": 87,
+          "title": "Embed a drawing in a page",
+          "url": "https://github.com/baipix/baipix/issues/87"
+        },
+        {
+          "number": 89,
+          "title": "Export an icon set",
+          "url": "https://github.com/baipix/baipix/issues/89"
+        },
+        {
+          "number": 747,
+          "title": "Export an animation as animated CSS",
+          "url": "https://github.com/baipix/baipix/issues/747"
+        },
+        {
+          "number": 748,
+          "title": "Export an animation as an animated SVG",
+          "url": "https://github.com/baipix/baipix/issues/748"
+        },
+        {
+          "number": 88,
+          "title": "Export several sizes at once",
+          "url": "https://github.com/baipix/baipix/issues/88"
+        },
+        {
+          "number": 541,
+          "title": "A community gallery: send a drawing from the editor",
+          "url": "https://github.com/baipix/baipix/issues/541"
+        },
+        {
+          "number": 559,
+          "title": "Brazilian Portuguese translation",
+          "url": "https://github.com/baipix/baipix/issues/559"
+        },
+        {
+          "number": 561,
+          "title": "German translation",
+          "url": "https://github.com/baipix/baipix/issues/561"
+        },
+        {
+          "number": 562,
+          "title": "Simplified Chinese translation",
+          "url": "https://github.com/baipix/baipix/issues/562"
+        },
+        {
+          "number": 563,
+          "title": "Korean translation",
+          "url": "https://github.com/baipix/baipix/issues/563"
+        },
+        {
+          "number": 592,
+          "title": "Polish translation",
+          "url": "https://github.com/baipix/baipix/issues/592"
+        }
+      ],
+      "firstIssues": 5
+    },
+    {
+      "version": "0.11",
+      "name": "Figma plugin",
+      "title": "v0.11 · Figma plugin",
+      "description": "Baipix inside Figma.",
+      "open": 5,
+      "closed": 0,
+      "done": false,
+      "url": "https://github.com/baipix/baipix/milestone/7",
+      "issues": [
+        {
+          "number": 63,
+          "title": "Figma plugin",
+          "url": "https://github.com/baipix/baipix/issues/63"
+        },
+        {
+          "number": 90,
+          "title": "Figma plugin: draw in Baipix inside Figma",
+          "url": "https://github.com/baipix/baipix/issues/90"
+        },
+        {
+          "number": 91,
+          "title": "Figma plugin: edit again later",
+          "url": "https://github.com/baipix/baipix/issues/91"
+        },
+        {
+          "number": 93,
+          "title": "Component variants",
+          "url": "https://github.com/baipix/baipix/issues/93"
+        },
+        {
+          "number": 92,
+          "title": "Figma plugin: publish on the Community",
+          "url": "https://github.com/baipix/baipix/issues/92"
+        }
+      ],
+      "firstIssues": 0
+    },
+    {
+      "version": "1.0",
+      "name": "Launch",
+      "title": "v1.0 · Launch",
+      "description": "Stable file format, docs and public launch.",
+      "open": 5,
+      "closed": 1,
+      "done": false,
+      "url": "https://github.com/baipix/baipix/milestone/8",
+      "issues": [
+        {
+          "number": 64,
+          "title": "Road to 1.0",
+          "url": "https://github.com/baipix/baipix/issues/64"
+        },
+        {
+          "number": 94,
+          "title": ".baipix format 1.0",
+          "url": "https://github.com/baipix/baipix/issues/94"
+        },
+        {
+          "number": 95,
+          "title": "Performance on big canvases",
+          "url": "https://github.com/baipix/baipix/issues/95"
+        },
+        {
+          "number": 730,
+          "title": "Keep drawings safe in the browser: persistent storage, and back up everything at once",
+          "url": "https://github.com/baipix/baipix/issues/730"
+        },
+        {
+          "number": 97,
+          "title": "Launch kit",
+          "url": "https://github.com/baipix/baipix/issues/97"
+        }
+      ],
+      "firstIssues": 0
+    },
+    {
+      "version": null,
+      "name": "Later",
+      "title": "Later",
+      "description": "After 1.0: plugins, engine package, collaboration.",
+      "open": 18,
+      "closed": 1,
+      "done": false,
+      "url": "https://github.com/baipix/baipix/milestone/9",
+      "issues": [
+        {
+          "number": 65,
+          "title": "Plugins",
+          "url": "https://github.com/baipix/baipix/issues/65"
+        },
+        {
+          "number": 66,
+          "title": "Engine as a package",
+          "url": "https://github.com/baipix/baipix/issues/66"
+        },
+        {
+          "number": 98,
+          "title": "Plugin API",
+          "url": "https://github.com/baipix/baipix/issues/98"
+        },
+        {
+          "number": 99,
+          "title": "Run plugins in a sandbox",
+          "url": "https://github.com/baipix/baipix/issues/99"
+        },
+        {
+          "number": 103,
+          "title": "Real-time collaboration (research)",
+          "url": "https://github.com/baipix/baipix/issues/103"
+        },
+        {
+          "number": 269,
+          "title": "A desktop app, like Figma's",
+          "url": "https://github.com/baipix/baipix/issues/269"
+        },
+        {
+          "number": 655,
+          "title": "Animation tags: named ranges of frames, and how they play",
+          "url": "https://github.com/baipix/baipix/issues/655"
+        },
+        {
+          "number": 656,
+          "title": "Linked cels: one picture shared by several frames",
+          "url": "https://github.com/baipix/baipix/issues/656"
+        },
+        {
+          "number": 712,
+          "title": "File tabs: keep several files open and switch between them",
+          "url": "https://github.com/baipix/baipix/issues/712"
+        },
+        {
+          "number": 100,
+          "title": "Example plugin and docs",
+          "url": "https://github.com/baipix/baipix/issues/100"
+        },
+        {
+          "number": 101,
+          "title": "Publish the engine on npm",
+          "url": "https://github.com/baipix/baipix/issues/101"
+        },
+        {
+          "number": 594,
+          "title": "Cast shadow effect",
+          "url": "https://github.com/baipix/baipix/issues/594"
+        },
+        {
+          "number": 595,
+          "title": "Volume shading effect",
+          "url": "https://github.com/baipix/baipix/issues/595"
+        },
+        {
+          "number": 658,
+          "title": "Import a GIF or a sprite sheet as frames",
+          "url": "https://github.com/baipix/baipix/issues/658"
+        },
+        {
+          "number": 659,
+          "title": "Animated WebP, APNG and video export",
+          "url": "https://github.com/baipix/baipix/issues/659"
+        },
+        {
+          "number": 102,
+          "title": "Command-line renderer",
+          "url": "https://github.com/baipix/baipix/issues/102"
+        },
+        {
+          "number": 338,
+          "title": "Hexagonal and octagonal prisms",
+          "url": "https://github.com/baipix/baipix/issues/338"
+        },
+        {
+          "number": 660,
+          "title": "More onion skin options",
+          "url": "https://github.com/baipix/baipix/issues/660"
+        }
+      ],
+      "firstIssues": 0
+    }
+  ]
+}

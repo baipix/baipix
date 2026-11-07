@@ -306,6 +306,7 @@ export const es: Record<MessageKey, string> = {
   'menu.theme': 'Tema',
   'menu.language': 'Idioma',
   'menu.github': 'Código fuente en GitHub',
+  'menu.bluesky': 'Baipix en Bluesky',
   'menu.reportBug': 'Informar de un error…',
   'menu.suggestIdea': 'Sugerir una idea…',
 
@@ -685,7 +686,7 @@ export const es: Record<MessageKey, string> = {
     'Línea (L), Rectángulo (R), Elipse (C) y otras herramientas en el menú de este botón. Mantén pulsada Mayús para crear cuadrados y círculos regulares.',
   'tour.colorsTitle': 'Retocar los colores',
   'tour.colors':
-    'Sombrear (S) y Aclarar (O) siguen las rampas de la paleta, mientras que Spray (A) proyecta píxeles como un aerosol.',
+    'Sombrear (S) y Aclarar (O) siguen las rampas de la paleta, mientras que Spray (P) proyecta píxeles como un aerosol.',
   'tour.warpTitle': 'Deformar sin añadir colores nuevos',
   'tour.warp':
     'Desenfocar (F) suaviza los bordes, Mezclador (J) mezcla los píxeles para crear texturas y Licuar (W) permite empujar, expandir o contraer partes del dibujo. Mantén el puntero inmóvil para continuar.',
@@ -697,7 +698,7 @@ export const es: Record<MessageKey, string> = {
     'Separa los píxeles para conseguir un efecto de LED o de matriz de puntos, tanto en el lienzo como en las exportaciones.',
   'tour.exportTitle': 'Exportar',
   'tour.export':
-    'Exporta como PNG de 1× a 32× o como SVG, que conserva las capas y utiliza un trazado por color. Puedes copiarlo y pegarlo directamente en Figma.',
+    'Exporta como PNG de 1× a 32×, GIF animado, hoja de sprites, archivo .aseprite o SVG, que conserva las capas y utiliza un trazado por color. Puedes copiarlo y pegarlo directamente en Figma.',
   'tour.next': 'Siguiente',
   'tour.done': 'Terminar',
   'tour.skip': 'Omitir el recorrido',

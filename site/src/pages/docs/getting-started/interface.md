@@ -18,12 +18,12 @@ Across the top, from left to right:
 
 - **The menus**: File, Edit, Image, Layer, Select, View and Help. Every command is in one of them, with its shortcut.
 - **The file's name**, in the middle, and the board's size. Click the name to rename the file, or the arrow next to it to switch to a recent file.
-- **The display options** (the grid button): the pixel grid, the tile preview, symmetry, rulers.
+- **The display options** (the grid button): the pixel grid, the tile preview and rulers. Symmetry is in the tool options bar and the View menu.
 - **The zoom**. Click it for the zoom levels, or double-click it to fit the drawing to the window.
 - **The command palette** (the magnifier, or <kbd>Ctrl</kbd>+<kbd>K</kbd>): type a few letters to find any command.
 - **The code button** (`</>`): the drawing as a React component, SVG, CSS, JSON or ASCII.
 - **Animate** (the film button): the timeline, to animate the board frame by frame. See [Animation](../../animation/animation/).
-- **Export**: PNG, animated GIF, a PNG sequence, SVG, Aseprite or a tileset.
+- **Export**: PNG, animated GIF, a PNG sequence, SVG, Aseprite, a sprite sheet or a tileset.
 
 On a Mac, <kbd>Ctrl</kbd> is <kbd>Cmd</kbd> everywhere in Baipix.
 

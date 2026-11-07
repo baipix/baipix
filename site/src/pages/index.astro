@@ -10,7 +10,7 @@ import PixelIcon from '../components/PixelIcon.astro';
 import Screenshots from '../components/Screenshots.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
-import { APP_URL, REPO_URL, WIKIDATA_URL } from '../links';
+import { APP_URL, BLUESKY_URL, REPO_URL, WIKIDATA_URL, YOUTUBE_URL } from '../links';
 import slimeUrl from '../art/slime.baipix?url';
 import { slimeFrames } from '../slime';
 
@@ -109,7 +109,7 @@ const features = [
     operatingSystem: 'Any (web browser)',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     license: 'https://opensource.org/licenses/MIT',
-    sameAs: [REPO_URL, WIKIDATA_URL, 'https://www.youtube.com/@baipixapp', 'https://todobai.itch.io/baipix'],
+    sameAs: [REPO_URL, WIKIDATA_URL, BLUESKY_URL, YOUTUBE_URL, 'https://todobai.itch.io/baipix'],
   }}
 >
   <Nav />
@@ -217,7 +217,8 @@ const features = [
           <h2>Make it move.</h2>
           <p class="muted">
             A timeline under the canvas: add frames, give each its own duration, see the ones around with the
-            onion skin, play it as you draw. Then export an animated GIF.
+            onion skin, play it as you draw. Then export a GIF, a sprite sheet for your game, or an .aseprite
+            file.
           </p>
           <div class="animate-actions">
             <a class="btn btn-dark" href={`${APP_URL}?open=${encodeURIComponent(slimeUrl)}`}>

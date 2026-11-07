@@ -1,6 +1,6 @@
 ---
 /**
- * What's new in the editor, version by version, from CHANGELOG.md (see ../../changelog.ts). The newest
+ * The release notes: what changed in the editor, version by version, from CHANGELOG.md (see ../../changelog.ts). The newest
  * version is open, the others show their summary and open on a click or a link to them.
  */
 import ChangeGroups from '../../components/ChangeGroups.astro';
@@ -22,7 +22,7 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
 ---
 
 <Base
-  title="What's new | Baipix"
+  title="Release notes · Baipix"
   description={`What changed in Baipix, the free pixel art editor in your browser, version by version. Latest: ${newest.version}.`}
 >
   <Nav />
@@ -32,7 +32,7 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
     </div>
     <header class="changes-head container">
       <div>
-        <h1>What's new</h1>
+        <h1>Release notes</h1>
         <p class="muted">What changed in Baipix, version by version. A new one comes about every week.</p>
       </div>
       <a class="changes-rss" href={`${base}changelog/rss.xml`}>
@@ -46,7 +46,8 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
           <section class="coming" id="next" aria-labelledby="next-title">
             <h2 id="next-title">Coming next</h2>
             <p class="muted">
-              Since {newest.version}: {comingSummary}. Already on baipix.app, and in the next version.
+              Since {newest.version}: {comingSummary}. Already on baipix.app, and in the next version. What
+              comes after is on the <a href={`${base}roadmap/`}>roadmap</a>.
             </p>
             {comingCount > COMING_LINES && <input type="checkbox" id="coming-all" class="coming-toggle" />}
             <ChangeGroups release={comingNext} limit={COMING_LINES} />
@@ -206,6 +207,11 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
     margin: 0;
     font-size: 22px;
     letter-spacing: -0.02em;
+  }
+  .coming > p a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .coming > p {
     margin: 4px 0 0;

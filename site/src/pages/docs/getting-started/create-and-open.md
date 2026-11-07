@@ -34,7 +34,7 @@ You can change the size later with the W and H fields in the Board section, or *
 
 ## Import an image
 
-**File › Import an image…**, or drop a PNG, JPG or GIF on the canvas. An image the size of the drawing comes in as a new layer of it. Any other size becomes a new file, and the message that follows offers to use it as a reference to trace over instead. On the files screen, Import always makes a new file.
+**File › Import an image…**, or drop a PNG, JPG, GIF or WebP on the canvas. An image the size of the drawing comes in as a new layer of it. Any other size becomes a new file, and the message that follows offers to use it as a reference to trace over instead. On the files screen, Import always makes a new file.
 
 ### Pixel art that was scaled up
 
@@ -46,7 +46,7 @@ A screenshot of pixel art, or an export at 800%, has big blocks instead of pixel
 
 ## Open a .baipix file
 
-**File › Open a .baipix file…** (<kbd>Ctrl</kbd>+<kbd>O</kbd>), or drop the file on the canvas. A .baipix file holds everything: the boards, their layers and groups, the components, the palette and the guides. It opens as a new file next to the others.
+**File › Open a .baipix file…** (<kbd>Ctrl</kbd>+<kbd>O</kbd>), or drop the file on the canvas. A .baipix file holds everything: the boards, their layers and groups, their frames and light, the components, the palette and the guides. It opens as a new file next to the others.
 
 The drawings in the [gallery](../../../#gallery) can be opened the same way: their Open link takes you to the editor with the drawing ready.
 

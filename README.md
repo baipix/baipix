@@ -2,7 +2,7 @@
 
 **A free online pixel art editor, with the interface of a modern design tool.** Open source, runs in the browser, no account needed, and exports clean SVG you can paste straight into Figma.
 
-**[Open the editor](https://baipix.app/app/)** · [Website](https://baipix.app) · [Watch the video](https://youtu.be/Or_5nmTCQO0)
+**[Open the editor](https://baipix.app/app/)** · [Website](https://baipix.app) · [Docs](https://baipix.app/docs/) · [Release notes](https://baipix.app/changelog/) · [Roadmap](https://baipix.app/roadmap/) · [Watch the video](https://youtu.be/Or_5nmTCQO0) · [Bluesky](https://bsky.app/profile/baipix.app)
 
 ![Baipix](docs/screenshot.png)
 
@@ -28,10 +28,11 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Layers like a design tool:** groups four levels deep, blend modes, handles to resize and rotate, layers you copy from one file to another.
 - **Components:** draw a sprite once, place instances of it anywhere, and they follow when you draw on it. Repeat one in a grid.
 - **Layer effects:** outline, drop shadow and glow, drawn from the layer without changing its pixels.
+- **Light:** a light per board, set by dragging a lamp around a sphere, to shade by; drop shadows can follow it.
 - **Animation:** a timeline of frames under the canvas, a duration for each, onion skin, playback with Enter or Space, frames to copy, paste, reverse or empty, and animated GIF export.
 - **Symmetry** around axes you can drag anywhere, **tile preview** for seamless textures, rulers and guides, a reference image to trace over.
 - **Rendering for design work:** choose the exported pixel size and a gap between pixels (LED / dot-matrix look), previewed live on the canvas.
-- **Export:** PNG, animated GIF, PNG sequences, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files with every frame to keep working in Aseprite, tilesets, every board at once as a .zip, `.baipix` project files, Lospec `.hex` palettes.
+- **Export:** PNG, animated GIF, PNG sequences, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files with every frame to keep working in Aseprite, sprite sheets of the frames or the layers with their JSON for game engines, tilesets, every board at once as a .zip, `.baipix` project files, Lospec `.hex` palettes.
 - **Local-first:** everything is saved in your browser (IndexedDB), each board's last 50 undo steps included. Nothing is sent anywhere.
 - English, French, Ukrainian, Spanish, Japanese and Italian, opening in your browser's language; light and dark themes. Missing yours? [Add it](CONTRIBUTING.md#adding-a-language).
 
@@ -66,8 +67,8 @@ src/
 │   ├── composite.ts   Layer blending
 │   └── export/svg.ts  SVG export
 ├── storage/       .baipix file format, IndexedDB, StorageAdapter interface
-├── io/            Browser I/O: downloads, PNG, clipboard, image import
-├── i18n/          en.ts (source) and fr.ts
+├── io/            Browser I/O: downloads, PNG, GIF, zip, clipboard, image import
+├── i18n/          en.ts (source) and a dictionary per language
 └── ui/            React components, panels, dialogs, canvas renderer
 ```
 

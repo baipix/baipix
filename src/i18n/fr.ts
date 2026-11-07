@@ -306,6 +306,7 @@ export const fr: Record<MessageKey, string> = {
   'menu.theme': 'Thème',
   'menu.language': 'Langue',
   'menu.github': 'Code source sur GitHub',
+  'menu.bluesky': 'Baipix sur Bluesky',
   'menu.reportBug': 'Signaler un bug…',
   'menu.suggestIdea': 'Proposer une idée…',
 
@@ -679,7 +680,7 @@ export const fr: Record<MessageKey, string> = {
     'Ligne (L), Rectangle (R), Ellipse (C), et d’autres dans le menu de ce bouton. Maj les garde carrées ou rondes.',
   'tour.colorsTitle': 'Retoucher les couleurs',
   'tour.colors':
-    'Ombrer (S) et Éclaircir (O) suivent les rampes de la palette, Spray (A) projette des pixels comme une bombe.',
+    'Ombrer (S) et Éclaircir (O) suivent les rampes de la palette, Spray (P) projette des pixels comme une bombe.',
   'tour.warpTitle': 'Déformer sans nouvelles couleurs',
   'tour.warp':
     'Flou (F) adoucit les bords, Mélangeur (J) brasse les pixels pour la texture, Fluidité (W) pousse, gonfle ou rétrécit une partie du dessin. Reste immobile pour continuer.',
@@ -690,7 +691,7 @@ export const fr: Record<MessageKey, string> = {
   'tour.gap': 'Espace les pixels pour un effet LED ou matrice de points, sur le canevas et dans les exports.',
   'tour.exportTitle': 'Export',
   'tour.export':
-    'PNG de 1× à 32×, ou SVG qui garde tes calques, un tracé par couleur : copie-le et colle-le directement dans Figma.',
+    'PNG de 1× à 32×, GIF animé, planche de sprites, fichier .aseprite, ou SVG qui garde tes calques, un tracé par couleur : copie-le et colle-le directement dans Figma.',
   'tour.next': 'Suivant',
   'tour.done': 'Terminer',
   'tour.skip': 'Passer la visite',

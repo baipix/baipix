@@ -306,6 +306,7 @@ export const ja: Record<MessageKey, string> = {
   'menu.theme': 'テーマ',
   'menu.language': '言語',
   'menu.github': 'GitHubのソースコード',
+  'menu.bluesky': 'BlueskyのBaipix',
   'menu.reportBug': '不具合を報告…',
   'menu.suggestIdea': 'アイデアを提案…',
 
@@ -673,7 +674,7 @@ export const ja: Record<MessageKey, string> = {
     '直線（L）、長方形（R）、楕円（C）、そのほかはこのボタンのメニューに。Shiftで正方形や正円になります。',
   'tour.colorsTitle': '色を加工',
   'tour.colors':
-    '暗くする（S）と明るくする（O）は、パレットのカラーランプに沿って色を変えます。スプレー（A）は、スプレー缶のようにピクセルを散らします。',
+    '暗くする（S）と明るくする（O）は、パレットのカラーランプに沿って色を変えます。スプレー（P）は、スプレー缶のようにピクセルを散らします。',
   'tour.warpTitle': '色を増やさずにゆがめる',
   'tour.warp':
     'ぼかし（F）は輪郭をやわらげ、シャッフル（J）はピクセルを入れ替えてテクスチャを作り、ゆがみ（W）は絵の一部をずらしたり、ふくらませたり、縮めたりします。押したまま動かさずにいると、効果がかかり続けます。',
@@ -685,7 +686,7 @@ export const ja: Record<MessageKey, string> = {
     'ピクセルの間をあけると、LEDやドットマトリクスのような見た目になります。キャンバスにも書き出しにも反映されます。',
   'tour.exportTitle': '書き出し',
   'tour.export':
-    '1倍から32倍までのPNG、またはレイヤーを保ったSVG（色ごとに1つのpath）。コピーして、Figmaにそのまま貼り付けられます。',
+    '1倍から32倍までのPNG、アニメーションGIF、スプライトシート、.asepriteファイル、またはレイヤーを保ったSVG（色ごとに1つのpath）。SVGはコピーして、Figmaにそのまま貼り付けられます。',
   'tour.next': '次へ',
   'tour.done': '完了',
   'tour.skip': 'ツアーをスキップ',

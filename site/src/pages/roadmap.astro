@@ -1,0 +1,349 @@
+---
+/**
+ * Where Baipix is going: a pixel path from the versions already out to 1.0 and what comes after,
+ * read from the repo's milestones (see ../roadmap.ts). A stop opens its details under the map;
+ * on a phone the map gives way to the stops one under the other.
+ */
+import Cta from '../components/Cta.astro';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+import PixelGlow from '../components/PixelGlow.astro';
+import RoadmapMap, { type MapStop } from '../components/RoadmapMap.astro';
+import Base from '../layouts/Base.astro';
+import { REPO_URL } from '../links';
+import { roadmap } from '../roadmap';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const { past, ahead } = roadmap;
+
+const stops: MapStop[] = [
+  {
+    id: 'done',
+    label: past.length ? `${past[0].version} – ${past.at(-1)!.version}` : 'Done',
+    name: 'Already out',
+    kind: 'past',
+  },
+  ...ahead.map((s, i) => ({
+    id: s.version ? `v${s.version}` : 'later',
+    label: s.version ?? 'Later',
+    name: s.name,
+    kind: (!s.version
+      ? 'later'
+      : s.version.startsWith('1.')
+        ? 'launch'
+        : i === 0
+          ? 'current'
+          : 'next') as MapStop['kind'],
+  })),
+];
+
+/** How many issues a stop shows before Show all. */
+const SHOWN = 6;
+/** The progress bar's pixels. */
+const CELLS = 32;
+const done = (s: { open: number; closed: number }) =>
+  s.open + s.closed ? Math.round((100 * s.closed) / (s.open + s.closed)) : 0;
+const firstIssuesUrl = (title: string) =>
+  `${REPO_URL}/issues?q=${encodeURIComponent(`is:open milestone:"${title}" label:"good first issue"`)}`;
+---
+
+<Base
+  title="Roadmap · Baipix"
+  description="Where Baipix, the free pixel art editor in your browser, is going: what's being worked on now, what comes next, and the road to 1.0."
+>
+  <Nav />
+  <div class="road-page">
+    <div class="hero-glow" aria-hidden="true">
+      <PixelGlow />
+    </div>
+    <header class="road-head road-layout container">
+      <h1>Roadmap</h1>
+      <p class="muted">
+        Where Baipix is going, read from the milestones on GitHub: closing an issue moves the map forward. For
+        what already shipped, see the <a href={`${base}changelog/`}>release notes</a>.
+      </p>
+    </header>
+
+    <main class="road-layout container">
+      <RoadmapMap stops={stops} />
+
+      <div class="panels">
+        <section class="panel panel-past" id="panel-done" role="tabpanel" aria-labelledby="tab-done">
+          <p class="panel-kicker">Already out</p>
+          <h2>{stops[0].label}</h2>
+          <ul class="past-list">
+            {[...past].reverse().map((m) => (
+              <li>
+                <a href={`${base}changelog/#${m.version}.0`}>
+                  <span class="mono">{m.version}</span>
+                  {m.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+        {ahead.map((s, i) => (
+          <section
+            class:list={['panel', { 'is-current': i === 0 }]}
+            id={`panel-${stops[i + 1].id}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${stops[i + 1].id}`}
+          >
+            <p class="panel-kicker">
+              {i === 0 ? 'Being worked on now' : s.version ? 'Coming later' : 'After 1.0'}
+            </p>
+            <h2>
+              {s.version && <span class="mono">{s.version}</span>}
+              {s.name}
+            </h2>
+            {s.description && <p class="panel-text">{s.description}</p>}
+            <div class="progress" aria-label={`${s.closed} of ${s.open + s.closed} issues done`}>
+              {Array.from({ length: CELLS }, (_, c) => (
+                <span class:list={{ on: c < Math.round((CELLS * done(s)) / 100) }} />
+              ))}
+            </div>
+            <p class="progress-label muted">
+              {s.closed} of {s.open + s.closed} issues done
+            </p>
+            {s.issues.length > 0 && (
+              <>
+                {s.issues.length > SHOWN && (
+                  <input type="checkbox" class="all-toggle" id={`all-${stops[i + 1].id}`} />
+                )}
+                <ul class="issues">
+                  {s.issues.map((issue, n) => (
+                    <li class:list={{ extra: n >= SHOWN }}>
+                      <a href={issue.url}>
+                        {issue.title} <span class="mono muted">#{issue.number}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                {s.issues.length > SHOWN && (
+                  <label class="all-more" for={`all-${stops[i + 1].id}`}>
+                    <span class="more">Show all {s.issues.length}</span>
+                    <span class="less">Show less</span>
+                  </label>
+                )}
+              </>
+            )}
+            <p class="panel-links">
+              <a href={s.url}>Everything in it, on GitHub</a>
+              {s.firstIssues > 0 && (
+                <a href={firstIssuesUrl(s.title)}>
+                  {s.firstIssues} good first {s.firstIssues === 1 ? 'issue' : 'issues'} to start with
+                </a>
+              )}
+            </p>
+          </section>
+        ))}
+      </div>
+    </main>
+  </div>
+  <Cta />
+  <Footer />
+</Base>
+
+<script>
+  // A stop shows its details; the current one is shown first.
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('.map .stop')];
+  const show = (tab: HTMLButtonElement) => {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      document.getElementById(t.getAttribute('aria-controls')!)?.classList.toggle('is-shown', on);
+    }
+  };
+  for (const tab of tabs) tab.addEventListener('click', () => show(tab));
+  const first = tabs.find((t) => t.getAttribute('aria-selected') === 'true') ?? tabs[0];
+  if (first) show(first);
+</script>
+
+<style>
+  .road-page {
+    position: relative;
+    padding-top: 56px;
+    overflow: clip;
+  }
+  .hero-glow {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 560px;
+    pointer-events: none;
+  }
+  .road-head {
+    position: relative;
+    padding-bottom: 24px;
+  }
+  .road-head h1 {
+    margin: 0 0 10px;
+    font-size: clamp(40px, 6vw, 64px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .road-head p {
+    max-width: 620px;
+    margin: 0;
+    font-size: 17px;
+  }
+  .road-head a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  main {
+    position: relative;
+    padding-bottom: 96px;
+  }
+
+  /* ---- A stop's details ---- */
+  /* The map, then the stop's details under it, as wide as the map. */
+  .road-layout {
+    width: min(100% - 48px, 1056px);
+  }
+  .panel {
+    display: none;
+    padding: 28px 32px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .panel.is-shown {
+    display: block;
+  }
+  .panel-kicker {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .panel h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+  }
+  .panel h2 .mono {
+    color: #6e56cf;
+    font: 600 26px var(--sans);
+  }
+  .panel-text {
+    margin: 12px 0 0;
+    line-height: 1.55;
+  }
+  /* Progress in pixels: one square per 1/32, lit in violet. */
+  .progress {
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    gap: 3px;
+    margin-top: 20px;
+  }
+  .progress span {
+    aspect-ratio: 1;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .progress span.on {
+    background: #6e56cf;
+    box-shadow: none;
+  }
+  .progress-label {
+    margin: 8px 0 0;
+    font-size: 13px;
+  }
+  .issues,
+  .past-list {
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .issues a,
+  .past-list a {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .past-list a {
+    justify-content: start;
+  }
+  .past-list .mono {
+    min-width: 40px;
+    color: #6e56cf;
+  }
+  .issues a:hover,
+  .past-list a:hover {
+    color: #6e56cf;
+  }
+  /* Past its first issues, Show all brings the rest: a checkbox, no script. */
+  .all-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .panel:not(:has(.all-toggle:checked)) .extra {
+    display: none;
+  }
+  .all-more {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 6px 12px;
+    border: 1px solid var(--line-strong);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .all-more:hover {
+    border-color: var(--text);
+  }
+  .all-toggle:focus-visible ~ .all-more {
+    outline: 2px solid #6e56cf;
+    outline-offset: 2px;
+  }
+  .all-more .less,
+  .all-toggle:checked ~ .all-more .more {
+    display: none;
+  }
+  .all-toggle:checked ~ .all-more .less {
+    display: inline;
+  }
+  .panel-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 20px 0 0;
+    font-size: 14px;
+  }
+  .panel-links a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .mono {
+    font-family: var(--mono);
+  }
+
+  /* ---- On a phone: the stops one under the other, all open ---- */
+  @media (max-width: 760px) {
+    .road-page :global(.map) {
+      display: none;
+    }
+    .panels {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .panel {
+      display: block;
+      padding: 20px;
+    }
+    .panel.is-current {
+      order: -1;
+      border-color: #6e56cf;
+    }
+  }
+</style>

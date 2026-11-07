@@ -6,3 +6,7 @@ export const REPO_URL = 'https://github.com/baipix/baipix';
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 /** Baipix on Wikidata, for search engines and AI tools to tie the site, the repo and the item together. */
 export const WIKIDATA_URL = 'https://www.wikidata.org/wiki/Q142070866';
+/** Baipix on Bluesky, as @baipix.app. */
+export const BLUESKY_URL = 'https://bsky.app/profile/baipix.app';
+/** The Baipix channel on YouTube, @baipixapp. */
+export const YOUTUBE_URL = 'https://www.youtube.com/@baipixapp';

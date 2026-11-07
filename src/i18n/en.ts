@@ -305,6 +305,7 @@ export const en = {
   'menu.theme': 'Theme',
   'menu.language': 'Language',
   'menu.github': 'Source code on GitHub',
+  'menu.bluesky': 'Baipix on Bluesky',
   'menu.reportBug': 'Report a bug…',
   'menu.suggestIdea': 'Suggest an idea…',
 
@@ -672,7 +673,7 @@ export const en = {
     'Line (L), Rectangle (R), Ellipse (C), and more in this button’s menu. Shift keeps them square or round.',
   'tour.colorsTitle': 'Rework colors',
   'tour.colors':
-    'Shade (S) and Lighten (O) follow the palette’s ramps, Spray (A) scatters pixels like a can.',
+    'Shade (S) and Lighten (O) follow the palette’s ramps, Spray (P) scatters pixels like a can.',
   'tour.warpTitle': 'Warp without new colors',
   'tour.warp':
     'Blur (F) softens edges, Jumble (J) shuffles pixels for texture, Liquify (W) pushes, grows or shrinks a part of the drawing. Hold still to keep going.',
@@ -683,7 +684,7 @@ export const en = {
   'tour.gap': 'Space the pixels apart for an LED or dot-matrix look, on the canvas and in exports.',
   'tour.exportTitle': 'Export',
   'tour.export':
-    'PNG from 1× to 32×, or SVG that keeps your layers, one path per color: copy it and paste it straight into Figma.',
+    'PNG from 1× to 32×, an animated GIF, a sprite sheet, an .aseprite file, or SVG that keeps your layers, one path per color: copy it and paste it straight into Figma.',
   'tour.next': 'Next',
   'tour.done': 'Done',
   'tour.skip': 'Skip the tour',
