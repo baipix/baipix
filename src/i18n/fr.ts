@@ -631,6 +631,10 @@ export const fr: Record<MessageKey, string> = {
   'coordinates.colors': '{count} couleurs',
 
   'template.icon': 'Icône',
+  'template.favicon': 'Favicon',
+  'template.smallTile': 'Petite tuile',
+  'template.emote': 'Émote',
+  'template.card': 'Carte à jouer',
   'template.sprite': 'Sprite de personnage',
   'template.tile': 'Tuile de jeu',
   'template.gameboy': 'Écran Game Boy',

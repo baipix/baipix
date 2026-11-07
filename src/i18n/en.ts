@@ -624,6 +624,10 @@ export const en = {
   'coordinates.colors': '{count} colors',
 
   'template.icon': 'Icon',
+  'template.favicon': 'Favicon',
+  'template.smallTile': 'Small tile',
+  'template.emote': 'Emote',
+  'template.card': 'Playing card',
   'template.sprite': 'Character sprite',
   'template.tile': 'Game tile',
   'template.gameboy': 'Game Boy screen',

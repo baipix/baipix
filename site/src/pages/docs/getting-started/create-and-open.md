@@ -18,9 +18,13 @@ Or start from a **template**, each with a size and a palette that suit it. Befor
 | Template         | Size      | Palette        | Comes with                   |
 | ---------------- | --------- | -------------- | ---------------------------- |
 | Icon             | 16 × 16   | Sweetie 16     |                              |
+| Favicon          | 32 × 32   | Sweetie 16     |                              |
 | Character sprite | 32 × 32   | PICO-8         | Left-right symmetry          |
 | Game tile        | 32 × 32   | Endesga 32     | Tile preview                 |
+| Small tile       | 16 × 16   | PICO-8         | Tile preview                 |
 | Portrait         | 64 × 64   | DawnBringer 32 |                              |
+| Emote            | 112 × 112 | AAP-64         |                              |
+| Playing card     | 64 × 96   | DawnBringer 16 |                              |
 | Game Boy screen  | 160 × 144 | Game Boy       |                              |
 | Banner           | 128 × 32  | Resurrect 64   |                              |
 | Isometric tile   | 32 × 16   | Endesga 32     | Isometric grid, tile preview |

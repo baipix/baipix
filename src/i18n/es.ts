@@ -636,6 +636,10 @@ export const es: Record<MessageKey, string> = {
   'coordinates.colors': '{count} colores',
 
   'template.icon': 'Icono',
+  'template.favicon': 'Favicon',
+  'template.smallTile': 'Baldosa pequeña',
+  'template.emote': 'Emote',
+  'template.card': 'Carta de juego',
   'template.sprite': 'Sprite de personaje',
   'template.tile': 'Baldosa de juego',
   'template.gameboy': 'Pantalla de Game Boy',
