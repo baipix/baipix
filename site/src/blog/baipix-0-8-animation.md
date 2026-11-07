@@ -154,8 +154,8 @@ Now the background goes to the new palette too, in the same undo. If you want to
 Baipix speaks Italian and Japanese now, six languages in all. It opens in your browser's language when it knows it, and you can change it in View › Language.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/japanese-light.webp" width="1440" height="900" alt="The editor in Japanese, with the ramen shop drawing open." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/japanese-dark.webp" width="1440" height="900" alt="The editor in Japanese, with the ramen shop drawing open." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/languages-light.webp" width="1100" height="688" alt="The Baipix logo surrounded by the editor's welcome line in its six languages: English, French, Spanish, Japanese, Italian and Ukrainian, Japanese and Italian marked new." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/languages-dark.webp" width="1100" height="688" alt="The Baipix logo surrounded by the editor's welcome line in its six languages: English, French, Spanish, Japanese, Italian and Ukrainian, Japanese and Italian marked new." loading="lazy" />
 </figure>
 
 ## A few smaller things

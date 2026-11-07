@@ -202,11 +202,8 @@ const SHOTS = [
       ui.openAdjust('all', 'remap');`,
     palettes: ['file', 'pico8', 'slso8', 'icecreamgb', 'endesga32'],
   },
-  // The editor in Japanese.
-  {
-    name: 'japanese',
-    setup: `${load('/gallery/ramen-shop.baipix')} (await import('/src/i18n/index.ts')).setLocale('ja', 'ja');`,
-  },
+  // The languages: the logo, and the editor's welcome line in each of them.
+  { name: 'languages', page: 'scripts/blog-cards/languages.html' },
 ];
 const only = process.env.ONLY?.split(',');
 const shots = only ? SHOTS.filter((s) => only.includes(s.name)) : SHOTS;
@@ -424,6 +421,23 @@ async function composeRow(parts, theme) {
 for (const theme of ['dark', 'light']) {
   for (const shot of shots) {
     // A fresh editor for each picture, as the screenshot mode opens it.
+    // A card made in HTML, not the editor: rendered at its own size.
+    if (shot.page) {
+      await send('Emulation.setDeviceMetricsOverride', {
+        width: 1100,
+        height: 688,
+        deviceScaleFactor: 2,
+        mobile: false,
+      });
+      await send('Page.navigate', { url: `file://${root}${shot.page}?${theme}` });
+      // Time for the fonts to come.
+      await sleep(2500);
+      const { data } = await send('Page.captureScreenshot', { format: 'png' });
+      const file = `${out}/${shot.name}-${theme}.webp`;
+      await sharp(Buffer.from(data, 'base64')).webp({ quality: 92 }).toFile(file);
+      console.log(`Wrote ${file} (page)`);
+      continue;
+    }
     // Close-ups are drawn at 4×, so they stay sharp once enlarged on the card.
     await send('Emulation.setDeviceMetricsOverride', {
       width: WIDTH,

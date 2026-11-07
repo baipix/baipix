@@ -1,0 +1,126 @@
+<!doctype html>
+<!-- The 0.8 post's languages picture, rendered by blog-shots.mjs at 1100 × 688: the logo, and the
+     editor's welcome line in each of its languages, as its translators wrote it. ?dark for the dark one. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Silkscreen&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --card: #f3f0e9;
+        --panel: #ffffff;
+        --text: #1d1b18;
+        --muted: #8e877a;
+        --line: #aaa49a;
+        --shadow: rgba(70, 60, 45, 0.12);
+        --ink: #1d1b18;
+      }
+      .dark {
+        --card: #1d1b18;
+        --panel: #2a2723;
+        --text: #f2f0eb;
+        --muted: #9a9387;
+        --line: #5f5a53;
+        --shadow: rgba(0, 0, 0, 0.45);
+        --ink: #f2f0eb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1100px;
+        height: 688px;
+        background: var(--card);
+        font-family: 'Geist', 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
+        color: var(--text);
+        overflow: hidden;
+      }
+      .logo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 176px;
+        height: 176px;
+        transform: translate(-50%, -50%);
+      }
+      .lang {
+        position: absolute;
+        width: 286px;
+        padding: 14px 18px 16px;
+        background: var(--panel);
+        border-radius: 14px;
+        outline: 1.5px solid var(--line);
+        box-shadow: 8px 8px 0 var(--shadow);
+      }
+      .name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font:
+          400 12px/1 'Silkscreen',
+          monospace;
+        text-transform: uppercase;
+      }
+      .name.native {
+        font-family: 'Geist', 'Hiragino Sans', sans-serif;
+        font-size: 13px;
+        text-transform: none;
+      }
+      .new {
+        padding: 3px 6px 2px;
+        background: #6e56cf;
+        color: #fff;
+        font:
+          400 11px/1 'Silkscreen',
+          monospace;
+      }
+      .line {
+        font-size: 19px;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="logo" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">
+      <path fill="var(--ink)" d="M0 2h3v6H0zM3 5h3v3H3z" />
+      <path fill="#6e56cf" d="M5 0h3v3H5z" />
+    </svg>
+
+    <div class="lang" style="left: 56px; top: 64px">
+      <div class="name">English</div>
+      <div class="line">Insert coin, drop your first pixel.</div>
+    </div>
+    <div class="lang" style="left: 96px; top: 268px">
+      <div class="name">Français</div>
+      <div class="line">Insère une pièce, pose ton premier pixel.</div>
+    </div>
+    <div class="lang" style="left: 48px; top: 478px">
+      <div class="name">Español</div>
+      <div class="line">Inserta una moneda y coloca tu primer píxel.</div>
+    </div>
+    <div class="lang" style="right: 60px; top: 84px; width: 340px">
+      <div class="name native">日本語 <span class="new">New</span></div>
+      <div class="line">さあ、最初の1ピクセルを置こう。</div>
+    </div>
+    <div class="lang" style="right: 100px; top: 286px">
+      <div class="name">Italiano <span class="new">New</span></div>
+      <div class="line">Inserisci un gettone, posa il tuo primo pixel.</div>
+    </div>
+    <div class="lang" style="right: 52px; top: 470px">
+      <div class="name native">Українська</div>
+      <div class="line">Закиньте монету — створіть свій перший піксель.</div>
+    </div>
+    <script>
+      if (location.search.includes('dark')) document.documentElement.classList.add('dark');
+    </script>
+  </body>
+</html>
