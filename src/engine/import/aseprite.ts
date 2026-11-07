@@ -821,12 +821,13 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   }));
 
   const document = createDocument('Untitled', header.width, header.height);
+
   document.layers = layers.length ? layers : document.layers;
-  document.groups = groups.length ? groups : undefined;
+  document.groups = layers.length && groups.length ? groups : undefined;
   document.frames = frames.length > 1 ? frames : undefined;
   document.activeFrame = 0;
   document.activeLayer = 0;
-  document.layerCounter = layers.length;
+  document.layerCounter = document.layers.length;
 
   for (let i = 0; i < layers.length; i++) {
     const firstFrame = framePixels[0].get(i);
@@ -856,8 +857,6 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const colors = palette.slice(0, 256);
     document.palette = { key: 'custom', colors, custom: colors };
   }
-
-  if (!layers.length) fail('The Aseprite file contains no supported image layers.');
 
   return { document, warnings: [...warnings] };
 }
