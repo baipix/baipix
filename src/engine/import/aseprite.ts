@@ -10,6 +10,8 @@ const FRAME_HEADER_SIZE = 16;
 const FILE_MAGIC = 0xa5e0;
 const FRAME_MAGIC = 0xf1fa;
 
+const MAX_CEL_PIXELS = 4_194_304;
+
 const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
 const CEL_EXTRA_CHUNK = 0x2006;
@@ -585,12 +587,51 @@ function parseLayer(
   return parsed;
 }
 
-async function decompress(data: Uint8Array): Promise<Uint8Array> {
+function celByteLength(width: number, height: number, depth: ColorDepth): number {
+  const pixelCount = width * height;
+
+  if (!width || !height || !Number.isSafeInteger(pixelCount) || pixelCount > MAX_CEL_PIXELS) {
+    fail(`Aseprite cel exceeds the maximum import area of ${MAX_CEL_PIXELS.toLocaleString()} pixels.`);
+  }
+
+  return pixelCount * (depth / 8);
+}
+
+async function decompress(data: Uint8Array, expectedSize: number): Promise<Uint8Array> {
   try {
     const stream = new Blob([data as BlobPart]).stream().pipeThrough(new DecompressionStream('deflate'));
 
-    return new Uint8Array(await new Response(stream).arrayBuffer());
-  } catch {
+    const reader = stream.getReader();
+    const output = new Uint8Array(expectedSize);
+
+    let offset = 0;
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        if (offset + value.byteLength > expectedSize) {
+          await reader.cancel().catch(() => undefined);
+          fail('Decompressed Aseprite cel data exceeds its declared dimensions.');
+        }
+
+        output.set(value, offset);
+        offset += value.byteLength;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    if (offset !== expectedSize) {
+      fail('Invalid Aseprite cel pixel data.');
+    }
+
+    return output;
+  } catch (error) {
+    if (error instanceof AsepriteError) throw error;
+
     fail('Unable to decompress Aseprite cel data.');
   }
 }
@@ -757,9 +798,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
         if (profileType === 2) {
           assertChunkRange(bytes, start + 16, 4, end);
-
           const profileSize = view.getUint32(start + 16, true);
-
           assertChunkRange(bytes, start + 20, profileSize, end);
 
           if (start + 20 + profileSize !== end) {
@@ -805,9 +844,15 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
           const width = view.getUint16(start + 16, true);
           const height = view.getUint16(start + 18, true);
+
+          const expectedSize = celByteLength(width, height, header.depth);
           const payload = bytes.subarray(start + 20, end);
 
-          const raw = type === 2 ? await decompress(payload) : payload;
+          const raw = type === 2 ? await decompress(payload, expectedSize) : payload;
+
+          if (raw.length !== expectedSize) {
+            fail('Invalid Aseprite cel pixel data.');
+          }
 
           frameCels.push({
             type,
@@ -972,6 +1017,8 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         header.transparentIndex,
         parsedLayer.background,
       );
+
+      delete cel.raw;
     }
   }
 
