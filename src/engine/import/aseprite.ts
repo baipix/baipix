@@ -1389,30 +1389,6 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     document.palette = { key: 'custom', colors, custom: colors };
   }
 
-  for (let i = 0; i < layers.length; i++) {
-    const firstFrame = framePixels[0].get(i);
-
-    layers[i].pixels = firstFrame?.pixels ?? new Uint32Array(header.width * header.height);
-
-    if (firstFrame?.outside) {
-      layers[i].outside = firstFrame.outside;
-    }
-
-    if (frames.length > 1) {
-      layers[i].cels = frames.map((_, f) => {
-        if (f === 0) return null;
-        const cel = framePixels[f].get(i);
-
-        return cel
-          ? {
-              pixels: cel.pixels,
-              ...(cel.outside ? { outside: cel.outside } : {}),
-            }
-          : { pixels: new Uint32Array(header.width * header.height) };
-      });
-    }
-  }
-
   if (palette.length) {
     const colors = palette.slice(0, 256);
     document.palette = { key: 'custom', colors, custom: colors };
