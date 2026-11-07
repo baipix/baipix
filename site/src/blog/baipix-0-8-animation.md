@@ -142,8 +142,9 @@ Trying another palette on an animation only makes sense if every frame follows. 
 Remap swaps your drawing's colors for the ones of another palette. Until now it left the board's background alone, so a night scene could end up on a background from the old palette.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/remap-light.webp" width="1100" height="688" alt="The Remap tab of the Adjustments panel, with All frames and Also remap the background ticked." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/remap-dark.webp" width="1100" height="688" alt="The Remap tab of the Adjustments panel, with All frames and Also remap the background ticked." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/remap-light.webp" width="1100" height="688" alt="A ramen bowl between its layers and the Remap panel, its colors switching from its own palette to PICO-8, SLSO8, Ice Cream GB and Endesga 32." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/remap-dark.webp" width="1100" height="688" alt="A ramen bowl between its layers and the Remap panel, its colors switching from its own palette to PICO-8, SLSO8, Ice Cream GB and Endesga 32." loading="lazy" />
+  <figcaption>The same bowl in five palettes. <a href="/app/?open=/blog/0-8/ramen-bowl.baipix">Open it in Baipix</a> and try your own.</figcaption>
 </figure>
 
 Now the background goes to the new palette too, in the same undo. If you want to keep it as it is, untick **Also remap the background**.
