@@ -29,7 +29,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
       [`${base}docs/`, 'Docs'],
       [`${base}#gallery`, 'Gallery'],
       ...(posts.length ? ([[`${base}blog/`, 'Blog']] as [string, string][]) : []),
-      [`${REPO_URL}/blob/main/CHANGELOG.md`, 'Changelog'],
+      [`${base}changelog/`, "What's new"],
     ],
   },
   {

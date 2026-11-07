@@ -10,7 +10,7 @@ import PixelIcon from '../components/PixelIcon.astro';
 import Screenshots from '../components/Screenshots.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
-import { APP_URL, REPO_URL } from '../links';
+import { APP_URL, REPO_URL, WIKIDATA_URL } from '../links';
 import slimeUrl from '../art/slime.baipix?url';
 import { slimeFrames } from '../slime';
 
@@ -96,25 +96,20 @@ const features = [
 
 <Base
   title="Baipix · Free online pixel art editor, export to SVG and Figma"
-  description="Draw pixel art in your browser, for free: layers, palettes, symmetry, dithering, blend modes. Export clean SVG or PNG and paste it straight into Figma. Open source."
+  description="A free pixel art editor in your browser: layers, animation, isometric drawing and palettes. Export SVG, PNG, GIF or Aseprite. Open source, no account."
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Baipix',
     description:
-      'A free, open source pixel art editor in the browser, with the interface of a modern design tool and clean SVG export.',
+      'A free, open source pixel art editor in the browser, with animation, isometric drawing and clean SVG export, and the interface of a modern design tool.',
     url: new URL(base, Astro.site).href,
     image: new URL(`${base}og.png`, Astro.site).href,
     applicationCategory: 'DesignApplication',
     operatingSystem: 'Any (web browser)',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     license: 'https://opensource.org/licenses/MIT',
-    sameAs: [
-      REPO_URL,
-      'https://www.wikidata.org/wiki/Q142070866',
-      'https://www.youtube.com/@baipixapp',
-      'https://todobai.itch.io/baipix',
-    ],
+    sameAs: [REPO_URL, WIKIDATA_URL, 'https://www.youtube.com/@baipixapp', 'https://todobai.itch.io/baipix'],
   }}
 >
   <Nav />
