@@ -6,16 +6,15 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
-- The version in the editor's corner and at the bottom of the Help menu opens What's new on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))
+- The version in the editor's corner and at the bottom of the Help menu opens the release notes on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))
 - After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. ([#739](https://github.com/baipix/baipix/pull/739))
 
 ### Website
 
 - A roadmap page, drawn as a pixel map: what's out, what's being worked on now with the slime jumping on it, and the road to 1.0, read from the milestones on GitHub. ([#754](https://github.com/baipix/baipix/pull/754))
-- What's new is called Release notes. ([#753](https://github.com/baipix/baipix/pull/753))
-- What's new marks each version Major or Minor, so the versions with new features stand out. ([#751](https://github.com/baipix/baipix/pull/751))
+- The release notes mark each version Major or Minor, so the versions with new features stand out. ([#751](https://github.com/baipix/baipix/pull/751))
 - The home page describes Baipix as it is now, animation and isometric drawing included, for search engines and link previews, and points to Baipix on Wikidata. ([#750](https://github.com/baipix/baipix/pull/750))
-- A What's new page: what changed in the editor, version by version, with what's coming next, the contributors to thank, and an RSS feed. ([#745](https://github.com/baipix/baipix/pull/745))
+- A Release notes page: what changed in the editor, version by version, with what's coming next, the contributors to thank, and an RSS feed. ([#745](https://github.com/baipix/baipix/pull/745), [#753](https://github.com/baipix/baipix/pull/753))
 - The Draw page's Remap example is the car from the animation tutorial: it drives while its colors switch from one palette to the next, on every frame. ([#737](https://github.com/baipix/baipix/pull/737))
 - The home page's screenshot loads faster: WebP at the size of the screen, from about 166 KB down to 21–54 KB. ([#736](https://github.com/baipix/baipix/pull/736))
 
