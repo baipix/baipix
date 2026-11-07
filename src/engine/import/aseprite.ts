@@ -32,6 +32,7 @@ const BLEND_MODES = [
 type ColorDepth = 8 | 16 | 32;
 
 interface AsepriteHeader {
+  fileSize: number;
   width: number;
   height: number;
   frames: number;
@@ -93,10 +94,30 @@ function assertRange(bytes: Uint8Array, offset: number, size: number): void {
   }
 }
 
-function readString(bytes: Uint8Array, view: DataView, offset: number): { value: string; next: number } {
-  assertRange(bytes, offset, 2);
+function assertChunkRange(bytes: Uint8Array, offset: number, size: number, chunkEnd: number): void {
+  assertRange(bytes, offset, size);
+
+  if (
+    !Number.isSafeInteger(chunkEnd) ||
+    chunkEnd < 0 ||
+    chunkEnd > bytes.length ||
+    offset + size > chunkEnd
+  ) {
+    fail('Invalid Aseprite chunk size.');
+  }
+}
+
+function readString(
+  bytes: Uint8Array,
+  view: DataView,
+  offset: number,
+  limit = bytes.length,
+): { value: string; next: number } {
+  assertChunkRange(bytes, offset, 2, limit);
+
   const length = view.getUint16(offset, true);
-  assertRange(bytes, offset + 2, length);
+
+  assertChunkRange(bytes, offset + 2, length, limit);
 
   return {
     value: new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(offset + 2, offset + 2 + length)),
@@ -138,6 +159,7 @@ function parseHeader(bytes: Uint8Array): AsepriteHeader {
   }
 
   return {
+    fileSize,
     width,
     height,
     frames,
@@ -155,20 +177,30 @@ function parsePaletteChunk(
   end: number,
   colors: number[],
 ): void {
-  assertRange(bytes, start, 20);
+  assertChunkRange(bytes, start, 20, end);
 
   const total = view.getUint32(start, true);
   const first = view.getUint32(start + 4, true);
   const last = view.getUint32(start + 8, true);
 
-  if (total > 256 || first > last || last >= total) fail('Invalid Aseprite palette.');
+  if (total > 256 || first > last || last >= total) {
+    fail('Invalid Aseprite palette.');
+  }
+
+  const previousLength = colors.length;
+  colors.length = total;
+
+  for (let i = previousLength; i < total; i++) {
+    colors[i] = 0;
+  }
 
   let at = start + 20;
 
   for (let i = first; i <= last; i++) {
-    assertRange(bytes, at, 6);
+    assertChunkRange(bytes, at, 6, end);
 
     const flags = view.getUint16(at, true);
+
     colors[i] = pack(
       view.getUint8(at + 2),
       view.getUint8(at + 3),
@@ -178,11 +210,10 @@ function parsePaletteChunk(
 
     at += 6;
 
-    if (flags & 1) at = readString(bytes, view, at).next;
-    if (at > end) fail('Invalid Aseprite palette entry.');
+    if (flags & 1) {
+      at = readString(bytes, view, at, end).next;
+    }
   }
-
-  colors.length = Math.max(colors.length, total);
 }
 
 function parseOldPalette(
@@ -192,21 +223,29 @@ function parseOldPalette(
   end: number,
   sixBit: boolean,
 ): number[] {
-  assertRange(bytes, start, 2);
+  assertChunkRange(bytes, start, 2, end);
 
   const packets = view.getUint16(start, true);
   const colors: number[] = [];
+
   let at = start + 2;
   let index = 0;
 
   for (let p = 0; p < packets; p++) {
-    assertRange(bytes, at, 2);
+    assertChunkRange(bytes, at, 2, end);
+
     index += view.getUint8(at);
+
     const count = view.getUint8(at + 1) || 256;
     at += 2;
 
+    if (index + count > 256) {
+      fail('Invalid legacy Aseprite palette.');
+    }
+
     for (let i = 0; i < count; i++) {
-      assertRange(bytes, at, 3);
+      assertChunkRange(bytes, at, 3, end);
+
       let r = view.getUint8(at++);
       let g = view.getUint8(at++);
       let b = view.getUint8(at++);
@@ -219,8 +258,6 @@ function parseOldPalette(
 
       colors[index++] = pack(r, g, b);
     }
-
-    if (at > end) fail('Invalid legacy Aseprite palette.');
   }
 
   return colors;
@@ -236,7 +273,7 @@ function parseLayer(
   groupStack: string[],
   warnings: Set<string>,
 ): ParsedLayer {
-  assertRange(bytes, start, 18);
+  assertChunkRange(bytes, start, 18, end);
 
   const flags = view.getUint16(start, true);
   const type = view.getUint16(start + 2, true);
@@ -244,17 +281,30 @@ function parseLayer(
   const blend = view.getUint16(start + 10, true);
   const opacity = view.getUint8(start + 12);
 
-  const name = readString(bytes, view, start + 16);
+  const name = readString(bytes, view, start + 16, end);
 
-  if (name.next > end) fail('Invalid Aseprite layer.');
+  let next = name.next;
+
+  if (type === 2) {
+    assertChunkRange(bytes, next, 4, end);
+    next += 4;
+  }
+
+  if (header.flags & 4) {
+    assertChunkRange(bytes, next, 16, end);
+    next += 16;
+  }
 
   const id = newId(type === 1 ? 'group' : 'layer');
+
   const actualOpacity =
     type === 1 && !(header.flags & 2) ? 255 : type !== 1 && !(header.flags & 1) ? 255 : opacity;
 
   const blendMode = BLEND_MODES[blend] ?? 'normal';
 
-  if (blend > 11) warnings.add('Unsupported blend modes were changed to Normal.');
+  if (blend > 11) {
+    warnings.add('Unsupported blend modes were changed to Normal.');
+  }
 
   const parsed: ParsedLayer = {
     id,
@@ -295,16 +345,18 @@ function parseLayer(
     return parsed;
   }
 
+  if (type !== 0) {
+    warnings.add('Unsupported layer types were skipped.');
+    return parsed;
+  }
+
   const groupDepth = Math.min(level, MAX_GROUP_DEPTH);
+
   if (level > MAX_GROUP_DEPTH) {
     warnings.add('Groups deeper than four levels were flattened into the deepest supported group.');
   }
 
   parsed.group = groupDepth > 0 ? groupStack[groupDepth - 1] : undefined;
-
-  // Keep the file cursor validation aware of the optional tilemap/UUID fields.
-  if (type === 2) assertRange(bytes, name.next, 4);
-  if (header.flags & 4) assertRange(bytes, name.next, 16);
 
   return parsed;
 }
@@ -361,7 +413,9 @@ function applyOpacity(pixels: Uint32Array, opacity: number): void {
 
 export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResult> {
   const header = parseHeader(data);
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const bytes = data.subarray(0, header.fileSize);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
   const warnings = new Set<string>();
 
   const parsedLayers: ParsedLayer[] = [];
@@ -369,13 +423,15 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   const groupStack: string[] = [];
   const rawFrames: RawCel[][] = [];
   const palette: number[] = [];
+  const legacyPalette: number[] = [];
   const framePalettes: number[][] = [];
   const frameDurations: number[] = [];
 
   let at = HEADER_SIZE;
+  let hasNewPalette = false;
 
   for (let f = 0; f < header.frames; f++) {
-    assertRange(data, at, FRAME_HEADER_SIZE);
+    assertRange(bytes, at, FRAME_HEADER_SIZE);
 
     const frameSize = view.getUint32(at, true);
     const magic = view.getUint16(at + 4, true);
@@ -386,7 +442,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const chunkCount = newChunks || oldChunks;
     const frameEnd = at + frameSize;
 
-    if (magic !== FRAME_MAGIC || frameSize < FRAME_HEADER_SIZE || frameEnd > data.length) {
+    if (magic !== FRAME_MAGIC || frameSize < FRAME_HEADER_SIZE || frameEnd > bytes.length) {
       fail('Invalid Aseprite frame header.');
     }
 
@@ -396,7 +452,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const frameCels: RawCel[] = [];
 
     for (let c = 0; c < chunkCount; c++) {
-      assertRange(data, at, 6);
+      assertChunkRange(bytes, at, 6, frameEnd);
 
       const chunkSize = view.getUint32(at, true);
       const chunkType = view.getUint16(at + 4, true);
@@ -406,20 +462,25 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
       if (chunkSize < 6 || end > frameEnd) fail('Invalid Aseprite chunk size.');
 
       if (chunkType === LAYER_CHUNK) {
-        const layer = parseLayer(data, view, start, end, header, groups, groupStack, warnings);
+        if (f !== 0) {
+          fail('Unexpected Aseprite layer chunk outside the first frame.');
+        }
+
+        const layer = parseLayer(bytes, view, start, end, header, groups, groupStack, warnings);
         parsedLayers.push(layer);
       } else if (chunkType === PALETTE_CHUNK) {
-        parsePaletteChunk(data, view, start, end, palette);
+        hasNewPalette = true;
+        parsePaletteChunk(bytes, view, start, end, palette);
       } else if (chunkType === OLD_PALETTE_CHUNK || chunkType === OLD_PALETTE_6BIT_CHUNK) {
-        if (!palette.length) {
-          const parsed = parseOldPalette(data, view, start, end, chunkType === OLD_PALETTE_6BIT_CHUNK);
+        const parsed = parseOldPalette(bytes, view, start, end, chunkType === OLD_PALETTE_6BIT_CHUNK);
 
-          for (let i = 0; i < parsed.length; i++) {
-            if (i in parsed) palette[i] = parsed[i];
+        for (let i = 0; i < parsed.length; i++) {
+          if (i in parsed) {
+            legacyPalette[i] = parsed[i];
           }
         }
       } else if (chunkType === CEL_CHUNK) {
-        assertRange(data, start, 16);
+        assertChunkRange(bytes, start, 16, end);
 
         const layer = view.getUint16(start, true);
         const x = view.getInt16(start + 2, true);
@@ -430,7 +491,8 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         if (type === 3) {
           warnings.add('Tilemaps were skipped.');
         } else if (type === 1) {
-          assertRange(data, start + 16, 2);
+          assertChunkRange(bytes, start + 16, 2, end);
+
           frameCels.push({
             type,
             layer,
@@ -440,10 +502,11 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
             linkedFrame: view.getUint16(start + 16, true),
           });
         } else if (type === 0 || type === 2) {
-          assertRange(data, start + 16, 4);
+          assertChunkRange(bytes, start + 16, 4, end);
+
           const width = view.getUint16(start + 16, true);
           const height = view.getUint16(start + 18, true);
-          const payload = data.subarray(start + 20, end);
+          const payload = bytes.subarray(start + 20, end);
 
           const raw = type === 2 ? await decompress(payload) : payload;
 
@@ -475,11 +538,27 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     }
   }
 
+  if (!hasNewPalette) {
+    for (let i = 0; i < legacyPalette.length; i++) {
+      if (!(i in legacyPalette)) continue;
+
+      palette[i] = legacyPalette[i];
+
+      for (const framePalette of framePalettes) {
+        framePalette[i] = legacyPalette[i];
+      }
+    }
+  }
+
   const layers: Layer[] = [];
   const layerMap: Array<ParsedLayer | undefined> = [];
 
+  if (at !== bytes.length) {
+    fail('Aseprite file size does not match its frames.');
+  }
+
   for (const parsed of parsedLayers) {
-    if (parsed.type === 2) {
+    if (parsed.type !== 0 && parsed.type !== 1) {
       layerMap.push(undefined);
       continue;
     }
@@ -562,8 +641,17 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
   for (let f = 0; f < rawFrames.length; f++) {
     for (const cel of rawFrames[f]) {
+      if (cel.layer >= layerMap.length) {
+        fail('Aseprite cel references an invalid layer.');
+      }
+
       const parsedLayer = layerMap[cel.layer];
-      if (!parsedLayer || parsedLayer.type !== 0) continue;
+
+      if (!parsedLayer) continue;
+
+      if (parsedLayer.type !== 0) {
+        fail('Aseprite cel references a non-image layer.');
+      }
 
       const layerIndex = layers.findIndex((layer) => layer.id === parsedLayer.id);
       if (layerIndex < 0) continue;
