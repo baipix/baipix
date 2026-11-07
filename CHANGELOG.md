@@ -4,13 +4,28 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Help › Baipix on Bluesky, under the source code on GitHub. ([#765](https://github.com/baipix/baipix/pull/765))
+
 ### Changed
 
+- The tour's Export step names the animated GIF, the sprite sheet and the .aseprite file, not only PNG and SVG. ([#764](https://github.com/baipix/baipix/pull/764))
+- Help › Keyboard shortcuts lists every key that works, Q, Y and D for the lasso, magic wand and gradient included, and Ctrl+A, Ctrl+D, Ctrl+Shift+I, Ctrl+Y, Ctrl+0, Ctrl+S and ?. ([#761](https://github.com/baipix/baipix/pull/761))
 - The version in the editor's corner and at the bottom of the Help menu opens the release notes on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))
 - After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. ([#739](https://github.com/baipix/baipix/pull/739))
 
+### Fixed
+
+- The tour gave A as Spray's key; it's P (A is the Board tool). ([#758](https://github.com/baipix/baipix/pull/758))
+
 ### Website
 
+- The Draw page gets an Animate section, the light, and every export: GIF, sprite sheets, PNG sequences and tilesets. ([#767](https://github.com/baipix/baipix/pull/767))
+- The docs catch up with the editor after 0.8: the swatch menu, resizing a board, the shadow that follows the light, and a few things that had changed. ([#760](https://github.com/baipix/baipix/pull/760))
+- Frames + sprite sheet is listed wherever the exports are, on the site and in the docs. ([#759](https://github.com/baipix/baipix/pull/759))
+- One description of Baipix everywhere: the editor's share card, llms.txt, the README and the site say the same thing; YouTube joins the footer. ([#762](https://github.com/baipix/baipix/pull/762))
+- Every page title ends with · Baipix. ([#766](https://github.com/baipix/baipix/pull/766))
 - A roadmap page, drawn as a pixel map: what's out, what's being worked on now with the slime jumping on it, and the road to 1.0, read from the milestones on GitHub. ([#754](https://github.com/baipix/baipix/pull/754))
 - The release notes mark each version Major or Minor, so the versions with new features stand out. ([#751](https://github.com/baipix/baipix/pull/751))
 - The home page describes Baipix as it is now, animation and isometric drawing included, for search engines and link previews, and points to Baipix on Wikidata. ([#750](https://github.com/baipix/baipix/pull/750))
