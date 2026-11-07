@@ -26,7 +26,7 @@ export const GET: APIRoute = ({ site }) => {
     `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>What's new in Baipix</title>
+    <title>Baipix release notes</title>
     <link>${page}</link>
     <description>What changed in Baipix, the free pixel art editor in your browser, version by version.</description>
     <language>en</language>
