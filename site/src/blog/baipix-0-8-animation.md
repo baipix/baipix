@@ -126,9 +126,9 @@ On a big scene, it's easy to shade one part lit from the left and the next one f
 This one is still a test. I'm not sure yet it's the right way to do it, so if you try it, [tell me what you think](https://github.com/baipix/baipix/discussions).
 
 <figure>
-  <img class="for-light" src="/blog/0-8/light-light.webp" width="1200" height="750" alt="The hobbit house drawing with faint diagonal lines over it and a small sun in its top left corner, and the Light section on the right: a pixel sphere lit from the top left, an angle of 135° and a height of 40°." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/light-dark.webp" width="1200" height="750" alt="The hobbit house drawing with faint diagonal lines over it and a small sun in its top left corner, and the Light section on the right: a pixel sphere lit from the top left, an angle of 135° and a height of 40°." loading="lazy" />
-  <figcaption>The light comes from the top left. The lines on the canvas show its direction.</figcaption>
+  <img class="for-light" src="/blog/0-8/light-light.webp" width="1100" height="688" alt="A plain pixel ball lit from the top left, its shadow falling to the bottom right, beside the Light block: the little lamp around a sphere, a pointer on it to drag it, and the angle and height fields." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/light-dark.webp" width="1100" height="688" alt="A plain pixel ball lit from the top left, its shadow falling to the bottom right, beside the Light block: the little lamp around a sphere, a pointer on it to drag it, and the angle and height fields." loading="lazy" />
+  <figcaption>Drag the lamp around the sphere, and the shadow follows.</figcaption>
 </figure>
 
 You drag the lamp around the little sphere, or type its angle and height. The sphere shows which side is lit and where the shadow falls. Faint lines and a small sun on the canvas show where the light comes from, and the sun can be dragged too.
@@ -154,8 +154,8 @@ Now the background goes to the new palette too, in the same undo. If you want to
 Baipix speaks Italian and Japanese now, six languages in all. It opens in your browser's language when it knows it, and you can change it in View › Language.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/languages-light.webp" width="1100" height="688" alt="The Baipix logo surrounded by the editor's welcome line in its six languages: English, French, Spanish, Japanese, Italian and Ukrainian, Japanese and Italian marked new." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/languages-dark.webp" width="1100" height="688" alt="The Baipix logo surrounded by the editor's welcome line in its six languages: English, French, Spanish, Japanese, Italian and Ukrainian, Japanese and Italian marked new." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/languages-light.webp" width="1100" height="688" alt="The six languages of the editor, each written in itself and set at different sizes: 日本語 and Italiano, the new ones, large and in violet, with Français, Español, Українська and English around them." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/languages-dark.webp" width="1100" height="688" alt="The six languages of the editor, each written in itself and set at different sizes: 日本語 and Italiano, the new ones, large and in violet, with Français, Español, Українська and English around them." loading="lazy" />
 </figure>
 
 ## A few smaller things

@@ -176,19 +176,39 @@ const SHOTS = [
   },
   // The whole editor: the slime mid-jump, the timeline and the onion skin.
   { name: 'animation', setup: SLIME },
-  // The light on a drawing: the stage in the right panel, the sun and its lines over the canvas.
+  // The light: a plain ball on the card, its shadow following the light, beside the Light block,
+  // a pointer on the lamp to show it can be dragged.
   {
     name: 'light',
-    setup: `${load('/site/src/art/hobbit-house.baipix')}
-      __ed.setLight({ angle: 135, height: 40, direction: true });
+    setup: `${load('/site/public/blog/0-8/ball.baipix')}
+      const dark = location.search.includes('dark');
+      __ed.setLight({ angle: 135, height: 40, direction: false });
+      // A soft shadow on the ground, not the darkest color: it follows the light.
+      __ed.addEffect('shadow', { followLight: true, color: (dark ? 0xff31363a : 0xffc2b09d) >>> 0 });
+      __ed.setBackground((dark ? 0xff181b1d : 0xffe9f0f3) >>> 0, true);
       await wait(200);
-      document.getElementById('light')?.scrollIntoView({ block: 'center' });`,
-    // The board and the right panel, without the toolbar.
-    area: `const c = [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0].getBoundingClientRect();
       const vp = (await import('/src/ui/viewport.ts')).viewport;
-      const x = c.x + vp.originX / vp.dpr - 24;
-      return JSON.stringify({ x, y: 76, right: ${WIDTH}, bottom: 760 });`,
-    width: 1200,
+      vp.zoomTo(13);
+      vp.centerOn(12, 12);
+      [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0].classList.add('shot-canvas');
+      const light = document.querySelector('.light-stage').closest('section');
+      light.classList.add('shot-light');
+      light.scrollIntoView({ block: 'center' });
+      const bg = getComputedStyle(document.querySelector('.panel-right')).backgroundColor;
+      Object.assign(light.style, { background: bg, borderRadius: '14px', padding: '4px 14px 14px', position: 'relative' });
+      await wait(300);
+      // The lamp, where the stage draws it: toward the light, farther when the light is low.
+      const stage = light.querySelector('.light-stage');
+      const sr = stage.getBoundingClientRect(), lr = light.getBoundingClientRect();
+      const a = (135 * Math.PI) / 180, d = 54 + ((80 - 40) / 70) * 28;
+      const lx = sr.left - lr.left + sr.width / 2 + Math.cos(a) * d;
+      const ly = sr.top - lr.top + 92 - Math.sin(a) * d;
+      const pointer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      pointer.setAttribute('viewBox', '0 0 24 24');
+      pointer.innerHTML = '<path d="M4 2l15 11-6.5 1.2 3.8 7.3-2.6 1.3-3.7-7.4L5 20z" fill="#fff" stroke="#1a1c2c" stroke-width="1.6" stroke-linejoin="round"/>';
+      Object.assign(pointer.style, { position: 'absolute', width: '30px', height: '30px', left: lx + 3 + 'px', top: ly + 3 + 'px', zIndex: 10 });
+      light.append(pointer);`,
+    row: ['board', '.shot-light'],
   },
   // Remap on an animated board with a background: its All frames and Also remap the background boxes.
   // Remap, animated: the layers on the left, the ramen bowl in the middle, the Remap panel on the
@@ -309,7 +329,7 @@ async function capturePartsOnly(selectors, theme) {
     const style = document.createElement('style');
     style.id = 'shot-only';
     style.textContent = 'html, body { background: transparent !important; } ::backdrop { background: transparent !important; } body * { visibility: hidden !important; } .shot-focus, .shot-focus * { visibility: visible !important; }'
-      + '.panel-left.shot-focus, .adjust-panel.shot-focus { outline: 1.5px solid ${OUTLINE[theme]} !important; outline-offset: 0 !important; box-shadow: 8px 8px 0 ${SHADOW[theme]} !important; }';
+      + '.shot-focus:not(.shot-canvas) { outline: 1.5px solid ${OUTLINE[theme]} !important; outline-offset: 0 !important; box-shadow: 8px 8px 0 ${SHADOW[theme]} !important; }';
     document.head.append(style);
     ${JSON.stringify(selectors)}.forEach((sel) => document.querySelectorAll(sel).forEach((el) => el.classList.add('shot-focus')));`);
   await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
@@ -371,6 +391,31 @@ async function remapAnimation(shot, theme) {
   console.log(`Wrote ${file} (animated, ${frames.length} pictures)`);
 }
 
+/** Parts side by side on the card: 'board' is the drawing itself, on the card's color, the others selectors. */
+async function rowShot(shot, theme) {
+  const boxes = JSON.parse(
+    await run(`
+      const r = (el) => { const b = el.getBoundingClientRect(); return { x: b.left, y: b.top, right: b.right, bottom: b.bottom }; };
+      const c = document.querySelector('.shot-canvas');
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      const d = __ed.getState().doc;
+      const cb = c.getBoundingClientRect();
+      const x = cb.x + vp.originX / vp.dpr, y = cb.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+      return JSON.stringify(${JSON.stringify(shot.row)}.map((p) => p === 'board' ? { x, y, right: x + d.width * z, bottom: y + d.height * z } : r(document.querySelector(p))));`),
+  );
+  const selectors = shot.row.filter((p) => p !== 'board');
+  const panels = await capturePartsOnly(selectors, theme);
+  const canvas = await capturePartsOnly(['.shot-canvas'], theme);
+  const parts = await Promise.all(
+    shot.row.map((p, i) => (p === 'board' ? cut(canvas, boxes[i]) : cut(panels, boxes[i], 24))),
+  );
+  const file = `${out}/${shot.name}-${theme}.webp`;
+  await sharp(await composeRow(parts, theme, shot.row.indexOf('board')))
+    .webp({ quality: 90 })
+    .toFile(file);
+  console.log(`Wrote ${file} (row)`);
+}
+
 /** The drawing on a white card, with the same outline and hard shadow as the panels. */
 async function framed(board, theme) {
   const { width, height } = await sharp(board).metadata();
@@ -388,7 +433,7 @@ async function framed(board, theme) {
 }
 
 /** Parts side by side, centered on the card, as big as they fit together. */
-async function composeRow(parts, theme) {
+async function composeRow(parts, theme, pixelPart = 1) {
   const sizes = await Promise.all(parts.map((p) => sharp(p).metadata()));
   const gap = 140;
   const total = sizes.reduce((n, m) => n + m.width, 0) + gap * (parts.length - 1);
@@ -442,7 +487,7 @@ for (const theme of ['dark', 'light']) {
     await send('Emulation.setDeviceMetricsOverride', {
       width: WIDTH,
       height: HEIGHT,
-      deviceScaleFactor: shot.focus || shot.palettes ? 4 : 2,
+      deviceScaleFactor: shot.focus || shot.palettes || shot.row ? 4 : 2,
       mobile: false,
     });
     await send('Page.navigate', { url: `http://localhost:${PORT}/?screenshot=${theme}` });
@@ -481,6 +526,10 @@ for (const theme of ['dark', 'light']) {
     // The mouse out of the way, so nothing shows its hover state.
     await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: WIDTH - 2, y: HEIGHT - 2 });
     await sleep(400);
+    if (shot.row) {
+      await rowShot(shot, theme);
+      continue;
+    }
     if (shot.palettes) {
       await remapAnimation(shot, theme);
       continue;
