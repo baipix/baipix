@@ -77,7 +77,7 @@ const TIMELINE = `const tl = document.querySelector('.timeline');
   await new Promise((r) => setTimeout(r, 100));
   const t = tl.getBoundingClientRect();
   const m = document.querySelector('.menu')?.getBoundingClientRect();
-  return JSON.stringify({ x: t.left, y: Math.min(t.top, m?.top ?? t.top), right: Math.max(t.right, m?.right ?? 0), bottom: t.bottom });`;
+  return JSON.stringify({ x: t.left, y: Math.min(t.top, m?.top ?? t.top), right: Math.max(t.right, m?.right ?? 0), bottom: Math.max(t.bottom, m?.bottom ?? 0) });`;
 const SHOTS = [
   // The timeline alone, the onion skin off: frames, rows, durations.
   {
@@ -86,20 +86,53 @@ const SHOTS = [
     focus: ['.timeline'],
     area: TIMELINE,
   },
-  // The onion skin up close: the board with the frames around it in red and blue.
+  // The onion skin as a close-up: the slime alone, its frames before in red and after in blue,
+  // straight on the card's color, and the onion button lit beside it.
   {
     name: 'onion',
-    // The canvas and the timeline only, the onion button ringed in the accent.
     setup: `${SLIME}
-      ui.uiStore.set((s) => ({ onion: { ...s.onion, on: true, before: 3, after: 3, opacity: 0.7 } }));
+      ui.uiStore.set((s) => ({ onion: { ...s.onion, on: true, before: 2, after: 2, opacity: 0.7 } }));
+      const dark = location.search.includes('dark');
+      __ed.getState().doc.layers.forEach((l, i) => (l.name === 'Sky' || l.name === 'Ground') && __ed.setLayerVisible(i, false));
+      // The board's background, the card's color: the slime sits on the card itself.
+      __ed.setBackground((dark ? 0xff181b1d : 0xffe9f0f3) >>> 0, true);
       await wait(200);
-      for (const sel of ['.panel-left', '.panel-right', '.floating-preview', '.toolbar', '.tool-options'])
-        document.querySelectorAll(sel).forEach((el) => (el.style.visibility = 'hidden'));
       const vp = (await import('/src/ui/viewport.ts')).viewport;
       vp.zoomTo(14);
-      vp.centerOn(32, 19 + 90 / vp.effectiveZoom);
-      const onion = [...document.querySelectorAll('.timeline button')].find((b) => /onion/i.test(b.getAttribute('aria-label') ?? ''));
-      Object.assign(onion.style, { outline: '2px solid #6e56cf', outlineOffset: '2px' });`,
+      vp.centerOn(32, 18);
+      await wait(200);
+      const canvas = [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0];
+      canvas.classList.add('shot-canvas');
+      const style = document.createElement('style');
+      style.textContent = '.shot-canvas.shot-focus { outline: none !important; box-shadow: none !important; }';
+      document.head.append(style);
+      // The onion button, lit, in a small card by the slime.
+      const button = [...document.querySelectorAll('.timeline button')].find((b) => /onion/i.test(b.getAttribute('aria-label') ?? ''));
+      const chip = document.createElement('div');
+      chip.className = 'shot-chip';
+      const lit = button.cloneNode(true);
+      Object.assign(lit.style, { width: '56px', height: '56px', borderRadius: '12px', background: '#6e56cf', color: '#fff', display: 'grid', placeItems: 'center' });
+      lit.querySelector('svg')?.setAttribute('width', '28');
+      lit.querySelector('svg')?.setAttribute('height', '28');
+      chip.append(lit);
+      const c = canvas.getBoundingClientRect();
+      const d = __ed.getState().doc;
+      const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+      Object.assign(chip.style, {
+        position: 'fixed', zIndex: 9999, padding: '8px', borderRadius: '18px',
+        background: dark ? '#2a2723' : '#fff',
+        left: x + d.width * z - 140 + 'px', top: y + (d.height * z) / 2 - 36 + 'px',
+      });
+      document.body.append(chip);`,
+    focus: ['.shot-canvas', '.shot-chip'],
+    // Inside the board only: no editor around it, no board name.
+    pad: 0,
+    // The board, where the slime and its frames are.
+    area: `const c = document.querySelector('.shot-canvas').getBoundingClientRect();
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      const d = __ed.getState().doc;
+      const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+      return JSON.stringify({ x: x + 4, y: y + 4, right: x + d.width * z - 4, bottom: y + d.height * z - 4 });`,
   },
   {
     name: 'export-frames',
@@ -115,7 +148,19 @@ const SHOTS = [
       frames[8].dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
       await wait(200);
       const r = frames[7].getBoundingClientRect();
-      frames[7].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 12, clientY: r.top + 12 }));`,
+      frames[7].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 12, clientY: r.top + 12 }));
+      await wait(200);
+      // The menu over the timeline's lower right, overlapping it, so both read together; the
+      // timeline moved up first, so the menu has room under it.
+      const tl = document.querySelector('.timeline');
+      Object.assign(tl.style, { position: 'fixed', top: '120px', bottom: 'auto' });
+      const last = [...document.querySelectorAll('.timeline-frame')].at(-1).getBoundingClientRect();
+      tl.style.width = Math.ceil(last.right + 48 - tl.getBoundingClientRect().left) + 'px';
+      await wait(100);
+      const t = tl.getBoundingClientRect();
+      const menu = document.querySelector('.menu');
+      const m = menu.getBoundingClientRect();
+      Object.assign(menu.style, { position: 'fixed', left: t.right - m.width * 0.6 + 'px', top: t.top + t.height * 0.4 + 'px', bottom: 'auto', right: 'auto' });`,
     focus: ['.timeline', '.menu'],
     area: TIMELINE,
   },
@@ -228,12 +273,15 @@ await send('Emulation.setDeviceMetricsOverride', {
   mobile: false,
 });
 /** The composed pictures: 1100 × 688, at 2×, a plain warm card, like the posts on Bluesky. */
+const OUTLINE = { light: '#aaa49a', dark: '#5f5a53' };
+const SHADOW = { light: 'rgba(70, 60, 45, 0.12)', dark: 'rgba(0, 0, 0, 0.45)' };
 const CARD = { width: 2200, height: 1376, light: '#f3f0e9', dark: '#1d1b18' };
 /** A part of the editor, cut out on a transparent page, in the middle of the card, as big as it fits. */
 async function compose(png, theme, file) {
   const part = sharp(png);
   const { width, height } = await part.metadata();
-  const scale = Math.min(1, (CARD.width * 0.88) / width, (CARD.height * 0.84) / height);
+  // As big as the card allows: the parts are the picture.
+  const scale = Math.min((CARD.width * 0.9) / width, (CARD.height * 0.86) / height);
   const w = Math.round(width * scale);
   const h = Math.round(height * scale);
   const resized = await part.resize(w, h).png().toBuffer();
@@ -248,6 +296,13 @@ async function compose(png, theme, file) {
 for (const theme of ['dark', 'light']) {
   for (const shot of shots) {
     // A fresh editor for each picture, as the screenshot mode opens it.
+    // Close-ups are drawn at 4×, so they stay sharp once enlarged on the card.
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: WIDTH,
+      height: HEIGHT,
+      deviceScaleFactor: shot.focus ? 4 : 2,
+      mobile: false,
+    });
     await send('Page.navigate', { url: `http://localhost:${PORT}/?screenshot=${theme}` });
     await sleep(4000);
     await run(`
@@ -288,7 +343,9 @@ for (const theme of ['dark', 'light']) {
       // Only the parts show: everything else hidden, the page transparent behind them.
       await run(`
         const style = document.createElement('style');
-        style.textContent = 'html, body { background: transparent !important; } ::backdrop { background: transparent !important; } body * { visibility: hidden !important; } .shot-focus, .shot-focus * { visibility: visible !important; }';
+        style.textContent = 'html, body { background: transparent !important; } ::backdrop { background: transparent !important; } body * { visibility: hidden !important; } .shot-focus, .shot-focus * { visibility: visible !important; }'
+          // Drawn like the site's pixel buttons: a firm outline and a hard shadow, not a soft one.
+          + '.shot-focus { outline: 1.5px solid ${OUTLINE[theme]} !important; outline-offset: 0 !important; box-shadow: 8px 8px 0 ${SHADOW[theme]} !important; }';
         document.head.append(style);
         ${JSON.stringify(shot.focus)}.forEach((sel) => document.querySelectorAll(sel).forEach((el) => el.classList.add('shot-focus')));`);
       await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
@@ -301,8 +358,8 @@ for (const theme of ['dark', 'light']) {
             right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) });`,
         ),
       );
-      // Room around the parts for their whole shadow, which a dialog casts far.
-      const pad = 120;
+      // Room around the parts for their outline and hard shadow.
+      const pad = shot.pad ?? 24;
       const x = Math.max(0, Math.floor(box.x - pad));
       const y = Math.max(0, Math.floor(box.y - pad));
       const part = await send('Page.captureScreenshot', {

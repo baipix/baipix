@@ -62,8 +62,8 @@ On the files screen, animated drawings have a small film badge.
 Some changes are about a whole part of the move: slowing it down, or playing it backwards. Doing that one frame at a time gets old fast. You can pick several frames with <kbd>Shift</kbd> or <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>-click, then right-click them. You can set their duration, copy, paste, reverse or delete them all at once.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/frame-menu-light.webp" width="1100" height="688" alt="Frames 6 to 9 picked in the timeline, and the frame menu open: new frame, new empty frame, copy 4 frames, paste frames, reverse frames, delete 4 frames." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/frame-menu-dark.webp" width="1100" height="688" alt="Frames 6 to 9 picked in the timeline, and the frame menu open: new frame, new empty frame, copy 4 frames, paste frames, reverse frames, delete 4 frames." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/frame-menu-light.webp" width="1100" height="688" alt="Frames 6 to 9 picked in the timeline, and the frame menu over it: new frame, new empty frame, copy 4 frames, paste frames, reverse frames, delete 4 frames." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/frame-menu-dark.webp" width="1100" height="688" alt="Frames 6 to 9 picked in the timeline, and the frame menu over it: new frame, new empty frame, copy 4 frames, paste frames, reverse frames, delete 4 frames." loading="lazy" />
 </figure>
 
 Reverse helps for a move that comes back. Copy the frames of the slime going up, paste them, reverse them, and it comes down.
@@ -75,8 +75,8 @@ Reverse helps for a move that comes back. Copy the frames of the slime going up,
 With onion skin on, the frames before the one you're drawing show in red, and the ones after in blue, faded under it. The ghost button in the timeline turns it on and off.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/onion-light.webp" width="1440" height="900" alt="The slime on frame 6, with the next frames faded in blue above it and the frames before in red below, and the timeline under the canvas with the onion skin button on, three frames before and three after, at 70%." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/onion-dark.webp" width="1440" height="900" alt="The slime on frame 6, with the next frames faded in blue above it and the frames before in red below, and the timeline under the canvas with the onion skin button on, three frames before and three after, at 70%." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/onion-light.webp" width="1100" height="688" alt="The slime alone on frame 6, the next frames faded in blue above it and the frames before in red below, and the onion skin button lit beside it." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/onion-dark.webp" width="1100" height="688" alt="The slime alone on frame 6, the next frames faded in blue above it and the frames before in red below, and the onion skin button lit beside it." loading="lazy" />
   <figcaption>Where the slime was, in red, and where it's going, in blue.</figcaption>
 </figure>
 
@@ -142,8 +142,8 @@ Trying another palette on an animation only makes sense if every frame follows. 
 Remap swaps your drawing's colors for the ones of another palette. Until now it left the board's background alone, so a night scene could end up on a background from the old palette.
 
 <figure>
-  <img class="for-light" src="/blog/0-8/remap-light.webp" width="1100" height="688" alt="The slime with the Remap tab of the Adjustments panel open, All frames and Also remap the background ticked." loading="lazy" />
-  <img class="for-dark" src="/blog/0-8/remap-dark.webp" width="1100" height="688" alt="The slime with the Remap tab of the Adjustments panel open, All frames and Also remap the background ticked." loading="lazy" />
+  <img class="for-light" src="/blog/0-8/remap-light.webp" width="1100" height="688" alt="The Remap tab of the Adjustments panel, with All frames and Also remap the background ticked." loading="lazy" />
+  <img class="for-dark" src="/blog/0-8/remap-dark.webp" width="1100" height="688" alt="The Remap tab of the Adjustments panel, with All frames and Also remap the background ticked." loading="lazy" />
 </figure>
 
 Now the background goes to the new palette too, in the same undo. If you want to keep it as it is, untick **Also remap the background**.
