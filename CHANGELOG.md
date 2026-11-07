@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Four more templates: Favicon (32 × 32), Small tile (16 × 16, tiled), Emote (112 × 112) and Playing card (64 × 96).
+- Four more templates: Favicon (32 × 32), Small tile (16 × 16, tiled), Emote (112 × 112) and Playing card (64 × 96). ([#757](https://github.com/baipix/baipix/pull/757))
 - Help › Baipix on Bluesky, under the source code on GitHub. ([#765](https://github.com/baipix/baipix/pull/765))
 
 ### Changed

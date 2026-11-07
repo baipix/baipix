@@ -630,9 +630,9 @@ export const uk: Record<MessageKey, string> = {
   'coordinates.colors': 'Кольорів: {count}',
 
   'template.icon': 'Піктограма',
-  'template.favicon': 'Favicon',
+  'template.favicon': 'Значок сайту',
   'template.smallTile': 'Мала плитка',
-  'template.emote': 'Емоція',
+  'template.emote': 'Смайлик чату',
   'template.card': 'Гральна карта',
   'template.sprite': 'Спрайт персонажа',
   'template.tile': 'Ігровий тайл',
