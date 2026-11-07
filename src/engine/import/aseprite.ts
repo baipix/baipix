@@ -379,6 +379,10 @@ function parseLayer(
     } else {
       warnings.add('Groups deeper than four levels were flattened into the deepest supported group.');
 
+      if (blendMode && blendMode !== 'normal') {
+        warnings.add('Blend modes of flattened groups were not preserved.');
+      }
+
       flattenedGroupStack.push({
         visible: ownVisible,
         locked: ownLocked,
