@@ -38,7 +38,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - [Isometric pixel art](${url('isometric-pixel-art/')}): the isometric grid and volume tools, how to start a scene, and tips.
 - [Pixel art animation](${url('pixel-art-animation/')}): the timeline, frame durations, onion skin, playback, and GIF, PNG sequence or Aseprite export.
 ${posts.length ? `- [Blog](${url('blog/')}): news and tutorials, the newest first.\n` : ''}- [Source code on GitHub](${REPO_URL}): README, how to run it locally, how to contribute.
-- [What's new](${url('changelog/')}): what each version of the editor brought, newest first.
+- [Release notes](${url('changelog/')}): what each version of the editor brought, newest first.
 `;
   return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 };
