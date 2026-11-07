@@ -69,6 +69,11 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
                 <summary>
                   <span class="release-top">
                     <span class="release-version">{release.version}</span>
+                    {release.version.endsWith('.0') ? (
+                      <span class="release-kind is-major">Major</span>
+                    ) : (
+                      <span class="release-kind">Minor</span>
+                    )}
                     <span class="muted">{release.date ? longDate(release.date) : 'The first version'}</span>
                   </span>
                   {release.summary && <span class="release-summary" set:html={release.summary} />}
@@ -195,6 +200,7 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
     margin-bottom: 48px;
     padding: 24px 28px;
     border: 1px dashed var(--line-strong);
+    background: var(--bg);
   }
   .coming h2 {
     margin: 0;
@@ -288,6 +294,22 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
     font-size: 24px;
     font-weight: 600;
     letter-spacing: -0.02em;
+  }
+  /* A version with new features (x.y.0) stands out from the small ones in between. */
+  .release-kind {
+    align-self: center;
+    padding: 3px 8px;
+    border: 1px solid var(--line-strong);
+    color: var(--muted);
+    font:
+      400 11px/1.2 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .release-kind.is-major {
+    border-color: #6e56cf;
+    background: #6e56cf;
+    color: #fff;
   }
   .release-summary {
     color: var(--muted);
