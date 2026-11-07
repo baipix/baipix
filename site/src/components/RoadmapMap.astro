@@ -1,0 +1,284 @@
+---
+/**
+ * The roadmap as a pixel map: on an 8 px grid, a road one pixel thick climbs in steps from stop to
+ * stop. Each stop is a small sprite: a checked block for what's out, a violet frame where work is
+ * going on, with the slime jumping on it, an empty frame for what's next, a frame for 1.0 and a dotted
+ * one for later. The road lights up in violet pixel by pixel up to the current stop, then the
+ * slime starts jumping; all still with reduced motion. The stops' labels are buttons over the map,
+ * which show their details on the page.
+ */
+import { slimeSprite } from '../slimeSprite';
+
+export interface MapStop {
+  id: string;
+  label: string;
+  name: string;
+  kind: 'past' | 'current' | 'next' | 'launch' | 'later';
+}
+interface Props {
+  stops: MapStop[];
+}
+const { stops } = Astro.props;
+
+/** The grid, in pixels of 8 CSS px at full width. */
+const COLS = 132;
+const ROWS = 30;
+const LOW = 21;
+const HIGH = 9;
+const centers = stops.map((_, i) => ({
+  x: Math.round(8 + (i * (COLS - 16)) / Math.max(1, stops.length - 1)),
+  // The first stop high, so the current one (the second) is low, with room above for the slime.
+  y: i % 2 ? LOW : HIGH,
+}));
+const current = Math.max(
+  0,
+  stops.findIndex((s) => s.kind === 'current'),
+);
+
+/**
+ * Sprites, centered on their stop: '#' in the stop's color, 'v' violet, 'o' the page's background
+ * (to punch a shape out, or hide the road under an empty frame).
+ */
+const SPRITES: Record<MapStop['kind'], string[]> = {
+  past: ['vvvvvvv', 'vvvvvvv', 'vvvvvov', 'vvvvovv', 'vovovvv', 'vvovvvv', 'vvvvvvv'],
+  current: ['vvvvvvv', 'vooooov', 'vooooov', 'vooooov', 'vooooov', 'vooooov', 'vvvvvvv'],
+  next: ['#######', '#ooooo#', '#ooooo#', '#ooooo#', '#ooooo#', '#ooooo#', '#######'],
+  launch: ['#######', '#ooooo#', '#ooooo#', '#ooooo#', '#ooooo#', '#ooooo#', '#######'],
+  // Later: a frame of every other pixel, not drawn yet.
+  later: ['#.#.#.#', '.ooooo.', '#ooooo#', '.ooooo.', '#ooooo#', '.ooooo.', '#.#.#.#'],
+};
+const cellsOf = (rows: string[], cx: number, cy: number) => {
+  const w = rows[0].length;
+  const h = rows.length;
+  const left = cx - Math.floor(w / 2);
+  const top = cy - Math.floor(h / 2);
+  return rows.flatMap((row, y) =>
+    [...row].flatMap((c, x) => (c === '.' ? [] : [{ x: left + x, y: top + y, c }])),
+  );
+};
+const sprites = stops.map((s, i) => cellsOf(SPRITES[s.kind], centers[i].x, centers[i].y));
+/** The slime stands on the current stop, three slime pixels to eight of the map. */
+const SLIME_SCALE = 0.375;
+const here = centers[current];
+
+/** The road from one stop to the next: across, up or down at the middle, across again. */
+const occupied = new Set(sprites.flat().map((c) => `${c.x},${c.y}`));
+const road: { x: number; y: number; lit: boolean }[] = [];
+for (let i = 0; i < centers.length - 1; i++) {
+  const [a, b] = [centers[i], centers[i + 1]];
+  const mid = Math.round((a.x + b.x) / 2);
+  const cells: { x: number; y: number }[] = [];
+  for (let x = a.x; x <= mid; x++) cells.push({ x, y: a.y });
+  const dy = Math.sign(b.y - a.y);
+  for (let y = a.y + dy; y !== b.y; y += dy) cells.push({ x: mid, y });
+  for (let x = mid; x <= b.x; x++) cells.push({ x, y: b.y });
+  for (const c of cells) if (!occupied.has(`${c.x},${c.y}`)) road.push({ ...c, lit: i < current });
+}
+const litCount = road.filter((c) => c.lit).length;
+---
+
+<div class="map" style={`--cols: ${COLS}; --rows: ${ROWS}`}>
+  <svg class="map-art" viewBox={`0 0 ${COLS} ${ROWS}`} shape-rendering="crispEdges" aria-hidden="true">
+    {road.map((c, n) => (
+      <rect
+        class:list={['road', { lit: c.lit }]}
+        x={c.x}
+        y={c.y}
+        width="1"
+        height="1"
+        style={c.lit ? `--n: ${n}` : undefined}
+      />
+    ))}
+    {sprites.map((cells, i) => (
+      <g class:list={['sprite', `sprite-${stops[i].kind}`]} data-tab={`tab-${stops[i].id}`}>
+        {cells.map((cell) => (
+          <rect
+            class={cell.c === 'v' ? 'violet' : cell.c === 'o' ? 'hole' : 'ink'}
+            x={cell.x}
+            y={cell.y}
+            width="1"
+            height="1"
+          />
+        ))}
+      </g>
+    ))}
+  </svg>
+  <svg
+    class="slime"
+    viewBox={`0 0 ${slimeSprite.width} ${slimeSprite.height}`}
+    shape-rendering="crispEdges"
+    aria-hidden="true"
+    data-durations={JSON.stringify(slimeSprite.frames.map((f) => f.duration))}
+    data-wait={200 + litCount * 28}
+    style={`left: ${((here.x + 0.5) / COLS) * 100}%; top: ${((here.y - 3) / ROWS) * 100}%; width: ${((slimeSprite.width * SLIME_SCALE) / COLS) * 100}%`}
+  >
+    {slimeSprite.frames.map((frame, f) => (
+      <g visibility={f === 0 ? undefined : 'hidden'} set:html={frame.paths} />
+    ))}
+  </svg>
+  <div class="labels" role="tablist" aria-label="Roadmap stops">
+    {stops.map((s, i) => (
+      <button
+        type="button"
+        role="tab"
+        id={`tab-${s.id}`}
+        aria-controls={`panel-${s.id}`}
+        aria-selected={s.kind === 'current' ? 'true' : 'false'}
+        class:list={['stop', `stop-${s.kind}`, { up: centers[i].y === HIGH }]}
+        style={`left: ${((centers[i].x + 0.5) / COLS) * 100}%; top: ${((centers[i].y + 0.5) / ROWS) * 100}%`}
+      >
+        {s.kind === 'current' && <span class="now">Now</span>}
+        <span class="stop-version">{s.label}</span>
+        <span class="stop-name">{s.name}</span>
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  // A stop's square shows its details too, as its label does.
+  for (const sprite of document.querySelectorAll<SVGGElement>('.map .sprite'))
+    sprite.addEventListener('click', () => document.getElementById(sprite.dataset.tab!)?.click());
+
+  // The slime jumps once the road has lit up to it, each frame for its own duration.
+  for (const slime of document.querySelectorAll<SVGSVGElement>('.map .slime')) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
+    const durations: number[] = JSON.parse(slime.dataset.durations!);
+    const frames = [...slime.querySelectorAll('g')];
+    let f = 0;
+    const step = () => {
+      frames[f].setAttribute('visibility', 'hidden');
+      f = (f + 1) % frames.length;
+      frames[f].removeAttribute('visibility');
+      setTimeout(step, durations[f]);
+    };
+    setTimeout(step, Number(slime.dataset.wait) + durations[0]);
+  }
+</script>
+
+<style>
+  .map {
+    position: relative;
+    width: min(100%, calc(var(--cols) * 8px));
+    aspect-ratio: var(--cols) / var(--rows);
+    margin: 72px auto;
+  }
+  .map-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .road {
+    fill: var(--line-strong);
+  }
+  /* The slime, standing on the current stop. */
+  .slime {
+    position: absolute;
+    height: auto;
+    transform: translate(-50%, -100%);
+    overflow: visible;
+  }
+  .road.lit,
+  .violet {
+    fill: #6e56cf;
+  }
+  .ink {
+    fill: var(--line-strong);
+  }
+  .hole {
+    fill: var(--bg);
+  }
+  .sprite {
+    cursor: pointer;
+  }
+  .sprite-launch .ink {
+    fill: var(--text);
+  }
+  .sprite-past .hole {
+    fill: #fff;
+  }
+  /* The road lights up pixel by pixel; the slime waits for it. */
+  @media (prefers-reduced-motion: no-preference) {
+    .road.lit {
+      animation: light 1ms steps(1) both;
+      animation-delay: calc(200ms + var(--n) * 28ms);
+    }
+  }
+  @keyframes light {
+    from {
+      fill: var(--line-strong);
+    }
+    to {
+      fill: #6e56cf;
+    }
+  }
+  /* ---- The labels, under the low stops and over the high ones ---- */
+  .labels {
+    position: absolute;
+    inset: 0;
+  }
+  .stop {
+    position: absolute;
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    width: 168px;
+    margin: 0;
+    padding: 6px 4px 8px;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transform: translate(-50%, 44px);
+  }
+  .stop.up {
+    transform: translate(-50%, calc(-100% - 44px));
+  }
+
+  .stop-version {
+    color: var(--text);
+    font:
+      400 16px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .stop-name {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .now {
+    padding: 3px 6px 2px;
+    background: #6e56cf;
+    color: #fff;
+    font:
+      400 11px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  /* The stop shown below the map: its number in violet, a bar of pixels under its name. */
+  .stop::after {
+    content: '';
+    width: 24px;
+    height: 3px;
+    margin-top: 2px;
+    background: transparent;
+  }
+  .stop:hover .stop-name,
+  .stop[aria-selected='true'] .stop-name {
+    color: var(--text);
+  }
+  .stop[aria-selected='true'] .stop-version {
+    color: #6e56cf;
+  }
+  .stop[aria-selected='true']::after {
+    background: #6e56cf;
+  }
+  .stop:focus-visible {
+    outline: 2px solid #6e56cf;
+    outline-offset: 2px;
+  }
+</style>
