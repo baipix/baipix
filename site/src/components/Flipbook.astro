@@ -99,6 +99,19 @@ const { frames, label } = Astro.props;
   .strip-cell span {
     white-space: nowrap;
   }
+  /* Cells too narrow for their duration only show the one playing, over its neighbors. */
+  .strip-cell {
+    container-type: inline-size;
+  }
+  @container (max-width: 40px) {
+    .strip-cell span {
+      visibility: hidden;
+      justify-self: center;
+    }
+    .strip-cell[aria-current] span {
+      visibility: visible;
+    }
+  }
   .strip-cell .flipbook-pix {
     outline: 2px solid transparent;
     outline-offset: 1px;
