@@ -439,7 +439,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const duration = view.getUint16(at + 8, true);
     frameDurations.push(duration);
     const newChunks = view.getUint32(at + 12, true);
-    const chunkCount = newChunks || oldChunks;
+    const chunkCount = oldChunks === 0xffff ? newChunks : oldChunks;
     const frameEnd = at + frameSize;
 
     if (magic !== FRAME_MAGIC || frameSize < FRAME_HEADER_SIZE || frameEnd > bytes.length) {
@@ -533,7 +533,9 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     framePalettes.push([...palette]);
     rawFrames.push(frameCels);
 
-    if (duration !== 0 && (duration < 10 || duration > 10_000)) {
+    const effectiveDuration = duration || header.speed || DEFAULT_DURATION;
+
+    if (effectiveDuration < 10 || effectiveDuration > 10_000) {
       warnings.add('Frame durations outside 10–10,000 ms were adjusted.');
     }
   }
