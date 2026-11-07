@@ -624,6 +624,10 @@ export const ja: Record<MessageKey, string> = {
   'coordinates.colors': '{count}色',
 
   'template.icon': 'アイコン',
+  'template.favicon': 'ファビコン',
+  'template.smallTile': '小さいタイル',
+  'template.emote': 'エモート',
+  'template.card': 'トランプのカード',
   'template.sprite': 'キャラクタースプライト',
   'template.tile': 'ゲーム用タイル',
   'template.gameboy': 'ゲームボーイの画面',

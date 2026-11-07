@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Four more templates: Favicon (32 × 32), Small tile (16 × 16, tiled), Emote (112 × 112) and Playing card (64 × 96).
+
 ### Changed
 
 - The version in the editor's corner and at the bottom of the Help menu opens What's new on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))

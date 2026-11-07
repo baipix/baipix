@@ -17,9 +17,13 @@ export interface Template {
 
 export const TEMPLATES: Template[] = [
   { id: 'icon', label: 'template.icon', width: 16, height: 16, palette: 'sweetie16' },
+  { id: 'favicon', label: 'template.favicon', width: 32, height: 32, palette: 'sweetie16' },
   { id: 'sprite', label: 'template.sprite', width: 32, height: 32, palette: 'pico8', mirrorX: true },
   { id: 'tile', label: 'template.tile', width: 32, height: 32, palette: 'endesga32', tile: true },
+  { id: 'smallTile', label: 'template.smallTile', width: 16, height: 16, palette: 'pico8', tile: true },
   { id: 'portrait', label: 'template.portrait', width: 64, height: 64, palette: 'dawnbringer32' },
+  { id: 'emote', label: 'template.emote', width: 112, height: 112, palette: 'aap64' },
+  { id: 'card', label: 'template.card', width: 64, height: 96, palette: 'dawnbringer16' },
   { id: 'gameboy', label: 'template.gameboy', width: 160, height: 144, palette: 'gameboy' },
   { id: 'banner', label: 'template.banner', width: 128, height: 32, palette: 'resurrect64' },
   {
