@@ -11,6 +11,7 @@ const FRAME_MAGIC = 0xf1fa;
 
 const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
+const CEL_EXTRA_CHUNK = 0x2006;
 const OLD_PALETTE_CHUNK = 0x0004;
 const OLD_PALETTE_6BIT_CHUNK = 0x0011;
 const PALETTE_CHUNK = 0x2019;
@@ -489,6 +490,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
   let at = HEADER_SIZE;
   let hasNewPalette = false;
+  let hasReadCel = false;
 
   for (let f = 0; f < header.frames; f++) {
     assertRange(bytes, at, FRAME_HEADER_SIZE);
@@ -572,6 +574,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           warnings.add('Custom color profile settings were ignored.');
         }
       } else if (chunkType === CEL_CHUNK) {
+        hasReadCel = true;
         assertChunkRange(bytes, start, 16, end);
 
         const layer = view.getUint16(start, true);
@@ -622,6 +625,25 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           });
         } else {
           warnings.add('Unsupported cel types were skipped.');
+        }
+      } else if (chunkType === CEL_EXTRA_CHUNK) {
+        if (!hasReadCel) {
+          fail('Aseprite cel extra chunk has no preceding cel.');
+        }
+
+        assertChunkRange(bytes, start, 4, end);
+
+        const flags = view.getUint32(start, true);
+        const hasPreciseBounds = (flags & 1) !== 0;
+
+        assertChunkRange(bytes, start, hasPreciseBounds ? 36 : 20, end);
+
+        if (hasPreciseBounds) {
+          warnings.add('Precise cel bounds were not preserved.');
+        }
+
+        if (flags >>> 1 !== 0) {
+          warnings.add('Unsupported Cel Extra flags were ignored.');
         }
       }
 
