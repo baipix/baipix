@@ -281,6 +281,13 @@ function parseLayer(
   const blend = view.getUint16(start + 10, true);
   const opacity = view.getUint8(start + 12);
 
+  const groupDepth = Math.min(level, MAX_GROUP_DEPTH);
+  groupStack.length = groupDepth;
+
+  if (groupDepth > 0 && !groupStack[groupDepth - 1]) {
+    fail('Invalid Aseprite layer hierarchy.');
+  }
+
   const name = readString(bytes, view, start + 16, end);
 
   let next = name.next;
@@ -318,8 +325,6 @@ function parseLayer(
   };
 
   if (type === 1) {
-    groupStack.length = Math.min(level, MAX_GROUP_DEPTH);
-
     if (level < MAX_GROUP_DEPTH) {
       const group: LayerGroup = {
         id,
@@ -350,8 +355,6 @@ function parseLayer(
     warnings.add('Unsupported layer types were skipped.');
     return parsed;
   }
-
-  const groupDepth = Math.min(level, MAX_GROUP_DEPTH);
 
   if (level > MAX_GROUP_DEPTH) {
     warnings.add('Groups deeper than four levels were flattened into the deepest supported group.');
