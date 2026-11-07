@@ -106,33 +106,38 @@ const SHOTS = [
       const style = document.createElement('style');
       style.textContent = '.shot-canvas.shot-focus { outline: none !important; box-shadow: none !important; }';
       document.head.append(style);
-      // The onion button, lit, in a small card by the slime.
+      // The onion button, lit, and its options (frames before and after, opacity, loop), moved
+      // out of the timeline into a small card by the slime.
       const button = [...document.querySelectorAll('.timeline button')].find((b) => /onion/i.test(b.getAttribute('aria-label') ?? ''));
+      const options = document.querySelector('.timeline-onion');
       const chip = document.createElement('div');
       chip.className = 'shot-chip';
-      const lit = button.cloneNode(true);
-      Object.assign(lit.style, { width: '56px', height: '56px', borderRadius: '12px', background: '#6e56cf', color: '#fff', display: 'grid', placeItems: 'center' });
-      lit.querySelector('svg')?.setAttribute('width', '28');
-      lit.querySelector('svg')?.setAttribute('height', '28');
-      chip.append(lit);
+      Object.assign(button.style, { width: '44px', height: '44px', borderRadius: '10px', background: '#6e56cf', color: '#fff', display: 'grid', placeItems: 'center' });
+      Object.assign(options.style, { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '6px' });
+      Object.assign(button.style, { width: 'auto' });
+      chip.append(button, options);
       const c = canvas.getBoundingClientRect();
       const d = __ed.getState().doc;
       const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
       Object.assign(chip.style, {
-        position: 'fixed', zIndex: 9999, padding: '8px', borderRadius: '18px',
+        position: 'fixed', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '8px',
+        padding: '8px', borderRadius: '14px',
         background: dark ? '#2a2723' : '#fff',
-        left: x + d.width * z - 140 + 'px', top: y + (d.height * z) / 2 - 36 + 'px',
       });
-      document.body.append(chip);`,
+      document.body.append(chip);
+      // Just right of the slime and its frames (board pixels 21 to 43 across, 10 to 29 down).
+      const box = chip.getBoundingClientRect();
+      Object.assign(chip.style, { left: x + 46 * z + 'px', top: y + 19.5 * z - box.height / 2 + 'px' });
+`,
     focus: ['.shot-canvas', '.shot-chip'],
     // Inside the board only: no editor around it, no board name.
     pad: 0,
-    // The board, where the slime and its frames are.
+    // Close around the slime, its frames and the card, inside the board.
     area: `const c = document.querySelector('.shot-canvas').getBoundingClientRect();
       const vp = (await import('/src/ui/viewport.ts')).viewport;
-      const d = __ed.getState().doc;
       const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
-      return JSON.stringify({ x: x + 4, y: y + 4, right: x + d.width * z - 4, bottom: y + d.height * z - 4 });`,
+      const chip = document.querySelector('.shot-chip').getBoundingClientRect();
+      return JSON.stringify({ x: x + 16 * z, y: y + 6 * z, right: chip.right + 3 * z, bottom: y + 33 * z });`,
   },
   {
     name: 'export-frames',
