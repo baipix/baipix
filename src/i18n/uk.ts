@@ -306,6 +306,7 @@ export const uk: Record<MessageKey, string> = {
   'menu.theme': 'Тема',
   'menu.language': 'Мова',
   'menu.github': 'Вихідний код на GitHub',
+  'menu.bluesky': 'Baipix у Bluesky',
   'menu.reportBug': 'Повідомити про помилку…',
   'menu.suggestIdea': 'Запропонувати ідею…',
 

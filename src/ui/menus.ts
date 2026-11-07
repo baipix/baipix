@@ -12,7 +12,7 @@ import { viewport } from './viewport';
 import { ALIGNS } from './components/ToolOptionsBar';
 import { SELECTS } from './tools';
 
-import { CHANGELOG_URL, DOCS_URL, GITHUB_URL } from './links';
+import { BLUESKY_URL, CHANGELOG_URL, DOCS_URL, GITHUB_URL } from './links';
 
 /**
  * A new GitHub issue, filled in like the repository's templates (.github/ISSUE_TEMPLATE). A bug
@@ -491,6 +491,7 @@ export const MENU_BAR: MenuBarMenu[] = [
         onSelect: () => window.open(newIssueUrl('idea'), '_blank', 'noopener'),
       },
       { label: t('menu.github'), onSelect: () => window.open(GITHUB_URL, '_blank', 'noopener') },
+      { label: t('menu.bluesky'), onSelect: () => window.open(BLUESKY_URL, '_blank', 'noopener') },
       '-',
       {
         label: t('menu.version', { version: __APP_VERSION__ }),

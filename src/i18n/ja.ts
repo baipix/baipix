@@ -306,6 +306,7 @@ export const ja: Record<MessageKey, string> = {
   'menu.theme': 'テーマ',
   'menu.language': '言語',
   'menu.github': 'GitHubのソースコード',
+  'menu.bluesky': 'BlueskyのBaipix',
   'menu.reportBug': '不具合を報告…',
   'menu.suggestIdea': 'アイデアを提案…',
 

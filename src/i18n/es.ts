@@ -306,6 +306,7 @@ export const es: Record<MessageKey, string> = {
   'menu.theme': 'Tema',
   'menu.language': 'Idioma',
   'menu.github': 'Código fuente en GitHub',
+  'menu.bluesky': 'Baipix en Bluesky',
   'menu.reportBug': 'Informar de un error…',
   'menu.suggestIdea': 'Sugerir una idea…',
 
