@@ -1,6 +1,6 @@
 import { pack, withAlpha } from '../color';
 import { createDocument, newId, MAX_SIZE, type Layer, type LayerGroup, type PixelDoc } from '../document';
-import { clampDuration, MAX_FRAMES, type Frame } from '../frames';
+import { clampDuration, DEFAULT_DURATION, MAX_FRAMES, type Frame } from '../frames';
 import { MAX_GROUP_DEPTH } from '../groups';
 
 const HEADER_SIZE = 128;
@@ -60,6 +60,7 @@ interface RawCel {
   opacity: number;
   width?: number;
   height?: number;
+  raw?: Uint8Array;
   pixels?: Uint32Array;
   linkedFrame?: number;
 }
@@ -147,7 +148,13 @@ function parseHeader(bytes: Uint8Array): AsepriteHeader {
   };
 }
 
-function parsePaletteChunk(bytes: Uint8Array, view: DataView, start: number, end: number): number[] {
+function parsePaletteChunk(
+  bytes: Uint8Array,
+  view: DataView,
+  start: number,
+  end: number,
+  colors: number[],
+): void {
   assertRange(bytes, start, 20);
 
   const total = view.getUint32(start, true);
@@ -156,26 +163,26 @@ function parsePaletteChunk(bytes: Uint8Array, view: DataView, start: number, end
 
   if (total > 256 || first > last || last >= total) fail('Invalid Aseprite palette.');
 
-  const colors: number[] = new Array(total).fill(0);
   let at = start + 20;
 
   for (let i = first; i <= last; i++) {
     assertRange(bytes, at, 6);
+
     const flags = view.getUint16(at, true);
-    const color = pack(
+    colors[i] = pack(
       view.getUint8(at + 2),
       view.getUint8(at + 3),
       view.getUint8(at + 4),
       view.getUint8(at + 5),
     );
-    colors[i] = color;
+
     at += 6;
 
     if (flags & 1) at = readString(bytes, view, at).next;
     if (at > end) fail('Invalid Aseprite palette entry.');
   }
 
-  return colors;
+  colors.length = Math.max(colors.length, total);
 }
 
 function parseOldPalette(
@@ -361,7 +368,10 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   const groups: LayerGroup[] = [];
   const groupStack: string[] = [];
   const rawFrames: RawCel[][] = [];
-  let palette: number[] = [];
+  const palette: number[] = [];
+  const framePalettes: number[][] = [];
+  const frameDurations: number[] = [];
+
   let at = HEADER_SIZE;
 
   for (let f = 0; f < header.frames; f++) {
@@ -371,6 +381,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const magic = view.getUint16(at + 4, true);
     const oldChunks = view.getUint16(at + 6, true);
     const duration = view.getUint16(at + 8, true);
+    frameDurations.push(duration);
     const newChunks = view.getUint32(at + 12, true);
     const chunkCount = newChunks || oldChunks;
     const frameEnd = at + frameSize;
@@ -398,10 +409,14 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         const layer = parseLayer(data, view, start, end, header, groups, groupStack, warnings);
         parsedLayers.push(layer);
       } else if (chunkType === PALETTE_CHUNK) {
-        palette = parsePaletteChunk(data, view, start, end);
+        parsePaletteChunk(data, view, start, end, palette);
       } else if (chunkType === OLD_PALETTE_CHUNK || chunkType === OLD_PALETTE_6BIT_CHUNK) {
         if (!palette.length) {
-          palette = parseOldPalette(data, view, start, end, chunkType === OLD_PALETTE_6BIT_CHUNK);
+          const parsed = parseOldPalette(data, view, start, end, chunkType === OLD_PALETTE_6BIT_CHUNK);
+
+          for (let i = 0; i < parsed.length; i++) {
+            if (i in parsed) palette[i] = parsed[i];
+          }
         }
       } else if (chunkType === CEL_CHUNK) {
         assertRange(data, start, 16);
@@ -429,6 +444,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           const width = view.getUint16(start + 16, true);
           const height = view.getUint16(start + 18, true);
           const payload = data.subarray(start + 20, end);
+
           const raw = type === 2 ? await decompress(payload) : payload;
 
           frameCels.push({
@@ -439,7 +455,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
             opacity,
             width,
             height,
-            pixels: decodePixels(raw, width, height, header.depth, palette, header.transparentIndex),
+            raw,
           });
         } else {
           fail(`Unsupported Aseprite cel type: ${type}.`);
@@ -451,9 +467,10 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
     if (at !== frameEnd) fail('Aseprite frame size does not match its chunks.');
 
+    framePalettes.push([...palette]);
     rawFrames.push(frameCels);
 
-    if (duration < 10 || duration > 10_000) {
+    if (duration !== 0 && (duration < 10 || duration > 10_000)) {
       warnings.add('Frame durations outside 10–10,000 ms were adjusted.');
     }
   }
@@ -489,21 +506,59 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
   const framePixels: Array<Map<number, Uint32Array>> = rawFrames.map(() => new Map());
 
-  const resolveCel = (frameIndex: number, cel: RawCel, seen = new Set<string>()): Uint32Array => {
+  const resolveCel = (
+    frameIndex: number,
+    cel: RawCel,
+    seen = new Set<string>(),
+  ): { pixels: Uint32Array; width: number; height: number } => {
     const key = `${frameIndex}:${cel.layer}`;
+
     if (seen.has(key)) fail('Circular linked cels in Aseprite file.');
     seen.add(key);
 
-    if (cel.type !== 1) return cel.pixels!;
+    if (cel.type !== 1) {
+      if (!cel.pixels || !cel.width || !cel.height) {
+        fail('Invalid Aseprite cel data.');
+      }
+
+      return {
+        pixels: cel.pixels,
+        width: cel.width,
+        height: cel.height,
+      };
+    }
 
     const targetFrame = cel.linkedFrame!;
-    if (targetFrame >= rawFrames.length) fail('Linked cel references a missing frame.');
+
+    if (targetFrame >= rawFrames.length || targetFrame >= frameIndex) {
+      fail('Linked cel references an invalid frame.');
+    }
 
     const target = rawFrames[targetFrame].find((item) => item.layer === cel.layer);
-    if (!target) return new Uint32Array(header.width * header.height);
+
+    if (!target) fail('Linked cel references a missing cel.');
 
     return resolveCel(targetFrame, target, seen);
   };
+
+  for (let f = 0; f < rawFrames.length; f++) {
+    for (const cel of rawFrames[f]) {
+      if (cel.type === 1) continue;
+
+      if (cel.raw === undefined || cel.width === undefined || cel.height === undefined) {
+        fail('Invalid Aseprite cel data.');
+      }
+
+      cel.pixels = decodePixels(
+        cel.raw,
+        cel.width,
+        cel.height,
+        header.depth,
+        framePalettes[f],
+        header.transparentIndex,
+      );
+    }
+  }
 
   for (let f = 0; f < rawFrames.length; f++) {
     for (const cel of rawFrames[f]) {
@@ -516,15 +571,15 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
       const source = resolveCel(f, cel);
       const pixels = new Uint32Array(header.width * header.height);
 
-      const width = cel.width ?? header.width;
-      const height = cel.height ?? header.height;
+      const { width, height } = source;
 
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const dx = cel.x + x;
           const dy = cel.y + y;
+
           if (dx < 0 || dy < 0 || dx >= header.width || dy >= header.height) continue;
-          pixels[dy * header.width + dx] = source[y * width + x];
+          pixels[dy * header.width + dx] = source.pixels[y * width + x];
         }
       }
 
@@ -535,21 +590,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
   const frames: Frame[] = rawFrames.map((_, index) => ({
     id: newId('frame'),
-    duration: clampDuration(
-      view.getUint16(
-        HEADER_SIZE +
-          rawFrames.slice(0, index).reduce((sum, _, f) => {
-            const frameAt =
-              HEADER_SIZE +
-              rawFrames.slice(0, f).reduce((n, __, i) => n + view.getUint32(HEADER_SIZE + n, true), 0);
-            return sum + view.getUint32(frameAt, true);
-          }, 0) +
-          8,
-        true,
-      ) ||
-        header.speed ||
-        100,
-    ),
+    duration: clampDuration(frameDurations[index] || header.speed || DEFAULT_DURATION),
   }));
 
   const document = createDocument('Untitled', header.width, header.height);
