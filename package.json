@@ -1,7 +1,7 @@
 {
   "name": "baipix",
   "version": "0.8.0",
-  "description": "A pixel art editor for designers, with the interface of a modern design tool.",
+  "description": "A free pixel art editor in the browser, with animation, isometric drawing and clean SVG export, and the interface of a modern design tool.",
   "license": "MIT",
   "type": "module",
   "private": true,

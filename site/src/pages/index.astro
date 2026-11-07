@@ -10,7 +10,7 @@ import PixelIcon from '../components/PixelIcon.astro';
 import Screenshots from '../components/Screenshots.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
-import { APP_URL, BLUESKY_URL, REPO_URL, WIKIDATA_URL } from '../links';
+import { APP_URL, BLUESKY_URL, REPO_URL, WIKIDATA_URL, YOUTUBE_URL } from '../links';
 import slimeUrl from '../art/slime.baipix?url';
 import { slimeFrames } from '../slime';
 
@@ -109,13 +109,7 @@ const features = [
     operatingSystem: 'Any (web browser)',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     license: 'https://opensource.org/licenses/MIT',
-    sameAs: [
-      REPO_URL,
-      WIKIDATA_URL,
-      BLUESKY_URL,
-      'https://www.youtube.com/@baipixapp',
-      'https://todobai.itch.io/baipix',
-    ],
+    sameAs: [REPO_URL, WIKIDATA_URL, BLUESKY_URL, YOUTUBE_URL, 'https://todobai.itch.io/baipix'],
   }}
 >
   <Nav />
