@@ -1,7 +1,7 @@
 ---
 /** Site footer, shared by every page. */
 import { posts } from '../blog';
-import { APP_URL, DESIGN_URL, LICENSE_URL, REPO_URL } from '../links';
+import { APP_URL, BLUESKY_URL, DESIGN_URL, LICENSE_URL, REPO_URL } from '../links';
 import Logo from './Logo.astro';
 import PixelIcon from './PixelIcon.astro';
 
@@ -46,6 +46,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
     title: 'Project',
     links: [
       [REPO_URL, 'GitHub'],
+      [BLUESKY_URL, 'Bluesky'],
       [DESIGN_URL, 'Design system'],
       [`${DESIGN_URL}#logo`, 'Logo'],
       [LICENSE_URL, 'MIT License'],
