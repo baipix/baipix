@@ -49,7 +49,7 @@ interface ParsedLayer {
   visible: boolean;
   locked: boolean;
   opacity: number;
-  blendMode: (typeof BLEND_MODES)[number];
+  blendMode?: (typeof BLEND_MODES)[number];
   group?: string;
 }
 
@@ -300,9 +300,10 @@ function parseLayer(
   const actualOpacity =
     type === 1 && !(header.flags & 2) ? 255 : type !== 1 && !(header.flags & 1) ? 255 : opacity;
 
-  const blendMode = BLEND_MODES[blend] ?? 'normal';
+  const hasValidBlendMode = type !== 1 || !!(header.flags & 2);
+  const blendMode = hasValidBlendMode ? (BLEND_MODES[blend] ?? 'normal') : undefined;
 
-  if (blend > 11) {
+  if (hasValidBlendMode && blend > 11) {
     warnings.add('Unsupported blend modes were changed to Normal.');
   }
 
@@ -313,7 +314,7 @@ function parseLayer(
     visible: !!(flags & 1),
     locked: !(flags & 2),
     opacity: actualOpacity / 255,
-    blendMode,
+    ...(blendMode ? { blendMode } : {}),
   };
 
   if (type === 1) {
@@ -576,7 +577,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
       visible: parsed.visible,
       locked: parsed.locked,
       opacity: parsed.opacity,
-      blendMode: parsed.blendMode,
+      ...(parsed.blendMode ? { blendMode: parsed.blendMode } : {}),
       pixels: new Uint32Array(header.width * header.height),
       ...(parsed.group ? { group: parsed.group } : {}),
     };
