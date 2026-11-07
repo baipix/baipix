@@ -26,6 +26,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Frames + sprite sheet is listed wherever the exports are, on the site and in the docs. ([#759](https://github.com/baipix/baipix/pull/759))
 - One description of Baipix everywhere: the editor's share card, llms.txt, the README and the site say the same thing; YouTube joins the footer. ([#762](https://github.com/baipix/baipix/pull/762))
 - Every page title ends with · Baipix. ([#766](https://github.com/baipix/baipix/pull/766))
+- The slime's frames show one duration at a time, the frame playing, instead of durations running into each other. ([#769](https://github.com/baipix/baipix/pull/769))
 - A roadmap page, drawn as a pixel map: what's out, what's being worked on now with the slime jumping on it, and the road to 1.0, read from the milestones on GitHub. ([#754](https://github.com/baipix/baipix/pull/754))
 - The release notes mark each version Major or Minor, so the versions with new features stand out. ([#751](https://github.com/baipix/baipix/pull/751))
 - The home page describes Baipix as it is now, animation and isometric drawing included, for search engines and link previews, and points to Baipix on Wikidata. ([#750](https://github.com/baipix/baipix/pull/750))
