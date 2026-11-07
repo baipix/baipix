@@ -305,6 +305,7 @@ export const en = {
   'menu.theme': 'Theme',
   'menu.language': 'Language',
   'menu.github': 'Source code on GitHub',
+  'menu.bluesky': 'Baipix on Bluesky',
   'menu.reportBug': 'Report a bug…',
   'menu.suggestIdea': 'Suggest an idea…',
 
