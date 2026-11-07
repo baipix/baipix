@@ -65,7 +65,8 @@ export const DOCS: DocSection[] = [
   },
   {
     title: 'Animation',
-    intro: 'Frames in a timeline, the onion skin, playing them, and exporting a GIF.',
+    intro:
+      'Frames in a timeline, the onion skin, playing them, and exporting a GIF, a PNG sequence or a sprite sheet.',
     pages: [{ slug: 'animation/animation', title: 'Animation' }],
   },
   {
@@ -78,7 +79,8 @@ export const DOCS: DocSection[] = [
   },
   {
     title: 'Export',
-    intro: 'PNG, animated GIF, SVG, Aseprite and tilesets, every board at once, and the drawing as code.',
+    intro:
+      'PNG, animated GIF, PNG sequences, SVG, Aseprite, sprite sheets and tilesets, every board at once, and the drawing as code.',
     pages: [
       { slug: 'export/export', title: 'Export' },
       { slug: 'export/code', title: 'Code' },

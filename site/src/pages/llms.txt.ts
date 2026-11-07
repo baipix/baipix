@@ -24,7 +24,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - Isometric: a 2:1 isometric grid, and boxes, cylinders, pyramids, stairs and ramps drawn in one drag, already shaded, with bevels and a color per face.
 - Layers like a design tool: groups, blend modes, effects (outline, shadow, glow), components and instances, several boards (artboards) in one file.
 - Symmetry, rulers and guides, seamless tile preview, a reference image to trace over.
-- Export: PNG from 1× to 32×, animated GIF, PNG sequences, SVG (one path per color, layers kept), copy as SVG for Figma, Aseprite (.aseprite, every frame and its duration), tilesets for Godot and Tiled, every board at once, and code: a React component, CSS, JSON or ASCII.
+- Export: PNG from 1× to 32×, animated GIF, PNG sequences, sprite sheets of the frames or the layers with TexturePacker JSON, SVG (one path per color, layers kept), copy as SVG for Figma, Aseprite (.aseprite, every frame and its duration), tilesets for Godot and Tiled, every board at once, and code: a React component, CSS, JSON or ASCII.
 - Privacy: drawings never leave the browser. Page views are counted without cookies.
 
 ## Links
@@ -36,7 +36,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - [Pixel art to SVG](${url('pixel-art-to-svg/')}): how Baipix turns pixel art into clean vector, with a measured example.
 - [Pixel art for Figma](${url('pixel-art-for-figma/')}): drawing pixel art in Baipix and pasting it into Figma as vector.
 - [Isometric pixel art](${url('isometric-pixel-art/')}): the isometric grid and volume tools, how to start a scene, and tips.
-- [Pixel art animation](${url('pixel-art-animation/')}): the timeline, frame durations, onion skin, playback, and GIF, PNG sequence or Aseprite export.
+- [Pixel art animation](${url('pixel-art-animation/')}): the timeline, frame durations, onion skin, playback, and GIF, sprite sheet, PNG sequence or Aseprite export.
 ${posts.length ? `- [Blog](${url('blog/')}): news and tutorials, the newest first.\n` : ''}- [Source code on GitHub](${REPO_URL}): README, how to run it locally, how to contribute.
 - [Release notes](${url('changelog/')}): what each version of the editor brought, newest first.
 - [Roadmap](${url('roadmap/')}): what's being worked on now, what comes next, and the road to 1.0.

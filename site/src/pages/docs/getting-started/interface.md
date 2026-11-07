@@ -23,7 +23,7 @@ Across the top, from left to right:
 - **The command palette** (the magnifier, or <kbd>Ctrl</kbd>+<kbd>K</kbd>): type a few letters to find any command.
 - **The code button** (`</>`): the drawing as a React component, SVG, CSS, JSON or ASCII.
 - **Animate** (the film button): the timeline, to animate the board frame by frame. See [Animation](../../animation/animation/).
-- **Export**: PNG, animated GIF, a PNG sequence, SVG, Aseprite or a tileset.
+- **Export**: PNG, animated GIF, a PNG sequence, SVG, Aseprite, a sprite sheet or a tileset.
 
 On a Mac, <kbd>Ctrl</kbd> is <kbd>Cmd</kbd> everywhere in Baipix.
 
