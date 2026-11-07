@@ -1,0 +1,606 @@
+// The 0.8 blog post's pictures, from the docs' screenshot script: node scripts/blog-shots.mjs.
+// Starts the dev server, opens the editor in headless Chrome at 1440×900 (2×), in dark and light
+// (?screenshot=…, see src/ui/screenshotMode.ts), and writes site/public/docs/shots/<name>-<theme>.webp:
+// the whole editor with numbered badges on its parts, close-ups of each part, the files screen and the
+// New file dialog. Prints each picture's size in CSS pixels, for its width in the docs.
+// ONLY=name,name takes only those pictures again.
+// Needs Google Chrome (or CHROME=/path/to/chrome).
+import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const sharp = createRequire(`${root}site/package.json`)('sharp');
+const out = `${root}site/public/blog/0-8`;
+mkdirSync(out, { recursive: true });
+const PORT = 5197;
+const DEBUG = 9347;
+const WIDTH = 1440;
+const HEIGHT = 900;
+const CHROME =
+  process.env.CHROME ??
+  [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+  ].find(existsSync);
+if (!CHROME) {
+  console.error('Google Chrome not found: set CHROME to its path.');
+  process.exit(1);
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// The parts of the editor, numbered in the order the Interface page describes them.
+const PARTS = [
+  '.menubar-menus',
+  '.panel-left',
+  '.toolbar',
+  '.tool-options',
+  '.panel-right',
+  '.floating-preview',
+];
+
+/** The board on the screen, in CSS pixels: to frame the canvas around the drawing. */
+const BOARD = `const c = [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0].getBoundingClientRect();
+  const vp = (await import('/src/ui/viewport.ts')).viewport;
+  const d = __ed.getState().doc;
+  const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+  // Room above for the board's name, below for its size.
+  return JSON.stringify({ x, y: y - 22, right: x + d.width * z, bottom: y + d.height * z + 30 });`;
+/** The slime from the animation page, its timeline open on a frame mid-jump, the onion skin on. */
+const SLIME = `__ed.addDocuments(ff.fileFromJson(await (await fetch('/site/src/art/slime.baipix')).text()));
+  await wait(300);
+  ui.uiStore.set((s) => ({ timeline: true, onion: { ...s.onion, on: true, before: 2, after: 2 } }));
+  __ed.setFrame(5);
+  await wait(300);
+  (await import('/src/ui/viewport.ts')).viewport.fit(__ed.getState().doc);`;
+/** The top of the window, down to `bottom`: a screen whose content stops early. */
+const TOP = (bottom) => `return JSON.stringify({ x: 0, y: 0, right: ${WIDTH}, bottom: ${bottom} });`;
+
+/**
+ * Each picture: what to set up first (in the page), and the part to frame: selectors, or `area`, code
+ * that returns a box; the whole window without either. With `focus`, only those parts show, on a
+ * transparent page, and the picture is composed: the parts in the middle of a plain tinted card.
+ */
+const BG = `__ed.setBackground(0xff3b2a1d >>> 0, true);`;
+const load = (path) => `__ed.addDocuments(ff.fileFromJson(await (await fetch('${path}')).text()));
+  await wait(300);
+  (await import('/src/ui/viewport.ts')).viewport.fit(__ed.getState().doc);`;
+/** The timeline, made as wide as its frames; with the frame menu if it's open. */
+const TIMELINE = `const tl = document.querySelector('.timeline');
+  const last = [...document.querySelectorAll('.timeline-frame')].at(-1).getBoundingClientRect();
+  // The timeline as wide as its frames, so it keeps its own right edge.
+  tl.style.width = Math.ceil(last.right + 48 - tl.getBoundingClientRect().left) + 'px';
+  await new Promise((r) => setTimeout(r, 100));
+  const t = tl.getBoundingClientRect();
+  const m = document.querySelector('.menu')?.getBoundingClientRect();
+  return JSON.stringify({ x: t.left, y: Math.min(t.top, m?.top ?? t.top), right: Math.max(t.right, m?.right ?? 0), bottom: Math.max(t.bottom, m?.bottom ?? 0) });`;
+const SHOTS = [
+  // The timeline alone, the onion skin off: frames, rows, durations.
+  {
+    name: 'timeline',
+    setup: `${SLIME} ui.uiStore.set((s) => ({ onion: { ...s.onion, on: false } }));`,
+    focus: ['.timeline'],
+    area: TIMELINE,
+  },
+  // The onion skin as a close-up: the slime alone, its frames before in red and after in blue,
+  // straight on the card's color, and the onion button lit beside it.
+  {
+    name: 'onion',
+    setup: `${SLIME}
+      ui.uiStore.set((s) => ({ onion: { ...s.onion, on: true, before: 2, after: 2, opacity: 0.7 } }));
+      const dark = location.search.includes('dark');
+      __ed.getState().doc.layers.forEach((l, i) => (l.name === 'Sky' || l.name === 'Ground') && __ed.setLayerVisible(i, false));
+      // The board's background, the card's color: the slime sits on the card itself.
+      __ed.setBackground((dark ? 0xff181b1d : 0xffe9f0f3) >>> 0, true);
+      await wait(200);
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      vp.zoomTo(14);
+      vp.centerOn(32, 18);
+      await wait(200);
+      const canvas = [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0];
+      canvas.classList.add('shot-canvas');
+      const style = document.createElement('style');
+      style.textContent = '.shot-canvas.shot-focus { outline: none !important; box-shadow: none !important; }';
+      document.head.append(style);
+      // The onion button, lit, and its options (frames before and after, opacity, loop), moved
+      // out of the timeline into a small card by the slime.
+      const button = [...document.querySelectorAll('.timeline button')].find((b) => /onion/i.test(b.getAttribute('aria-label') ?? ''));
+      const options = document.querySelector('.timeline-onion');
+      const chip = document.createElement('div');
+      chip.className = 'shot-chip';
+      Object.assign(button.style, { width: '44px', height: '44px', borderRadius: '10px', background: '#6e56cf', color: '#fff', display: 'grid', placeItems: 'center' });
+      Object.assign(options.style, { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '6px' });
+      Object.assign(button.style, { width: 'auto' });
+      chip.append(button, options);
+      const c = canvas.getBoundingClientRect();
+      const d = __ed.getState().doc;
+      const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+      Object.assign(chip.style, {
+        position: 'fixed', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '8px',
+        padding: '8px', borderRadius: '14px',
+        background: dark ? '#2a2723' : '#fff',
+      });
+      document.body.append(chip);
+      // Just right of the slime and its frames (board pixels 21 to 43 across, 10 to 29 down).
+      const box = chip.getBoundingClientRect();
+      Object.assign(chip.style, { left: x + 46 * z + 'px', top: y + 19.5 * z - box.height / 2 + 'px' });
+`,
+    focus: ['.shot-canvas', '.shot-chip'],
+    // Inside the board only: no editor around it, no board name.
+    pad: 0,
+    // Close around the slime, its frames and the card, inside the board.
+    area: `const c = document.querySelector('.shot-canvas').getBoundingClientRect();
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      const x = c.x + vp.originX / vp.dpr, y = c.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+      const chip = document.querySelector('.shot-chip').getBoundingClientRect();
+      return JSON.stringify({ x: x + 16 * z, y: y + 6 * z, right: chip.right + 3 * z, bottom: y + 33 * z });`,
+  },
+  {
+    name: 'export-frames',
+    setup: `${SLIME} ui.uiStore.set({ exportFormat: 'frames', exportSheetColumns: 5 }); ui.openDialog({ type: 'export' });`,
+    focus: ['.dialog'],
+  },
+  {
+    name: 'frame-menu',
+    setup: `${SLIME}
+      ui.uiStore.set((s) => ({ onion: { ...s.onion, on: false } }));
+      await wait(200);
+      const frames = document.querySelectorAll('.timeline-frame');
+      frames[8].dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+      await wait(200);
+      const r = frames[7].getBoundingClientRect();
+      frames[7].dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 12, clientY: r.top + 12 }));
+      await wait(200);
+      // The menu over the timeline's lower right, overlapping it, so both read together; the
+      // timeline moved up first, so the menu has room under it.
+      const tl = document.querySelector('.timeline');
+      Object.assign(tl.style, { position: 'fixed', top: '120px', bottom: 'auto' });
+      const last = [...document.querySelectorAll('.timeline-frame')].at(-1).getBoundingClientRect();
+      tl.style.width = Math.ceil(last.right + 48 - tl.getBoundingClientRect().left) + 'px';
+      await wait(100);
+      const t = tl.getBoundingClientRect();
+      const menu = document.querySelector('.menu');
+      const m = menu.getBoundingClientRect();
+      Object.assign(menu.style, { position: 'fixed', left: t.right - m.width * 0.6 + 'px', top: t.top + t.height * 0.4 + 'px', bottom: 'auto', right: 'auto' });`,
+    focus: ['.timeline', '.menu'],
+    area: TIMELINE,
+  },
+  {
+    name: 'export-gif',
+    setup: `${SLIME} ui.uiStore.set({ exportFormat: 'gif' }); ui.openDialog({ type: 'export' });`,
+    focus: ['.dialog'],
+  },
+  // The whole editor: the slime mid-jump, the timeline and the onion skin.
+  { name: 'animation', setup: SLIME },
+  // The light: a plain ball on the card, its shadow following the light, beside the Light block,
+  // a pointer on the lamp to show it can be dragged.
+  {
+    name: 'light',
+    setup: `${load('/site/public/blog/0-8/ball.baipix')}
+      const dark = location.search.includes('dark');
+      __ed.setLight({ angle: 135, height: 40, direction: false });
+      // A soft shadow on the ground, not the darkest color: it follows the light.
+      __ed.addEffect('shadow', { followLight: true, color: (dark ? 0xff31363a : 0xffc2b09d) >>> 0 });
+      __ed.setBackground((dark ? 0xff181b1d : 0xffe9f0f3) >>> 0, true);
+      await wait(200);
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      vp.zoomTo(13);
+      vp.centerOn(12, 12);
+      [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0].classList.add('shot-canvas');
+      const light = document.querySelector('.light-stage').closest('section');
+      light.classList.add('shot-light');
+      light.scrollIntoView({ block: 'center' });
+      const bg = getComputedStyle(document.querySelector('.panel-right')).backgroundColor;
+      Object.assign(light.style, { background: bg, borderRadius: '14px', padding: '4px 14px 14px', position: 'relative' });
+      await wait(300);
+      // The lamp, where the stage draws it: toward the light, farther when the light is low.
+      const stage = light.querySelector('.light-stage');
+      const sr = stage.getBoundingClientRect(), lr = light.getBoundingClientRect();
+      const a = (135 * Math.PI) / 180, d = 54 + ((80 - 40) / 70) * 28;
+      const lx = sr.left - lr.left + sr.width / 2 + Math.cos(a) * d;
+      const ly = sr.top - lr.top + 92 - Math.sin(a) * d;
+      const pointer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      pointer.setAttribute('viewBox', '0 0 24 24');
+      pointer.innerHTML = '<path d="M4 2l15 11-6.5 1.2 3.8 7.3-2.6 1.3-3.7-7.4L5 20z" fill="#fff" stroke="#1a1c2c" stroke-width="1.6" stroke-linejoin="round"/>';
+      Object.assign(pointer.style, { position: 'absolute', width: '30px', height: '30px', left: lx + 3 + 'px', top: ly + 3 + 'px', zIndex: 10 });
+      light.append(pointer);`,
+    row: ['board', '.shot-light'],
+  },
+  // Remap on an animated board with a background: its All frames and Also remap the background boxes.
+  // Remap, animated: the layers on the left, the ramen bowl in the middle, the Remap panel on the
+  // right, its palette changing from one picture to the next.
+  {
+    name: 'remap',
+    setup: `${load('/site/public/blog/0-8/ramen-bowl.baipix')}
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      vp.zoomTo(12);
+      vp.centerOn(16, 16);
+      ui.openAdjust('all', 'remap');`,
+    palettes: ['file', 'pico8', 'slso8', 'icecreamgb', 'endesga32'],
+  },
+  // The languages: the logo, and the editor's welcome line in each of them.
+  { name: 'languages', page: 'scripts/blog-cards/languages.html' },
+];
+const only = process.env.ONLY?.split(',');
+const shots = only ? SHOTS.filter((s) => only.includes(s.name)) : SHOTS;
+
+const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe' });
+const chrome = spawn(
+  CHROME,
+  [
+    '--headless=new',
+    `--remote-debugging-port=${DEBUG}`,
+    `--user-data-dir=${mkdtempSync(join(tmpdir(), 'baipix-docs-'))}`,
+    '--hide-scrollbars',
+    // In English, whatever the computer's language: Baipix opens in the browser's.
+    '--lang=en-US',
+    '--accept-lang=en-US',
+    'about:blank',
+  ],
+  { stdio: 'ignore' },
+);
+const stop = () => {
+  chrome.kill();
+  server.kill();
+};
+process.on('exit', stop);
+
+for (let i = 0; ; i++) {
+  try {
+    await fetch(`http://localhost:${PORT}/`);
+    break;
+  } catch {
+    if (i > 100) throw new Error('The dev server did not start.');
+    await sleep(200);
+  }
+}
+let pages;
+for (let i = 0; ; i++) {
+  try {
+    pages = await (await fetch(`http://127.0.0.1:${DEBUG}/json/list`)).json();
+    if (pages.length) break;
+  } catch {
+    /* not up yet */
+  }
+  if (i > 100) throw new Error('Chrome did not start.');
+  await sleep(100);
+}
+const ws = new WebSocket(pages.find((p) => p.type === 'page').webSocketDebuggerUrl);
+await new Promise((r) => (ws.onopen = r));
+let id = 0;
+const pending = new Map();
+ws.onmessage = (m) => {
+  const msg = JSON.parse(m.data);
+  pending.get(msg.id)?.(msg);
+};
+const send = (method, params = {}) =>
+  new Promise((resolve, reject) => {
+    const n = ++id;
+    pending.set(n, (msg) => (msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result)));
+    ws.send(JSON.stringify({ id: n, method, params }));
+  });
+const run = async (code) => {
+  const r = await send('Runtime.evaluate', {
+    expression: `(async () => { ${code} })()`,
+    awaitPromise: true,
+    returnByValue: true,
+  });
+  if (r.exceptionDetails)
+    throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text);
+  return r.result.value;
+};
+
+await send('Emulation.setDeviceMetricsOverride', {
+  width: WIDTH,
+  height: HEIGHT,
+  deviceScaleFactor: 2,
+  mobile: false,
+});
+/** The composed pictures: 1100 × 688, at 2×, a plain warm card, like the posts on Bluesky. */
+const OUTLINE = { light: '#aaa49a', dark: '#5f5a53' };
+const SHADOW = { light: 'rgba(70, 60, 45, 0.12)', dark: 'rgba(0, 0, 0, 0.45)' };
+const CARD = { width: 2200, height: 1376, light: '#f3f0e9', dark: '#1d1b18' };
+/** A part of the editor, cut out on a transparent page, in the middle of the card, as big as it fits. */
+async function compose(png, theme, file) {
+  const part = sharp(png);
+  const { width, height } = await part.metadata();
+  // As big as the card allows: the parts are the picture.
+  const scale = Math.min((CARD.width * 0.9) / width, (CARD.height * 0.86) / height);
+  const w = Math.round(width * scale);
+  const h = Math.round(height * scale);
+  const resized = await part.resize(w, h).png().toBuffer();
+  await sharp({ create: { width: CARD.width, height: CARD.height, channels: 4, background: CARD[theme] } })
+    .composite([
+      { input: resized, left: Math.round((CARD.width - w) / 2), top: Math.round((CARD.height - h) / 2) },
+    ])
+    .webp({ quality: 90 })
+    .toFile(file);
+}
+
+/** Shows only `selectors`, on a transparent page, and returns a PNG of the window. */
+async function capturePartsOnly(selectors, theme) {
+  await run(`
+    document.getElementById('shot-only')?.remove();
+    document.querySelectorAll('.shot-focus').forEach((el) => el.classList.remove('shot-focus'));
+    const style = document.createElement('style');
+    style.id = 'shot-only';
+    style.textContent = 'html, body { background: transparent !important; } ::backdrop { background: transparent !important; } body * { visibility: hidden !important; } .shot-focus, .shot-focus * { visibility: visible !important; }'
+      + '.shot-focus:not(.shot-canvas) { outline: 1.5px solid ${OUTLINE[theme]} !important; outline-offset: 0 !important; box-shadow: 8px 8px 0 ${SHADOW[theme]} !important; }';
+    document.head.append(style);
+    ${JSON.stringify(selectors)}.forEach((sel) => document.querySelectorAll(sel).forEach((el) => el.classList.add('shot-focus')));`);
+  await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
+  await sleep(250);
+  const { data } = await send('Page.captureScreenshot', { format: 'png' });
+  await send('Emulation.setDefaultBackgroundColorOverride', {});
+  return Buffer.from(data, 'base64');
+}
+
+/** A part of a PNG of the window, from a box in CSS pixels, at the capture's scale. */
+async function cut(png, box, pad = 0, dpr = 4) {
+  const x = Math.max(0, Math.round((box.x - pad) * dpr));
+  const y = Math.max(0, Math.round((box.y - pad) * dpr));
+  const meta = await sharp(png).metadata();
+  const width = Math.min(meta.width - x, Math.round((box.right - box.x + 2 * pad) * dpr));
+  const height = Math.min(meta.height - y, Math.round((box.bottom - box.y + 2 * pad) * dpr));
+  return sharp(png).extract({ left: x, top: y, width, height }).png().toBuffer();
+}
+
+/**
+ * Remap, animated: for each palette, the layers panel, the drawing and the Remap panel, cut out
+ * and set side by side on the card; the pictures become one looping WebP.
+ */
+async function remapAnimation(shot, theme) {
+  const frames = [];
+  for (const key of shot.palettes) {
+    // The palette picked in the panel, as a click would: its preview recolors the drawing.
+    await run(`
+      const select = document.querySelector('.adjust-panel select');
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(select, '${key}');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 400));`);
+    const boxes = JSON.parse(
+      await run(`
+        const r = (el) => { const b = el.getBoundingClientRect(); return { x: b.left, y: b.top, right: b.right, bottom: b.bottom }; };
+        const c = [...document.querySelectorAll('canvas')].sort((a, b) => b.width - a.width)[0];
+        c.classList.add('shot-canvas');
+        const vp = (await import('/src/ui/viewport.ts')).viewport;
+        const d = __ed.getState().doc;
+        const cb = c.getBoundingClientRect();
+        const x = cb.x + vp.originX / vp.dpr, y = cb.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+        return JSON.stringify({
+          layers: r(document.querySelector('.panel-left')),
+          panel: r(document.querySelector('.adjust-panel')),
+          board: { x, y, right: x + d.width * z, bottom: y + d.height * z },
+        });`),
+    );
+    const panels = await capturePartsOnly(['.panel-left', '.adjust-panel'], theme);
+    const canvas = await capturePartsOnly(['.shot-canvas'], theme);
+    const layers = await cut(panels, boxes.layers, 24);
+    const panel = await cut(panels, boxes.panel, 24);
+    const board = await cut(canvas, boxes.board);
+    frames.push(await composeRow([layers, await framed(board, theme), panel], theme));
+  }
+  const file = `${out}/${shot.name}-${theme}.webp`;
+  await sharp(frames, { join: { animated: true } })
+    .webp({ quality: 90, loop: 0, delay: frames.map(() => 1400) })
+    .toFile(file);
+  console.log(`Wrote ${file} (animated, ${frames.length} pictures)`);
+}
+
+/** Parts side by side on the card: 'board' is the drawing itself, on the card's color, the others selectors. */
+async function rowShot(shot, theme) {
+  const boxes = JSON.parse(
+    await run(`
+      const r = (el) => { const b = el.getBoundingClientRect(); return { x: b.left, y: b.top, right: b.right, bottom: b.bottom }; };
+      const c = document.querySelector('.shot-canvas');
+      const vp = (await import('/src/ui/viewport.ts')).viewport;
+      const d = __ed.getState().doc;
+      const cb = c.getBoundingClientRect();
+      const x = cb.x + vp.originX / vp.dpr, y = cb.y + vp.originY / vp.dpr, z = vp.scale / vp.dpr;
+      return JSON.stringify(${JSON.stringify(shot.row)}.map((p) => p === 'board' ? { x, y, right: x + d.width * z, bottom: y + d.height * z } : r(document.querySelector(p))));`),
+  );
+  const selectors = shot.row.filter((p) => p !== 'board');
+  const panels = await capturePartsOnly(selectors, theme);
+  const canvas = await capturePartsOnly(['.shot-canvas'], theme);
+  const parts = await Promise.all(
+    shot.row.map((p, i) => (p === 'board' ? cut(canvas, boxes[i]) : cut(panels, boxes[i], 24))),
+  );
+  const file = `${out}/${shot.name}-${theme}.webp`;
+  await sharp(await composeRow(parts, theme, shot.row.indexOf('board')))
+    .webp({ quality: 90 })
+    .toFile(file);
+  console.log(`Wrote ${file} (row)`);
+}
+
+/** The drawing on a white card, with the same outline and hard shadow as the panels. */
+async function framed(board, theme) {
+  const { width, height } = await sharp(board).metadata();
+  const pad = 96;
+  const w = width + 2 * pad;
+  const h = height + 2 * pad;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w + 40}" height="${h + 40}">
+    <rect x="38" y="38" width="${w - 6}" height="${h - 6}" rx="48" fill="${SHADOW[theme]}"/>
+    <rect x="3" y="3" width="${w - 6}" height="${h - 6}" rx="48" fill="#ffffff" stroke="${OUTLINE[theme]}" stroke-width="6"/>
+  </svg>`;
+  return sharp(Buffer.from(svg))
+    .composite([{ input: board, left: pad, top: pad }])
+    .png()
+    .toBuffer();
+}
+
+/** Parts side by side, centered on the card, as big as they fit together. */
+async function composeRow(parts, theme, pixelPart = 1) {
+  const sizes = await Promise.all(parts.map((p) => sharp(p).metadata()));
+  const gap = 140;
+  const total = sizes.reduce((n, m) => n + m.width, 0) + gap * (parts.length - 1);
+  const tallest = Math.max(...sizes.map((m) => m.height));
+  const scale = Math.min((CARD.width * 0.92) / total, (CARD.height * 0.86) / tallest);
+  const resized = await Promise.all(
+    parts.map((p, i) =>
+      sharp(p)
+        .resize(Math.round(sizes[i].width * scale), Math.round(sizes[i].height * scale), {
+          kernel: i === 1 ? 'nearest' : 'lanczos3',
+        })
+        .png()
+        .toBuffer(),
+    ),
+  );
+  let left = Math.round((CARD.width - total * scale) / 2);
+  const layers = resized.map((input, i) => {
+    const w = Math.round(sizes[i].width * scale);
+    const h = Math.round(sizes[i].height * scale);
+    const entry = { input, left, top: Math.round((CARD.height - h) / 2) };
+    left += w + Math.round(gap * scale);
+    return entry;
+  });
+  return sharp({ create: { width: CARD.width, height: CARD.height, channels: 4, background: CARD[theme] } })
+    .composite(layers)
+    .png()
+    .toBuffer();
+}
+
+for (const theme of ['dark', 'light']) {
+  for (const shot of shots) {
+    // A fresh editor for each picture, as the screenshot mode opens it.
+    // A card made in HTML, not the editor: rendered at its own size.
+    if (shot.page) {
+      await send('Emulation.setDeviceMetricsOverride', {
+        width: 1100,
+        height: 688,
+        deviceScaleFactor: 2,
+        mobile: false,
+      });
+      await send('Page.navigate', { url: `file://${root}${shot.page}?${theme}` });
+      // Time for the fonts to come.
+      await sleep(2500);
+      const { data } = await send('Page.captureScreenshot', { format: 'png' });
+      const file = `${out}/${shot.name}-${theme}.webp`;
+      await sharp(Buffer.from(data, 'base64')).webp({ quality: 92 }).toFile(file);
+      console.log(`Wrote ${file} (page)`);
+      continue;
+    }
+    // Close-ups are drawn at 4×, so they stay sharp once enlarged on the card.
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: WIDTH,
+      height: HEIGHT,
+      deviceScaleFactor: shot.focus || shot.palettes || shot.row ? 4 : 2,
+      mobile: false,
+    });
+    await send('Page.navigate', { url: `http://localhost:${PORT}/?screenshot=${theme}` });
+    await sleep(4000);
+    await run(`
+      const root = document.getElementById('root');
+      const key = Object.keys(root).find((k) => k.startsWith('__reactContainer'));
+      const stack = [root[key]];
+      while (stack.length) {
+        const f = stack.pop();
+        if (!f) continue;
+        const v = f.memoizedProps?.editor;
+        if (v && typeof v.getState === 'function') { window.__ed = v; break; }
+        if (f.child) stack.push(f.child);
+        if (f.sibling) stack.push(f.sibling);
+      }
+      window.ui = await import('/src/ui/uiStore.ts');
+      window.wait = (t) => new Promise((r) => setTimeout(r, t));
+      window.ff = await import('/src/storage/fileFormat.ts');`);
+    if (shot.setup) await run(`${shot.setup} await new Promise((r) => setTimeout(r, 600));`);
+    // Numbered badges on the parts, in the accent, at their top left corner.
+    if (shot.badges)
+      await run(`
+        ${JSON.stringify(PARTS)}.forEach((sel, i) => {
+          const r = document.querySelector(sel).getBoundingClientRect();
+          const b = document.createElement('div');
+          b.textContent = i + 1;
+          Object.assign(b.style, {
+            position: 'fixed', zIndex: 9999, left: Math.max(4, r.left - 10) + 'px', top: Math.max(4, r.top - 10) + 'px',
+            width: '24px', height: '24px', borderRadius: '50%', display: 'grid', placeItems: 'center',
+            background: 'var(--glow)', color: '#fff', font: '600 13px/1 Inter, system-ui, sans-serif',
+            boxShadow: '0 0 0 2px var(--canvas), 0 2px 6px rgba(0,0,0,0.3)',
+          });
+          document.body.appendChild(b);
+        });`);
+    // The mouse out of the way, so nothing shows its hover state.
+    await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: WIDTH - 2, y: HEIGHT - 2 });
+    await sleep(400);
+    if (shot.row) {
+      await rowShot(shot, theme);
+      continue;
+    }
+    if (shot.palettes) {
+      await remapAnimation(shot, theme);
+      continue;
+    }
+    if (shot.focus) {
+      // Only the parts show: everything else hidden, the page transparent behind them.
+      await run(`
+        const style = document.createElement('style');
+        style.textContent = 'html, body { background: transparent !important; } ::backdrop { background: transparent !important; } body * { visibility: hidden !important; } .shot-focus, .shot-focus * { visibility: visible !important; }'
+          // Drawn like the site's pixel buttons: a firm outline and a hard shadow, not a soft one.
+          + '.shot-focus { outline: 1.5px solid ${OUTLINE[theme]} !important; outline-offset: 0 !important; box-shadow: 8px 8px 0 ${SHADOW[theme]} !important; }';
+        document.head.append(style);
+        ${JSON.stringify(shot.focus)}.forEach((sel) => document.querySelectorAll(sel).forEach((el) => el.classList.add('shot-focus')));`);
+      await send('Emulation.setDefaultBackgroundColorOverride', { color: { r: 0, g: 0, b: 0, a: 0 } });
+      await sleep(200);
+      const box = JSON.parse(
+        await run(
+          shot.area ??
+            `const rects = ${JSON.stringify(shot.focus)}.map((s) => document.querySelector(s).getBoundingClientRect());
+          return JSON.stringify({ x: Math.min(...rects.map((r) => r.left)), y: Math.min(...rects.map((r) => r.top)),
+            right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) });`,
+        ),
+      );
+      // Room around the parts for their outline and hard shadow.
+      const pad = shot.pad ?? 24;
+      const x = Math.max(0, Math.floor(box.x - pad));
+      const y = Math.max(0, Math.floor(box.y - pad));
+      const part = await send('Page.captureScreenshot', {
+        format: 'png',
+        clip: {
+          x,
+          y,
+          width: Math.min(WIDTH, Math.ceil(box.right + pad)) - x,
+          height: Math.min(HEIGHT, Math.ceil(box.bottom + pad)) - y,
+          scale: 1,
+        },
+      });
+      await send('Emulation.setDefaultBackgroundColorOverride', {});
+      const file = `${out}/${shot.name}-${theme}.webp`;
+      await compose(Buffer.from(part.data, 'base64'), theme, file);
+      console.log(`Wrote ${file} (composed)`);
+      continue;
+    }
+    let clip = { x: 0, y: 0, width: WIDTH, height: HEIGHT, scale: 1 };
+    if (shot.frame || shot.area) {
+      const box = JSON.parse(
+        await run(
+          shot.area ??
+            `const rects = ${JSON.stringify(shot.frame)}.map((s) => document.querySelector(s).getBoundingClientRect());
+          return JSON.stringify({ x: Math.min(...rects.map((r) => r.left)), y: Math.min(...rects.map((r) => r.top)),
+            right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) });`,
+        ),
+      );
+      // Every picture the same shape, 16:10, centered on the part with the editor around it.
+      const w = shot.width ?? 1100;
+      const h = Math.round((w * 10) / 16);
+      const cx = (box.x + box.right) / 2;
+      const cy = (box.y + box.bottom) / 2;
+      clip = {
+        x: Math.round(Math.min(WIDTH - w, Math.max(0, cx - w / 2))),
+        y: Math.round(Math.min(HEIGHT - h, Math.max(0, cy - h / 2))),
+        width: w,
+        height: h,
+        scale: 1,
+      };
+    }
+    const { data } = await send('Page.captureScreenshot', { format: 'png', clip });
+    const file = `${out}/${shot.name}-${theme}.webp`;
+    await sharp(Buffer.from(data, 'base64')).webp({ quality: 88 }).toFile(file);
+    console.log(`Wrote ${file} (${clip.width} × ${clip.height})`);
+  }
+}
+ws.close();
+stop();

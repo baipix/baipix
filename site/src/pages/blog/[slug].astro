@@ -96,31 +96,47 @@ const SHARE = [
         ) : (
           <div class="post-cover" set:html={post.coverSvg} />
         )}
-        <div class="post-body">
-          <Content />
-        </div>
-        <aside class="post-share" aria-labelledby="share">
-          <h2 id="share">Share this post</h2>
-          <div class="post-share-links">
-            {SHARE.map((s) => (
-              <a
-                class="btn btn-small btn-icon"
-                href={s.href}
-                target="_blank"
-                rel="noopener"
-                aria-label={`Share on ${s.name}`}
-                title={`Share on ${s.name}`}
-              >
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                  <path fill="currentColor" d={s.path} />
-                </svg>
-              </a>
-            ))}
-            <button type="button" class="btn btn-small post-copy" data-link={link}>
-              Copy link
-            </button>
+        <div class="post-layout">
+          <div class="post-main">
+            <div class="post-body">
+              <Content />
+            </div>
+            <aside class="post-share" aria-labelledby="share">
+              <h2 id="share">Share this post</h2>
+              <div class="post-share-links">
+                {SHARE.map((s) => (
+                  <a
+                    class="btn btn-small btn-icon"
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label={`Share on ${s.name}`}
+                    title={`Share on ${s.name}`}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                      <path fill="currentColor" d={s.path} />
+                    </svg>
+                  </a>
+                ))}
+                <button type="button" class="btn btn-small post-copy" data-link={link}>
+                  Copy link
+                </button>
+              </div>
+            </aside>
           </div>
-        </aside>
+          {post.headings.length > 1 && (
+            <nav class="post-toc" aria-labelledby="toc">
+              <p id="toc">On this page</p>
+              <ul>
+                {post.headings.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+        </div>
       </div>
     </article>
 
@@ -149,6 +165,41 @@ const SHARE = [
       button.textContent = 'Copied';
       setTimeout(() => (button.textContent = 'Copy link'), 1500);
     });
+
+  // The table of contents marks the section being read: the last one whose title has gone past
+  // the top third of the window.
+  const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('.post-toc a')];
+  const sections = tocLinks
+    .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+    .filter((h): h is HTMLElement => !!h);
+  const markRead = () => {
+    const line = innerHeight / 3;
+    let current = 0;
+    sections.forEach((h, i) => {
+      if (h.getBoundingClientRect().top <= line) current = i;
+    });
+    tocLinks.forEach((a, i) => a.toggleAttribute('aria-current', i === current));
+  };
+  if (sections.length) {
+    addEventListener('scroll', markRead, { passive: true });
+    addEventListener('resize', markRead);
+    markRead();
+  }
+
+  // A picture opens bigger on a click, over the page; a click anywhere or Escape closes it.
+  const box = document.createElement('dialog');
+  box.className = 'post-zoom';
+  box.addEventListener('click', () => box.close());
+  document.body.append(box);
+  for (const img of document.querySelectorAll<HTMLImageElement>('.post-body figure img')) {
+    img.addEventListener('click', () => {
+      const big = img.cloneNode() as HTMLImageElement;
+      big.removeAttribute('class');
+      big.loading = 'eager';
+      box.replaceChildren(big);
+      box.showModal();
+    });
+  }
 </script>
 
 <style>
@@ -236,14 +287,71 @@ const SHARE = [
     height: auto;
   }
 
+  /* ---- The text on the left, on the cover's edge; its contents on the right, following the scroll ---- */
+  .post-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 760px) 220px;
+    justify-content: space-between;
+    gap: 48px;
+  }
+  .post-toc {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+    margin-top: 64px;
+    font-size: 14px;
+  }
+  .post-toc p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font:
+      400 12px/1 'Silkscreen',
+      var(--mono);
+    text-transform: uppercase;
+  }
+  .post-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-left: 1px solid var(--line);
+  }
+  .post-toc a {
+    display: block;
+    margin-left: -1px;
+    padding: 6px 0 6px 14px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+  .post-toc a:hover {
+    color: var(--text);
+  }
+  .post-toc a[aria-current] {
+    border-left-color: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+  }
+  @media (max-width: 1060px) {
+    .post-layout {
+      display: block;
+    }
+    .post-main {
+      max-width: 760px;
+      margin-inline: auto;
+    }
+    .post-toc {
+      display: none;
+    }
+  }
+
   /* ---- The post's text, written in Markdown ---- */
   .post-body {
-    max-width: 680px;
-    margin: 56px auto 0;
-    font-size: 17px;
+    margin: 56px 0 0;
+    font-size: 19px;
   }
   .post-body :global(h2) {
     margin: 48px 0 14px;
+    scroll-margin-top: 40px;
     font-size: 28px;
     letter-spacing: -0.025em;
     line-height: 1.2;
@@ -295,6 +403,15 @@ const SHARE = [
     border-left: 2px solid var(--accent);
     background: var(--surface);
   }
+  .post-body :global(.post-end) {
+    margin: 56px 0 0;
+    padding: 4px 32px 14px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .post-body :global(.post-end h2) {
+    margin-top: 28px;
+  }
   .post-body :global(blockquote p) {
     margin: 0;
   }
@@ -315,17 +432,103 @@ const SHARE = [
   .post-body :global(figcaption) {
     margin-top: 10px;
     color: var(--muted);
+    opacity: 0.7;
     font-size: 14px;
+  }
+  .post-body :global(figure img) {
+    cursor: zoom-in;
+  }
+  /* The screenshots follow the site's theme: the OS setting, or the visitor's pick. */
+  .post-body :global(.for-dark) {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .post-body :global(.for-light) {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .post-body :global(.for-dark) {
+      display: block;
+    }
+  }
+  :global(:root[data-theme='dark']) .post-body :global(.for-light) {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) .post-body :global(.for-dark) {
+    display: block;
+  }
+  /* A picture opened bigger: as large as the window allows, on a dimmed page. */
+  :global(.post-zoom) {
+    max-width: none;
+    max-height: none;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 16px;
+    border: 0;
+    background: transparent;
+    display: none;
+    place-items: center;
+    box-sizing: border-box;
+    cursor: zoom-out;
+  }
+  :global(.post-zoom[open]) {
+    display: grid;
+  }
+  :global(.post-zoom::backdrop) {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  :global(.post-zoom img) {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    image-rendering: auto;
   }
   .post-body :global(img) {
     display: block;
     max-width: 100%;
+    height: auto;
     margin: 8px 0 28px;
+  }
+  /* A screenshot: framed by a line, its caption close under it. */
+  .post-body :global(figure:not(.pixel-figure)) {
+    margin: 8px 0 28px;
+  }
+  .post-body :global(figure:not(.pixel-figure) img) {
+    width: 100%;
+    margin: 0;
+    border: 1px solid var(--line);
+  }
+  /* The pictures that matter most leave the text's column, as wide as the screen allows. */
+  .post-body :global(figure.wide) {
+    width: min(1040px, calc(100vw - 32px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  .post-body :global(figure.wide figcaption) {
+    max-width: 760px;
+    margin-inline: auto;
+  }
+  .post-body :global(table) {
+    width: 100%;
+    margin: 8px 0 28px;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .post-body :global(th),
+  .post-body :global(td) {
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  .post-body :global(th) {
+    color: var(--muted);
+    font-weight: 600;
   }
 
   .post-share {
-    max-width: 680px;
-    margin: 48px auto 0;
+    margin: 48px 0 0;
     padding-top: 28px;
     border-top: 1px solid var(--line);
   }
