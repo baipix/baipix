@@ -13,6 +13,7 @@ import type { Editor } from '../engine/editor';
 import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
+import { fromAseprite } from '../engine/import/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { frameSpriteSheet } from '../engine/export/frames';
@@ -246,6 +247,39 @@ export function createActions(editor: Editor) {
     const flatSvg = toSvg(pixels, d.width, d.height, geometry, background);
     const svg = onlyActiveLayer ? flatSvg : toLayeredSvg(d, geometry, background);
     return codeOf(language, { name: d.name, width: d.width, height: d.height, pixels, svg, flatSvg });
+  }
+
+  function isAsepriteFile(file: File): boolean {
+    return /\.(?:ase|aseprite)$/i.test(file.name);
+  }
+
+  async function openAsepriteFile(file: File): Promise<boolean> {
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const result = await fromAseprite(bytes);
+
+      const name = file.name.replace(/\.(?:ase|aseprite)$/i, '').trim() || 'Untitled';
+
+      result.document.name = name;
+
+      editor.addDocument(result.document);
+
+      if (result.warnings.length) {
+        toast(
+          t('toast.asepriteOpenedWithWarnings', {
+            name: file.name,
+            warnings: result.warnings.join(' '),
+          }),
+        );
+      } else {
+        toast(t('toast.opened', { name: file.name }));
+      }
+
+      return true;
+    } catch (error) {
+      toast(error instanceof Error ? error.message : t('toast.unreadableAseprite'));
+      return false;
+    }
   }
 
   /** Replaces the palette with a .hex, .gpl or .txt file (picked, or dropped on the canvas). */
@@ -636,8 +670,14 @@ export function createActions(editor: Editor) {
     },
 
     async openDocument() {
-      const file = await pickFile(`${FILE_EXTENSION},application/json`);
+      const file = await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite`);
       if (!file) return;
+
+      if (isAsepriteFile(file)) {
+        await openAsepriteFile(file);
+        return;
+      }
+
       try {
         editor.addDocuments(fileFromJson(await file.text()));
         toast(t('toast.opened', { name: file.name }));
@@ -648,8 +688,14 @@ export function createActions(editor: Editor) {
 
     /** Same size as the canvas: added as a layer (unless `asNewFile`). Otherwise: a new file. */
     async importImage(file?: File | null, asNewFile = false) {
-      const f = file ?? (await pickFile('image/*'));
+      const f = file ?? (await pickFile('image/*,.ase,.aseprite'));
       if (!f) return;
+
+      if (isAsepriteFile(f)) {
+        await openAsepriteFile(f);
+        return;
+      }
+
       if (/\.(hex|gpl)$/i.test(f.name)) {
         await importPalette(f);
         return;
@@ -887,8 +933,13 @@ export function createActions(editor: Editor) {
      * Resolves true when a file was added.
      */
     async openFile(file?: File | null): Promise<boolean> {
-      const f = file ?? (await pickFile(`${FILE_EXTENSION},application/json,image/*`));
+      const f = file ?? (await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite,image/*`));
       if (!f) return false;
+
+      if (isAsepriteFile(f)) {
+        return openAsepriteFile(f);
+      }
+
       const before = editor.getState().files.length;
       if (f.name.endsWith(FILE_EXTENSION) || f.type === 'application/json') {
         try {
