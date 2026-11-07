@@ -13,6 +13,9 @@ const FRAME_MAGIC = 0xf1fa;
 const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
 const CEL_EXTRA_CHUNK = 0x2006;
+const TAGS_CHUNK = 0x2018;
+const USER_DATA_CHUNK = 0x2020;
+const SLICE_CHUNK = 0x2022;
 const OLD_PALETTE_CHUNK = 0x0004;
 const OLD_PALETTE_6BIT_CHUNK = 0x0011;
 const PALETTE_CHUNK = 0x2019;
@@ -44,6 +47,8 @@ interface AsepriteHeader {
   flags: number;
   speed: number;
   transparentIndex: number;
+  pixelWidth: number;
+  pixelHeight: number;
 }
 
 interface ParsedLayer {
@@ -176,6 +181,127 @@ function readString(
   };
 }
 
+function parseTagsChunk(
+  bytes: Uint8Array,
+  view: DataView,
+  start: number,
+  end: number,
+  frameCount: number,
+): number {
+  assertChunkRange(bytes, start, 10, end);
+
+  const count = view.getUint16(start, true);
+  let at = start + 10;
+
+  assertChunkRange(bytes, at, count * 19, end);
+
+  for (let i = 0; i < count; i++) {
+    assertChunkRange(bytes, at, 17, end);
+
+    const from = view.getUint16(at, true);
+    const to = view.getUint16(at + 2, true);
+    const direction = view.getUint8(at + 4);
+
+    if (from > to || to >= frameCount || direction > 3) {
+      fail('Invalid Aseprite animation tag.');
+    }
+
+    at += 17;
+    at = readString(bytes, view, at, end).next;
+  }
+
+  if (at !== end) {
+    fail('Invalid Aseprite animation tags chunk.');
+  }
+
+  return count;
+}
+
+function parseUserDataChunk(bytes: Uint8Array, view: DataView, start: number, end: number): boolean {
+  assertChunkRange(bytes, start, 4, end);
+
+  const flags = view.getUint32(start, true);
+  const hasUnknownFlags = (flags & ~7) !== 0;
+
+  let at = start + 4;
+
+  if (flags & 1) {
+    at = readString(bytes, view, at, end).next;
+  }
+
+  if (flags & 2) {
+    assertChunkRange(bytes, at, 4, end);
+    at += 4;
+  }
+
+  if (flags & 4) {
+    assertChunkRange(bytes, at, 4, end);
+    const propertiesSize = view.getUint32(at, true);
+
+    if (propertiesSize < 8) {
+      fail('Invalid Aseprite user data properties.');
+    }
+
+    assertChunkRange(bytes, at, propertiesSize, end);
+    at += propertiesSize;
+  }
+
+  if (at > end) {
+    fail('Invalid Aseprite user data chunk.');
+  }
+
+  if (!hasUnknownFlags && at !== end) {
+    fail('Invalid Aseprite user data chunk.');
+  }
+
+  return flags !== 0;
+}
+
+function parseSliceChunk(
+  bytes: Uint8Array,
+  view: DataView,
+  start: number,
+  end: number,
+  frameCount: number,
+): number {
+  assertChunkRange(bytes, start, 12, end);
+
+  const keyCount = view.getUint32(start, true);
+  const flags = view.getUint32(start + 4, true);
+  const hasNinePatch = (flags & 1) !== 0;
+  const hasPivot = (flags & 2) !== 0;
+  const hasUnknownFlags = (flags & ~3) !== 0;
+
+  let at = readString(bytes, view, start + 12, end).next;
+
+  const keySize = 20 + (hasNinePatch ? 16 : 0) + (hasPivot ? 8 : 0);
+  assertChunkRange(bytes, at, keyCount * keySize, end);
+
+  for (let i = 0; i < keyCount; i++) {
+    const frame = view.getUint32(at, true);
+
+    if (frame >= frameCount) {
+      fail('Invalid Aseprite slice frame reference.');
+    }
+
+    at += 20;
+
+    if (hasNinePatch) {
+      at += 16;
+    }
+
+    if (hasPivot) {
+      at += 8;
+    }
+  }
+
+  if (!hasUnknownFlags && at !== end) {
+    fail('Invalid Aseprite slice chunk.');
+  }
+
+  return keyCount;
+}
+
 function parseHeader(bytes: Uint8Array): AsepriteHeader {
   assertRange(bytes, 0, HEADER_SIZE);
 
@@ -218,6 +344,8 @@ function parseHeader(bytes: Uint8Array): AsepriteHeader {
     flags: view.getUint32(14, true),
     speed: view.getUint16(18, true),
     transparentIndex: view.getUint8(28),
+    pixelWidth: view.getUint8(34),
+    pixelHeight: view.getUint8(35),
   };
 }
 
@@ -527,6 +655,10 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
   const warnings = new Set<string>();
 
+  if (header.pixelWidth !== 0 && header.pixelHeight !== 0 && header.pixelWidth !== header.pixelHeight) {
+    warnings.add(`Pixel aspect ratio ${header.pixelWidth}:${header.pixelHeight} was not preserved.`);
+  }
+
   const parsedLayers: ParsedLayer[] = [];
   const groups: LayerGroup[] = [];
   const groupStack: string[] = [];
@@ -600,6 +732,22 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           if (i in parsed) {
             legacyPalette[i] = parsed[i];
           }
+        }
+      } else if (chunkType === TAGS_CHUNK) {
+        const tagCount = parseTagsChunk(bytes, view, start, end, header.frames);
+
+        if (tagCount > 0) {
+          warnings.add('Animation tags were not preserved.');
+        }
+      } else if (chunkType === USER_DATA_CHUNK) {
+        if (parseUserDataChunk(bytes, view, start, end)) {
+          warnings.add('Aseprite user data was not preserved.');
+        }
+      } else if (chunkType === SLICE_CHUNK) {
+        const keyCount = parseSliceChunk(bytes, view, start, end, header.frames);
+
+        if (keyCount > 0) {
+          warnings.add('Aseprite slices were not preserved.');
         }
       } else if (chunkType === COLOR_PROFILE_CHUNK) {
         assertChunkRange(bytes, start, 16, end);
