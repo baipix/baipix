@@ -13,6 +13,7 @@ const CEL_CHUNK = 0x2005;
 const OLD_PALETTE_CHUNK = 0x0004;
 const OLD_PALETTE_6BIT_CHUNK = 0x0011;
 const PALETTE_CHUNK = 0x2019;
+const COLOR_PROFILE_CHUNK = 0x2007;
 
 const BLEND_MODES = [
   'normal',
@@ -51,6 +52,13 @@ interface ParsedLayer {
   opacity: number;
   blendMode?: (typeof BLEND_MODES)[number];
   group?: string;
+  background: boolean;
+}
+
+interface FlattenedGroupState {
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
 }
 
 interface RawCel {
@@ -64,6 +72,7 @@ interface RawCel {
   raw?: Uint8Array;
   pixels?: Uint32Array;
   linkedFrame?: number;
+  zIndex: number;
 }
 
 export interface AsepriteImportResult {
@@ -271,11 +280,25 @@ function parseLayer(
   header: AsepriteHeader,
   groups: LayerGroup[],
   groupStack: string[],
+  flattenedGroupStack: FlattenedGroupState[],
   warnings: Set<string>,
 ): ParsedLayer {
   assertChunkRange(bytes, start, 18, end);
 
   const flags = view.getUint16(start, true);
+
+  if (flags & 4) {
+    warnings.add('Layer movement locks were not preserved.');
+  }
+
+  if (flags & 8) {
+    warnings.add('Background layers were imported as regular layers.');
+  }
+
+  if (flags & 64) {
+    warnings.add('Reference layers were imported as regular layers.');
+  }
+
   const type = view.getUint16(start + 2, true);
   const level = view.getUint16(start + 4, true);
   const blend = view.getUint16(start + 10, true);
@@ -287,6 +310,9 @@ function parseLayer(
   if (groupDepth > 0 && !groupStack[groupDepth - 1]) {
     fail('Invalid Aseprite layer hierarchy.');
   }
+
+  const flattenedDepth = Math.max(0, level - MAX_GROUP_DEPTH);
+  flattenedGroupStack.length = flattenedDepth;
 
   const name = readString(bytes, view, start + 16, end);
 
@@ -307,6 +333,14 @@ function parseLayer(
   const actualOpacity =
     type === 1 && !(header.flags & 2) ? 255 : type !== 1 && !(header.flags & 1) ? 255 : opacity;
 
+  const ownVisible = !!(flags & 1);
+  const ownLocked = !(flags & 2);
+  const ownOpacity = actualOpacity / 255;
+
+  const inheritedVisible = flattenedGroupStack.every((group) => group.visible);
+  const inheritedLocked = flattenedGroupStack.some((group) => group.locked);
+  const inheritedOpacity = flattenedGroupStack.reduce((value, group) => value * group.opacity, 1);
+
   const hasValidBlendMode = type !== 1 || !!(header.flags & 2);
   const blendMode = hasValidBlendMode ? (BLEND_MODES[blend] ?? 'normal') : undefined;
 
@@ -318,9 +352,10 @@ function parseLayer(
     id,
     name: name.value,
     type,
-    visible: !!(flags & 1),
-    locked: !(flags & 2),
-    opacity: actualOpacity / 255,
+    visible: ownVisible && inheritedVisible,
+    locked: ownLocked || inheritedLocked,
+    opacity: ownOpacity * inheritedOpacity,
+    background: !!(flags & 8),
     ...(blendMode ? { blendMode } : {}),
   };
 
@@ -341,6 +376,12 @@ function parseLayer(
       groupStack[level] = id;
     } else {
       warnings.add('Groups deeper than four levels were flattened into the deepest supported group.');
+
+      flattenedGroupStack.push({
+        visible: ownVisible,
+        locked: ownLocked,
+        opacity: ownOpacity,
+      });
     }
 
     return parsed;
@@ -382,6 +423,7 @@ function decodePixels(
   depth: ColorDepth,
   palette: number[],
   transparentIndex: number,
+  background: boolean,
 ): Uint32Array {
   const bytesPerPixel = depth / 8;
   const expected = width * height * bytesPerPixel;
@@ -399,7 +441,19 @@ function decodePixels(
       pixels[i] = pack(raw[at], raw[at], raw[at], raw[at + 1]);
     } else {
       const index = raw[at];
-      pixels[i] = index === transparentIndex ? 0 : (palette[index] ?? 0);
+
+      if (!background && index === transparentIndex) {
+        pixels[i] = 0;
+        continue;
+      }
+
+      const color = palette[index];
+
+      if (color === undefined) {
+        fail('Indexed Aseprite cel references a missing palette entry.');
+      }
+
+      pixels[i] = color;
     }
   }
 
@@ -425,6 +479,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   const parsedLayers: ParsedLayer[] = [];
   const groups: LayerGroup[] = [];
   const groupStack: string[] = [];
+  const flattenedGroupStack: FlattenedGroupState[] = [];
   const rawFrames: RawCel[][] = [];
   const palette: number[] = [];
   const legacyPalette: number[] = [];
@@ -470,7 +525,18 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           fail('Unexpected Aseprite layer chunk outside the first frame.');
         }
 
-        const layer = parseLayer(bytes, view, start, end, header, groups, groupStack, warnings);
+        const layer = parseLayer(
+          bytes,
+          view,
+          start,
+          end,
+          header,
+          groups,
+          groupStack,
+          flattenedGroupStack,
+          warnings,
+        );
+
         parsedLayers.push(layer);
       } else if (chunkType === PALETTE_CHUNK) {
         hasNewPalette = true;
@@ -483,6 +549,27 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
             legacyPalette[i] = parsed[i];
           }
         }
+      } else if (chunkType === COLOR_PROFILE_CHUNK) {
+        assertChunkRange(bytes, start, 16, end);
+
+        const profileType = view.getUint16(start, true);
+        const profileFlags = view.getUint16(start + 2, true);
+
+        if (profileType === 2) {
+          assertChunkRange(bytes, start + 16, 4, end);
+
+          const profileSize = view.getUint32(start + 16, true);
+
+          assertChunkRange(bytes, start + 20, profileSize, end);
+
+          if (start + 20 + profileSize !== end) {
+            fail('Invalid Aseprite color profile.');
+          }
+
+          warnings.add('Embedded ICC color profile was ignored.');
+        } else if (profileType > 2 || profileFlags & 1) {
+          warnings.add('Custom color profile settings were ignored.');
+        }
       } else if (chunkType === CEL_CHUNK) {
         assertChunkRange(bytes, start, 16, end);
 
@@ -492,6 +579,12 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         const opacity = view.getUint8(start + 6);
         const type = view.getUint16(start + 7, true);
 
+        const zIndex = view.getInt16(start + 9, true);
+
+        if (zIndex !== 0) {
+          warnings.add('Per-frame cel ordering was not preserved.');
+        }
+
         if (type === 3) {
           warnings.add('Tilemaps were skipped.');
         } else if (type === 1) {
@@ -500,10 +593,11 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           frameCels.push({
             type,
             layer,
-            x,
             y,
+            x,
             opacity,
             linkedFrame: view.getUint16(start + 16, true),
+            zIndex,
           });
         } else if (type === 0 || type === 2) {
           assertChunkRange(bytes, start + 16, 4, end);
@@ -523,9 +617,10 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
             width,
             height,
             raw,
+            zIndex,
           });
         } else {
-          fail(`Unsupported Aseprite cel type: ${type}.`);
+          warnings.add('Unsupported cel types were skipped.');
         }
       }
 
@@ -626,12 +721,26 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     return resolveCel(targetFrame, target, seen);
   };
 
+  if (header.depth === 8 && framePalettes.some((framePalette) => !framePalette.length)) {
+    fail('Indexed Aseprite file is missing a palette.');
+  }
+
   for (let f = 0; f < rawFrames.length; f++) {
     for (const cel of rawFrames[f]) {
       if (cel.type === 1) continue;
 
       if (cel.raw === undefined || cel.width === undefined || cel.height === undefined) {
         fail('Invalid Aseprite cel data.');
+      }
+
+      const parsedLayer = parsedLayers[cel.layer];
+
+      if (!parsedLayer) {
+        fail('Aseprite cel references an invalid layer.');
+      }
+
+      if (parsedLayer.type !== 0) {
+        fail('Aseprite cel references a non-image layer.');
       }
 
       cel.pixels = decodePixels(
@@ -641,6 +750,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         header.depth,
         framePalettes[f],
         header.transparentIndex,
+        parsedLayer.background,
       );
     }
   }
