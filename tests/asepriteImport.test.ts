@@ -565,6 +565,19 @@ describe('import from Aseprite', () => {
     await expectImportError(bytes, 'celTooLarge');
   });
 
+  it('rejects files whose total pixel budget exceeds the import limit', async () => {
+    const frames: FrameSpec[] = Array.from({ length: 64 }, (_, index) => ({
+      chunks: index === 0 ? [layerChunk(), celChunk()] : [celChunk()],
+    }));
+
+    const bytes = makeFile(frames, {
+      width: 512,
+      height: 512,
+    });
+
+    await expectImportError(bytes, 'importTooLarge');
+  });
+
   it('rejects cels that reference a missing layer', async () => {
     const bytes = makeFile([{ chunks: [layerChunk(), celChunk({ layer: 1 })] }]);
 
