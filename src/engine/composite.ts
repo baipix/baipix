@@ -160,6 +160,16 @@ function composeNodes(
 }
 
 /**
+ * Composites an ordered tree of layers and groups onto a transparent buffer.
+ */
+export function compositeNodesToPixels(nodes: LayerNode[], width: number, height: number): Uint32Array {
+  const pixels = new Uint32Array(width * height);
+  composeNodes(nodes, pixels, 1, true, width, height);
+
+  return pixels;
+}
+
+/**
  * Lays `pixels` over `out` in `mode` at opacity `k`. An opaque pixel in normal mode at full
  * opacity simply covers what's under it: most pixels of pixel art, so they skip the blending.
  */
