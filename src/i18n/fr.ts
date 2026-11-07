@@ -675,7 +675,7 @@ export const fr: Record<MessageKey, string> = {
     'Ligne (L), Rectangle (R), Ellipse (C), et d’autres dans le menu de ce bouton. Maj les garde carrées ou rondes.',
   'tour.colorsTitle': 'Retoucher les couleurs',
   'tour.colors':
-    'Ombrer (S) et Éclaircir (O) suivent les rampes de la palette, Spray (A) projette des pixels comme une bombe.',
+    'Ombrer (S) et Éclaircir (O) suivent les rampes de la palette, Spray (P) projette des pixels comme une bombe.',
   'tour.warpTitle': 'Déformer sans nouvelles couleurs',
   'tour.warp':
     'Flou (F) adoucit les bords, Mélangeur (J) brasse les pixels pour la texture, Fluidité (W) pousse, gonfle ou rétrécit une partie du dessin. Reste immobile pour continuer.',

@@ -668,7 +668,7 @@ export const en = {
     'Line (L), Rectangle (R), Ellipse (C), and more in this button’s menu. Shift keeps them square or round.',
   'tour.colorsTitle': 'Rework colors',
   'tour.colors':
-    'Shade (S) and Lighten (O) follow the palette’s ramps, Spray (A) scatters pixels like a can.',
+    'Shade (S) and Lighten (O) follow the palette’s ramps, Spray (P) scatters pixels like a can.',
   'tour.warpTitle': 'Warp without new colors',
   'tour.warp':
     'Blur (F) softens edges, Jumble (J) shuffles pixels for texture, Liquify (W) pushes, grows or shrinks a part of the drawing. Hold still to keep going.',

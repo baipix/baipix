@@ -674,7 +674,7 @@ export const it: Record<MessageKey, string> = {
     'Linea (L), Rettangolo (R), Ellisse (C) e altre nel menu di questo pulsante. Maiusc le mantiene quadrate o rotonde.',
   'tour.colorsTitle': 'Ritoccare i colori',
   'tour.colors':
-    'Scurisci (S) e Schiarisci (O) seguono le rampe della palette, Spray (A) spruzza pixel come una bomboletta.',
+    'Scurisci (S) e Schiarisci (O) seguono le rampe della palette, Spray (P) spruzza pixel come una bomboletta.',
   'tour.warpTitle': 'Deformare senza nuovi colori',
   'tour.warp':
     'Sfoca (F) ammorbidisce i bordi, Rimescola (J) mescola i pixel per creare texture, Fluidifica (W) spinge, gonfia o restringe una parte del disegno. Resta fermo per continuare.',
