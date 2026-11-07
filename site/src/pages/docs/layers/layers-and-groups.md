@@ -39,7 +39,7 @@ Shift-click a row to select a range, Ctrl-click to add or remove one. With the M
 
 ## Between files
 
-With nothing selected on the canvas, <kbd>Ctrl</kbd>+<kbd>C</kbd> in the Layers panel copies the selected layers, whole. Paste them in another file with <kbd>Ctrl</kbd>+<kbd>V</kbd>: they keep their names, blend modes and effects.
+With nothing selected on the canvas, <kbd>Ctrl</kbd>+<kbd>C</kbd> in the Layers panel copies the selected layers, whole. Paste them in another file with <kbd>Ctrl</kbd>+<kbd>V</kbd>: they keep their names, blend modes, effects and animation.
 
 ## Reference image
 

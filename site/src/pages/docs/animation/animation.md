@@ -44,7 +44,7 @@ Right-click a frame's number for its menu: new frames, copy, paste, reverse and 
 
 ## Play
 
-**Play** in the timeline, <kbd>Enter</kbd>, or a tap on <kbd>Space</kbd> plays the frames in a loop, each for its duration; the same again pauses. Held, <kbd>Space</kbd> still pans the view. <kbd>,</kbd> and <kbd>.</kbd> step to the previous and next frame. The preview window plays along, at its own size.
+**Play** in the timeline, <kbd>Enter</kbd>, or a tap on <kbd>Space</kbd> plays the frames in a loop, each for its duration; the same again pauses. Held, <kbd>Space</kbd> still pans the view. <kbd>,</kbd> and <kbd>.</kbd> step to the previous and next frame, and **First frame** goes back to the start. The preview window plays along, at its own size.
 
 Drawing on the canvas pauses, so you always draw on the frame you see.
 

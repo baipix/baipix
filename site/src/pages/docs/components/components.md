@@ -19,7 +19,7 @@ Select part of a drawing, or pick a layer, then **Create component** (<kbd>Ctrl<
 
 - **Drag** the component from the Components section onto the canvas, onto any board. The section lists the components of the whole file, the active board's first.
 - Or <kbd>Alt</kbd>-drag an instance with the Move tool to drop a copy.
-- **Repeat in a grid…** (a layer's right-click menu) lays out copies in columns and rows, with a gap between them. A component repeats as instances. It updates live as you set it.
+- **Repeat in a grid…** (in the Layer menu, or a layer's right-click menu) lays out copies in columns and rows, with a gap between them. A component repeats as instances. It updates live as you set it.
 
 An instance moves and resizes like any layer. Its pixels come from the component.
 
