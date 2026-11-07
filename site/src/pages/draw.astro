@@ -8,11 +8,14 @@ import Nav from '../components/Nav.astro';
 import PixelGlow from '../components/PixelGlow.astro';
 import PixelIcon from '../components/PixelIcon.astro';
 import PixelPlay from '../components/PixelPlay.astro';
+import Flipbook from '../components/Flipbook.astro';
 import Base from '../layouts/Base.astro';
 import { gallery } from '../gallery';
 import { animations as anim, OUTLINE_STEPS } from '../animations';
 import { draw as ill } from '../draw';
 import { APP_URL, REPO_URL } from '../links';
+import slimeUrl from '../art/slime.baipix?url';
+import { slimeFrames } from '../slime';
 import { icon } from '../toolIcons';
 
 const EYE = ['.......', '..###..', '.#...#.', '#..#..#', '.#...#.', '..###..', '.......'];
@@ -34,6 +37,8 @@ const CURSOR = [
 const items = gallery.find((p) => p.file === 'items.baipix')!;
 const ICON_MIRROR = ['#..#..#', '##.#.##', '###.###', '###.###', '###.###', '##.#.##', '#..#..#'];
 const ICON_GUIDES = ['..#..#.', '..#..#.', '#######', '..#..#.', '..#..#.', '#######', '..#..#.'];
+/** A sun, for the light the drawing is shaded by. */
+const ICON_SUN = ['#..#..#', '.#...#.', '..###..', '#.###.#', '..###..', '.#...#.', '#..#..#'];
 const ICON_TILE = ['###.###', '###.###', '###.###', '.......', '###.###', '###.###', '###.###'];
 
 /** The page's sections, for the bar that follows you down the page. */
@@ -48,6 +53,7 @@ const SECTIONS = [
   { id: 'components', label: 'Components', tone: 'components' },
   { id: 'isometric', label: 'Isometric', tone: 'isometric' },
   { id: 'boards', label: 'Boards', tone: 'boards' },
+  { id: 'animation', label: 'Animate', tone: 'animation' },
   { id: 'export', label: 'Export', tone: 'export' },
   { id: 'keys', label: 'Shortcuts' },
 ];
@@ -418,6 +424,18 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
               <p>
                 Paint over pixels to step them down or up their ramp: the same hue in the palette, any color
                 in the palette, or free.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon">
+              <PixelIcon rows={ICON_SUN} size={20} />
+            </span>
+            <div>
+              <h3>A light to shade by</h3>
+              <p>
+                Each board can have a light: drag a lamp around a sphere to set where it comes from and how
+                high. Faint lines on the canvas show it while you shade, and a drop shadow can follow it.
               </p>
             </div>
           </li>
@@ -956,12 +974,62 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
       </figure>
     </section>
 
+    <!-- Animation -->
+    <section class="block container" id="animation" data-tone="animation">
+      <SectionHead label="11 · Animate" />
+      <div class="text">
+        <h2>Make it move.</h2>
+        <p class="muted intro">
+          A timeline under the canvas, a row per layer and a column per frame. A background on its own layer
+          stays put while the rest moves.
+        </p>
+        <ul class="tools">
+          <li>
+            <span class="key icon" set:html={icon('timeline')} />
+            <div>
+              <h3>Frames</h3>
+              <p>
+                Add a frame (a copy of the one shown) or an empty one that keeps the scenery, drag frames to
+                reorder them, give each its own duration. Shift+A opens the timeline.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('onion')} />
+            <div>
+              <h3>Onion skin</h3>
+              <p>
+                The frames before in red and after in blue, faded under the one you draw, up to five on each
+                side. Loop shows the last frames before the first, for animations that cycle.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('play')} />
+            <div>
+              <h3>Play</h3>
+              <p>Enter or Space plays it as you draw; comma and period step one frame back or forward.</p>
+            </div>
+          </li>
+        </ul>
+        <a class="btn btn-small more" href={`${APP_URL}?open=${encodeURIComponent(slimeUrl)}`}>
+          Animate the slime <ArrowIcon />
+        </a>
+      </div>
+      <figure class="frame">
+        <Flipbook frames={slimeFrames} label="A green slime squashes, jumps and lands, frame by frame" />
+        <figcaption class="cap">
+          Each frame shows for its own duration: a pose holds, a jump flashes by.
+        </figcaption>
+      </figure>
+    </section>
+
     <!-- Export -->
     <section class="block container" id="export" data-tone="export">
-      <SectionHead label="11 · Export" />
+      <SectionHead label="12 · Export" />
       <div class="text">
-        <h2>Out as clean vector.</h2>
-        <p class="muted intro">What you draw goes straight into your design files.</p>
+        <h2>Out as clean vector, or frame by frame.</h2>
+        <p class="muted intro">What you draw goes straight into your design files, or into your game.</p>
         <ul class="tools">
           <li>
             <span class="key icon" set:html={icon('duplicate')} />
@@ -978,6 +1046,23 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
             <div>
               <h3>PNG from 1× to 32×</h3>
               <p>With a live preview, a transparent background or not, the whole drawing or one layer.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('play')} />
+            <div>
+              <h3>Animated GIF</h3>
+              <p>Every frame with its duration, looping, with the drawing's exact colors.</p>
+            </div>
+          </li>
+          <li>
+            <span class="key icon" set:html={icon('grid')} />
+            <div>
+              <h3>Sprite sheets and tilesets</h3>
+              <p>
+                The frames or the layers on one sheet, with a JSON that Phaser, Unity or Godot read. A PNG
+                sequence, one file per frame. Or the drawing cut into tiles for Godot and Tiled.
+              </p>
             </div>
           </li>
           <li>
@@ -1628,6 +1713,9 @@ const key = (name: string) => ill.tools.find((t) => t.name === name)?.key ?? '';
 
   /* ---- Pictures ---- */
   /* The pictures take the height of the text next to them, shared between the frames. */
+  .more {
+    margin-top: 24px;
+  }
   .figures {
     display: grid;
     grid-auto-rows: 1fr;
