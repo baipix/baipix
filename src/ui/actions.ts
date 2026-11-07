@@ -13,7 +13,12 @@ import type { Editor } from '../engine/editor';
 import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, gridSize } from '../engine/upscale';
 import { toAseprite } from '../engine/export/aseprite';
-import { fromAseprite } from '../engine/import/aseprite';
+import {
+  AsepriteError,
+  fromAseprite,
+  type AsepriteImportErrorCode,
+  type AsepriteWarningCode,
+} from '../engine/import/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { frameSpriteSheet } from '../engine/export/frames';
@@ -21,7 +26,7 @@ import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
 import { exportableLayers, layerSpriteSheet, spriteSheetJson } from '../engine/export/layers';
 import { spriteSheetGrid } from '../engine/export/spriteSheet';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
-import { t } from '../i18n';
+import { t, type MessageKey } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
 import { saveFile, safeFileName } from '../io/download';
 import { imageToBlock, loadImage, readPixels } from '../io/image';
@@ -50,6 +55,35 @@ export const EXPORT_FORMATS = [
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
+
+const ASEPRITE_WARNING_KEYS: Record<AsepriteWarningCode, MessageKey> = {
+  layerMovementLocks: 'toast.asepriteWarningLayerMovementLocks',
+  backgroundLayers: 'toast.asepriteWarningBackgroundLayers',
+  referenceLayers: 'toast.asepriteWarningReferenceLayers',
+  unsupportedBlendModes: 'toast.asepriteWarningUnsupportedBlendModes',
+  deepGroupsFlattened: 'toast.asepriteWarningDeepGroupsFlattened',
+  deepGroupBlendModes: 'toast.asepriteWarningDeepGroupBlendModes',
+  tilemapsSkipped: 'toast.asepriteWarningTilemapsSkipped',
+  unsupportedLayerTypes: 'toast.asepriteWarningUnsupportedLayerTypes',
+  pixelAspectRatio: 'toast.asepriteWarningPixelAspectRatio',
+  animationTags: 'toast.asepriteWarningAnimationTags',
+  userData: 'toast.asepriteWarningUserData',
+  slices: 'toast.asepriteWarningSlices',
+  embeddedIccProfile: 'toast.asepriteWarningEmbeddedIccProfile',
+  customColorProfile: 'toast.asepriteWarningCustomColorProfile',
+  celOrdering: 'toast.asepriteWarningCelOrdering',
+  unsupportedCelTypes: 'toast.asepriteWarningUnsupportedCelTypes',
+  preciseCelBounds: 'toast.asepriteWarningPreciseCelBounds',
+  unsupportedCelExtraFlags: 'toast.asepriteWarningUnsupportedCelExtraFlags',
+  frameDurations: 'toast.asepriteWarningFrameDurations',
+};
+
+const ASEPRITE_ERROR_KEYS: Record<AsepriteImportErrorCode, MessageKey> = {
+  unreadable: 'toast.unreadableAseprite',
+  canvasTooLarge: 'toast.asepriteCanvasTooLarge',
+  tooManyFrames: 'toast.asepriteTooManyFrames',
+  celTooLarge: 'toast.asepriteCelTooLarge',
+};
 
 function uniqueArchiveName(filename: string, usedNames: Set<string>): string {
   const dot = filename.lastIndexOf('.');
@@ -257,7 +291,6 @@ export function createActions(editor: Editor) {
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       const result = await fromAseprite(bytes);
-
       const name = file.name.replace(/\.(?:ase|aseprite)$/i, '').trim() || 'Untitled';
 
       result.document.name = name;
@@ -265,10 +298,14 @@ export function createActions(editor: Editor) {
       editor.addDocument(result.document);
 
       if (result.warnings.length) {
+        const warnings = result.warnings
+          .map(({ code, values }) => t(ASEPRITE_WARNING_KEYS[code], values))
+          .join(' ');
+
         toast(
           t('toast.asepriteOpenedWithWarnings', {
             name: file.name,
-            warnings: result.warnings.join(' '),
+            warnings,
           }),
         );
       } else {
@@ -277,7 +314,12 @@ export function createActions(editor: Editor) {
 
       return true;
     } catch (error) {
-      toast(error instanceof Error ? error.message : t('toast.unreadableAseprite'));
+      if (error instanceof AsepriteError) {
+        toast(t(ASEPRITE_ERROR_KEYS[error.code], error.values));
+      } else {
+        toast(t('toast.unreadableAseprite'));
+      }
+
       return false;
     }
   }

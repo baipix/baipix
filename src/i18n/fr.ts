@@ -742,6 +742,39 @@ export const fr: Record<MessageKey, string> = {
   'toast.opened': '{name} ouvert.',
   'toast.asepriteOpenedWithWarnings': '{name} ouvert. Ajustements à l’importation : {warnings}',
   'toast.unreadableAseprite': 'Impossible de lire ce fichier Aseprite.',
+  'toast.asepriteWarningLayerMovementLocks':
+    'Les verrouillages de déplacement des calques n’ont pas été conservés.',
+  'toast.asepriteWarningBackgroundLayers':
+    'Les calques d’arrière-plan ont été importés comme des calques ordinaires.',
+  'toast.asepriteWarningReferenceLayers':
+    'Les calques de référence ont été importés comme des calques ordinaires.',
+  'toast.asepriteWarningUnsupportedBlendModes':
+    'Les modes de fusion non pris en charge ont été remplacés par Normal.',
+  'toast.asepriteWarningDeepGroupsFlattened':
+    'Les groupes imbriqués à plus de quatre niveaux ont été aplatis dans le groupe pris en charge le plus profond.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'Les modes de fusion des groupes aplatis n’ont pas été conservés.',
+  'toast.asepriteWarningTilemapsSkipped': 'Les tilemaps ont été ignorées.',
+  'toast.asepriteWarningUnsupportedLayerTypes': 'Les types de calques non pris en charge ont été ignorés.',
+  'toast.asepriteWarningPixelAspectRatio':
+    'Le rapport d’aspect des pixels {width}:{height} n’a pas été conservé.',
+  'toast.asepriteWarningAnimationTags': 'Les tags d’animation n’ont pas été conservés.',
+  'toast.asepriteWarningUserData': 'Les données utilisateur Aseprite n’ont pas été conservées.',
+  'toast.asepriteWarningSlices': 'Les slices Aseprite n’ont pas été conservées.',
+  'toast.asepriteWarningEmbeddedIccProfile': 'Le profil colorimétrique ICC intégré a été ignoré.',
+  'toast.asepriteWarningCustomColorProfile':
+    'Les paramètres du profil colorimétrique personnalisé ont été ignorés.',
+  'toast.asepriteWarningCelOrdering': 'L’ordre des cels par image n’a pas été conservé.',
+  'toast.asepriteWarningUnsupportedCelTypes': 'Les types de cel non pris en charge ont été ignorés.',
+  'toast.asepriteWarningPreciseCelBounds': 'Les limites précises des cels n’ont pas été conservées.',
+  'toast.asepriteWarningUnsupportedCelExtraFlags':
+    'Les indicateurs Cel Extra non pris en charge ont été ignorés.',
+  'toast.asepriteWarningFrameDurations': 'Les durées d’image hors de la plage 10–10 000 ms ont été ajustées.',
+  'toast.asepriteCanvasTooLarge':
+    'La taille du canevas {width} × {height} dépasse le maximum de Baipix ({max} × {max}). Redimensionnez le canevas dans Aseprite.',
+  'toast.asepriteTooManyFrames':
+    'Le fichier contient {count} images. Baipix en prend en charge {max} au maximum. Supprimez des images dans Aseprite.',
+  'toast.asepriteCelTooLarge': 'Le cel Aseprite dépasse la limite d’importation de {max} pixels.',
   'toast.notBaipix': "Ce n'est pas un fichier .baipix valide.",
   'toast.notImage': "Ce fichier n'est pas une image. Utilise un PNG, GIF, JPEG ou WebP.",
   'toast.unreadableImage': 'Impossible de lire cette image.',

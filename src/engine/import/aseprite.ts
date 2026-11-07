@@ -90,13 +90,45 @@ interface RawCel {
   zIndex: number;
 }
 
-export interface AsepriteImportResult {
-  document: PixelDoc;
-  warnings: string[];
+export type AsepriteWarningCode =
+  | 'layerMovementLocks'
+  | 'backgroundLayers'
+  | 'referenceLayers'
+  | 'unsupportedBlendModes'
+  | 'deepGroupsFlattened'
+  | 'deepGroupBlendModes'
+  | 'tilemapsSkipped'
+  | 'unsupportedLayerTypes'
+  | 'pixelAspectRatio'
+  | 'animationTags'
+  | 'userData'
+  | 'slices'
+  | 'embeddedIccProfile'
+  | 'customColorProfile'
+  | 'celOrdering'
+  | 'unsupportedCelTypes'
+  | 'preciseCelBounds'
+  | 'unsupportedCelExtraFlags'
+  | 'frameDurations';
+
+export interface AsepriteWarning {
+  code: AsepriteWarningCode;
+  values?: Record<string, string | number>;
 }
 
-class AsepriteError extends Error {
-  constructor(message: string) {
+export type AsepriteImportErrorCode = 'unreadable' | 'canvasTooLarge' | 'tooManyFrames' | 'celTooLarge';
+
+export interface AsepriteImportResult {
+  document: PixelDoc;
+  warnings: AsepriteWarning[];
+}
+
+export class AsepriteError extends Error {
+  constructor(
+    message: string,
+    readonly code: AsepriteImportErrorCode = 'unreadable',
+    readonly values?: Record<string, string | number>,
+  ) {
     super(message);
     this.name = 'AsepriteError';
   }
@@ -105,6 +137,16 @@ class AsepriteError extends Error {
 function fail(message: string): never {
   throw new AsepriteError(message);
 }
+
+function failWith(
+  message: string,
+  code: Exclude<AsepriteImportErrorCode, 'unreadable'>,
+  values: Record<string, string | number>,
+): never {
+  throw new AsepriteError(message, code, values);
+}
+
+type WarningCollector = (code: AsepriteWarningCode, values?: Record<string, string | number>) => void;
 
 type ParsedNode =
   { kind: 'group'; parsed: ParsedLayer; children: ParsedNode[] } | { kind: 'layer'; parsed: ParsedLayer };
@@ -322,15 +364,11 @@ function parseHeader(bytes: Uint8Array): AsepriteHeader {
   if (!frames || !width || !height) fail('Invalid Aseprite dimensions or frame count.');
 
   if (width > MAX_SIZE || height > MAX_SIZE) {
-    fail(
-      `Canvas size ${width} × ${height} exceeds Baipix's maximum of ${MAX_SIZE} × ${MAX_SIZE}. Resize the canvas in Aseprite.`,
-    );
+    failWith('Canvas size exceeds the supported limit.', 'canvasTooLarge', { width, height, max: MAX_SIZE });
   }
 
   if (frames > MAX_FRAMES) {
-    fail(
-      `The file contains ${frames} frames. Baipix supports up to ${MAX_FRAMES} frames. Remove some frames in Aseprite.`,
-    );
+    failWith('Frame count exceeds the supported limit.', 'tooManyFrames', { count: frames, max: MAX_FRAMES });
   }
 
   if (depth !== 8 && depth !== 16 && depth !== 32) {
@@ -453,22 +491,22 @@ function parseLayer(
   groups: LayerGroup[],
   groupStack: string[],
   flattenedGroupStack: FlattenedGroupState[],
-  warnings: Set<string>,
+  warn: WarningCollector,
 ): ParsedLayer {
   assertChunkRange(bytes, start, 18, end);
 
   const flags = view.getUint16(start, true);
 
   if (flags & 4) {
-    warnings.add('Layer movement locks were not preserved.');
+    warn('layerMovementLocks');
   }
 
   if (flags & 8) {
-    warnings.add('Background layers were imported as regular layers.');
+    warn('backgroundLayers');
   }
 
   if (flags & 64) {
-    warnings.add('Reference layers were imported as regular layers.');
+    warn('referenceLayers');
   }
 
   const type = view.getUint16(start + 2, true);
@@ -517,7 +555,7 @@ function parseLayer(
   const blendMode = hasValidBlendMode ? (BLEND_MODES[blend] ?? 'normal') : undefined;
 
   if (hasValidBlendMode && blend > 11) {
-    warnings.add('Unsupported blend modes were changed to Normal.');
+    warn('unsupportedBlendModes');
   }
 
   const parsed: ParsedLayer = {
@@ -552,10 +590,10 @@ function parseLayer(
       groups.push(group);
       groupStack[level] = id;
     } else {
-      warnings.add('Groups deeper than four levels were flattened into the deepest supported group.');
+      warn('deepGroupsFlattened');
 
       if (blendMode && blendMode !== 'normal') {
-        warnings.add('Blend modes of flattened groups were not preserved.');
+        warn('deepGroupBlendModes');
       }
 
       flattenedGroupStack.push({
@@ -569,17 +607,17 @@ function parseLayer(
   }
 
   if (type === 2) {
-    warnings.add('Tilemap layers were skipped.');
+    warn('tilemapsSkipped');
     return parsed;
   }
 
   if (type !== 0) {
-    warnings.add('Unsupported layer types were skipped.');
+    warn('unsupportedLayerTypes');
     return parsed;
   }
 
   if (level > MAX_GROUP_DEPTH) {
-    warnings.add('Groups deeper than four levels were flattened into the deepest supported group.');
+    warn('deepGroupsFlattened');
   }
 
   parsed.group = groupDepth > 0 ? groupStack[groupDepth - 1] : undefined;
@@ -591,7 +629,7 @@ function celByteLength(width: number, height: number, depth: ColorDepth): number
   const pixelCount = width * height;
 
   if (!width || !height || !Number.isSafeInteger(pixelCount) || pixelCount > MAX_CEL_PIXELS) {
-    fail(`Aseprite cel exceeds the maximum import area of ${MAX_CEL_PIXELS.toLocaleString()} pixels.`);
+    failWith('Aseprite cel exceeds the maximum import area.', 'celTooLarge', { max: MAX_CEL_PIXELS });
   }
 
   return pixelCount * (depth / 8);
@@ -694,10 +732,22 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   const bytes = data.subarray(0, header.fileSize);
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  const warnings = new Set<string>();
+  const warnings = new Map<AsepriteWarningCode, AsepriteWarning>();
+
+  const warn: WarningCollector = (code, values) => {
+    if (!warnings.has(code)) {
+      warnings.set(code, {
+        code,
+        ...(values ? { values } : {}),
+      });
+    }
+  };
 
   if (header.pixelWidth !== 0 && header.pixelHeight !== 0 && header.pixelWidth !== header.pixelHeight) {
-    warnings.add(`Pixel aspect ratio ${header.pixelWidth}:${header.pixelHeight} was not preserved.`);
+    warn('pixelAspectRatio', {
+      width: header.pixelWidth,
+      height: header.pixelHeight,
+    });
   }
 
   const parsedLayers: ParsedLayer[] = [];
@@ -759,7 +809,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           groups,
           groupStack,
           flattenedGroupStack,
-          warnings,
+          warn,
         );
 
         parsedLayers.push(layer);
@@ -778,17 +828,17 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         const tagCount = parseTagsChunk(bytes, view, start, end, header.frames);
 
         if (tagCount > 0) {
-          warnings.add('Animation tags were not preserved.');
+          warn('animationTags');
         }
       } else if (chunkType === USER_DATA_CHUNK) {
         if (parseUserDataChunk(bytes, view, start, end)) {
-          warnings.add('Aseprite user data was not preserved.');
+          warn('userData');
         }
       } else if (chunkType === SLICE_CHUNK) {
         const keyCount = parseSliceChunk(bytes, view, start, end, header.frames);
 
         if (keyCount > 0) {
-          warnings.add('Aseprite slices were not preserved.');
+          warn('slices');
         }
       } else if (chunkType === COLOR_PROFILE_CHUNK) {
         assertChunkRange(bytes, start, 16, end);
@@ -805,9 +855,9 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
             fail('Invalid Aseprite color profile.');
           }
 
-          warnings.add('Embedded ICC color profile was ignored.');
+          warn('embeddedIccProfile');
         } else if (profileType > 2 || profileFlags & 1) {
-          warnings.add('Custom color profile settings were ignored.');
+          warn('customColorProfile');
         }
       } else if (chunkType === CEL_CHUNK) {
         hasReadCel = true;
@@ -822,11 +872,11 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         const zIndex = view.getInt16(start + 9, true);
 
         if (zIndex !== 0) {
-          warnings.add('Per-frame cel ordering was not preserved.');
+          warn('celOrdering');
         }
 
         if (type === 3) {
-          warnings.add('Tilemaps were skipped.');
+          warn('tilemapsSkipped');
         } else if (type === 1) {
           assertChunkRange(bytes, start + 16, 2, end);
 
@@ -866,7 +916,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
             zIndex,
           });
         } else {
-          warnings.add('Unsupported cel types were skipped.');
+          warn('unsupportedCelTypes');
         }
       } else if (chunkType === CEL_EXTRA_CHUNK) {
         if (!hasReadCel) {
@@ -881,11 +931,11 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         assertChunkRange(bytes, start, hasPreciseBounds ? 36 : 20, end);
 
         if (hasPreciseBounds) {
-          warnings.add('Precise cel bounds were not preserved.');
+          warn('preciseCelBounds');
         }
 
         if (flags >>> 1 !== 0) {
-          warnings.add('Unsupported Cel Extra flags were ignored.');
+          warn('unsupportedCelExtraFlags');
         }
       }
 
@@ -900,7 +950,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const effectiveDuration = duration || header.speed || DEFAULT_DURATION;
 
     if (effectiveDuration < 10 || effectiveDuration > 10_000) {
-      warnings.add('Frame durations outside 10–10,000 ms were adjusted.');
+      warn('frameDurations');
     }
   }
 
@@ -1368,5 +1418,5 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     document.palette = { key: 'custom', colors, custom: colors };
   }
 
-  return { document, warnings: [...warnings] };
+  return { document, warnings: [...warnings.values()] };
 }

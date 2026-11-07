@@ -749,6 +749,33 @@ export const es: Record<MessageKey, string> = {
   'toast.opened': '{name} abierto.',
   'toast.asepriteOpenedWithWarnings': '{name} abierto. Ajustes durante la importación: {warnings}',
   'toast.unreadableAseprite': 'No se pudo leer este archivo de Aseprite.',
+  'toast.asepriteWarningLayerMovementLocks': 'No se conservaron los bloqueos de movimiento de las capas.',
+  'toast.asepriteWarningBackgroundLayers': 'Las capas de fondo se importaron como capas normales.',
+  'toast.asepriteWarningReferenceLayers': 'Las capas de referencia se importaron como capas normales.',
+  'toast.asepriteWarningUnsupportedBlendModes': 'Los modos de fusión no compatibles se cambiaron a Normal.',
+  'toast.asepriteWarningDeepGroupsFlattened':
+    'Los grupos con más de cuatro niveles de profundidad se aplanaron en el grupo compatible más profundo.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'No se conservaron los modos de fusión de los grupos aplanados.',
+  'toast.asepriteWarningTilemapsSkipped': 'Se omitieron los mapas de tiles.',
+  'toast.asepriteWarningUnsupportedLayerTypes': 'Se omitieron los tipos de capa no compatibles.',
+  'toast.asepriteWarningPixelAspectRatio': 'No se conservó la proporción de píxeles {width}:{height}.',
+  'toast.asepriteWarningAnimationTags': 'No se conservaron las etiquetas de animación.',
+  'toast.asepriteWarningUserData': 'No se conservaron los datos de usuario de Aseprite.',
+  'toast.asepriteWarningSlices': 'No se conservaron las slices de Aseprite.',
+  'toast.asepriteWarningEmbeddedIccProfile': 'Se ignoró el perfil de color ICC integrado.',
+  'toast.asepriteWarningCustomColorProfile': 'Se ignoraron los ajustes del perfil de color personalizado.',
+  'toast.asepriteWarningCelOrdering': 'No se conservó el orden de los cels por fotograma.',
+  'toast.asepriteWarningUnsupportedCelTypes': 'Se omitieron los tipos de cel no compatibles.',
+  'toast.asepriteWarningPreciseCelBounds': 'No se conservaron los límites precisos de los cels.',
+  'toast.asepriteWarningUnsupportedCelExtraFlags': 'Se ignoraron los indicadores Cel Extra no compatibles.',
+  'toast.asepriteWarningFrameDurations':
+    'Se ajustaron las duraciones de fotograma fuera del intervalo de 10–10 000 ms.',
+  'toast.asepriteCanvasTooLarge':
+    'El tamaño del lienzo {width} × {height} supera el máximo de Baipix ({max} × {max}). Cambia el tamaño del lienzo en Aseprite.',
+  'toast.asepriteTooManyFrames':
+    'El archivo contiene {count} fotogramas. Baipix admite hasta {max}. Elimina algunos fotogramas en Aseprite.',
+  'toast.asepriteCelTooLarge': 'El cel de Aseprite supera el área máxima de importación de {max} píxeles.',
   'toast.notBaipix': 'Este no es un archivo .baipix válido.',
   'toast.notImage': 'Este archivo no es una imagen. Utiliza un archivo PNG, GIF, JPEG o WebP.',
   'toast.unreadableImage': 'No se puede leer esta imagen.',
