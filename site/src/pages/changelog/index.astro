@@ -46,7 +46,8 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
           <section class="coming" id="next" aria-labelledby="next-title">
             <h2 id="next-title">Coming next</h2>
             <p class="muted">
-              Since {newest.version}: {comingSummary}. Already on baipix.app, and in the next version.
+              Since {newest.version}: {comingSummary}. Already on baipix.app, and in the next version. What
+              comes after is on the <a href={`${base}roadmap/`}>roadmap</a>.
             </p>
             {comingCount > COMING_LINES && <input type="checkbox" id="coming-all" class="coming-toggle" />}
             <ChangeGroups release={comingNext} limit={COMING_LINES} />
@@ -206,6 +207,11 @@ const comingSummary = comingNext?.groups.map((g) => `${g.items.length} ${COUNTED
     margin: 0;
     font-size: 22px;
     letter-spacing: -0.02em;
+  }
+  .coming > p a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .coming > p {
     margin: 4px 0 0;
