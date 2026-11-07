@@ -9,14 +9,14 @@ description: 'Export pixel art from Baipix: PNG at 1× to 32×, animated GIF, PN
   <img class="for-dark" src="../../shots/export-dark.webp" width="380" height="475" alt="The Export dialog: a preview of the sunset, its size, the pixel size from 1× to 32×, the name, the format, and Export, Copy as SVG and Copy as PNG." loading="lazy" />
 </figure>
 
-**Export** at the top right (<kbd>Ctrl</kbd>+<kbd>E</kbd>) opens the dialog: a preview of what you'll get, its size in pixels, and its options.
+**Export** at the top right, File › Export, <kbd>Ctrl</kbd>+<kbd>E</kbd> or <kbd>Ctrl</kbd>+<kbd>S</kbd> opens the dialog: a preview of what you'll get, its size in pixels, and its options.
 
 ## Size and background
 
 - **Pixel size**, 1× to 32×: how many screen pixels each drawing pixel becomes. A 32 × 32 sprite at 8× is a 256 × 256 image.
 - The **gap** set in the Board section spaces the pixels apart, for an LED look, in PNG, GIF and SVG exports.
 - **Include the background**: the board's background color, or a transparent image.
-- **Active layer only**: just the layer you're on.
+- **Active layer only**: just the layer you're on. Not for Aseprite or Layers + sprite sheet, which keep every layer.
 
 ## Formats
 

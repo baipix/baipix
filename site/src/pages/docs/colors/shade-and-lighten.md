@@ -27,6 +27,6 @@ Shading holds together when every shape takes its light from the same side. The 
 
 **Direction on the canvas** draws faint parallel lines running from the light over the board, and a sun at its edge where the light comes from: drag the sun around the board to turn the light, and the stage follows. They're a guide, like the grid: never painted, never exported.
 
-A layer's **drop shadow** can **follow the light** (a box under its X and Y, in the Effects section): it then falls away from the light, longer the lower the light is, and moves when you move the lamp, on every layer that follows it. Setting X or Y by hand stops it following.
+A layer's **drop shadow** can **follow the light** (a box under its X and Y, in the Effects section): it then falls away from the light, longer the lower the light is, and moves when you move the lamp, on every layer that follows it. Setting X or Y by hand stops it following. If the layer has no such shadow yet, **Add a shadow that follows it**, in the Light section, adds one.
 
 The light is saved with the board, each board its own, and **−** takes it away.

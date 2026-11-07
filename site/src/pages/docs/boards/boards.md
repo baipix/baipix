@@ -21,7 +21,8 @@ A file can hold several boards side by side, each with its own size, layers and 
 
 - **Click a board** to work on it. In the Layers panel, each board has its row; the active one shows its layers.
 - **Drag a board by its name** to move it.
-- **Select boards**: click a board's name, Shift-click to add more. Align them with the Align commands, move them, or delete them together with <kbd>Del</kbd>.
+- **Resize a board**: select it, then drag a side or a corner of its frame to grow or crop it on that side. The drawing stays where it is.
+- **Select boards**: click a board's name, or click it with the Board tool, Shift-click to add more. Align them with the Align commands, move them, or delete them together with <kbd>Del</kbd>.
 - Undo brings back a deleted board, and takes back a move or an alignment.
 
 ## Layers outside the boards
