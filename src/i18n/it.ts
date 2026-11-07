@@ -685,7 +685,7 @@ export const it: Record<MessageKey, string> = {
   'tour.gap': 'Distanzia i pixel per un effetto LED o a matrice di punti, sulla tela e nelle esportazioni.',
   'tour.exportTitle': 'Esportazione',
   'tour.export':
-    'PNG da 1× a 32×, oppure SVG che mantiene i tuoi livelli, un tracciato per colore: copialo e incollalo direttamente in Figma.',
+    'PNG da 1× a 32×, GIF animata, sprite sheet, file .aseprite, oppure SVG che mantiene i tuoi livelli, un tracciato per colore: copialo e incollalo direttamente in Figma.',
   'tour.next': 'Avanti',
   'tour.done': 'Fine',
   'tour.skip': 'Salta la presentazione',

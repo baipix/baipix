@@ -693,7 +693,7 @@ export const es: Record<MessageKey, string> = {
     'Separa los píxeles para conseguir un efecto de LED o de matriz de puntos, tanto en el lienzo como en las exportaciones.',
   'tour.exportTitle': 'Exportar',
   'tour.export':
-    'Exporta como PNG de 1× a 32× o como SVG, que conserva las capas y utiliza un trazado por color. Puedes copiarlo y pegarlo directamente en Figma.',
+    'Exporta como PNG de 1× a 32×, GIF animado, hoja de sprites, archivo .aseprite o SVG, que conserva las capas y utiliza un trazado por color. Puedes copiarlo y pegarlo directamente en Figma.',
   'tour.next': 'Siguiente',
   'tour.done': 'Terminar',
   'tour.skip': 'Omitir el recorrido',

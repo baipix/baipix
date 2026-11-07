@@ -681,7 +681,7 @@ export const ja: Record<MessageKey, string> = {
     'ピクセルの間をあけると、LEDやドットマトリクスのような見た目になります。キャンバスにも書き出しにも反映されます。',
   'tour.exportTitle': '書き出し',
   'tour.export':
-    '1倍から32倍までのPNG、またはレイヤーを保ったSVG（色ごとに1つのpath）。コピーして、Figmaにそのまま貼り付けられます。',
+    '1倍から32倍までのPNG、アニメーションGIF、スプライトシート、.asepriteファイル、またはレイヤーを保ったSVG（色ごとに1つのpath）。SVGはコピーして、Figmaにそのまま貼り付けられます。',
   'tour.next': '次へ',
   'tour.done': '完了',
   'tour.skip': 'ツアーをスキップ',
