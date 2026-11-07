@@ -2,6 +2,7 @@ import { pack, withAlpha } from '../color';
 import { createDocument, newId, MAX_SIZE, type Layer, type LayerGroup, type PixelDoc } from '../document';
 import { clampDuration, DEFAULT_DURATION, MAX_FRAMES, type Frame } from '../frames';
 import { MAX_GROUP_DEPTH } from '../groups';
+import { reframe } from '../outside';
 
 const HEADER_SIZE = 128;
 const FRAME_HEADER_SIZE = 16;
@@ -684,7 +685,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     layerMap.push(parsed);
   }
 
-  const framePixels: Array<Map<number, Uint32Array>> = rawFrames.map(() => new Map());
+  const framePixels: Array<Map<number, ReturnType<typeof reframe>>> = rawFrames.map(() => new Map());
 
   const resolveCel = (
     frameIndex: number,
@@ -773,22 +774,22 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
       if (layerIndex < 0) continue;
 
       const source = resolveCel(f, cel);
-      const pixels = new Uint32Array(header.width * header.height);
+      const sourcePixels = source.pixels.slice();
 
-      const { width, height } = source;
+      applyOpacity(sourcePixels, cel.opacity);
 
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const dx = cel.x + x;
-          const dy = cel.y + y;
+      const placed = reframe(
+        sourcePixels,
+        source.width,
+        source.height,
+        undefined,
+        cel.x,
+        cel.y,
+        header.width,
+        header.height,
+      );
 
-          if (dx < 0 || dy < 0 || dx >= header.width || dy >= header.height) continue;
-          pixels[dy * header.width + dx] = source.pixels[y * width + x];
-        }
-      }
-
-      applyOpacity(pixels, cel.opacity);
-      framePixels[f].set(layerIndex, pixels);
+      framePixels[f].set(layerIndex, placed);
     }
   }
 
@@ -806,12 +807,26 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   document.layerCounter = layers.length;
 
   for (let i = 0; i < layers.length; i++) {
-    layers[i].pixels = framePixels[0].get(i) ?? new Uint32Array(header.width * header.height);
+    const firstFrame = framePixels[0].get(i);
+
+    layers[i].pixels = firstFrame?.pixels ?? new Uint32Array(header.width * header.height);
+
+    if (firstFrame?.outside) {
+      layers[i].outside = firstFrame.outside;
+    }
 
     if (frames.length > 1) {
-      layers[i].cels = frames.map((_, f) =>
-        f === 0 ? null : { pixels: framePixels[f].get(i) ?? new Uint32Array(header.width * header.height) },
-      );
+      layers[i].cels = frames.map((_, f) => {
+        if (f === 0) return null;
+        const cel = framePixels[f].get(i);
+
+        return cel
+          ? {
+              pixels: cel.pixels,
+              ...(cel.outside ? { outside: cel.outside } : {}),
+            }
+          : { pixels: new Uint32Array(header.width * header.height) };
+      });
     }
   }
 
