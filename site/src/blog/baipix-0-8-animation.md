@@ -35,7 +35,7 @@ Here's what's in this release.
 
 ## A timeline under the canvas
 
-An animation is a lot of small drawings in a row, so you need to see them all and move between them quickly. The **Animate** button, the little film beside Export, opens a timeline under the canvas. There's a row per layer and a column per frame.
+Animation fits into the editor you already know instead of being a separate mode: the layers stay the same, they just get a row each. The **Animate** button, the little film beside Export, opens a timeline under the canvas. There's a row per layer and a column per frame.
 
 <figure>
   <img class="for-light" src="/blog/0-8/animation-light.webp" width="1440" height="900" alt="The slime in the editor, mid-jump on frame 6 of 14, the timeline open under the canvas with a row per layer, and the onion skin showing the frames before in red and after in blue." loading="lazy" />
@@ -72,7 +72,7 @@ Reverse helps for a move that comes back. Copy the frames of the slime going up,
 
 ## Onion skin
 
-When you draw a pose, you need to see where the last one was, or the move jumps. With onion skin on, the frames before the one you're drawing show in red, and the ones after in blue, faded under it. The ghost button in the timeline turns it on and off.
+With onion skin on, the frames before the one you're drawing show in red, and the ones after in blue, faded under it. The ghost button in the timeline turns it on and off.
 
 <figure>
   <img class="for-light" src="/blog/0-8/onion-light.webp" width="1440" height="900" alt="The slime on frame 6, with the next frames faded in blue above it and the frames before in red below, and the timeline under the canvas with the onion skin button on, three frames before and three after, at 70%." loading="lazy" />
@@ -86,7 +86,7 @@ For an animation that loops, the arrows next to the opacity turn on **Loop**. On
 
 ## A GIF
 
-A GIF is still the easiest way to show an animation: it plays almost everywhere, in a chat, a README or a post. In the Export dialog, pick **GIF**.
+In the Export dialog, pick **GIF**.
 
 <figure>
   <img class="for-light" src="/blog/0-8/export-gif-light.webp" width="1100" height="688" alt="The Export dialog on the slime, with GIF picked as the format, at 8×." loading="lazy" />
@@ -131,7 +131,7 @@ The [animation docs](/docs/animation/animation/) go through all of this in more 
 
 ## A light to shade by (beta)
 
-Shading by hand means keeping in mind where the light comes from, on every part of the drawing. Each board can have a light now, to shade by, in the new **Light** section on the right.
+On a big scene, it's easy to shade one part lit from the left and the next one from the right. The light keeps the whole board in line. Each board can have a light now, to shade by, in the new **Light** section on the right.
 
 This one is still a test. I'm not sure yet it's the right way to do it, so if you try it, [tell me what you think](https://github.com/baipix/baipix/discussions).
 
@@ -160,7 +160,7 @@ Now the background goes to the new palette too, in the same undo. If you want to
 
 ## Italian and Japanese
 
-Most people who draw pixel art don't have English as their first language. Baipix speaks Italian and Japanese now, six languages in all. It opens in your browser's language when it knows it, and you can change it in View › Language.
+Baipix speaks Italian and Japanese now, six languages in all. It opens in your browser's language when it knows it, and you can change it in View › Language.
 
 <figure>
   <img class="for-light" src="/blog/0-8/japanese-light.webp" width="1440" height="900" alt="The editor in Japanese, with the ramen shop drawing open." loading="lazy" />
