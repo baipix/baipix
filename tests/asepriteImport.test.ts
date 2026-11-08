@@ -657,13 +657,27 @@ describe('import from Aseprite', () => {
   it('rejects chunks with invalid sizes', async () => {
     const bytes = makeFile([{ chunks: [layerChunk()] }]);
     new DataView(bytes.buffer).setUint32(144, 5, true); // first chunk starts after file + frame headers
-
     await expectImportError(bytes, 'unreadable');
+  });
+
+  it('uses the extended frame chunk count when it is non-zero', async () => {
+    const bytes = makeFile([{ chunks: [layerChunk(), celChunk()] }], {
+      width: 1,
+      height: 1,
+    });
+
+    const view = new DataView(bytes.buffer);
+
+    // The new field overrides the legacy count.
+    view.setUint16(128 + 6, 1, true);
+    view.setUint32(128 + 12, 2, true);
+
+    const { document } = await fromAseprite(bytes);
+    expect(document.layers[0].pixels[0]).toBe(RED);
   });
 
   it('rejects Cel Extra chunks without a preceding cel', async () => {
     const bytes = makeFile([{ chunks: [layerChunk(), celExtraChunk()] }]);
-
     await expectImportError(bytes, 'unreadable');
   });
 

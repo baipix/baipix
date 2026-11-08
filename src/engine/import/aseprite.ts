@@ -960,7 +960,8 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     const duration = view.getUint16(at + 8, true);
     frameDurations.push(duration);
     const newChunks = view.getUint32(at + 12, true);
-    const chunkCount = oldChunks === 0xffff ? newChunks : oldChunks;
+    // Prefer the extended count when present; otherwise use the legacy field.
+    const chunkCount = newChunks || oldChunks;
     const frameEnd = at + frameSize;
 
     if (magic !== FRAME_MAGIC || frameSize < FRAME_HEADER_SIZE || frameEnd > bytes.length) {
