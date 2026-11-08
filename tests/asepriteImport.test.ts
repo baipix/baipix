@@ -813,4 +813,29 @@ describe('import from Aseprite', () => {
 
     await expectImportError(bytes, 'unreadable');
   });
+
+  it('skips unknown chunk types and reports them once', async () => {
+    const bytes = makeFile([
+      {
+        chunks: [
+          layerChunk(),
+          celChunk(),
+          chunk(0x7777, new Uint8Array([1])),
+          chunk(0x7778, new Uint8Array([2])),
+          chunk(0x7777, new Uint8Array([3])),
+        ],
+      },
+    ]);
+
+    const { document, warnings } = await fromAseprite(bytes);
+
+    expect(document.layers).toHaveLength(1);
+    expect(warnings).toContainEqual({
+      code: 'unsupportedChunks',
+      values: {
+        count: 2,
+        types: '0x7777, 0x7778',
+      },
+    });
+  });
 });

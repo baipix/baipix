@@ -766,6 +766,8 @@ export const uk: Record<MessageKey, string> = {
   'toast.asepriteWarningTilesetsSkipped': 'Набори тайлів Aseprite пропущено.',
   'toast.asepriteWarningGridMetadata':
     'Параметри сітки Aseprite ({width} × {height}, позиція {x}, {y}) не збережено.',
+  'toast.asepriteWarningUnsupportedChunks':
+    'Невідомі типи блоків Aseprite пропущено ({count} різних типів; приклади: {types}).',
   'toast.asepriteCanvasTooLarge':
     'Розмір полотна {width} × {height} перевищує максимум Baipix {max} × {max}. Змініть розмір полотна в Aseprite.',
   'toast.asepriteTooManyFrames':

@@ -758,6 +758,8 @@ export const en = {
   'toast.asepriteWarningTilesetsSkipped': 'Aseprite tilesets were skipped.',
   'toast.asepriteWarningGridMetadata':
     'Aseprite grid settings ({width} × {height} at {x}, {y}) were not preserved.',
+  'toast.asepriteWarningUnsupportedChunks':
+    'Unknown Aseprite chunk types were skipped ({count} distinct types; examples: {types}).',
   'toast.asepriteCanvasTooLarge':
     'Canvas size {width} × {height} exceeds Baipix’s maximum of {max} × {max}. Resize the canvas in Aseprite.',
   'toast.asepriteTooManyFrames':

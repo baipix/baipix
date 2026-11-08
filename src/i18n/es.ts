@@ -775,6 +775,8 @@ export const es: Record<MessageKey, string> = {
   'toast.asepriteWarningTilesetsSkipped': 'Se omitieron los tilesets de Aseprite.',
   'toast.asepriteWarningGridMetadata':
     'No se conservaron los ajustes de cuadrícula de Aseprite ({width} × {height} en {x}, {y}).',
+  'toast.asepriteWarningUnsupportedChunks':
+    'Se omitieron tipos de bloques desconocidos de Aseprite ({count} tipos distintos; ejemplos: {types}).',
   'toast.asepriteCanvasTooLarge':
     'El tamaño del lienzo {width} × {height} supera el máximo de Baipix ({max} × {max}). Cambia el tamaño del lienzo en Aseprite.',
   'toast.asepriteTooManyFrames':

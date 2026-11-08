@@ -774,6 +774,8 @@ export const fr: Record<MessageKey, string> = {
   'toast.asepriteWarningTilesetsSkipped': 'Les tilesets Aseprite ont été ignorés.',
   'toast.asepriteWarningGridMetadata':
     'Les paramètres de grille Aseprite ({width} × {height} à {x}, {y}) n’ont pas été conservés.',
+  'toast.asepriteWarningUnsupportedChunks':
+    'Les types de blocs Aseprite inconnus ont été ignorés ({count} types distincts ; exemples : {types}).',
   'toast.asepriteCanvasTooLarge':
     'La taille du canevas {width} × {height} dépasse le maximum de Baipix ({max} × {max}). Redimensionnez le canevas dans Aseprite.',
   'toast.asepriteTooManyFrames':

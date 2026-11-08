@@ -763,6 +763,8 @@ export const ja: Record<MessageKey, string> = {
   'toast.asepriteWarningTilesetsSkipped': 'Asepriteのタイルセットはスキップされました。',
   'toast.asepriteWarningGridMetadata':
     'Asepriteのグリッド設定（{width} × {height}、位置 {x}, {y}）は保持されませんでした。',
+  'toast.asepriteWarningUnsupportedChunks':
+    '不明なAsepriteチャンクをスキップしました（種類数：{count}、例：{types}）。',
   'toast.asepriteCanvasTooLarge':
     'キャンバスサイズ {width} × {height} はBaipixの上限 {max} × {max} を超えています。Asepriteでキャンバスサイズを変更してください。',
   'toast.asepriteTooManyFrames':

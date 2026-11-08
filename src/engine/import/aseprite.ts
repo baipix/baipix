@@ -121,7 +121,8 @@ export type AsepriteWarningCode =
   | 'frameDurations'
   | 'externalFiles'
   | 'tilesetsSkipped'
-  | 'gridMetadata';
+  | 'gridMetadata'
+  | 'unsupportedChunks';
 
 export interface AsepriteWarning {
   code: AsepriteWarningCode;
@@ -1023,6 +1024,8 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   let hasReadCel = false;
   let totalCelPixels = 0;
 
+  const unsupportedChunkTypes = new Set<number>();
+
   for (let f = 0; f < header.frames; f++) {
     assertRange(bytes, at, FRAME_HEADER_SIZE);
 
@@ -1215,6 +1218,8 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         if (flags >>> 1 !== 0) {
           warn('unsupportedCelExtraFlags');
         }
+      } else {
+        unsupportedChunkTypes.add(chunkType);
       }
 
       at = end;
@@ -1231,6 +1236,18 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     if (effectiveDuration < 10 || effectiveDuration > 10_000) {
       warn('frameDurations');
     }
+  }
+
+  if (unsupportedChunkTypes.size) {
+    const types = [...unsupportedChunkTypes];
+
+    warn('unsupportedChunks', {
+      count: types.length,
+      types: types
+        .slice(0, 5)
+        .map((type) => `0x${type.toString(16).padStart(4, '0')}`)
+        .join(', '),
+    });
   }
 
   if (!hasNewPalette) {

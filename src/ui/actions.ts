@@ -79,6 +79,7 @@ const ASEPRITE_WARNING_KEYS: Record<AsepriteWarningCode, MessageKey> = {
   externalFiles: 'toast.asepriteWarningExternalFiles',
   tilesetsSkipped: 'toast.asepriteWarningTilesetsSkipped',
   gridMetadata: 'toast.asepriteWarningGridMetadata',
+  unsupportedChunks: 'toast.asepriteWarningUnsupportedChunks',
 };
 
 const ASEPRITE_ERROR_KEYS: Record<AsepriteImportErrorCode, MessageKey> = {
