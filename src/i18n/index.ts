@@ -6,8 +6,9 @@ import { uk } from './uk';
 import { es } from './es';
 import { ja } from './ja';
 import { it } from './it';
+import { zh_cn } from './zh_cn';
 
-export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it';
+export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it' | 'zh_cn';
 export type { MessageKey };
 
 const dictionaries: Record<Locale, Record<MessageKey, string>> = {
@@ -17,6 +18,7 @@ const dictionaries: Record<Locale, Record<MessageKey, string>> = {
   es,
   ja,
   it,
+  zh_cn,
 };
 
 export const LOCALES: { id: Locale; label: string }[] = [
@@ -26,6 +28,7 @@ export const LOCALES: { id: Locale; label: string }[] = [
   { id: 'es', label: 'Español' },
   { id: 'ja', label: '日本語' },
   { id: 'it', label: 'Italiano' },
+  { id: 'zh_cn', label: '中文 (简体)' },
 ];
 
 // Initialized to English until workspace restoration applies the saved or detected locale.
