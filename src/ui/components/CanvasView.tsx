@@ -1532,7 +1532,14 @@ export function CanvasView() {
           return;
         }
         const file = e.dataTransfer.files[0];
-        if (file) void actions.importImage(file);
+
+        if (file) {
+          if (/\.(?:ase|aseprite)$/i.test(file.name)) {
+            void actions.openAsepriteDocument(file);
+          } else {
+            void actions.importImage(file);
+          }
+        }
       }}
     >
       <canvas ref={canvasRef} className="canvas" />

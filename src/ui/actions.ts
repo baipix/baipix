@@ -733,15 +733,12 @@ export function createActions(editor: Editor) {
       }
     },
 
+    openAsepriteDocument: openAsepriteFile,
+
     /** Same size as the canvas: added as a layer (unless `asNewFile`). Otherwise: a new file. */
     async importImage(file?: File | null, asNewFile = false) {
-      const f = file ?? (await pickFile('image/*,.ase,.aseprite'));
+      const f = file ?? (await pickFile('image/*'));
       if (!f) return;
-
-      if (isAsepriteFile(f)) {
-        await openAsepriteFile(f);
-        return;
-      }
 
       if (/\.(hex|gpl)$/i.test(f.name)) {
         await importPalette(f);
