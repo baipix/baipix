@@ -71,7 +71,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'tool.lighten': '减淡',
   'tool.blur': '模糊',
   'tool.spray': '喷枪',
-  'tool.jumble': '杂色',
+  'tool.jumble': '打散',
   'tool.liquify': '液化',
   'tool.picker': '取色器',
 
@@ -104,7 +104,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'repeat.menu': '网格重复…',
   'repeat.title': '网格重复',
   'repeat.hint':
-    '将选区或图层上绘制的内容按列和行复制。实例或组件会以实例形式重复。拖动标签或输入数字即可实时更新。',
+    '将选区或图层上绘制的内容按列和行复制。实例或组件重复时，生成对应的实例。拖动标签或输入数字即可实时更新。',
   'repeat.cols': '列',
   'repeat.rows': '行',
   'repeat.gapX': '水平间距',
@@ -119,10 +119,10 @@ export const zh_cn: Record<MessageKey, string> = {
   'section.layer': '图层',
   'section.light': '光照',
   'light.info':
-    "光照方向，用于明暗着色。它只是参考辅助线，如同网格：不会被绘制，也不会被导出。",
+    "光照方向，用于明暗着色。它仅作为视觉参考，如同网格：不会被绘制，也不会被导出。",
   'light.add': '添加光照',
   'light.remove': '移除光照',
-  'light.stage': '光照：在球面上拖动光源，越近光源越高',
+  'light.stage': '光照：在球面上拖动光源，越靠近，光照越高',
   'light.readout': '{angle}°，高度 {height}°',
   'light.angle': '角度',
   'light.heightField': '高度',
@@ -151,7 +151,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'menu.extrude': '挤出…',
   'extrude.title': '挤出',
   'extrude.hint':
-    '形状沿高度向上延伸，侧面在其下方填充：左侧更暗，右侧更暗，如同等距立方体。回车应用，Escape 取消。',
+    '形状沿高度向上延伸，侧面在其下方填充：左侧较暗，右侧更暗，如同等距立方体。回车应用，Esc 取消。',
   'menu.isoFace': '放置到等距面',
   'menu.isoFaceLeft': '左侧面',
   'menu.isoFaceRight': '右侧面',
@@ -313,7 +313,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'render.pixelSizeHint': '导出文件中单个像素的大小',
   'render.scaleTip': '每个像素变为 {size} × {size} px',
   'render.gap': '间距',
-  'canvas.gapAt': '{size}× 下（单位：px）',
+  'canvas.gapAt': '{size}× 时（单位：px）',
   'export.gap': '间距 {gap} px',
 
   'options.size': '大小',
@@ -339,7 +339,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'brush.delete': '删除 {name}',
   'options.stabilizer': '防抖',
   'options.stabilizerHint':
-    '平滑抖动的笔画：线条在相当于这么多像素长的牵引绳上跟随指针。0 为关闭。拖动调整。',
+    '平滑抖动的笔画：线条会在相当于该像素长度的距离内跟随指针。0 为关闭。拖动调整。',
   'options.filled': '填充形状',
   'options.radius': '半径',
   'options.contiguous': '仅相连区域',
@@ -360,7 +360,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'hint.eraser':
     '擦除为透明。Shift+点击从上一点擦除直线，Cmd/Ctrl+Shift+点击按 0°、45°、90° 或 2:1 角度擦除。',
   'hint.line': 'Shift 锁定到 0°、45°、90° 或 2:1，用于等距线条。',
-  'hint.shape': 'Shift 绘制正形状。',
+  'hint.shape': '按住 Shift 绘制规则形状。',
   'hint.board':
     '在画板旁边拖动矩形即可新建画板。拖动画板名称可移动它；点击画板可在其上编辑。每个画板都有自己的大小和图层。',
   'board.new': '新建画板',
@@ -372,20 +372,20 @@ export const zh_cn: Record<MessageKey, string> = {
   'board.create': '创建画板',
   'board.createHint': '或使用画板工具（A）绘制一个。',
   'hint.plane':
-    '在墙面上时，跨越形状所在的立方体拖动：其上下边沿墙面呈 2:1（Shift：高宽相等）。在地面上时，从菱形的上角拖到下角（Shift：正形状；椭圆：横向拖动）。',
+    '在墙面上时，跨越形状所在的立方体拖动：其上下边沿墙面呈 2:1（Shift：高宽相等）。在地面上时，从菱形的上角拖到下角（Shift：规则形状；椭圆：横向拖动）。',
   'plane.label': '平面',
-  'plane.flat': '平面',
+  'plane.flat': '平铺',
   'plane.left': '左墙',
   'plane.right': '右墙',
   'plane.ground': '地面',
   'hint.isoShape':
-    'Shift 将其平放在地面上，保持正形状：方形地砖、圆形、正星形……从菱形上角拖到下角（椭圆：横向拖动）。平面选项可将其放到墙面上。',
+    'Shift 将其平放在地面上，保持规则形状：方形地砖、圆形、正星形……从菱形上角拖到下角（椭圆：横向拖动）。平面选项可将其放到墙面上。',
   'hint.box':
-    '从立方体的上角拖到下角：顶面为当前颜色，侧面更暗。Shift：深度与宽度相等。宽度、深度和高度会重绘上一个立方体。',
+    '从立方体的上角拖到下角：顶面为当前颜色，侧面更暗。Shift：深度与宽度相等。宽度、深度和高度会更新上一个立方体。',
   'hint.cylinder':
-    '横向拖动其顶部，即一个平躺的椭圆，宽为高的两倍。高度、描边和亮边会重绘上一个圆柱体。',
+    '横向拖动其顶部，即一个平躺的椭圆，宽为高的两倍。高度、描边和亮边会更新上一个圆柱体。',
   'hint.pyramid':
-    '从底座的上角拖到下角（Shift：方形）。顶点位于底面中心上方“高度”处。各选项会重绘上一个棱锥。',
+    '从底座的上角拖到下角（Shift：方形）。顶点位于底面中心上方“高度”处。各选项会更新上一个棱锥。',
   'options.boxWidth': '宽度',
   'options.boxDepth': '深度',
   'options.boxHeight': '高度',
@@ -409,7 +409,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'cylinder.right': '横躺朝右',
   'options.boxLength': '长度（2:1 步进）',
   'hint.ramp':
-    '像立方体一样从顶面一角拖到对角（Shift：方形）。它朝所选方向升高“高度”；阶数大于 0 时为阶梯。各选项会重绘上一个坡道。',
+    '像立方体一样从顶面一角拖到对角（Shift：方形）。它朝所选方向升高“高度”；阶数大于 0 时为阶梯。各选项会更新上一个坡道。',
   'ramp.direction': '升高方向',
   'ramp.nw': '左上',
   'ramp.ne': '右上',
@@ -461,7 +461,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'hint.spray':
     '在圆形范围内随机洒落像素，如同喷漆罐。保持静止可持续喷洒。右键喷次要颜色。',
   'hint.jumble':
-    '打乱画笔下方的像素，不添加任何颜色：用于表现叶片、岩石或噪点纹理。保持静止可继续操作。',
+    '随机打乱画笔经过区域的像素，且不添加任何新颜色：用于制作树叶、岩石或噪点纹理。保持不动可继续打乱。',
   'hint.liquify':
     '扭曲画作且不添加颜色：推挤沿方向拖动像素，膨胀与收缩使局部变大或变小（保持静止可继续操作）。',
   'liquify.push': '推挤',
@@ -472,7 +472,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'hint.select': 'Ctrl+C、Ctrl+X、Ctrl+V。Delete 清除选区。',
   'hint.moveSelection': '拖动移动选区。方向键移动 1 px，Shift 移动 8 px。',
   'hint.moveLayer':
-    '拖动像素移动其所在图层，点击空白处放下边框，Cmd/Ctrl 移动当前图层。方向键移动 1 px，Shift 移动 8 px。',
+    '拖动像素移动其所在图层，点击空白处放下选框，Cmd/Ctrl 移动当前图层。方向键移动 1 px，Shift 移动 8 px。',
 
   'color.primary': '主颜色',
   'color.secondary': '次要颜色',
@@ -581,7 +581,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'export.frames': '帧 + 雪碧图（ZIP）',
   'export.columns': '列数',
   'export.layersHint':
-    '一个 ZIP，包含每个可见图层一张 PNG，以及一张按网格排列图层的雪碧图，每行列数与列数一致，并附带供游戏引擎使用的 JSON。使用当前像素大小与间距。',
+    '一个 ZIP，包含每个可见图层一张 PNG，以及一张按网格排列图层的雪碧图，每行放置的数量与列数一致，并附带供游戏引擎使用的 JSON。使用当前像素大小与间距。',
   'export.framesHint':
     '一个 ZIP，包含所有动画帧的雪碧图及其供游戏引擎使用的 JSON。列数设置每行放置多少帧。使用当前像素大小与间距；各帧时长保留在 JSON 中。',
   'export.tileset': '瓦片集（Godot、Tiled）',
@@ -589,7 +589,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'export.tileHeight': '瓦片高度',
   'export.tileDrop': '排除空白与重复瓦片',
   'export.tilesetHint':
-    '宽 × 高像素的瓦片。一个 .zip，包含一张排列瓦片的 PNG、一个 Tiled 瓦片集和一张可重绘画作的 Tiled 地图。Godot 直接使用该 PNG。',
+    '宽 × 高像素的瓦片。一个 .zip，包含一张排列瓦片的 PNG、一个 Tiled 瓦片集和一张可重新生成画作的 Tiled 地图。Godot 直接使用该 PNG。',
   'toast.emptyTileset': '没有可切分为瓦片的内容：画作是空的。',
   'export.activeLayerOnly': '仅当前图层',
   'export.copySvg': '复制为 SVG',
@@ -626,7 +626,7 @@ export const zh_cn: Record<MessageKey, string> = {
 
   'template.icon': '图标',
   'template.favicon': '网站图标',
-  'template.smallTile': '小地砖',
+  'template.smallTile': '小瓦片',
   'template.emote': '表情',
   'template.card': '扑克牌',
   'template.sprite': '角色精灵',
@@ -668,13 +668,13 @@ export const zh_cn: Record<MessageKey, string> = {
   'anchor.bottomRight': '右下',
   'tour.drawTitle': '绘制',
   'tour.draw':
-    '铅笔（B）、套索填充（K）填充徒手绘制的形状、橡皮擦（E）和油漆桶（G）。铅笔的 … 菜单中提供抖动以及从选区生成的画笔。',
+    '铅笔（B）、用于填充徒手绘制形状的套索填充（K）、橡皮擦（E）和油漆桶（G）。在铅笔的 … 菜单中提供：抖动，以及从选区创建的画笔。',
   'tour.shapesTitle': '形状',
   'tour.shapes':
     '直线（L）、矩形（R）、椭圆（C），更多选项在此按钮的菜单中。Shift 保持方形或圆形。',
   'tour.colorsTitle': '颜色修饰',
   'tour.colors':
-    '加深（S）与减淡（O）遵循调色板色系，喷溅（P）像喷漆罐一样洒落像素。',
+    '加深（S）与减淡（O）遵循调色板色系，喷枪（P）像喷漆罐一样洒落像素。',
   'tour.warpTitle': '扭曲，不产生新颜色',
   'tour.warp':
     '模糊（F）柔化边缘，打散（J）打乱像素形成纹理，液化（W）推挤、放大或缩小画作局部。保持静止可继续操作。',
