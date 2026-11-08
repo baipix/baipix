@@ -76,6 +76,9 @@ const ASEPRITE_WARNING_KEYS: Record<AsepriteWarningCode, MessageKey> = {
   preciseCelBounds: 'toast.asepriteWarningPreciseCelBounds',
   unsupportedCelExtraFlags: 'toast.asepriteWarningUnsupportedCelExtraFlags',
   frameDurations: 'toast.asepriteWarningFrameDurations',
+  externalFiles: 'toast.asepriteWarningExternalFiles',
+  tilesetsSkipped: 'toast.asepriteWarningTilesetsSkipped',
+  gridMetadata: 'toast.asepriteWarningGridMetadata',
 };
 
 const ASEPRITE_ERROR_KEYS: Record<AsepriteImportErrorCode, MessageKey> = {

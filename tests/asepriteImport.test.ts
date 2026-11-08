@@ -19,6 +19,10 @@ interface FileOptions {
   pixelWidth?: number;
   pixelHeight?: number;
   declaredFrames?: number;
+  gridX?: number;
+  gridY?: number;
+  gridWidth?: number;
+  gridHeight?: number;
 }
 
 function concatenate(parts: Uint8Array[]): Uint8Array {
@@ -195,6 +199,33 @@ function aseString(value: string): Uint8Array {
   return concatenate([word(bytes.length), bytes]);
 }
 
+function externalFilesChunk(): Uint8Array {
+  return chunk(
+    0x2008,
+    concatenate([dword(1), new Uint8Array(8), dword(1), new Uint8Array(8), aseString('palette.gpl')]),
+  );
+}
+
+function tilesetChunk(): Uint8Array {
+  const compressed = new Uint8Array(deflateSync(new Uint8Array([255, 0, 0, 255])));
+
+  return chunk(
+    0x2023,
+    concatenate([
+      dword(1),
+      dword(2),
+      dword(1),
+      word(1),
+      word(1),
+      word(1),
+      new Uint8Array(14),
+      aseString('Tileset'),
+      dword(compressed.length),
+      compressed,
+    ]),
+  );
+}
+
 function propertyEntry(name: string, type: number, value: Uint8Array): Uint8Array {
   return concatenate([aseString(name), word(type), value]);
 }
@@ -277,6 +308,10 @@ function makeFile(frames: FrameSpec[], options: FileOptions = {}): Uint8Array {
   view.setUint8(28, options.transparentIndex ?? 0);
   view.setUint8(34, options.pixelWidth ?? 0);
   view.setUint8(35, options.pixelHeight ?? 0);
+  view.setInt16(36, options.gridX ?? 0, true);
+  view.setInt16(38, options.gridY ?? 0, true);
+  view.setUint16(40, options.gridWidth ?? 0, true);
+  view.setUint16(42, options.gridHeight ?? 0, true);
 
   let offset = 128;
 
@@ -585,6 +620,30 @@ describe('import from Aseprite', () => {
         'tilemapsSkipped',
         'customColorProfile',
       ]),
+    );
+  });
+
+  it('warns about external files, tilesets and custom grid metadata', async () => {
+    const bytes = makeFile(
+      [
+        {
+          chunks: [layerChunk(), externalFilesChunk(), tilesetChunk()],
+        },
+      ],
+      {
+        width: 1,
+        height: 1,
+        gridX: 2,
+        gridY: 3,
+        gridWidth: 8,
+        gridHeight: 12,
+      },
+    );
+
+    const { warnings } = await fromAseprite(bytes);
+
+    expect(warnings.map(({ code }) => code)).toEqual(
+      expect.arrayContaining(['externalFiles', 'tilesetsSkipped', 'gridMetadata']),
     );
   });
 

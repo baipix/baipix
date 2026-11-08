@@ -770,6 +770,10 @@ export const fr: Record<MessageKey, string> = {
   'toast.asepriteWarningUnsupportedCelExtraFlags':
     'Les indicateurs Cel Extra non pris en charge ont été ignorés.',
   'toast.asepriteWarningFrameDurations': 'Les durées d’image hors de la plage 10–10 000 ms ont été ajustées.',
+  'toast.asepriteWarningExternalFiles': 'Les fichiers externes liés n’ont pas été importés.',
+  'toast.asepriteWarningTilesetsSkipped': 'Les tilesets Aseprite ont été ignorés.',
+  'toast.asepriteWarningGridMetadata':
+    'Les paramètres de grille Aseprite ({width} × {height} à {x}, {y}) n’ont pas été conservés.',
   'toast.asepriteCanvasTooLarge':
     'La taille du canevas {width} × {height} dépasse le maximum de Baipix ({max} × {max}). Redimensionnez le canevas dans Aseprite.',
   'toast.asepriteTooManyFrames':

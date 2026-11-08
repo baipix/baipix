@@ -754,6 +754,10 @@ export const en = {
   'toast.asepriteWarningPreciseCelBounds': 'Precise cel bounds were not preserved.',
   'toast.asepriteWarningUnsupportedCelExtraFlags': 'Unsupported Cel Extra flags were ignored.',
   'toast.asepriteWarningFrameDurations': 'Frame durations outside 10–10,000 ms were adjusted.',
+  'toast.asepriteWarningExternalFiles': 'Linked external files were not imported.',
+  'toast.asepriteWarningTilesetsSkipped': 'Aseprite tilesets were skipped.',
+  'toast.asepriteWarningGridMetadata':
+    'Aseprite grid settings ({width} × {height} at {x}, {y}) were not preserved.',
   'toast.asepriteCanvasTooLarge':
     'Canvas size {width} × {height} exceeds Baipix’s maximum of {max} × {max}. Resize the canvas in Aseprite.',
   'toast.asepriteTooManyFrames':

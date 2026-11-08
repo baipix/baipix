@@ -759,6 +759,10 @@ export const ja: Record<MessageKey, string> = {
   'toast.asepriteWarningPreciseCelBounds': 'celの正確な境界情報は保持されませんでした。',
   'toast.asepriteWarningUnsupportedCelExtraFlags': 'サポートされていないCel Extraフラグは無視されました。',
   'toast.asepriteWarningFrameDurations': '10～10,000 msの範囲外のフレーム時間は調整されました。',
+  'toast.asepriteWarningExternalFiles': 'リンクされた外部ファイルはインポートされませんでした。',
+  'toast.asepriteWarningTilesetsSkipped': 'Asepriteのタイルセットはスキップされました。',
+  'toast.asepriteWarningGridMetadata':
+    'Asepriteのグリッド設定（{width} × {height}、位置 {x}, {y}）は保持されませんでした。',
   'toast.asepriteCanvasTooLarge':
     'キャンバスサイズ {width} × {height} はBaipixの上限 {max} × {max} を超えています。Asepriteでキャンバスサイズを変更してください。',
   'toast.asepriteTooManyFrames':

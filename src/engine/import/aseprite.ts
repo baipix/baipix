@@ -25,6 +25,8 @@ const OLD_PALETTE_CHUNK = 0x0004;
 const OLD_PALETTE_6BIT_CHUNK = 0x0011;
 const PALETTE_CHUNK = 0x2019;
 const COLOR_PROFILE_CHUNK = 0x2007;
+const EXTERNAL_FILES_CHUNK = 0x2008;
+const TILESET_CHUNK = 0x2023;
 
 const BLEND_MODES = [
   'normal',
@@ -54,6 +56,10 @@ interface AsepriteHeader {
   transparentIndex: number;
   pixelWidth: number;
   pixelHeight: number;
+  gridX: number;
+  gridY: number;
+  gridWidth: number;
+  gridHeight: number;
 }
 
 interface ParsedLayer {
@@ -112,7 +118,10 @@ export type AsepriteWarningCode =
   | 'unsupportedCelTypes'
   | 'preciseCelBounds'
   | 'unsupportedCelExtraFlags'
-  | 'frameDurations';
+  | 'frameDurations'
+  | 'externalFiles'
+  | 'tilesetsSkipped'
+  | 'gridMetadata';
 
 export interface AsepriteWarning {
   code: AsepriteWarningCode;
@@ -470,6 +479,51 @@ function parseUserDataChunk(bytes: Uint8Array, view: DataView, start: number, en
   return flags !== 0;
 }
 
+function parseExternalFilesChunk(bytes: Uint8Array, view: DataView, start: number, end: number): number {
+  assertChunkRange(bytes, start, 12, end);
+
+  const count = view.getUint32(start, true);
+  let at = start + 12;
+
+  for (let i = 0; i < count; i++) {
+    assertChunkRange(bytes, at, 12, end);
+    at += 12;
+    at = readString(bytes, view, at, end).next;
+  }
+
+  if (at !== end) {
+    fail('Invalid Aseprite external files chunk.');
+  }
+
+  return count;
+}
+
+function parseTilesetChunk(bytes: Uint8Array, view: DataView, start: number, end: number): void {
+  assertChunkRange(bytes, start, 34, end);
+
+  const flags = view.getUint32(start + 4, true);
+  let at = readString(bytes, view, start + 32, end).next;
+
+  if (flags & 1) {
+    assertChunkRange(bytes, at, 8, end);
+    at += 8;
+  }
+
+  if (flags & 2) {
+    assertChunkRange(bytes, at, 4, end);
+
+    const dataSize = view.getUint32(at, true);
+    at += 4;
+
+    assertChunkRange(bytes, at, dataSize, end);
+    at += dataSize;
+  }
+
+  if (at !== end) {
+    fail('Invalid Aseprite tileset chunk.');
+  }
+}
+
 function parseSliceChunk(
   bytes: Uint8Array,
   view: DataView,
@@ -555,6 +609,10 @@ function parseHeader(bytes: Uint8Array): AsepriteHeader {
     transparentIndex: view.getUint8(28),
     pixelWidth: view.getUint8(34),
     pixelHeight: view.getUint8(35),
+    gridX: view.getInt16(36, true),
+    gridY: view.getInt16(38, true),
+    gridWidth: view.getUint16(40, true),
+    gridHeight: view.getUint16(42, true),
   };
 }
 
@@ -935,6 +993,20 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     });
   }
 
+  const hasGrid = header.gridWidth !== 0 || header.gridHeight !== 0;
+
+  const isDefaultGrid =
+    header.gridX === 0 && header.gridY === 0 && header.gridWidth === 16 && header.gridHeight === 16;
+
+  if (hasGrid && !isDefaultGrid) {
+    warn('gridMetadata', {
+      x: header.gridX,
+      y: header.gridY,
+      width: header.gridWidth,
+      height: header.gridHeight,
+    });
+  }
+
   const parsedLayers: ParsedLayer[] = [];
   const groups: LayerGroup[] = [];
   const groupStack: string[] = [];
@@ -1028,6 +1100,15 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
         if (keyCount > 0) {
           warn('slices');
         }
+      } else if (chunkType === EXTERNAL_FILES_CHUNK) {
+        const count = parseExternalFilesChunk(bytes, view, start, end);
+
+        if (count > 0) {
+          warn('externalFiles');
+        }
+      } else if (chunkType === TILESET_CHUNK) {
+        parseTilesetChunk(bytes, view, start, end);
+        warn('tilesetsSkipped');
       } else if (chunkType === COLOR_PROFILE_CHUNK) {
         assertChunkRange(bytes, start, 16, end);
 

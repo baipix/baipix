@@ -762,6 +762,10 @@ export const uk: Record<MessageKey, string> = {
   'toast.asepriteWarningPreciseCelBounds': 'Точні межі cel не збережено.',
   'toast.asepriteWarningUnsupportedCelExtraFlags': 'Непідтримувані прапорці Cel Extra проігноровано.',
   'toast.asepriteWarningFrameDurations': 'Тривалість кадрів поза межами 10–10 000 мс скориговано.',
+  'toast.asepriteWarningExternalFiles': 'Пов’язані зовнішні файли не імпортовано.',
+  'toast.asepriteWarningTilesetsSkipped': 'Набори тайлів Aseprite пропущено.',
+  'toast.asepriteWarningGridMetadata':
+    'Параметри сітки Aseprite ({width} × {height}, позиція {x}, {y}) не збережено.',
   'toast.asepriteCanvasTooLarge':
     'Розмір полотна {width} × {height} перевищує максимум Baipix {max} × {max}. Змініть розмір полотна в Aseprite.',
   'toast.asepriteTooManyFrames':
