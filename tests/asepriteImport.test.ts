@@ -117,6 +117,11 @@ function celChunk({
   return chunk(0x2005, payload);
 }
 
+function legacyPaletteUpdateChunk(color: [number, number, number]): Uint8Array {
+  const payload = new Uint8Array([1, 0, 0, 1, ...color]);
+  return chunk(0x0004, payload);
+}
+
 function legacyPaletteChunk(sixBit = false): Uint8Array {
   const payload = new Uint8Array(2 + 2 + 6);
   const view = new DataView(payload.buffer);
@@ -365,8 +370,26 @@ describe('import from Aseprite', () => {
     );
 
     const { document } = await fromAseprite(bytes);
-
     expect([...document.layers[0].pixels]).toEqual([RED, pack(0, 255, 0)]);
+  });
+
+  it('applies legacy palette updates to the corresponding animation frames', async () => {
+    const bytes = makeFile(
+      [
+        {
+          chunks: [layerChunk(), legacyPaletteChunk(), celChunk({ data: new Uint8Array([0]) })],
+        },
+        {
+          chunks: [legacyPaletteUpdateChunk([0, 0, 255]), celChunk({ data: new Uint8Array([0]) })],
+        },
+      ],
+      { depth: 8, width: 1, height: 1, transparentIndex: 255 },
+    );
+
+    const { document } = await fromAseprite(bytes);
+
+    expect(document.layers[0].pixels[0]).toBe(RED);
+    expect(document.layers[0].cels?.[1]?.pixels[0]).toBe(pack(0, 0, 255));
   });
 
   it('decodes 16-bit grayscale pixels with alpha', async () => {
@@ -383,9 +406,7 @@ describe('import from Aseprite', () => {
 
   it('preserves layer opacity as layer metadata', async () => {
     const bytes = makeFile([{ chunks: [layerChunk({ opacity: 128 })] }], { flags: 1 });
-
     const { document } = await fromAseprite(bytes);
-
     expect(document.layers[0].opacity).toBeCloseTo(128 / 255);
   });
 

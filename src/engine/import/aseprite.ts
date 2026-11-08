@@ -943,6 +943,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   const palette: number[] = [];
   const legacyPalette: number[] = [];
   const framePalettes: number[][] = [];
+  const frameLegacyPalettes: number[][] = [];
   const frameDurations: number[] = [];
 
   let at = HEADER_SIZE;
@@ -1140,6 +1141,7 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     if (at !== frameEnd) fail('Aseprite frame size does not match its chunks.');
 
     framePalettes.push([...palette]);
+    frameLegacyPalettes.push([...legacyPalette]);
     rawFrames.push(frameCels);
 
     const effectiveDuration = duration || header.speed || DEFAULT_DURATION;
@@ -1154,9 +1156,15 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
       if (!(i in legacyPalette)) continue;
 
       palette[i] = legacyPalette[i];
+    }
 
-      for (const framePalette of framePalettes) {
-        framePalette[i] = legacyPalette[i];
+    for (let frame = 0; frame < framePalettes.length; frame++) {
+      const legacyFramePalette = frameLegacyPalettes[frame];
+
+      for (let i = 0; i < legacyFramePalette.length; i++) {
+        if (!(i in legacyFramePalette)) continue;
+
+        framePalettes[frame][i] = legacyFramePalette[i];
       }
     }
   }
