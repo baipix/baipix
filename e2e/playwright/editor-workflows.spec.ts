@@ -31,9 +31,10 @@ test('adds, hides, reorders and merges layers', async ({ page }) => {
 
   await expect(topLayer).toHaveClass(/is-hidden/);
 
-  // Select the top layer and move it down through the Layer menu.
+  // Select the top layer and move it down through Layer › Arrange.
   await topLayer.click();
-  await clickMenuItem(page, 'Layer', 'Move layer down');
+  await clickMenuItem(page, 'Layer', 'Arrange');
+  await page.getByRole('menuitem', { name: 'Send backward' }).click();
 
   await expect.poll(() => getLayerNames(page)).toEqual(['Layer 2', 'Layer 3', 'Layer 1']);
 

@@ -1026,6 +1026,29 @@ describe('Editor', () => {
       expect(names(e)).toBe('0123');
     });
 
+    it('brings a layer to the front or sends it to the back, in one undo step', () => {
+      const e = four();
+      e.setActiveLayer(1);
+      e.moveLayerToEnd(1);
+      expect(names(e)).toBe('0231');
+      expect(e.canMoveLayer(1)).toBe(false);
+      e.moveLayerToEnd(-1);
+      expect(names(e)).toBe('1023');
+      e.undo();
+      expect(names(e)).toBe('0231');
+    });
+
+    it('finds what a right-click with the Move tool opens the menu of', () => {
+      const e = four();
+      expect(e.menuTargetAt({ x: 2, y: 0 })).toEqual({ layer: 2 });
+      expect(e.menuTargetAt({ x: 5, y: 5 })).toBeNull();
+      e.selectLayer(2, 'single');
+      e.selectLayer(3, 'range');
+      e.groupSelection();
+      const group = e.getState().doc.layers[3].group;
+      expect(e.menuTargetAt({ x: 3, y: 0 })).toEqual({ group });
+    });
+
     it('moves the selected layers together', () => {
       const e = four();
       e.selectLayer(0, 'single');

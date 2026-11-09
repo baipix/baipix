@@ -9,7 +9,7 @@ import { frameCount, onionFrames, stillUnder } from '../../engine/frames';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
 import { clipSelection, type Selection } from '../../engine/selection';
-import { isShown } from '../../engine/groups';
+import { findGroup, isShown } from '../../engine/groups';
 import { hasBackground, isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
 import type { ToolId } from '../../engine/tools';
@@ -41,6 +41,8 @@ import { hoverStore, uiStore } from '../uiStore';
 import { referenceColorAt } from '../referenceColors';
 import { COMPONENT_MIME } from '../dragTypes';
 import { viewport } from '../viewport';
+import { openMenu } from './Menu';
+import { groupMenuItems, layerMenuItems } from '../layerMenus';
 
 const DRAWING_TOOLS: ToolId[] = [
   'pencil',
@@ -1094,6 +1096,8 @@ export function CanvasView() {
         p = { x: p.x + before.x - after.x, y: p.y + before.y - after.y };
       }
       updateHover(p);
+      // Right-click with the Move tool, as in Figma: what's under the pointer gets picked, and its menu opens.
+      if (e.button === 2 && editor.getState().tool === 'move' && openLayerMenuAt(p, e)) return;
       if (e.button === 0 && beginRefDrag(l, e.metaKey || e.ctrlKey)) return;
       if (e.button === 0) {
         const handle = handleAt(l);
@@ -1438,6 +1442,23 @@ export function CanvasView() {
     };
 
     const noMenu = (e: Event) => e.preventDefault();
+    /** The menu of the layer or group at `p`, opened at the pointer. False with nothing there. */
+    const openLayerMenuAt = (p: Point, e: PointerEvent): boolean => {
+      const target = editor.menuTargetAt(p);
+      if (!target) return false;
+      const group = 'group' in target ? findGroup(editor.getState().doc, target.group) : undefined;
+      const items =
+        'group' in target
+          ? group && groupMenuItems(editor, actions, group)
+          : layerMenuItems(editor, actions, target.layer);
+      if (!items) return false;
+      // The menu opens under an anchor: a point where the pointer is.
+      const anchor = document.createElement('div');
+      anchor.style.cssText = `position: fixed; left: ${e.clientX}px; top: ${e.clientY}px; width: 1px; height: 1px`;
+      document.body.append(anchor);
+      openMenu(anchor, items, { onClose: () => anchor.remove() });
+      return true;
+    };
     // Double-click: on the frame name, rename; on an axis grip, put the axis back in the middle;
     // with the Move tool on a group, go into it (to a subgroup, then a layer).
     const onDoubleClick = (e: MouseEvent) => {
@@ -1490,7 +1511,7 @@ export function CanvasView() {
       canvas.removeEventListener('contextmenu', noMenu);
       canvas.removeEventListener('dblclick', onDoubleClick);
     };
-  }, [editor]);
+  }, [editor, actions]);
 
   return (
     <div
