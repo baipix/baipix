@@ -740,7 +740,8 @@ export const fr: Record<MessageKey, string> = {
   'menu.code': 'Code…',
   'toast.pngCopied': 'Image copiée dans le presse-papier.',
   'toast.opened': '{name} ouvert.',
-  'toast.asepriteOpenedWithWarnings': '{name} ouvert. Ajustements à l’importation : {warnings}',
+  'toast.asepriteOpenedWithWarnings': '{name} a été ouvert avec quelques ajustements lors de l’importation.',
+  'toast.asepriteWarningDetails': 'Détails ({count})',
   'toast.unreadableAseprite': 'Impossible de lire ce fichier Aseprite.',
   'toast.asepriteWarningLayerMovementLocks':
     'Les verrouillages de déplacement des calques n’ont pas été conservés.',

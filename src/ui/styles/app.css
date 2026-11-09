@@ -1669,6 +1669,27 @@ body.is-dragging-swatch * {
 .toast-action:hover {
   background: var(--toast-hover);
 }
+.toast-details {
+  margin-top: 6px;
+  text-align: left;
+  pointer-events: auto;
+}
+.toast-details summary {
+  width: fit-content;
+  margin: 0 auto;
+  font-weight: 600;
+  cursor: pointer;
+}
+.toast-details-list {
+  max-height: min(160px, 30vh);
+  margin: 6px 0 0;
+  padding-left: 18px;
+  overflow-y: auto;
+  text-align: left;
+}
+.toast-details-list li + li {
+  margin-top: 4px;
+}
 
 /* ---------- Dialogs ---------- */
 /* ---------- Command palette ---------- */

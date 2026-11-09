@@ -303,16 +303,12 @@ export function createActions(editor: Editor) {
       editor.addDocument(result.document);
 
       if (result.warnings.length) {
-        const warnings = result.warnings
-          .map(({ code, values }) => t(ASEPRITE_WARNING_KEYS[code], values))
-          .join(' ');
+        const warnings = result.warnings.map(({ code, values }) => t(ASEPRITE_WARNING_KEYS[code], values));
 
-        toast(
-          t('toast.asepriteOpenedWithWarnings', {
-            name: file.name,
-            warnings,
-          }),
-        );
+        toast(t('toast.asepriteOpenedWithWarnings', { name: file.name }), undefined, {
+          label: t('toast.asepriteWarningDetails', { count: warnings.length }),
+          items: warnings,
+        });
       } else {
         toast(t('toast.opened', { name: file.name }));
       }
