@@ -5,7 +5,7 @@ date: '2026-11-09'
 category: news
 author: Todo-bai
 cover: /blog/0-8/cover.jpg
-draft: true
+draft: false
 ---
 
 Baipix 0.8 is out. Until now, a drawing in Baipix was one still picture. If you wanted it to move, you had to export each pose and put them together somewhere else.
