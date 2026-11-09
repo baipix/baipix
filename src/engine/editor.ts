@@ -1071,7 +1071,12 @@ export class Editor {
 
   /** The active file's boards, in order: what a .baipix file of it holds. */
   fileBoards(): PixelDoc[] {
-    return this.boardsOf(fileIdOf(this.doc)).map((s) => s.doc);
+    return this.boardsOfFile(fileIdOf(this.doc));
+  }
+
+  /** A file's boards, in order: what a .baipix file of it holds. */
+  boardsOfFile(fileId: string): PixelDoc[] {
+    return this.boardsOf(fileId).map((s) => s.doc);
   }
 
   /** Each board's undo and redo steps, oldest first, to keep them across a reload. */

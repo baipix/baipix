@@ -1343,3 +1343,17 @@ describe('removing the reference image', () => {
     expect(e.getState().doc.reference).toBeDefined();
   });
 });
+
+describe('download all', () => {
+  it("gives each file's boards, the way its own .baipix holds them", () => {
+    const e = new Editor();
+    e.newFile(8, 8, 'Slime');
+    e.addBoard(20, 0, 8, 8, 'Jump');
+    const slime = e.getState().files.find((f) => f.name === 'Slime')!;
+    e.newFile(16, 16, 'Car');
+    const car = e.getState().files.find((f) => f.name === 'Car')!;
+    expect(e.boardsOfFile(slime.id).map((d) => d.name)).toHaveLength(2);
+    expect(e.boardsOfFile(car.id).map((d) => d.width)).toEqual([16]);
+    expect(e.boardsOfFile('nope')).toEqual([]);
+  });
+});

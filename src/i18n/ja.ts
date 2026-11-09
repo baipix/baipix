@@ -788,6 +788,8 @@ export const ja: Record<MessageKey, string> = {
   'home.tagline': 'さあ、最初の1ピクセルを置こう。',
   'home.formats': '.baipix、PNG、JPG、GIFファイルを開けます',
   'home.import': '読み込み',
+  'home.downloadAll': 'すべてダウンロード',
+  'home.downloadAllTip': 'すべての作品を .baipix ファイルにして、1つの .zip に',
   'home.docsTitle': 'Baipixを学ぶ',
   'home.bugTitle': '不具合・ご要望',
   'home.drop': 'ドロップして開く',
