@@ -12,7 +12,7 @@ Baipix 0.8 is out. Until now, a drawing in Baipix was one still picture. If you 
 
 Now you can animate right in the editor. You add frames, see the ones around the one you're drawing, play them, and take them out as a GIF or as files for a game engine. Your old drawings don't change, they're just animations with one frame.
 
-It's the biggest change since Baipix started, and it's new. Only a few of us have really used it so far, so there will be rough edges. If something feels off, [tell me](https://github.com/baipix/baipix/discussions).
+It's the biggest change since Baipix started, and it's still fresh. Only a few of us have really used it so far, so there will be rough edges. If something feels off, [tell me](https://github.com/baipix/baipix/discussions).
 
 <figure>
   <img src="/blog/0-8/ecto-1.webp" width="1072" height="944" alt="The Ecto-1 driving, its wheels turning and smoke behind it, over a simple timeline with a row per layer, from the roof rack to the speed lines, the column of the frame shown moving from 1 to 16." />
@@ -113,9 +113,7 @@ A **sprite sheet** puts every frame on one picture, with a JSON next to it that 
 
 ## To keep going in Aseprite
 
-If you also use Aseprite, you can start an animation in Baipix and finish it there, without losing anything on the way. The **Aseprite** export now writes every frame, with its duration.
-
-When a layer doesn't change from one frame to the next, like the sky behind the slime, it becomes a linked cel there, which keeps the file small.
+If you also use Aseprite, you can start an animation in Baipix and finish it there. The **Aseprite** export now writes every frame, with its duration.
 
 The [animation docs](/docs/animation/animation/) go through all of this in more detail.
 
@@ -173,7 +171,7 @@ Several people worked on this release. Thank you.
 - [@mykola-lp](https://github.com/mykola-lp) made the GIF export and the frames sprite sheet, and wrote tests that run the editor in a real browser.
 - [@mrCabez](https://github.com/mrCabez) translated Baipix into Italian.
 - [@rogervokma-stack](https://github.com/rogervokma-stack) translated it into Japanese, and checked it as a native speaker.
-- [@jalal-sadat](https://github.com/jalal-sadat) fixed some React warnings, his first contribution.
+- [@jalal-sadat](https://github.com/jalal-sadat) fixed some React warnings, a first contribution.
 - [@bfs2021](https://github.com/bfs2021) made the files screen fill wide windows.
 
 <div class="post-end">
