@@ -41,12 +41,15 @@ export interface Post extends Frontmatter {
   coverImage?: string;
   coverSvg?: string;
   Content: AstroComponentFactory;
+  /** Its sections, for the table of contents. */
+  headings: { depth: number; slug: string; text: string }[];
 }
 
 const files = import.meta.glob<{
   frontmatter: Frontmatter;
   Content: AstroComponentFactory;
   rawContent: () => string;
+  getHeadings: () => { depth: number; slug: string; text: string }[];
 }>('./blog/*.md', { eager: true });
 
 const art = import.meta.glob<string>(['../../gallery/*.baipix', './art/*.baipix'], {
@@ -67,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
 
 /** Every post to show, newest first. */
 export const posts: Post[] = Object.entries(files)
-  .map(([path, { frontmatter, Content, rawContent }]) => {
+  .map(([path, { frontmatter, Content, rawContent, getHeadings }]) => {
     const slug = path.replace(/^\.\/blog\/|\.md$/g, '');
     return {
       ...frontmatter,
@@ -78,6 +81,7 @@ export const posts: Post[] = Object.entries(files)
         ? { coverSvg: coverSvg(frontmatter.cover) }
         : { coverImage: `${base}${frontmatter.cover.replace(/^\//, '')}` }),
       Content,
+      headings: getHeadings().filter((h) => h.depth === 2),
     };
   })
   .filter((p) => import.meta.env.DEV || !p.draft)
