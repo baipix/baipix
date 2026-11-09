@@ -280,11 +280,11 @@ async function addCelChunk(
 }
 
 /** Adds a cel that shows the same pixels as the entry's cel on an earlier frame, as Aseprite links them. */
-function addLinkedCelChunk(chunks: Writer[], entry: Entry, frame: number): void {
+function addLinkedCelChunk(chunks: Writer[], entry: Entry, frame: number, x: number, y: number): void {
   addChunk(chunks, CEL_CHUNK, (writer) => {
     writer.word(entry.index);
-    writer.short(0);
-    writer.short(0);
+    writer.short(x);
+    writer.short(y);
     writer.byte(255);
     writer.word(1); // linked cel
     writer.short(0); // z-index
@@ -340,7 +340,12 @@ export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promi
       if (!pixels) continue;
       const last = written.get(entry);
       if (last && samePixels(last.pixels, pixels)) {
-        if (pixelBounds(pixels, W, H)) addLinkedCelChunk(chunks, entry, last.frame);
+        const bounds = pixelBounds(pixels, W, H);
+
+        if (bounds) {
+          addLinkedCelChunk(chunks, entry, last.frame, bounds.x, bounds.y);
+        }
+
         continue;
       }
       written.set(entry, { frame: f, pixels });

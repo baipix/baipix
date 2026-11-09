@@ -67,7 +67,12 @@ async function read(bytes: Uint8Array) {
           name: new TextDecoder().decode(bytes.slice(d + 18, d + 18 + length)),
         });
       } else if (type === 0x2005 && v.getUint16(d + 7, true) === 1) {
-        frame.links.push([v.getUint16(d, true), v.getUint16(d + 16, true)]);
+        frame.links.push([
+          v.getUint16(d, true),
+          v.getUint16(d + 16, true),
+          v.getInt16(d + 2, true),
+          v.getInt16(d + 4, true),
+        ]);
       } else if (type === 0x2005) {
         expect(v.getUint16(d + 7, true)).toBe(2); // compressed image
         const w = v.getUint16(d + 16, true);
@@ -239,7 +244,7 @@ describe('export to Aseprite', () => {
     e.addLayer();
     const layers = () => e.getState().doc.layers;
     layers()[0].name = 'Ground';
-    layers()[0].pixels[12] = BLUE;
+    layers()[0].pixels[6] = BLUE;
     layers()[1].name = 'Ball';
     layers()[1].pixels[0] = RED;
     e.addFrame();
@@ -257,20 +262,20 @@ describe('export to Aseprite', () => {
     expect(f.layers.map((l) => l.name)).toEqual(['Background', 'Ground', 'Ball']);
     expect(f.frames[0].cels.map((c) => [c.layer, c.x, c.y])).toEqual([
       [0, 0, 0],
-      [1, 0, 3],
+      [1, 2, 1],
       [2, 0, 0],
     ]);
     // The ball moves: a cel of its own; the background and the ground stay: linked to the first frame.
     expect(f.frames[1].cels.map((c) => [c.layer, c.x, c.y])).toEqual([[2, 1, 1]]);
     expect(f.frames[1].links).toEqual([
-      [0, 0],
-      [1, 0],
+      [0, 0, 0, 0],
+      [1, 0, 2, 1],
     ]);
     // An empty frame for the ball: no cel at all for it.
     expect(f.frames[2].cels).toEqual([]);
     expect(f.frames[2].links).toEqual([
-      [0, 0],
-      [1, 0],
+      [0, 0, 0, 0],
+      [1, 0, 2, 1],
     ]);
   });
 });
