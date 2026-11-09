@@ -499,21 +499,22 @@ describe('import from Aseprite', () => {
     expect(document.layers[0].group).toBe(document.groups?.[1].id);
   });
 
-  it('keeps child layers editable when deep groups have isolated compositing', async () => {
+  it('flattens deep groups while preserving child layer properties', async () => {
     const chunks = [
-      ...Array.from({ length: 5 }, (_, level) =>
+      ...Array.from({ length: 6 }, (_, level) =>
         layerChunk({
           name: `Group ${level + 1}`,
           type: 1,
           level,
+          flags: level === 4 ? 1 : level === 5 ? 2 : 3,
           blend: level === 4 ? 1 : 0,
-          opacity: level === 4 ? 128 : 255,
+          opacity: level === 4 ? 128 : level === 5 ? 64 : 255,
         }),
       ),
-      layerChunk({ name: 'Paint', level: 5 }),
-      layerChunk({ name: 'Ink', level: 5 }),
-      celChunk({ layer: 5 }),
+      layerChunk({ name: 'Paint', level: 6 }),
+      layerChunk({ name: 'Ink', level: 6 }),
       celChunk({ layer: 6 }),
+      celChunk({ layer: 7 }),
     ];
 
     const bytes = makeFile([{ chunks }], {
@@ -524,46 +525,67 @@ describe('import from Aseprite', () => {
 
     const { document, warnings } = await fromAseprite(bytes);
 
-    // Only the first four group levels are supported.
-    expect(document.groups).toHaveLength(4);
+    // Only the first four group levels are retained.
+    expect(document.groups?.map((group) => group.name)).toEqual(['Group 1', 'Group 2', 'Group 3', 'Group 4']);
 
-    // Both child layers must remain separate and editable.
-    expect(document.layers).toHaveLength(2);
+    // Both child layers remain separate and editable.
     expect(document.layers.map((layer) => layer.name)).toEqual(['Paint', 'Ink']);
 
-    // Both layers are moved into the deepest supported group.
     const deepestGroupId = document.groups?.[3].id;
 
-    expect(document.layers[0].group).toBe(deepestGroupId);
-    expect(document.layers[1].group).toBe(deepestGroupId);
+    // Both layers belong to the deepest supported group.
+    for (const layer of document.layers) {
+      expect(layer.group).toBe(deepestGroupId);
+    }
 
-    // Opacity inherited from the unsupported deep group is preserved.
-    expect(document.layers[0].opacity).toBeCloseTo(128 / 255);
-    expect(document.layers[1].opacity).toBeCloseTo(128 / 255);
+    // Visibility and locking are inherited from the flattened groups.
+    for (const layer of document.layers) {
+      expect(layer.visible).toBe(false);
+      expect(layer.locked).toBe(true);
+    }
 
-    // Each layer retains its own pixel data.
-    expect(document.layers[0].pixels[0]).toBe(RED);
-    expect(document.layers[1].pixels[0]).toBe(RED);
+    // Opacity is combined across both flattened group levels.
+    const inheritedOpacity = (128 / 255) * (64 / 255);
 
-    // The unsupported group structure and blend mode are reported.
+    for (const layer of document.layers) {
+      expect(layer.opacity).toBeCloseTo(inheritedOpacity);
+      expect(layer.pixels[0]).toBe(RED);
+    }
+
+    // Unsupported group structure and blend modes are reported.
     expect(warnings).toContainEqual({ code: 'deepGroupsFlattened' });
     expect(warnings).toContainEqual({ code: 'deepGroupBlendModes' });
   });
 
-  it('keeps child layers editable when deep groups are pass-through', async () => {
+  it('flattens deep pass-through groups without merging child layers', async () => {
     const chunks = [
-      ...Array.from({ length: 5 }, (_, level) => layerChunk({ name: `Group ${level + 1}`, type: 1, level })),
-      layerChunk({ name: 'Paint', level: 5 }),
-      celChunk({ layer: 5 }),
+      ...Array.from({ length: 6 }, (_, level) =>
+        layerChunk({
+          name: `Group ${level + 1}`,
+          type: 1,
+          level,
+        }),
+      ),
+      layerChunk({ name: 'Paint', level: 6 }),
+      celChunk({ layer: 6 }),
     ];
+
     const bytes = makeFile([{ chunks }], { width: 1, height: 1 });
 
-    const { document } = await fromAseprite(bytes);
+    const { document, warnings } = await fromAseprite(bytes);
 
+    // Only the first four group levels are retained.
     expect(document.groups).toHaveLength(4);
+
+    // The child layer stays editable inside the deepest supported group.
     expect(document.layers).toHaveLength(1);
     expect(document.layers[0].name).toBe('Paint');
     expect(document.layers[0].group).toBe(document.groups?.[3].id);
+    expect(document.layers[0].pixels[0]).toBe(RED);
+
+    // Pass-through groups do not produce unsupported blend mode warnings.
+    expect(warnings).toContainEqual({ code: 'deepGroupsFlattened' });
+    expect(warnings).not.toContainEqual({ code: 'deepGroupBlendModes' });
   });
 
   it('opens files containing only unsupported tilemap layers with a warning', async () => {
@@ -677,11 +699,6 @@ describe('import from Aseprite', () => {
     await expectImportError(bytes, 'unreadable');
   });
 
-  it('rejects canvas and frame counts above the supported limits', async () => {
-    await expectImportError(makeFile([{ chunks: [] }], { width: 513 }), 'canvasTooLarge');
-    await expectImportError(makeFile([{ chunks: [] }], { declaredFrames: 1000 }), 'tooManyFrames');
-  });
-
   it('rejects indexed files without a palette', async () => {
     const bytes = makeFile([{ chunks: [layerChunk(), celChunk({ data: new Uint8Array([1]) })] }], {
       depth: 8,
@@ -692,32 +709,59 @@ describe('import from Aseprite', () => {
     await expectImportError(bytes, 'unreadable');
   });
 
+  it('rejects canvas dimensions above the supported limit', async () => {
+    // Both canvas dimensions have an independent 512 px limit.
+    await expectImportError(makeFile([{ chunks: [] }], { width: 513 }), 'canvasTooLarge');
+    await expectImportError(makeFile([{ chunks: [] }], { height: 513 }), 'canvasTooLarge');
+  });
+
+  it('rejects animation frame counts above the supported limit', async () => {
+    // The importer supports up to 999 frames.
+    await expectImportError(makeFile([{ chunks: [] }], { declaredFrames: 1000 }), 'tooManyFrames');
+  });
+
   it('rejects cels whose declared pixel area exceeds the import limit', async () => {
     const bytes = makeFile(
       [{ chunks: [layerChunk(), celChunk({ width: 2049, height: 2049, data: new Uint8Array() })] }],
       { width: 1, height: 1 },
     );
 
+    // 2049 × 2049 exceeds the maximum area of 4,194,304 pixels.
     await expectImportError(bytes, 'celTooLarge');
   });
 
-  it('imports documents whose total pixel count exceeds the previous limit', async () => {
-    const frames: FrameSpec[] = Array.from({ length: 64 }, (_, index) => ({
+  it('imports large multi-frame documents without a cumulative pixel limit', async () => {
+    const width = 512;
+    const height = 512;
+    const frameCount = 64;
+    const layerCount = 2;
+
+    const frames: FrameSpec[] = Array.from({ length: frameCount }, (_, index) => ({
       chunks:
         index === 0
           ? [layerChunk(), layerChunk({ name: 'Layer 2' }), celChunk(), celChunk({ layer: 1 })]
           : [],
     }));
 
-    const bytes = makeFile(frames, {
-      width: 512,
-      height: 512,
-    });
-
+    const bytes = makeFile(frames, { width, height });
     const { document } = await fromAseprite(bytes);
 
-    expect(document.layers).toHaveLength(2);
-    expect(document.frames).toHaveLength(64);
+    // Both layers must remain available across all 64 frames.
+    expect(document.layers).toHaveLength(layerCount);
+    expect(document.frames).toHaveLength(frameCount);
+    expect(document.layers.every((layer) => layer.cels?.length === frameCount)).toBe(true);
+
+    // The total allocated pixel count can exceed the per-cel import limit.
+    const totalPixelCount = document.layers.reduce(
+      (total, layer) =>
+        total +
+        layer.pixels.length +
+        (layer.cels ?? []).reduce((celTotal, cel) => celTotal + (cel?.pixels.length ?? 0), 0),
+      0,
+    );
+
+    expect(totalPixelCount).toBe(width * height * frameCount * layerCount);
+    expect(totalPixelCount).toBeGreaterThan(4_194_304);
   });
 
   it('rejects cels that reference a missing layer', async () => {
