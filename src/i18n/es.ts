@@ -797,6 +797,8 @@ export const es: Record<MessageKey, string> = {
   'home.tagline': 'Inserta una moneda y coloca tu primer píxel.',
   'home.formats': 'Abre archivos .baipix, PNG, JPG y GIF',
   'home.import': 'Importar',
+  'home.downloadAll': 'Descargar todo',
+  'home.downloadAllTip': 'Cada dibujo como archivo .baipix, en un solo .zip',
   'home.docsTitle': 'Aprende a usar Baipix',
   'home.bugTitle': '¿Has encontrado un error o tienes una idea?',
   'home.drop': 'Suelta un archivo para abrirlo',

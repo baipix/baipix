@@ -789,6 +789,8 @@ export const fr: Record<MessageKey, string> = {
   'home.tagline': 'Insère une pièce, pose ton premier pixel.',
   'home.formats': 'Ouvre les fichiers .baipix, PNG, JPG et GIF',
   'home.import': 'Importer',
+  'home.downloadAll': 'Tout télécharger',
+  'home.downloadAllTip': 'Chaque dessin en fichier .baipix, dans un seul .zip',
   'home.docsTitle': 'Apprendre Baipix',
   'home.bugTitle': 'Un bug, ou une idée ?',
   'home.drop': 'Dépose pour ouvrir',

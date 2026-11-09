@@ -192,6 +192,17 @@ export function HomeScreen() {
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
         {
           <div className="home-top-actions">
+            {shown.length > 0 && (
+              <button
+                type="button"
+                className="btn"
+                data-tip={t('home.downloadAllTip')}
+                onClick={() => void actions.downloadAllFiles(shown.map((f) => f.id))}
+              >
+                <Icon name="download" size={16} />
+                {t('home.downloadAll')}
+              </button>
+            )}
             <button type="button" className="btn" onClick={() => void importFile()}>
               <Icon name="upload" size={16} />
               {t('home.import')}

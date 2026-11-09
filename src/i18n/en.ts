@@ -781,6 +781,8 @@ export const en = {
   'home.tagline': 'Insert coin, drop your first pixel.',
   'home.formats': 'Opens .baipix, PNG, JPG and GIF files',
   'home.import': 'Import',
+  'home.downloadAll': 'Download all',
+  'home.downloadAllTip': 'Every drawing as a .baipix file, in one .zip',
   'home.docsTitle': 'Learn Baipix',
   'home.bugTitle': 'A bug, or an idea?',
   'home.drop': 'Drop to open',

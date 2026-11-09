@@ -791,6 +791,8 @@ export const uk: Record<MessageKey, string> = {
   'home.tagline': 'Закиньте монету — створіть свій перший піксель.',
   'home.formats': 'Відкриває файли .baipix, PNG, JPG і GIF',
   'home.import': 'Імпортувати',
+  'home.downloadAll': 'Завантажити все',
+  'home.downloadAllTip': 'Кожен малюнок як файл .baipix, в одному .zip',
   'home.docsTitle': 'Навчитися працювати з Baipix',
   'home.bugTitle': 'Помилка чи ідея?',
   'home.drop': 'Перетягніть файл, щоб відкрити',
