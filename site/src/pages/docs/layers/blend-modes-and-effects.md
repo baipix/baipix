@@ -9,7 +9,7 @@ description: 'Blend modes, opacity and layer effects in Baipix: multiply, screen
 In the Layer section of the right panel, under the layer's name:
 
 - **Blend mode**: how the layer mixes with what's under it. Darken, Multiply, Color burn, Lighten, Screen, Color dodge, Overlay, Soft light, Hard light, Difference, Exclusion, or Normal. Hovering a mode in the list previews it on the canvas.
-- **Opacity**, from 0 to 100%: type it, or drag the ◐ label left or right.
+- **Opacity**, from 0 to 100%: drag left or right anywhere on the field, or click it to type the number.
 
 A group has them too. Its **Pass through** mode (the default) lets its layers mix with everything under the group, as if it weren't there.
 

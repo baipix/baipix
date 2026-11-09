@@ -629,6 +629,48 @@ body.is-resizing * {
   padding-right: 7px;
   color: var(--muted);
 }
+/* A field that is also a slider: filled up to its value, a thin thumb at the edge of the fill. */
+.field.is-slider {
+  position: relative;
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+.field.is-slider:focus-within {
+  cursor: auto;
+}
+.field-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill);
+  background: var(--slider-fill);
+  pointer-events: none;
+}
+.field-fill::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  right: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--muted);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.field.is-slider:hover .field-fill::after,
+.field.is-sliding .field-fill::after {
+  opacity: 1;
+}
+.field.is-slider:focus-within .field-fill {
+  display: none;
+}
+.field.is-slider > :not(.field-fill) {
+  position: relative;
+}
+.field.is-slider:not(:focus-within) input {
+  pointer-events: none;
+}
 .checkbox {
   display: flex;
   align-items: center;
