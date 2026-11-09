@@ -747,8 +747,9 @@ export const uk: Record<MessageKey, string> = {
   'toast.asepriteWarningReferenceLayers': 'Референсні шари імпортовано як звичайні шари.',
   'toast.asepriteWarningUnsupportedBlendModes': 'Непідтримувані режими змішування замінено на Normal.',
   'toast.asepriteWarningDeepGroupsFlattened':
-    'Групи, вкладені глибше ніж на чотири рівні, сплющено до найглибшої підтримуваної групи.',
-  'toast.asepriteWarningDeepGroupBlendModes': 'Режими змішування сплющених груп не збережено.',
+    'Шари з груп, вкладених на глибину понад чотири рівні, переміщено до найглибшої підтримуваної групи.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'Режими змішування груп, вкладених на глибину понад чотири рівні, не збережено.',
   'toast.asepriteWarningTilemapsSkipped': 'Тайлові карти пропущено.',
   'toast.asepriteWarningUnsupportedLayerTypes': 'Непідтримувані типи шарів пропущено.',
   'toast.asepriteWarningPixelAspectRatio': 'Співвідношення сторін пікселя {width}:{height} не збережено.',

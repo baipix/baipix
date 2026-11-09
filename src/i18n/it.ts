@@ -748,9 +748,9 @@ export const it: Record<MessageKey, string> = {
   'toast.asepriteWarningUnsupportedBlendModes':
     'Le modalità di fusione non supportate sono state sostituite con Normale.',
   'toast.asepriteWarningDeepGroupsFlattened':
-    'I gruppi con più di quattro livelli di profondità sono stati appiattiti nel gruppo supportato più profondo.',
+    'I livelli appartenenti a gruppi annidati oltre il quarto livello sono stati spostati nel gruppo supportato più profondo.',
   'toast.asepriteWarningDeepGroupBlendModes':
-    'Le modalità di fusione dei gruppi appiattiti non sono state mantenute.',
+    'Le modalità di fusione dei gruppi annidati oltre il quarto livello non sono state mantenute.',
   'toast.asepriteWarningTilemapsSkipped': 'Le tilemap sono state ignorate.',
   'toast.asepriteWarningUnsupportedLayerTypes': 'I tipi di livello non supportati sono stati ignorati.',
   'toast.asepriteWarningPixelAspectRatio':

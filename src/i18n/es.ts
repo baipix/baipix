@@ -754,9 +754,9 @@ export const es: Record<MessageKey, string> = {
   'toast.asepriteWarningReferenceLayers': 'Las capas de referencia se importaron como capas normales.',
   'toast.asepriteWarningUnsupportedBlendModes': 'Los modos de fusión no compatibles se cambiaron a Normal.',
   'toast.asepriteWarningDeepGroupsFlattened':
-    'Los grupos con más de cuatro niveles de profundidad se aplanaron en el grupo compatible más profundo.',
+    'Las capas pertenecientes a grupos anidados a más de cuatro niveles se movieron al grupo compatible más profundo.',
   'toast.asepriteWarningDeepGroupBlendModes':
-    'No se conservaron los modos de fusión de los grupos aplanados.',
+    'Los modos de fusión de los grupos anidados a más de cuatro niveles no se conservaron.',
   'toast.asepriteWarningTilemapsSkipped': 'Se omitieron los mapas de tiles.',
   'toast.asepriteWarningUnsupportedLayerTypes': 'Se omitieron los tipos de capa no compatibles.',
   'toast.asepriteWarningPixelAspectRatio': 'No se conservó la proporción de píxeles {width}:{height}.',

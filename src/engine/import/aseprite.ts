@@ -1,9 +1,8 @@
 import { pack, withAlpha } from '../color';
 import { createDocument, newId, MAX_SIZE, type Layer, type LayerGroup, type PixelDoc } from '../document';
 import { clampDuration, DEFAULT_DURATION, MAX_FRAMES, type Frame } from '../frames';
-import { MAX_GROUP_DEPTH, type LayerNode } from '../groups';
+import { MAX_GROUP_DEPTH } from '../groups';
 import { reframe } from '../outside';
-import { compositeNodesToPixels } from '../composite';
 
 const HEADER_SIZE = 128;
 const FRAME_HEADER_SIZE = 16;
@@ -1424,201 +1423,12 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
 
   const outputFramePixels: Array<Map<number, ReturnType<typeof reframe>>> = rawFrames.map(() => new Map());
 
-  function sourceIndexesIn(nodes: ParsedNode[]): number[] {
-    const indexes: number[] = [];
-
-    for (const node of nodes) {
-      if (node.kind === 'group') {
-        indexes.push(...sourceIndexesIn(node.children));
-        continue;
-      }
-
-      if (node.parsed.type !== 0) continue;
-
-      const index = sourceLayerIndexById.get(node.parsed.id);
-
-      if (index !== undefined) indexes.push(index);
-    }
-
-    return indexes;
-  }
-
-  function compositeBounds(
-    indexes: number[],
-    frame: number,
-  ): { x: number; y: number; width: number; height: number } {
-    let x = 0;
-    let y = 0;
-    let right = header.width;
-    let bottom = header.height;
-
-    for (const index of indexes) {
-      const outside = framePixels[frame].get(index)?.outside;
-
-      if (!outside) continue;
-
-      x = Math.min(x, outside.x);
-      y = Math.min(y, outside.y);
-      right = Math.max(right, outside.x + outside.w);
-      bottom = Math.max(bottom, outside.y + outside.h);
-    }
-
-    return {
-      x,
-      y,
-      width: right - x,
-      height: bottom - y,
-    };
-  }
-
-  function expandSourcePixels(
-    index: number,
-    frame: number,
-    bounds: { x: number; y: number; width: number; height: number },
-  ): Uint32Array {
-    const pixels = new Uint32Array(bounds.width * bounds.height);
-    const placed = framePixels[frame].get(index);
-
-    if (!placed) return pixels;
-
-    for (let y = 0; y < header.height; y++) {
-      pixels.set(
-        placed.pixels.subarray(y * header.width, (y + 1) * header.width),
-        (y - bounds.y) * bounds.width - bounds.x,
-      );
-    }
-
-    const outside = placed.outside;
-
-    if (outside) {
-      for (let y = 0; y < outside.h; y++) {
-        for (let x = 0; x < outside.w; x++) {
-          const px = outside.x + x;
-          const py = outside.y + y;
-
-          if (px >= 0 && py >= 0 && px < header.width && py < header.height) {
-            continue;
-          }
-
-          const dx = px - bounds.x;
-          const dy = py - bounds.y;
-
-          if (dx < 0 || dy < 0 || dx >= bounds.width || dy >= bounds.height) {
-            continue;
-          }
-
-          pixels[dy * bounds.width + dx] = outside.pixels[y * outside.w + x];
-        }
-      }
-    }
-
-    return pixels;
-  }
-
-  function buildCompositeNodes(
-    nodes: ParsedNode[],
-    frame: number,
-    bounds: { x: number; y: number; width: number; height: number },
-  ): LayerNode[] {
-    const result: LayerNode[] = [];
-
-    for (const node of nodes) {
-      const parsed = node.parsed;
-
-      if (node.kind === 'group') {
-        const group: LayerGroup = {
-          id: parsed.id,
-          name: parsed.name,
-          visible: parsed.ownVisible,
-          locked: parsed.ownLocked,
-          opacity: parsed.ownOpacity,
-          ...(parsed.blendMode !== undefined ? { blendMode: parsed.blendMode } : {}),
-        };
-
-        result.push({
-          kind: 'group',
-          group,
-          children: buildCompositeNodes(node.children, frame, bounds),
-        });
-
-        continue;
-      }
-
-      if (parsed.type !== 0) continue;
-
-      const sourceIndex = sourceLayerIndexById.get(parsed.id);
-
-      if (sourceIndex === undefined) continue;
-
-      const layer: Layer = {
-        id: parsed.id,
-        name: parsed.name,
-        visible: parsed.ownVisible,
-        locked: parsed.ownLocked,
-        opacity: parsed.ownOpacity,
-        ...(parsed.blendMode !== undefined ? { blendMode: parsed.blendMode } : {}),
-        pixels: expandSourcePixels(sourceIndex, frame, bounds),
-      };
-
-      result.push({
-        kind: 'layer',
-        layer,
-        index: sourceIndex,
-      });
-    }
-
-    return result;
-  }
-
   function appendOutputNodes(nodes: ParsedNode[]): void {
     for (const node of nodes) {
       const parsed = node.parsed;
 
       if (node.kind === 'group') {
-        const isDeep = parsed.level >= MAX_GROUP_DEPTH;
-        const isIsolated = parsed.blendMode !== undefined || parsed.ownOpacity !== 1;
-
-        if (!isDeep || !isIsolated) {
-          appendOutputNodes(node.children);
-          continue;
-        }
-
-        const sourceIndexes = sourceIndexesIn(node.children);
-
-        if (!sourceIndexes.length) continue;
-
-        const outputIndex = outputLayers.length;
-
-        outputLayers.push({
-          id: newId('layer'),
-          name: parsed.name,
-          visible: parsed.visible,
-          locked: parsed.locked,
-          opacity: parsed.opacity,
-          blendMode: parsed.blendMode ?? 'normal',
-          pixels: new Uint32Array(header.width * header.height),
-          ...(parsed.parentGroup ? { group: parsed.parentGroup } : {}),
-        });
-
-        for (let frame = 0; frame < rawFrames.length; frame++) {
-          const bounds = compositeBounds(sourceIndexes, frame);
-          const nodes = buildCompositeNodes(node.children, frame, bounds);
-          const pixels = compositeNodesToPixels(nodes, bounds.width, bounds.height);
-
-          const placed = reframe(
-            pixels,
-            bounds.width,
-            bounds.height,
-            undefined,
-            bounds.x,
-            bounds.y,
-            header.width,
-            header.height,
-          );
-
-          outputFramePixels[frame].set(outputIndex, placed);
-        }
-
+        appendOutputNodes(node.children);
         continue;
       }
 

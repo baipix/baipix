@@ -751,9 +751,9 @@ export const fr: Record<MessageKey, string> = {
   'toast.asepriteWarningUnsupportedBlendModes':
     'Les modes de fusion non pris en charge ont été remplacés par Normal.',
   'toast.asepriteWarningDeepGroupsFlattened':
-    'Les groupes imbriqués à plus de quatre niveaux ont été aplatis dans le groupe pris en charge le plus profond.',
+    'Les calques appartenant à des groupes imbriqués à plus de quatre niveaux ont été déplacés dans le groupe pris en charge le plus profond.',
   'toast.asepriteWarningDeepGroupBlendModes':
-    'Les modes de fusion des groupes aplatis n’ont pas été conservés.',
+    'Les modes de fusion des groupes imbriqués à plus de quatre niveaux n’ont pas été conservés.',
   'toast.asepriteWarningTilemapsSkipped': 'Les tilemaps ont été ignorées.',
   'toast.asepriteWarningUnsupportedLayerTypes': 'Les types de calques non pris en charge ont été ignorés.',
   'toast.asepriteWarningPixelAspectRatio':

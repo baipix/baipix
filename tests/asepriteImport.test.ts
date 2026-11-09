@@ -499,7 +499,7 @@ describe('import from Aseprite', () => {
     expect(document.layers[0].group).toBe(document.groups?.[1].id);
   });
 
-  it('rasterizes an isolated group beyond the supported nesting depth', async () => {
+  it('keeps child layers editable when deep groups have isolated compositing', async () => {
     const chunks = [
       ...Array.from({ length: 5 }, (_, level) =>
         layerChunk({
@@ -511,19 +511,41 @@ describe('import from Aseprite', () => {
         }),
       ),
       layerChunk({ name: 'Paint', level: 5 }),
+      layerChunk({ name: 'Ink', level: 5 }),
       celChunk({ layer: 5 }),
+      celChunk({ layer: 6 }),
     ];
-    const bytes = makeFile([{ chunks }], { width: 1, height: 1, flags: 2 });
+
+    const bytes = makeFile([{ chunks }], {
+      width: 1,
+      height: 1,
+      flags: 2,
+    });
 
     const { document, warnings } = await fromAseprite(bytes);
 
+    // Only the first four group levels are supported.
     expect(document.groups).toHaveLength(4);
-    expect(document.layers).toHaveLength(1);
-    expect(document.layers[0].name).toBe('Group 5');
-    expect(document.layers[0].group).toBe(document.groups?.[3].id);
+
+    // Both child layers must remain separate and editable.
+    expect(document.layers).toHaveLength(2);
+    expect(document.layers.map((layer) => layer.name)).toEqual(['Paint', 'Ink']);
+
+    // Both layers are moved into the deepest supported group.
+    const deepestGroupId = document.groups?.[3].id;
+
+    expect(document.layers[0].group).toBe(deepestGroupId);
+    expect(document.layers[1].group).toBe(deepestGroupId);
+
+    // Opacity inherited from the unsupported deep group is preserved.
     expect(document.layers[0].opacity).toBeCloseTo(128 / 255);
-    expect(document.layers[0].blendMode).toBe('multiply');
+    expect(document.layers[1].opacity).toBeCloseTo(128 / 255);
+
+    // Each layer retains its own pixel data.
     expect(document.layers[0].pixels[0]).toBe(RED);
+    expect(document.layers[1].pixels[0]).toBe(RED);
+
+    // The unsupported group structure and blend mode are reported.
     expect(warnings).toContainEqual({ code: 'deepGroupsFlattened' });
     expect(warnings).toContainEqual({ code: 'deepGroupBlendModes' });
   });

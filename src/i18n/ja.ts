@@ -744,8 +744,8 @@ export const ja: Record<MessageKey, string> = {
   'toast.asepriteWarningUnsupportedBlendModes':
     'サポートされていない描画モードは「Normal」に変更されました。',
   'toast.asepriteWarningDeepGroupsFlattened':
-    '4階層を超えるグループは、サポートされる最も深い階層にフラット化されました。',
-  'toast.asepriteWarningDeepGroupBlendModes': 'フラット化されたグループの描画モードは保持されませんでした。',
+    '4階層より深いグループに属するレイヤーは、サポート対象の最も深いグループに移動されました。',
+  'toast.asepriteWarningDeepGroupBlendModes': '4階層より深いグループの描画モードは保持されませんでした。',
   'toast.asepriteWarningTilemapsSkipped': 'タイルマップはスキップされました。',
   'toast.asepriteWarningUnsupportedLayerTypes': 'サポートされていないレイヤー形式はスキップされました。',
   'toast.asepriteWarningPixelAspectRatio': 'ピクセルアスペクト比 {width}:{height} は保持されませんでした。',

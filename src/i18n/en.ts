@@ -739,8 +739,9 @@ export const en = {
   'toast.asepriteWarningReferenceLayers': 'Reference layers were imported as regular layers.',
   'toast.asepriteWarningUnsupportedBlendModes': 'Unsupported blend modes were changed to Normal.',
   'toast.asepriteWarningDeepGroupsFlattened':
-    'Groups deeper than four levels were flattened into the deepest supported group.',
-  'toast.asepriteWarningDeepGroupBlendModes': 'Blend modes of flattened groups were not preserved.',
+    'Layers in groups deeper than four levels were moved into the deepest supported group.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'Blend modes of groups deeper than four levels were not preserved.',
   'toast.asepriteWarningTilemapsSkipped': 'Tilemaps were skipped.',
   'toast.asepriteWarningUnsupportedLayerTypes': 'Unsupported layer types were skipped.',
   'toast.asepriteWarningPixelAspectRatio': 'Pixel aspect ratio {width}:{height} was not preserved.',
