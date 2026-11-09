@@ -767,8 +767,6 @@ export const en = {
   'toast.asepriteTooManyFrames':
     'The file contains {count} frames. Baipix supports up to {max} frames. Remove some frames in Aseprite.',
   'toast.asepriteCelTooLarge': 'Aseprite cel exceeds the maximum import area of {max} pixels.',
-  'toast.asepriteImportTooLarge':
-    'This Aseprite file requires too much memory to import. Reduce the canvas size, number of layers or frames in Aseprite.',
   'toast.notBaipix': 'This is not a valid .baipix file.',
   'toast.notImage': 'This file is not an image. Use a PNG, GIF, JPEG or WebP.',
   'toast.unreadableImage': 'Unable to read this image.',

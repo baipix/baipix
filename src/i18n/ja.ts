@@ -771,8 +771,6 @@ export const ja: Record<MessageKey, string> = {
   'toast.asepriteTooManyFrames':
     'このファイルには{count}フレームあります。Baipixの上限は{max}フレームです。Asepriteでフレームを削除してください。',
   'toast.asepriteCelTooLarge': 'Asepriteのcelがインポート可能な最大面積{max}ピクセルを超えています。',
-  'toast.asepriteImportTooLarge':
-    'このAsepriteファイルはインポートに必要なメモリが多すぎます。Asepriteでキャンバスサイズ、レイヤー数、またはフレーム数を減らしてください。',
   'toast.notBaipix': '有効な.baipixファイルではありません。',
   'toast.notImage': 'このファイルは画像ではありません。PNG、GIF、JPEG、WebPのいずれかを使ってください。',
   'toast.unreadableImage': 'この画像を読み込めません。',

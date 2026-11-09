@@ -779,8 +779,6 @@ export const it: Record<MessageKey, string> = {
   'toast.asepriteTooManyFrames':
     'Il file contiene {count} fotogrammi. Baipix ne supporta al massimo {max}. Rimuovi alcuni fotogrammi in Aseprite.',
   'toast.asepriteCelTooLarge': 'Il cel Aseprite supera l’area massima di importazione di {max} pixel.',
-  'toast.asepriteImportTooLarge':
-    'Questo file Aseprite richiede troppa memoria per essere importato. Riduci le dimensioni della tela, il numero di livelli o di fotogrammi in Aseprite.',
   'toast.notBaipix': 'Questo non è un file .baipix valido.',
   'toast.notImage': 'Questo file non è un’immagine. Usa un PNG, GIF, JPEG o WebP.',
   'toast.unreadableImage': 'Impossibile leggere questa immagine.',

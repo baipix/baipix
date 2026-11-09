@@ -87,7 +87,6 @@ const ASEPRITE_ERROR_KEYS: Record<AsepriteImportErrorCode, MessageKey> = {
   canvasTooLarge: 'toast.asepriteCanvasTooLarge',
   tooManyFrames: 'toast.asepriteTooManyFrames',
   celTooLarge: 'toast.asepriteCelTooLarge',
-  importTooLarge: 'toast.asepriteImportTooLarge',
 };
 
 function uniqueArchiveName(filename: string, usedNames: Set<string>): string {

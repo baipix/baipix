@@ -775,8 +775,6 @@ export const uk: Record<MessageKey, string> = {
   'toast.asepriteTooManyFrames':
     'Файл містить {count} кадрів. Baipix підтримує не більше {max} кадрів. Видаліть зайві кадри в Aseprite.',
   'toast.asepriteCelTooLarge': 'Cel Aseprite перевищує максимальну площу імпорту — {max} пікселів.',
-  'toast.asepriteImportTooLarge':
-    'Цей файл Aseprite потребує забагато пам’яті для імпорту. Зменште розмір полотна, кількість шарів або кадрів в Aseprite.',
   'toast.notBaipix': 'Це не коректний файл .baipix.',
   'toast.notImage': 'Цей файл не є зображенням. Використайте PNG, GIF, JPEG або WebP.',
   'toast.unreadableImage': 'Не вдалося прочитати це зображення.',

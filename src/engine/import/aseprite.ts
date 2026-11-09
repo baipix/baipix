@@ -11,8 +11,6 @@ const FRAME_MAGIC = 0xf1fa;
 
 const MAX_CEL_PIXELS = 4_194_304;
 const MAX_USER_DATA_NESTING = 128;
-// Combined budget for source cel data and full-canvas frame buffers.
-const MAX_TOTAL_IMPORT_PIXELS = 16_777_216;
 
 const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
@@ -128,8 +126,7 @@ export interface AsepriteWarning {
   values?: Record<string, string | number>;
 }
 
-export type AsepriteImportErrorCode =
-  'unreadable' | 'canvasTooLarge' | 'tooManyFrames' | 'celTooLarge' | 'importTooLarge';
+export type AsepriteImportErrorCode = 'unreadable' | 'canvasTooLarge' | 'tooManyFrames' | 'celTooLarge';
 
 export interface AsepriteImportResult {
   document: PixelDoc;
@@ -862,22 +859,6 @@ function celByteLength(width: number, height: number, depth: ColorDepth): number
   return pixelCount * (depth / 8);
 }
 
-function assertImportPixelBudget(
-  totalCelPixels: number,
-  imageLayerCount: number,
-  header: AsepriteHeader,
-): void {
-  const documentPixels = header.width * header.height * Math.max(1, imageLayerCount) * header.frames;
-
-  const totalPixels = documentPixels + totalCelPixels;
-
-  if (!Number.isSafeInteger(totalPixels) || totalPixels > MAX_TOTAL_IMPORT_PIXELS) {
-    failWith('Aseprite file exceeds the total import memory budget.', 'importTooLarge', {
-      max: MAX_TOTAL_IMPORT_PIXELS,
-    });
-  }
-}
-
 async function decompress(data: Uint8Array, expectedSize: number): Promise<Uint8Array> {
   try {
     const stream = new Blob([data as BlobPart]).stream().pipeThrough(new DecompressionStream('deflate'));
@@ -1021,7 +1002,6 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
   let at = HEADER_SIZE;
   let hasNewPalette = false;
   let hasReadCel = false;
-  let totalCelPixels = 0;
 
   const unsupportedChunkTypes = new Set<number>();
 
@@ -1167,16 +1147,6 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
           const height = view.getUint16(start + 18, true);
 
           const expectedSize = celByteLength(width, height, header.depth);
-          const celPixels = width * height;
-
-          if (totalCelPixels > MAX_TOTAL_IMPORT_PIXELS - celPixels) {
-            failWith('Aseprite file exceeds the total import memory budget.', 'importTooLarge', {
-              max: MAX_TOTAL_IMPORT_PIXELS,
-            });
-          }
-
-          totalCelPixels += celPixels;
-
           const payload = bytes.subarray(start + 20, end);
 
           const raw = type === 2 ? await decompress(payload, expectedSize) : payload;
@@ -1300,7 +1270,6 @@ export async function fromAseprite(data: Uint8Array): Promise<AsepriteImportResu
     layerMap.push(parsed);
   }
 
-  assertImportPixelBudget(totalCelPixels, layers.length, header);
   const framePixels: Array<Map<number, ReturnType<typeof reframe>>> = rawFrames.map(() => new Map());
 
   const resolveCel = (
