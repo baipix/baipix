@@ -2035,6 +2035,17 @@ export class Editor {
   }
 
   /**
+   * What a right-click with the Move tool opens the menu of, at pixel `p`: the group the Move tool
+   * would take there (its outermost one), or the layer. Null with nothing there.
+   */
+  menuTargetAt(p: Point): { group: string } | { layer: number } | null {
+    const k = this.layerAt(p);
+    if (k < 0) return null;
+    const { group } = this.moveTarget(k);
+    return group ? { group } : { layer: k };
+  }
+
+  /**
    * What the Move tool would take at layer `k`: in a group, the whole group (its outermost one),
    * unless the group is selected or one of its layers was picked on its own in the Layers panel.
    */
@@ -2374,12 +2385,24 @@ export class Editor {
 
   /** Moves the selected layer or group past its neighbor, within its group (one undo step). */
   moveLayer(direction: 1 | -1): void {
-    const { item, parent, list, at } = this.siblings();
+    const { list, at } = this.siblings();
     if (!this.canMoveLayer(direction)) return;
+    // Up: right above the next item. Down: right above the item two below, or at the group's bottom.
+    this.placeSelected(direction > 0 ? list[at + 1] : list[at - 2]);
+  }
+
+  /** Moves the selected layer or group to the top (1) or the bottom (-1) of its group (one undo step). */
+  moveLayerToEnd(direction: 1 | -1): void {
+    const { list } = this.siblings();
+    if (!this.canMoveLayer(direction)) return;
+    this.placeSelected(direction > 0 ? list.at(-1) : undefined);
+  }
+
+  /** Puts the selected layer or group right above `below`, or at its group's bottom without one. */
+  private placeSelected(below: LayerNode | undefined): void {
+    const { item, parent } = this.siblings();
     const top = (n: LayerNode) =>
       n.kind === 'layer' ? n.layer.id : groupLayers(this.doc, n.group.id).at(-1)!.id;
-    // Up: right above the next item. Down: right above the item two below, or at the group's bottom.
-    const below = direction > 0 ? list[at + 1] : list[at - 2];
     this.checkpoint();
     if (!moveItems(this.doc, [item], { parent, aboveLayer: below ? top(below) : null })) {
       this.active.history.discardLast();

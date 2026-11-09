@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { fileMasters, findMaster, isLinkedInstance, spritePixels } from '../../engine/components';
+import { fileMasters, findMaster, spritePixels } from '../../engine/components';
 import { fileNameOf, isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
 import {
   groupChain,
@@ -17,10 +17,11 @@ import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
+import { groupMenuItems, layerMenuItems, renameStore } from '../layerMenus';
 import { Section } from '../components/Section';
 import { Thumbnail } from '../components/Thumbnail';
 import { COMPONENT_MIME } from '../dragTypes';
-import { openAdjust, toggleLayersPanel, uiStore } from '../uiStore';
+import { toggleLayersPanel, uiStore } from '../uiStore';
 
 /** Inline rename on double-click, used by files and layers. */
 function EditableName({
@@ -220,7 +221,6 @@ function LayersSection() {
   // The file's layers outside its boards, if it has any.
   const free = editor.freeZone();
   const multi = !referenceSelected && selected.length > 1;
-  const n = doc.layers.length;
   // A component needs something drawn on a plain layer (not an instance, not one already).
   const active = doc.layers[doc.activeLayer];
   const canMakeComponent =
@@ -237,139 +237,20 @@ function LayersSection() {
   // Drag to reorder: `target` is where the dragged rows would land.
   const [drag, setDrag] = useState<{ ids: string[]; target: DropTarget } | null>(null);
   const dragged = useRef(false);
-  const [renaming, setRenaming] = useState<string | null>(null);
+  const renaming = renameStore.use((s) => s.id);
+  const setRenaming = (id: string | null) => renameStore.set({ id });
 
   // Right-click: on a selection of several layers, the menu acts on all of them. Otherwise the layer
   // becomes active and the menu acts on it.
   const openLayerMenu = (e: React.MouseEvent<HTMLElement>, index: number) => {
     e.preventDefault();
-    const layer = doc.layers[index];
-    const flatten = {
-      label: t('layer.flatten'),
-      icon: 'layers' as const,
-      onSelect: () => editor.flattenImage(),
-    };
-    if (multi && selected.includes(layer.id)) {
-      const count = selected.length;
-      const visible = doc.layers.filter((l) => selected.includes(l.id) && l.visible).length;
-      openMenu(e.currentTarget, [
-        {
-          label: t('layer.duplicateCount', { count }),
-          icon: 'duplicate',
-          shortcut: 'Shift+D',
-          onSelect: () => editor.duplicateLayer(),
-        },
-        {
-          label: t('group.create'),
-          icon: 'folderPlus',
-          shortcut: 'Ctrl+G',
-          onSelect: () => editor.groupSelection(),
-        },
-        {
-          label: t('layer.mergeCount', { count }),
-          icon: 'merge',
-          disabled: visible < 2,
-          onSelect: () => editor.mergeLayers(),
-        },
-        flatten,
-        '-',
-        {
-          label: t('layer.deleteCount', { count }),
-          icon: 'trash',
-          onSelect: () => actions.deleteLayers(),
-        },
-      ]);
-      return;
-    }
-    editor.setActiveLayer(index);
-    openMenu(e.currentTarget, [
-      {
-        label: t('layer.rename'),
-        icon: 'pencil',
-        onSelect: () => setRenaming(layer.id),
-      },
-      { label: t('layer.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
-      { label: t('repeat.menu'), icon: 'repeat', onSelect: () => editor.beginRepeat() },
-      {
-        label: t('group.create'),
-        icon: 'folderPlus',
-        shortcut: 'Ctrl+G',
-        onSelect: () => editor.groupSelection(),
-      },
-      // An instance offers its own two actions in place of making a component of it.
-      ...(isLinkedInstance(doc, layer)
-        ? [
-            { label: t('component.goTo'), icon: 'component' as const, onSelect: () => editor.goToMaster() },
-            {
-              label: t('component.detach'),
-              icon: 'detach' as const,
-              shortcut: 'Ctrl+Alt+B',
-              onSelect: () => editor.detachInstance(),
-            },
-          ]
-        : [
-            {
-              label: t('component.create'),
-              icon: 'component' as const,
-              shortcut: 'Ctrl+Alt+K',
-              disabled: !!layer.component || !layer.pixels.some((c) => c !== 0),
-              onSelect: () => editor.createComponent(),
-            },
-          ]),
-      {
-        label: t('layer.mergeDown'),
-        icon: 'merge',
-        disabled: index === 0,
-        onSelect: () => editor.mergeDown(),
-      },
-      {
-        label: t('layer.mergeVisible'),
-        icon: 'layers',
-        disabled: doc.layers.filter((l) => l.visible).length < 2,
-        onSelect: () => editor.mergeVisible(),
-      },
-      flatten,
-      { label: t('adjust.open'), icon: 'panel', onSelect: () => openAdjust('layer') },
-      '-',
-      {
-        label: layer.locked ? t('layer.unlock') : t('layer.lock'),
-        icon: layer.locked ? 'unlock' : 'lock',
-        onSelect: () => editor.setLayerLocked(index, !layer.locked),
-      },
-      { label: t('layer.soloMenu'), icon: 'eye', onSelect: () => editor.soloLayer(index) },
-      '-',
-      { label: t('layer.delete'), icon: 'trash', disabled: n < 2, onSelect: () => actions.deleteLayers() },
-    ]);
+    openMenu(e.currentTarget, layerMenuItems(editor, actions, index));
   };
 
   /** Right-click on a group: the group's own menu. */
   const openGroupMenu = (e: React.MouseEvent<HTMLElement>, group: LayerGroup) => {
     e.preventDefault();
-    editor.selectGroup(group.id);
-    openMenu(e.currentTarget, [
-      { label: t('layer.rename'), icon: 'pencil', onSelect: () => setRenaming(group.id) },
-      { label: t('group.duplicate'), icon: 'duplicate', onSelect: () => editor.duplicateLayer() },
-      { label: t('group.merge'), icon: 'merge', onSelect: () => editor.mergeGroup(group.id) },
-      {
-        label: t('group.ungroup'),
-        icon: 'layers',
-        shortcut: 'Ctrl+Shift+G',
-        onSelect: () => editor.ungroup(group.id),
-      },
-      '-',
-      {
-        label: group.locked ? t('layer.unlock') : t('layer.lock'),
-        icon: group.locked ? 'unlock' : 'lock',
-        onSelect: () => editor.setGroupLocked(group.id, !group.locked),
-      },
-      '-',
-      {
-        label: t('group.delete'),
-        icon: 'trash',
-        disabled: groupLayers(doc, group.id).length >= n,
-        onSelect: () => actions.deleteLayers(),
-      },
-    ]);
+    openMenu(e.currentTarget, groupMenuItems(editor, actions, group));
   };
 
   const startDrag = (e: React.PointerEvent, row: LayerRow) => {
