@@ -8,7 +8,7 @@ Baipix draws isometric pixel art the classic way: lines go two pixels across for
 
 ## The isometric grid
 
-Turn it on in the **Board** section of the right panel, or start from the Isometric tile or Isometric scene template.
+Turn it on in the **Board** section of the right panel, or start from the Isometric tile or Isometric scene preset.
 
 - **Cell**: the width of a diamond, in pixels. A box's top falls exactly on the diamonds.
 - **Vertical lines**: upright lines through the diamonds' corners, to build heights.

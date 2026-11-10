@@ -8,13 +8,13 @@ import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
+import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
-import { createFromTemplate, TEMPLATES, type Template } from '../templates';
+import { createFromTemplate, TEMPLATES } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
-import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
-import { toCss } from '../../engine/color';
+import { PALETTE_PRESETS } from '../../engine/palette';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 
@@ -36,23 +36,6 @@ function formatUpdated(time: number, justNow: string): string {
     month: 'short',
     ...(!sameYear && { year: 'numeric' }),
   });
-}
-
-/** A template as a board of its shape, striped with its palette's colors. */
-function TemplatePreview({ template }: { template: Template }) {
-  const colors = presetColors(template.palette).slice(0, 8);
-  // Fitted in the 16:9 picture, at most 80% of its width and 64% of its height.
-  const k = Math.min(80 / template.width, (0.64 * 56.25) / template.height);
-  const size = { width: `${template.width * k}%`, height: `${((template.height * k) / 56.25) * 100}%` };
-  return (
-    <span className="home-thumb home-template-preview" aria-hidden="true">
-      <span className="home-template-board" style={size}>
-        {colors.map((c, i) => (
-          <span key={i} style={{ background: toCss(c) }} />
-        ))}
-      </span>
-    </span>
-  );
 }
 
 /** The drawing at a whole scale, about 320 px on its long side; CSS crops it to the card. */
@@ -321,23 +304,14 @@ export function HomeScreen() {
                   <h2 className="home-welcome-title">{t('template.startTitle')}</h2>
                   <div className="home-templates-grid">
                     {TEMPLATES.map((tpl) => (
-                      <button
+                      <PresetCard
                         key={tpl.id}
-                        type="button"
-                        className="home-card home-template"
+                        template={tpl}
                         onClick={() => {
                           createFromTemplate(editor, tpl, t('default.untitled'));
                           leaveHome(editor);
                         }}
-                      >
-                        <TemplatePreview template={tpl} />
-                        <span className="home-card-info">
-                          <span className="home-card-name truncate">{t(tpl.label)}</span>
-                          <span className="home-card-meta muted truncate">
-                            {tpl.width} × {tpl.height}
-                          </span>
-                        </span>
-                      </button>
+                      />
                     ))}
                   </div>
                 </section>

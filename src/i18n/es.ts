@@ -655,8 +655,8 @@ export const es: Record<MessageKey, string> = {
   'template.mirrored': 'simetría',
   'template.tiled': 'mosaico',
   'dialog.swapSize': 'Intercambiar ancho y alto',
-  'template.title': 'Plantillas',
-  'template.startTitle': 'Empezar con una plantilla',
+  'template.title': 'Formatos',
+  'template.startTitle': 'Elegir un formato',
   'upscaled.title': 'Imagen de pixel art ampliada',
   'upscaled.hint':
     'Esta imagen parece pixel art ampliado ×{scale}. Recupera sus píxeles para editarla a su tamaño original. Ajusta la cuadrícula si no coincide exactamente.',

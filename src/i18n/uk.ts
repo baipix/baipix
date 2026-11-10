@@ -649,8 +649,8 @@ export const uk: Record<MessageKey, string> = {
   'template.mirrored': 'симетрія',
   'template.tiled': 'мозаїка',
   'dialog.swapSize': 'Поміняти місцями ширину й висоту',
-  'template.title': 'Шаблони',
-  'template.startTitle': 'Почати із шаблону',
+  'template.title': 'Формати',
+  'template.startTitle': 'Обрати формат',
   'upscaled.title': 'Збільшене піксельне зображення',
   'upscaled.hint':
     'Схоже, це піксельне зображення збільшене в {scale} разів. Відновіть його пікселі, щоб редагувати в початковому розмірі; налаштуйте сітку, якщо вона не збігається.',

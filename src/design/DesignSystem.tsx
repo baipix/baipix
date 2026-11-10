@@ -12,6 +12,8 @@ import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
 import { NumberField } from '../ui/components/NumberField';
+import { PresetCard } from '../ui/components/PresetCard';
+import { TEMPLATES } from '../ui/templates';
 import { Tooltips } from '../ui/components/Tooltips';
 import { ICONS, type IconName } from '../ui/icons';
 import { ColorRow } from '../ui/panels/ColorRow';
@@ -813,6 +815,18 @@ function SurfacesBlock() {
               Trash
               <span className="home-nav-count">2</span>
             </button>
+          </div>
+        </Specimen>
+        <Specimen
+          wide
+          label="Preset card"
+          use="A preset on the first files screen: a small picture in the interface's grey, in the preset's palette on hover, bigger as the board is."
+        >
+          <div className="home-templates-grid" style={{ maxWidth: 640 }}>
+            {['sprite', 'emote', 'gameboy'].map((id) => {
+              const preset = TEMPLATES.find((p) => p.id === id);
+              return preset && <PresetCard key={id} template={preset} />;
+            })}
           </div>
         </Specimen>
         <Specimen

@@ -643,8 +643,8 @@ export const en = {
   'template.mirrored': 'symmetry',
   'template.tiled': 'tiled',
   'dialog.swapSize': 'Swap width and height',
-  'template.title': 'Templates',
-  'template.startTitle': 'Start from a template',
+  'template.title': 'Presets',
+  'template.startTitle': 'Choose a preset',
   'upscaled.title': 'Pixel art scaled up',
   'upscaled.hint':
     'This image looks like pixel art scaled up ×{scale}. Recover its pixels to edit it at its real size; adjust the grid if it doesn’t fall right.',

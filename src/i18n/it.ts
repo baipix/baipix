@@ -648,8 +648,8 @@ export const it: Record<MessageKey, string> = {
   'template.mirrored': 'simmetria',
   'template.tiled': 'mosaico',
   'dialog.swapSize': 'Scambia larghezza e altezza',
-  'template.title': 'Modelli',
-  'template.startTitle': 'Parti da un modello',
+  'template.title': 'Formati',
+  'template.startTitle': 'Scegli un formato',
   'upscaled.title': 'Pixel art ingrandita',
   'upscaled.hint':
     'Questa immagine sembra pixel art ingrandita ×{scale}. Recupera i suoi pixel per modificarla alla sua dimensione reale; regola la griglia se non combacia.',

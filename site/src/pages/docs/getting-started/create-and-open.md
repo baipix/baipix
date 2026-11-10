@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Create and open files
-description: 'Start a new pixel art file from a size or a template, import an image, recover the real pixels of upscaled pixel art, and open .baipix files.'
+description: 'Start a new pixel art file from a size or a preset, import an image, recover the real pixels of upscaled pixel art, and open .baipix files.'
 ---
 
 ## A new file
@@ -9,13 +9,13 @@ description: 'Start a new pixel art file from a size or a template, import an im
 **File › New file…**, or Create on the files screen. Type a width and a height, or pick one of the sizes you used last, and press <kbd>Enter</kbd>. **From an image…** at the bottom starts from a picture instead.
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/new-file-light.webp" width="352" height="498" alt="The New file dialog: width and height, recent sizes, and the templates with their sizes." loading="lazy" />
-  <img class="for-dark" src="../../shots/new-file-dark.webp" width="352" height="498" alt="The New file dialog: width and height, recent sizes, and the templates with their sizes." loading="lazy" />
+  <img class="for-light" src="../../shots/new-file-light.webp" width="352" height="610" alt="The New file dialog: width and height, recent sizes, and the presets with their sizes." loading="lazy" />
+  <img class="for-dark" src="../../shots/new-file-dark.webp" width="352" height="610" alt="The New file dialog: width and height, recent sizes, and the presets with their sizes." loading="lazy" />
 </figure>
 
-Or start from a **template**, each with a size and a palette that suit it. Before your first drawing, the files screen shows them as cards: one click and the canvas is ready.
+Or start from a **preset**, each with a size and a palette that suit it. Before your first drawing, the files screen shows them as cards: one click and the canvas is ready.
 
-| Template         | Size      | Palette        | Comes with                   |
+| Preset           | Size      | Palette        | Comes with                   |
 | ---------------- | --------- | -------------- | ---------------------------- |
 | Icon             | 16 × 16   | Sweetie 16     |                              |
 | Favicon          | 32 × 32   | Sweetie 16     |                              |
