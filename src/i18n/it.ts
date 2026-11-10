@@ -746,6 +746,46 @@ export const it: Record<MessageKey, string> = {
   'menu.code': 'Codice…',
   'toast.pngCopied': 'Immagine copiata negli appunti.',
   'toast.opened': '{name} aperto.',
+  'toast.asepriteOpenedWithWarnings': '{name} è stato aperto con alcune modifiche durante l’importazione.',
+  'toast.asepriteWarningDetails': 'Dettagli ({count})',
+  'toast.unreadableAseprite': 'Impossibile leggere questo file Aseprite.',
+  'toast.asepriteWarningLayerMovementLocks': 'I blocchi di spostamento dei livelli non sono stati mantenuti.',
+  'toast.asepriteWarningBackgroundLayers': 'I livelli di sfondo sono stati importati come livelli normali.',
+  'toast.asepriteWarningReferenceLayers':
+    'I livelli di riferimento sono stati importati come livelli normali.',
+  'toast.asepriteWarningUnsupportedBlendModes':
+    'Le modalità di fusione non supportate sono state sostituite con Normale.',
+  'toast.asepriteWarningDeepGroupsFlattened':
+    'I livelli appartenenti a gruppi annidati oltre il quarto livello sono stati spostati nel gruppo supportato più profondo.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'Le modalità di fusione dei gruppi annidati oltre il quarto livello non sono state mantenute.',
+  'toast.asepriteWarningTilemapsSkipped': 'Le tilemap sono state ignorate.',
+  'toast.asepriteWarningUnsupportedLayerTypes': 'I tipi di livello non supportati sono stati ignorati.',
+  'toast.asepriteWarningPixelAspectRatio':
+    'Il rapporto d’aspetto dei pixel {width}:{height} non è stato mantenuto.',
+  'toast.asepriteWarningAnimationTags': 'I tag di animazione non sono stati mantenuti.',
+  'toast.asepriteWarningUserData': 'I dati utente di Aseprite non sono stati mantenuti.',
+  'toast.asepriteWarningSlices': 'Le slice di Aseprite non sono state mantenute.',
+  'toast.asepriteWarningEmbeddedIccProfile': 'Il profilo colore ICC incorporato è stato ignorato.',
+  'toast.asepriteWarningCustomColorProfile':
+    'Le impostazioni del profilo colore personalizzato sono state ignorate.',
+  'toast.asepriteWarningCelOrdering': 'L’ordine dei cel nei singoli fotogrammi non è stato mantenuto.',
+  'toast.asepriteWarningUnsupportedCelTypes': 'I tipi di cel non supportati sono stati ignorati.',
+  'toast.asepriteWarningPreciseCelBounds': 'I limiti precisi dei cel non sono stati mantenuti.',
+  'toast.asepriteWarningUnsupportedCelExtraFlags': 'I flag Cel Extra non supportati sono stati ignorati.',
+  'toast.asepriteWarningFrameDurations':
+    'Le durate dei fotogrammi fuori dall’intervallo 10–10 000 ms sono state corrette.',
+  'toast.asepriteWarningExternalFiles': 'I file esterni collegati non sono stati importati.',
+  'toast.asepriteWarningTilesetsSkipped': 'I tileset di Aseprite sono stati ignorati.',
+  'toast.asepriteWarningGridMetadata':
+    'Le impostazioni della griglia Aseprite ({width} × {height} in {x}, {y}) non sono state mantenute.',
+  'toast.asepriteWarningUnsupportedChunks':
+    'I tipi di blocchi Aseprite sconosciuti sono stati ignorati ({count} tipi distinti; esempi: {types}).',
+  'toast.asepriteCanvasTooLarge':
+    'La dimensione della tela {width} × {height} supera il limite di Baipix ({max} × {max}). Ridimensiona la tela in Aseprite.',
+  'toast.asepriteTooManyFrames':
+    'Il file contiene {count} fotogrammi. Baipix ne supporta al massimo {max}. Rimuovi alcuni fotogrammi in Aseprite.',
+  'toast.asepriteCelTooLarge': 'Il cel Aseprite supera l’area massima di importazione di {max} pixel.',
   'toast.notBaipix': 'Questo non è un file .baipix valido.',
   'toast.notImage': 'Questo file non è un’immagine. Usa un PNG, GIF, JPEG o WebP.',
   'toast.unreadableImage': 'Impossibile leggere questa immagine.',
@@ -790,7 +830,7 @@ export const it: Record<MessageKey, string> = {
   'home.animated': 'Animazione',
   'home.title': 'Benvenuto in Baipix',
   'home.tagline': 'Posa il tuo primo pixel.',
-  'home.formats': 'Apre file .baipix, PNG, JPG, GIF e WebP',
+  'home.formats': 'Apre file .baipix, .ase, .aseprite, PNG, JPG e GIF',
   'home.import': 'Importa',
   'home.downloadAll': 'Scarica tutto',
   'home.downloadAllTip': 'Ogni disegno come file .baipix, in un unico .zip',

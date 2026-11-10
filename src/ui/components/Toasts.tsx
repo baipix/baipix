@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { dismissToast, toastStore } from '../uiStore';
+import { dismissToast, setToastDetailsOpen, toastStore } from '../uiStore';
 
 export function Toasts() {
   const toasts = toastStore.use((s) => s.toasts);
@@ -10,6 +10,22 @@ export function Toasts() {
   const toast = (
     <div className={`toast${last ? ' is-visible' : ''}`} role="status" aria-live="polite">
       {last?.message}
+
+      {last?.details && (
+        <details
+          className="toast-details"
+          onToggle={(event) => setToastDetailsOpen(last.id, event.currentTarget.open)}
+        >
+          <summary>{last.details.label}</summary>
+
+          <ul className="toast-details-list">
+            {last.details.items.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+
       {last?.action && (
         <button
           type="button"
