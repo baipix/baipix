@@ -2714,6 +2714,11 @@ body.is-dragging-swatch * {
 .home-nav-link:hover {
   color: var(--text);
 }
+/* The arrow after a link that leaves Baipix: pushed to the end, fainter. */
+.home-nav-link .icon:last-child {
+  margin-left: auto;
+  opacity: 0.6;
+}
 .home-main {
   flex: 1;
   min-width: 0;
