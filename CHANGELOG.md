@@ -29,6 +29,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The tour gave A as Spray's key; it's P (A is the Board tool). ([#758](https://github.com/baipix/baipix/pull/758))
 - Going back to the files screen during the tour left its bubble on top, pointing at nothing; the tour now waits for the editor and picks up at the same step. ([#785](https://github.com/baipix/baipix/pull/785))
 - In a file exported for Aseprite, a layer that stays the same from one frame to the next no longer jumps to the top left corner on the frames after the first. ([#778](https://github.com/baipix/baipix/pull/778))
+- The Effects and Light sections had a caret to fold them even when empty; clicking it and then adding an effect left the section folded, as if nothing had been added. An empty section has no caret now, and adding an effect or the light opens it. ([#794](https://github.com/baipix/baipix/pull/794))
 
 ### Website
 
