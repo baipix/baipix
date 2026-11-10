@@ -224,6 +224,7 @@ export function HomeScreen() {
                 <a className="home-nav-link" href={DOCS_URL} target="_blank" rel="noopener">
                   <Icon name="docs" size={14} />
                   {t('home.docsTitle')}
+                  <Icon name="external" size={12} />
                 </a>
                 <button
                   type="button"
@@ -233,10 +234,12 @@ export function HomeScreen() {
                 >
                   <Icon name="bug" size={14} />
                   {t('home.bugTitle')}
+                  <Icon name="external" size={12} />
                 </button>
                 <a className="home-nav-link" href={CHANGELOG_URL} target="_blank" rel="noopener">
                   <Icon name="news" size={14} />
                   {t('home.newsTitle', { version: __APP_VERSION__ })}
+                  <Icon name="external" size={12} />
                 </a>
               </div>
             </nav>

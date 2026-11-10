@@ -10,6 +10,7 @@ import {
   AlignStartHorizontal,
   AlignStartVertical,
   ArrowDownToLine,
+  ArrowUpRight,
   ArrowLeft,
   ArrowUpDown,
   ArrowLeftRight,
@@ -182,6 +183,8 @@ export const ICONS = {
   swap: ArrowLeftRight,
   back: ArrowLeft,
   news: Sparkles,
+  /** A link that opens another page, in a new tab. */
+  external: ArrowUpRight,
   grid: Grid3x3,
   sort: ArrowUpDown,
   gridView: LayoutGrid,
