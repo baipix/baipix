@@ -2745,8 +2745,9 @@ body.is-dragging-swatch * {
   margin-top: 24px;
 }
 .home-welcome-actions .btn {
-  height: 32px;
-  padding: 0 14px;
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
 }
 .home-welcome-title {
   align-self: flex-start;
