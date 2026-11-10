@@ -49,8 +49,10 @@ export const ko: Record<MessageKey, string> = {
   'toolbar.rework': '가공 도구',
   'toolbar.selections': '선택 도구',
 
-  'hint.lassoSelect': '선택할 부분을 둘러서 그립니다. 마우스를 놓으면 닫힙니다. Shift는 선택 영역에 추가하고, Alt는 선택 영역에서 뺍니다.',
-  'hint.wand': '색상을 클릭하여 해당 영역을 선택하거나 전체에서 같은 색상을 선택합니다. Shift는 선택 영역에 추가하고, Alt는 선택 영역에서 뺍니다.',
+  'hint.lassoSelect':
+    '선택할 부분을 둘러서 그립니다. 마우스를 놓으면 닫힙니다. Shift는 선택 영역에 추가하고, Alt는 선택 영역에서 뺍니다.',
+  'hint.wand':
+    '색상을 클릭하여 해당 영역을 선택하거나 전체에서 같은 색상을 선택합니다. Shift는 선택 영역에 추가하고, Alt는 선택 영역에서 뺍니다.',
 
   'options.wandContiguous': '인접한 영역만',
 
@@ -81,7 +83,8 @@ export const ko: Record<MessageKey, string> = {
   'section.layers': '레이어',
   'section.effects': '효과',
 
-  'effects.hint': '레이어의 픽셀을 직접 바꾸지 않고 효과를 줍니다. 언제든 조정하거나 숨기거나 삭제할 수 있으며, 캔버스와 내보내기에 표시됩니다.',
+  'effects.hint':
+    '레이어의 픽셀을 직접 바꾸지 않고 효과를 줍니다. 언제든 조정하거나 숨기거나 삭제할 수 있으며, 캔버스와 내보내기에 표시됩니다.',
   'effects.add': '효과 추가',
   'effects.outline': '외곽선',
   'effects.shadow': '그림자',
@@ -109,7 +112,8 @@ export const ko: Record<MessageKey, string> = {
 
   'repeat.menu': '그리드 반복…',
   'repeat.title': '그리드 반복',
-  'repeat.hint': '선택 영역이나 레이어의 그림을 행과 열로 복제합니다. 인스턴스나 컴포넌트는 인스턴스로 반복됩니다. 라벨을 드래그하거나 숫자를 입력하면 실시간으로 반영됩니다.',
+  'repeat.hint':
+    '선택 영역이나 레이어의 그림을 행과 열로 복제합니다. 인스턴스나 컴포넌트는 인스턴스로 반복됩니다. 라벨을 드래그하거나 숫자를 입력하면 실시간으로 반영됩니다.',
   'repeat.cols': '열',
   'repeat.rows': '행',
   'repeat.gapX': '가로 간격',
@@ -126,7 +130,8 @@ export const ko: Record<MessageKey, string> = {
   'section.layer': '레이어',
   'section.light': '조명',
 
-  'light.info': '음영을 넣을 때 참고하는 빛의 방향입니다. 그리드처럼 안내선 역할을 하며, 그림에 칠해지거나 내보내지지 않습니다.',
+  'light.info':
+    '음영을 넣을 때 참고하는 빛의 방향입니다. 그리드처럼 안내선 역할을 하며, 그림에 칠해지거나 내보내지지 않습니다.',
   'light.add': '조명 추가',
   'light.remove': '조명 삭제',
   'light.stage': '조명: 구 주변으로 램프를 드래그하세요. 가까울수록 빛의 위치가 높아집니다.',
@@ -159,7 +164,8 @@ export const ko: Record<MessageKey, string> = {
   'menu.extrude': '돌출…',
 
   'extrude.title': '돌출',
-  'extrude.hint': '도형이 높이만큼 위로 올라가고, 측면은 그 아래를 채웁니다. 등각 투영 상자처럼 왼쪽은 어둡고 오른쪽은 더 어둡습니다. Enter는 적용, Escape는 취소입니다.',
+  'extrude.hint':
+    '도형이 높이만큼 위로 올라가고, 측면은 그 아래를 채웁니다. 등각 투영 상자처럼 왼쪽은 어둡고 오른쪽은 더 어둡습니다. Enter는 적용, Escape는 취소입니다.',
 
   'menu.isoFace': '등각 투영 면에 맞추기',
   'menu.isoFaceLeft': '왼쪽 면',
@@ -223,7 +229,8 @@ export const ko: Record<MessageKey, string> = {
   'remap.nearest': '가장 가까운 색',
   'remap.lightness': '밝기 기준',
   'remap.nearestHint': '각 색상을 팔레트에서 가장 가까운 색상으로 변경하여 그림을 정리합니다.',
-  'remap.lightnessHint': '가장 어두운 색부터 밝기 순서대로 팔레트 색상에 대응시켜 음영과 하이라이트를 유지하며 색을 바꿉니다.',
+  'remap.lightnessHint':
+    '가장 어두운 색부터 밝기 순서대로 팔레트 색상에 대응시켜 음영과 하이라이트를 유지하며 색을 바꿉니다.',
   'remap.count': '색상 수',
   'remap.replacePalette': '파일의 팔레트도 함께 교체',
   'remap.background': '배경색도 함께 재매핑',
@@ -376,7 +383,8 @@ export const ko: Record<MessageKey, string> = {
   'brush.delete': '{name} 삭제',
 
   'options.stabilizer': '손떨림 보정',
-  'options.stabilizerHint': '떨리는 선을 보정합니다. 포인터 뒤에 지정한 픽셀 길이의 줄에 매달려 따라옵니다. 0은 끔입니다. 드래그하여 조정하세요.',
+  'options.stabilizerHint':
+    '떨리는 선을 보정합니다. 포인터 뒤에 지정한 픽셀 길이의 줄에 매달려 따라옵니다. 0은 끔입니다. 드래그하여 조정하세요.',
   'options.filled': '도형 채우기',
   'options.radius': '반지름',
   'options.contiguous': '인접한 영역만',
@@ -391,12 +399,16 @@ export const ko: Record<MessageKey, string> = {
   'shade.palette': '전체 팔레트',
   'shade.free': '자유',
 
-  'hint.pencil': 'Alt로 색상 추출. Shift+클릭은 마지막 점에서 직선을 그리고, Cmd/Ctrl+Shift+클릭은 0°, 45°, 90° 또는 2:1로 고정합니다. 디더링은 좌클릭 색상과 우클릭 색상을 교대로 칠합니다.',
-  'hint.lassoFill': '자유형 도형을 그립니다. 마우스를 놓으면 닫히며 색상이 채워집니다. 우클릭하면 보조 색상으로 채웁니다.',
-  'hint.eraser': '투명하게 지웁니다. Shift+클릭은 마지막 점에서 직선으로 지우고, Cmd/Ctrl+Shift+클릭은 0°, 45°, 90° 또는 2:1로 고정합니다.',
+  'hint.pencil':
+    'Alt로 색상 추출. Shift+클릭은 마지막 점에서 직선을 그리고, Cmd/Ctrl+Shift+클릭은 0°, 45°, 90° 또는 2:1로 고정합니다. 디더링은 좌클릭 색상과 우클릭 색상을 교대로 칠합니다.',
+  'hint.lassoFill':
+    '자유형 도형을 그립니다. 마우스를 놓으면 닫히며 색상이 채워집니다. 우클릭하면 보조 색상으로 채웁니다.',
+  'hint.eraser':
+    '투명하게 지웁니다. Shift+클릭은 마지막 점에서 직선으로 지우고, Cmd/Ctrl+Shift+클릭은 0°, 45°, 90° 또는 2:1로 고정합니다.',
   'hint.line': 'Shift를 누르면 0°, 45°, 90° 또는 등각 투영선용 2:1 각도로 고정됩니다.',
   'hint.shape': 'Shift를 누르면 정도형(정사각형, 원 등)으로 그립니다.',
-  'hint.board': '보드 옆에 직사각형을 드래그하여 새 보드를 추가합니다. 이름 부분을 드래그하여 이동하고, 클릭하여 작업할 보드를 선택합니다. 각 보드는 독립된 크기와 레이어를 가집니다.',
+  'hint.board':
+    '보드 옆에 직사각형을 드래그하여 새 보드를 추가합니다. 이름 부분을 드래그하여 이동하고, 클릭하여 작업할 보드를 선택합니다. 각 보드는 독립된 크기와 레이어를 가집니다.',
 
   'board.new': '새 보드',
   'board.duplicate': '보드 복제',
@@ -407,7 +419,8 @@ export const ko: Record<MessageKey, string> = {
   'board.create': '보드 만들기',
   'board.createHint': '또는 보드 도구(A)로 직사각형을 그립니다.',
 
-  'hint.plane': '벽면에서는 도형이 들어갈 상자를 가로질러 드래그합니다: 상단과 하단이 2:1 각도로 벽을 따라갑니다 (Shift: 너비와 높이 동일). 바닥면에서는 다이아몬드 상단 꼭짓점에서 하단으로 드래그합니다 (Shift: 정도형, 타원은 가로로 드래그).',
+  'hint.plane':
+    '벽면에서는 도형이 들어갈 상자를 가로질러 드래그합니다: 상단과 하단이 2:1 각도로 벽을 따라갑니다 (Shift: 너비와 높이 동일). 바닥면에서는 다이아몬드 상단 꼭짓점에서 하단으로 드래그합니다 (Shift: 정도형, 타원은 가로로 드래그).',
 
   'plane.label': '평면',
   'plane.flat': '평면',
@@ -415,10 +428,14 @@ export const ko: Record<MessageKey, string> = {
   'plane.right': '오른쪽 벽',
   'plane.ground': '바닥',
 
-  'hint.isoShape': 'Shift를 누르면 정사각형 타일, 원, 정다각형 등 바닥면 정도형으로 배치됩니다. 다이아몬드 상단 꼭짓점에서 하단 꼭짓점으로 드래그하세요(타원은 가로로 드래그). 평면 옵션으로 벽면에 배치할 수도 있습니다.',
-  'hint.box': '상자의 상단 꼭짓점에서 하단 꼭짓점으로 드래그합니다: 상단은 현재 색상, 양 측면은 더 어둡게 채워집니다. Shift: 깊이와 너비 동일. 너비, 깊이, 높이 옵션으로 직전에 그린 상자를 다시 그릴 수 있습니다.',
-  'hint.cylinder': '납작한 타원 형태인 원기둥 상단을 가로질러 드래그합니다 (높이의 2배 너비). 높이, 외곽선, 하이라이트 모서리 옵션으로 직전 원기둥을 다시 그릴 수 있습니다.',
-  'hint.pyramid': '밑면의 상단 꼭짓점에서 하단 꼭짓점으로 드래그합니다 (Shift: 정사각형). 꼭짓점은 밑면 중심에서 높이만큼 위로 올라갑니다. 옵션으로 직전 사각뿔을 다시 그릴 수 있습니다.',
+  'hint.isoShape':
+    'Shift를 누르면 정사각형 타일, 원, 정다각형 등 바닥면 정도형으로 배치됩니다. 다이아몬드 상단 꼭짓점에서 하단 꼭짓점으로 드래그하세요(타원은 가로로 드래그). 평면 옵션으로 벽면에 배치할 수도 있습니다.',
+  'hint.box':
+    '상자의 상단 꼭짓점에서 하단 꼭짓점으로 드래그합니다: 상단은 현재 색상, 양 측면은 더 어둡게 채워집니다. Shift: 깊이와 너비 동일. 너비, 깊이, 높이 옵션으로 직전에 그린 상자를 다시 그릴 수 있습니다.',
+  'hint.cylinder':
+    '납작한 타원 형태인 원기둥 상단을 가로질러 드래그합니다 (높이의 2배 너비). 높이, 외곽선, 하이라이트 모서리 옵션으로 직전 원기둥을 다시 그릴 수 있습니다.',
+  'hint.pyramid':
+    '밑면의 상단 꼭짓점에서 하단 꼭짓점으로 드래그합니다 (Shift: 정사각형). 꼭짓점은 밑면 중심에서 높이만큼 위로 올라갑니다. 옵션으로 직전 사각뿔을 다시 그릴 수 있습니다.',
 
   'options.boxWidth': '너비',
   'options.boxDepth': '깊이',
@@ -428,7 +445,8 @@ export const ko: Record<MessageKey, string> = {
   'options.boxEdges': '모서리',
 
   'tileEdges.label': '타일 모서리',
-  'tileEdges.hint': '외곽선을 표시할 바닥 타일의 모서리입니다. 인접한 타일끼리 선이 겹치지 않도록 한쪽을 비워둘 수 있습니다.',
+  'tileEdges.hint':
+    '외곽선을 표시할 바닥 타일의 모서리입니다. 인접한 타일끼리 선이 겹치지 않도록 한쪽을 비워둘 수 있습니다.',
   'tileEdges.nw': '왼쪽 위 모서리',
   'tileEdges.ne': '오른쪽 위 모서리',
   'tileEdges.sw': '왼쪽 아래 모서리',
@@ -445,7 +463,8 @@ export const ko: Record<MessageKey, string> = {
 
   'options.boxLength': '길이 (2:1 단계)',
 
-  'hint.ramp': '상자처럼 상단 꼭짓점에서 반대편 꼭짓점으로 드래그합니다 (Shift: 정사각형). 지정한 방향으로 높이만큼 올라가며, 계단 수가 0보다 크면 계단 형태가 됩니다. 옵션으로 직전 경사로를 다시 그릴 수 있습니다.',
+  'hint.ramp':
+    '상자처럼 상단 꼭짓점에서 반대편 꼭짓점으로 드래그합니다 (Shift: 정사각형). 지정한 방향으로 높이만큼 올라가며, 계단 수가 0보다 크면 계단 형태가 됩니다. 옵션으로 직전 경사로를 다시 그릴 수 있습니다.',
 
   'ramp.direction': '올라가는 방향',
   'ramp.nw': '왼쪽 위',
@@ -467,7 +486,8 @@ export const ko: Record<MessageKey, string> = {
   'faces.hint': '클릭: 현재 색상 적용',
   'faces.auto': '색상에서 음영 자동 생성',
 
-  'hint.gradient': '그라데이션이 시작하는 지점에서 끝나는 지점으로 드래그합니다 (Shift: 45° 단위). 첫 클릭 지점과 같은 색상의 영역이나 선택 영역을 채웁니다. 팔레트 색상을 디더링하여 표현합니다. 직후 옵션을 바꾸면 직전 그라데이션에 즉시 반영됩니다.',
+  'hint.gradient':
+    '그라데이션이 시작하는 지점에서 끝나는 지점으로 드래그합니다 (Shift: 45° 단위). 첫 클릭 지점과 같은 색상의 영역이나 선택 영역을 채웁니다. 팔레트 색상을 디더링하여 표현합니다. 직후 옵션을 바꾸면 직전 그라데이션에 즉시 반영됩니다.',
 
   'gradient.stops': '그라데이션 정지점',
   'gradient.barHint': '클릭하여 정지점을 추가하고, 드래그하여 이동하며, 클릭하여 색상을 변경합니다',
@@ -497,9 +517,12 @@ export const ko: Record<MessageKey, string> = {
   'hint.shadeFree': '팔레트 외부의 색상 자체를 직접 변경하여',
   'hint.blurSnap': '인접한 픽셀을 혼합한 뒤 가장 가까운 팔레트 색상을 선택합니다. 다시 칠하면 더 흐려집니다.',
   'hint.blurFree': '인접한 픽셀을 혼합하여 새로운 색상과 반투명도를 만듭니다. 다시 칠하면 더 흐려집니다.',
-  'hint.spray': '스프레이 캔처럼 원형 영역 내에 임의의 픽셀을 뿌립니다. 가만히 누르고 있으면 계속 뿌려집니다. 우클릭하면 보조 색상을 뿌립니다.',
-  'hint.jumble': '색상을 추가하지 않고 브러시 아래의 픽셀을 섞어 나뭇잎, 암석, 노이즈 질감을 만듭니다. 누르고 있으면 계속 섞입니다.',
-  'hint.liquify': '색상을 추가하지 않고 그림을 변형합니다: 밀기는 픽셀을 끌어당기고, 확장과 축소는 해당 부분을 크거나 작게 만듭니다 (누르고 있으면 계속 적용).',
+  'hint.spray':
+    '스프레이 캔처럼 원형 영역 내에 임의의 픽셀을 뿌립니다. 가만히 누르고 있으면 계속 뿌려집니다. 우클릭하면 보조 색상을 뿌립니다.',
+  'hint.jumble':
+    '색상을 추가하지 않고 브러시 아래의 픽셀을 섞어 나뭇잎, 암석, 노이즈 질감을 만듭니다. 누르고 있으면 계속 섞입니다.',
+  'hint.liquify':
+    '색상을 추가하지 않고 그림을 변형합니다: 밀기는 픽셀을 끌어당기고, 확장과 축소는 해당 부분을 크거나 작게 만듭니다 (누르고 있으면 계속 적용).',
 
   'liquify.push': '밀기',
   'liquify.expand': '확장',
@@ -509,7 +532,8 @@ export const ko: Record<MessageKey, string> = {
   'hint.picker': '좌클릭하면 기본 색상으로, 우클릭하면 보조 색상으로 추출합니다.',
   'hint.select': 'Ctrl+C 복사, Ctrl+X 잘라내기, Ctrl+V 붙여넣기. Delete는 선택 영역을 지웁니다.',
   'hint.moveSelection': '드래그하여 선택 영역을 이동합니다. 방향키는 1px, Shift+방향키는 8px 이동합니다.',
-  'hint.moveLayer': '픽셀을 드래그하여 해당 레이어를 이동하고, 바깥을 클릭하여 프레임을 배치합니다. Cmd/Ctrl 키를 누르면 활성 레이어를 이동합니다. 방향키 1px, Shift 8px.',
+  'hint.moveLayer':
+    '픽셀을 드래그하여 해당 레이어를 이동하고, 바깥을 클릭하여 프레임을 배치합니다. Cmd/Ctrl 키를 누르면 활성 레이어를 이동합니다. 방향키 1px, Shift 8px.',
 
   'color.primary': '기본 색상',
   'color.secondary': '보조 색상',
@@ -525,7 +549,8 @@ export const ko: Record<MessageKey, string> = {
 
   'palette.preset': '사전 설정 팔레트',
   'palette.drawing': '그림 색상',
-  'palette.drawingEmpty': '그림을 그리면 사용한 색상이 여기에 표시됩니다. 또는 위 메뉴에서 팔레트를 선택하세요.',
+  'palette.drawingEmpty':
+    '그림을 그리면 사용한 색상이 여기에 표시됩니다. 또는 위 메뉴에서 팔레트를 선택하세요.',
   'palette.mine': '내 팔레트',
   'palette.new': '+ 새 팔레트',
   'palette.newFromFile': '이 파일의 팔레트에서 생성',
@@ -567,9 +592,11 @@ export const ko: Record<MessageKey, string> = {
 
   'toast.imagePasted': '새 레이어에 이미지가 붙여넣어졌습니다.',
 
-  'reference.hint': '모든 레이어 아래에 위치하며, 절대 내보내지지 않습니다. 이동 도구로 드래그하여 옮기거나 모서리를 드래그하여 크기를 조절합니다. Delete로 삭제합니다.',
+  'reference.hint':
+    '모든 레이어 아래에 위치하며, 절대 내보내지지 않습니다. 이동 도구로 드래그하여 옮기거나 모서리를 드래그하여 크기를 조절합니다. Delete로 삭제합니다.',
 
-  'toast.referenceAdded': '레이어 아래에 참조 이미지가 추가되었습니다. 드래그하여 이동하거나 모서리로 크기를 조절하세요. 내보내기에는 포함되지 않습니다.',
+  'toast.referenceAdded':
+    '레이어 아래에 참조 이미지가 추가되었습니다. 드래그하여 이동하거나 모서리로 크기를 조절하세요. 내보내기에는 포함되지 않습니다.',
   'toast.referenceRemoved': '참조 이미지가 삭제되었습니다.',
 
   'reference.title': '참조',
@@ -585,7 +612,8 @@ export const ko: Record<MessageKey, string> = {
   'display.tileOpacity': '복사본',
   'display.mirrorX': '좌우 대칭',
   'display.rulers': '눈금자 및 안내선',
-  'display.rulersHint': '눈금자에서 드래그하여 안내선을 추가합니다. 이동 도구로 안내선을 드래그하여 옮기거나, 눈금자로 다시 끌어놓으면 삭제됩니다.',
+  'display.rulersHint':
+    '눈금자에서 드래그하여 안내선을 추가합니다. 이동 도구로 안내선을 드래그하여 옮기거나, 눈금자로 다시 끌어놓으면 삭제됩니다.',
   'display.mirrorY': '상하 대칭',
   'display.isoGrid': '등각 투영 그리드',
 
@@ -623,13 +651,16 @@ export const ko: Record<MessageKey, string> = {
   'export.layers': '레이어 + 스프라이트 시트 (ZIP)',
   'export.frames': '프레임 + 스프라이트 시트 (ZIP)',
   'export.columns': '열',
-  'export.layersHint': '보이는 레이어별 PNG와 레이어들을 열 수에 맞춰 그리드로 배치한 스프라이트 시트 및 게임 엔진용 JSON이 포함된 ZIP 파일입니다. 현재 픽셀 크기와 간격을 사용합니다.',
-  'export.framesHint': '모든 애니메이션 프레임의 스프라이트 시트와 게임 엔진용 JSON이 포함된 ZIP 파일입니다. 열 수는 한 행에 들어갈 프레임 수입니다. 현재 픽셀 크기와 간격을 사용하며 각 프레임의 지속 시간이 JSON에 기록됩니다.',
+  'export.layersHint':
+    '보이는 레이어별 PNG와 레이어들을 열 수에 맞춰 그리드로 배치한 스프라이트 시트 및 게임 엔진용 JSON이 포함된 ZIP 파일입니다. 현재 픽셀 크기와 간격을 사용합니다.',
+  'export.framesHint':
+    '모든 애니메이션 프레임의 스프라이트 시트와 게임 엔진용 JSON이 포함된 ZIP 파일입니다. 열 수는 한 행에 들어갈 프레임 수입니다. 현재 픽셀 크기와 간격을 사용하며 각 프레임의 지속 시간이 JSON에 기록됩니다.',
   'export.tileset': '타일셋 (Godot, Tiled)',
   'export.tileWidth': '타일 너비',
   'export.tileHeight': '타일 높이',
   'export.tileDrop': '빈 타일 및 중복 타일 제외',
-  'export.tilesetHint': 'W × H 픽셀 크기의 타일입니다. 단일 PNG 시트에 타일을 모은 파일과 Tiled 타일셋 및 그림을 다시 그리는 Tiled 맵이 포함된 .zip 파일입니다. Godot에서는 PNG를 그대로 사용할 수 있습니다.',
+  'export.tilesetHint':
+    'W × H 픽셀 크기의 타일입니다. 단일 PNG 시트에 타일을 모은 파일과 Tiled 타일셋 및 그림을 다시 그리는 Tiled 맵이 포함된 .zip 파일입니다. Godot에서는 PNG를 그대로 사용할 수 있습니다.',
 
   'toast.emptyTileset': '타일로 나눌 내용이 없습니다: 그림이 비어 있습니다.',
 
@@ -641,7 +672,8 @@ export const ko: Record<MessageKey, string> = {
   'export.info': '{w} × {h} px,',
   'export.withBackground': '배경 포함',
   'export.transparent': '투명 배경',
-  'export.layerEmpty': '{name} 레이어가 비어 있습니다. 전체 그림을 내보내려면 "활성 레이어만"을 체크 해제하세요.',
+  'export.layerEmpty':
+    '{name} 레이어가 비어 있습니다. 전체 그림을 내보내려면 "활성 레이어만"을 체크 해제하세요.',
   'export.name': '이름',
   'export.includeBackground': '배경 포함',
   'export.previewLabel': '내보낼 이미지 미리보기',
@@ -652,10 +684,13 @@ export const ko: Record<MessageKey, string> = {
   'code.cut': '전체 {total}줄 중 처음 {shown}줄입니다. 복사 또는 다운로드로 전체를 받을 수 있습니다.',
   'code.copy': '복사',
   'code.download': '.{ext} 다운로드',
-  'code.hint.react': '스프라이트를 SVG로 렌더링하는 컴포넌트입니다. 아이콘처럼 너비, className 또는 기타 SVG 속성을 지정할 수 있습니다.',
+  'code.hint.react':
+    '스프라이트를 SVG로 렌더링하는 컴포넌트입니다. 아이콘처럼 너비, className 또는 기타 SVG 속성을 지정할 수 있습니다.',
   'code.hint.svg': 'SVG로 복사와 동일한 SVG입니다: 레이어별 그룹과 색상별 단일 패스로 구성됩니다.',
-  'code.hint.css': '배경 이미지로 표현된 그림과 사용자 지정 속성(CSS 변수)으로 정의된 색상입니다. 어느 요소에나 해당 클래스를 추가할 수 있습니다.',
-  'code.hint.json': '크기, 이름이 지정된 색상 목록 및 색상 번호 행으로 구성된 픽셀 데이터입니다 (0은 비어 있음).',
+  'code.hint.css':
+    '배경 이미지로 표현된 그림과 사용자 지정 속성(CSS 변수)으로 정의된 색상입니다. 어느 요소에나 해당 클래스를 추가할 수 있습니다.',
+  'code.hint.json':
+    '크기, 이름이 지정된 색상 목록 및 색상 번호 행으로 구성된 픽셀 데이터입니다 (0은 비어 있음).',
   'code.hint.ascii': '문자로 표현된 그림과 상단 범례입니다. README나 코드 주석에 유용합니다.',
 
   'export.shrunk': '{size}×로 축소됨 (너무 큼)',
@@ -689,7 +724,8 @@ export const ko: Record<MessageKey, string> = {
   'template.startTitle': '사전 설정 선택',
 
   'upscaled.title': '확대된 픽셀 아트 감지',
-  'upscaled.hint': '이 이미지는 {scale}배로 확대된 픽셀 아트인 것 같습니다. 원래 크기로 복원하여 실제 크기에서 편집하세요. 그리드가 맞지 않으면 조정할 수 있습니다.',
+  'upscaled.hint':
+    '이 이미지는 {scale}배로 확대된 픽셀 아트인 것 같습니다. 원래 크기로 복원하여 실제 크기에서 편집하세요. 그리드가 맞지 않으면 조정할 수 있습니다.',
   'upscaled.recover': '원본 픽셀 복원',
   'upscaled.keep': '현재 크기 유지',
   'upscaled.scale': '배율',
@@ -714,19 +750,26 @@ export const ko: Record<MessageKey, string> = {
   'anchor.bottomRight': '오른쪽 아래',
 
   'tour.drawTitle': '그리기',
-  'tour.draw': '연필(B), 자유형 도형을 채우는 올가미 채우기(K), 지우개(E), 페인트 통(G). 연필의 … 메뉴에서 디더링과 선택 영역으로 브러시 만들기를 제공합니다.',
+  'tour.draw':
+    '연필(B), 자유형 도형을 채우는 올가미 채우기(K), 지우개(E), 페인트 통(G). 연필의 … 메뉴에서 디더링과 선택 영역으로 브러시 만들기를 제공합니다.',
   'tour.shapesTitle': '도형',
-  'tour.shapes': '직선(L), 직사각형(R), 타원(C) 및 이 버튼의 메뉴에 있는 추가 도형들입니다. Shift를 누르면 정사각형이나 정원이 됩니다.',
+  'tour.shapes':
+    '직선(L), 직사각형(R), 타원(C) 및 이 버튼의 메뉴에 있는 추가 도형들입니다. Shift를 누르면 정사각형이나 정원이 됩니다.',
   'tour.colorsTitle': '색상 가공',
-  'tour.colors': '음영(S)과 밝게 하기(O)는 팔레트의 램프 단계를 따르고, 스프레이(P)는 캔처럼 픽셀을 뿌립니다.',
+  'tour.colors':
+    '음영(S)과 밝게 하기(O)는 팔레트의 램프 단계를 따르고, 스프레이(P)는 캔처럼 픽셀을 뿌립니다.',
   'tour.warpTitle': '새 색상 없이 변형',
-  'tour.warp': '흐림(F)은 가장자리를 부드럽게 하고, 섞기(J)는 질감을 위해 픽셀을 섞으며, 픽셀 유동화(W)는 그림의 일부를 밀거나 키우거나 줄입니다. 가만히 누르고 있으면 계속 적용됩니다.',
+  'tour.warp':
+    '흐림(F)은 가장자리를 부드럽게 하고, 섞기(J)는 질감을 위해 픽셀을 섞으며, 픽셀 유동화(W)는 그림의 일부를 밀거나 키우거나 줄입니다. 가만히 누르고 있으면 계속 적용됩니다.',
   'tour.paletteTitle': '팔레트',
-  'tour.palette': '클릭하면 기본 색상으로, 우클릭하면 보조 색상 지정 또는 전체 교체 등 추가 작업이 가능합니다. 바로 위에서 다른 팔레트를 선택할 수 있습니다.',
+  'tour.palette':
+    '클릭하면 기본 색상으로, 우클릭하면 보조 색상 지정 또는 전체 교체 등 추가 작업이 가능합니다. 바로 위에서 다른 팔레트를 선택할 수 있습니다.',
   'tour.gapTitle': '픽셀 간격',
-  'tour.gap': '픽셀 사이 간격을 두어 LED 전광판이나 도트 매트릭스 느낌을 캔버스와 내보내기에 연출할 수 있습니다.',
+  'tour.gap':
+    '픽셀 사이 간격을 두어 LED 전광판이나 도트 매트릭스 느낌을 캔버스와 내보내기에 연출할 수 있습니다.',
   'tour.exportTitle': '내보내기',
-  'tour.export': '1×에서 32× 배율의 PNG, 애니메이션 GIF, 스프라이트 시트, .aseprite 파일 또는 Figma에 바로 붙여넣을 수 있는 레이어 및 색상별 SVG로 내보냅니다.',
+  'tour.export':
+    '1×에서 32× 배율의 PNG, 애니메이션 GIF, 스프라이트 시트, .aseprite 파일 또는 Figma에 바로 붙여넣을 수 있는 레이어 및 색상별 SVG로 내보냅니다.',
   'tour.next': '다음',
   'tour.done': '완료',
   'tour.skip': '둘러보기 건너뛰기',
@@ -736,15 +779,18 @@ export const ko: Record<MessageKey, string> = {
 
   'dialog.newFile': '새 파일',
   'dialog.reference': '이미지에서 가져오기…',
-  'dialog.pasteColorsHint': '공백, 쉼표, 줄바꿈으로 구분된 16진수 색상 코드를 붙여넣으세요. Lospec .hex 파일도 지원합니다.',
+  'dialog.pasteColorsHint':
+    '공백, 쉼표, 줄바꿈으로 구분된 16진수 색상 코드를 붙여넣으세요. Lospec .hex 파일도 지원합니다.',
   'dialog.replacePalette': '팔레트 교체',
   'dialog.appendPalette': '팔레트에 추가',
   'dialog.useColors': '이 색상 사용',
 
   'output.copySvgTitle': 'SVG 복사',
-  'output.copySvgBlocked': '브라우저에서 자동 복사를 차단했습니다. 이 코드를 복사(Ctrl+C)한 뒤 Figma나 Illustrator에 붙여넣으세요.',
+  'output.copySvgBlocked':
+    '브라우저에서 자동 복사를 차단했습니다. 이 코드를 복사(Ctrl+C)한 뒤 Figma나 Illustrator에 붙여넣으세요.',
   'output.copyPngTitle': '이미지 복사',
-  'output.copyPngBlocked': '브라우저에서 자동 복사를 차단했습니다. 이미지를 마우스 오른쪽 버튼으로 클릭한 뒤 "이미지 복사"를 선택하세요.',
+  'output.copyPngBlocked':
+    '브라우저에서 자동 복사를 차단했습니다. 이미지를 마우스 오른쪽 버튼으로 클릭한 뒤 "이미지 복사"를 선택하세요.',
 
   'shortcuts.tools': '도구',
   'shortcuts.layers': '레이어',
@@ -768,7 +814,8 @@ export const ko: Record<MessageKey, string> = {
   'toast.downloadCancelled': '다운로드가 취소되었습니다.',
   'toast.downloadBusy': '이미 다운로드 요청이 진행 중입니다.',
   'toast.exportShrunk': '이미지가 너무 큽니다: 픽셀 크기가 {size} px로 축소되었습니다.',
-  'toast.exportTooLarge': '내보내기 불가: 스프라이트 시트가 한 변당 최대 내보내기 크기 {size} px를 초과합니다. 열 수를 변경하거나 픽셀 간격을 줄이거나 일부 레이어를 숨기고 다시 시도하세요.',
+  'toast.exportTooLarge':
+    '내보내기 불가: 스프라이트 시트가 한 변당 최대 내보내기 크기 {size} px를 초과합니다. 열 수를 변경하거나 픽셀 간격을 줄이거나 일부 레이어를 숨기고 다시 시도하세요.',
   'toast.noVisibleLayers': '내보낼 보이는 레이어가 없습니다.',
   'toast.svgCopied': 'SVG가 복사되었습니다. Figma나 Illustrator에 붙여넣으세요.',
   'toast.codeCopied': '코드가 복사되었습니다.',
@@ -780,6 +827,40 @@ export const ko: Record<MessageKey, string> = {
 
   'toast.pngCopied': '이미지가 클립보드에 복사되었습니다.',
   'toast.opened': '{name} 열림.',
+  'toast.asepriteOpenedWithWarnings': '{name} 열림: 가져오기 중 일부 항목이 조정되었습니다.',
+  'toast.asepriteWarningDetails': '자세히 ({count})',
+  'toast.unreadableAseprite': '이 Aseprite 파일을 읽을 수 없습니다.',
+  'toast.asepriteWarningLayerMovementLocks': '레이어 이동 잠금은 유지되지 않았습니다.',
+  'toast.asepriteWarningBackgroundLayers': '배경 레이어는 일반 레이어로 가져왔습니다.',
+  'toast.asepriteWarningReferenceLayers': '참조 레이어는 일반 레이어로 가져왔습니다.',
+  'toast.asepriteWarningUnsupportedBlendModes': '지원되지 않는 혼합 모드는 Normal로 변경되었습니다.',
+  'toast.asepriteWarningDeepGroupsFlattened':
+    '4단계를 초과하는 그룹의 레이어는 지원되는 가장 깊은 그룹으로 이동되었습니다.',
+  'toast.asepriteWarningDeepGroupBlendModes': '4단계를 초과하는 그룹의 혼합 모드는 유지되지 않았습니다.',
+  'toast.asepriteWarningTilemapsSkipped': '타일맵은 건너뛰었습니다.',
+  'toast.asepriteWarningUnsupportedLayerTypes': '지원되지 않는 레이어 유형은 건너뛰었습니다.',
+  'toast.asepriteWarningPixelAspectRatio': '픽셀 가로세로 비율 {width}:{height}은(는) 유지되지 않았습니다.',
+  'toast.asepriteWarningAnimationTags': '애니메이션 태그는 유지되지 않았습니다.',
+  'toast.asepriteWarningUserData': 'Aseprite 사용자 데이터는 유지되지 않았습니다.',
+  'toast.asepriteWarningSlices': 'Aseprite 슬라이스는 유지되지 않았습니다.',
+  'toast.asepriteWarningEmbeddedIccProfile': '포함된 ICC 색상 프로필은 무시되었습니다.',
+  'toast.asepriteWarningCustomColorProfile': '사용자 지정 색상 프로필 설정은 무시되었습니다.',
+  'toast.asepriteWarningCelOrdering': '프레임별 셀 순서는 유지되지 않았습니다.',
+  'toast.asepriteWarningUnsupportedCelTypes': '지원되지 않는 셀 유형은 건너뛰었습니다.',
+  'toast.asepriteWarningPreciseCelBounds': '정밀한 셀 경계는 유지되지 않았습니다.',
+  'toast.asepriteWarningUnsupportedCelExtraFlags': '지원되지 않는 Cel Extra 플래그는 무시되었습니다.',
+  'toast.asepriteWarningFrameDurations': '10~10,000 ms 범위를 벗어난 프레임 재생 시간은 조정되었습니다.',
+  'toast.asepriteWarningExternalFiles': '연결된 외부 파일은 가져오지 않았습니다.',
+  'toast.asepriteWarningTilesetsSkipped': 'Aseprite 타일셋은 건너뛰었습니다.',
+  'toast.asepriteWarningGridMetadata':
+    'Aseprite 그리드 설정({width} × {height}, 위치: {x}, {y})은 유지되지 않았습니다.',
+  'toast.asepriteWarningUnsupportedChunks':
+    '알 수 없는 Aseprite 청크 유형은 건너뛰었습니다 ({count}개 고유 유형, 예: {types}).',
+  'toast.asepriteCanvasTooLarge':
+    '캔버스 크기 {width} × {height}이(가) Baipix 최대 크기 {max} × {max}을(를) 초과합니다. Aseprite에서 캔버스 크기를 조정하세요.',
+  'toast.asepriteTooManyFrames':
+    '파일에 {count}개 프레임이 포함되어 있습니다. Baipix는 최대 {max}개 프레임까지 지원합니다. Aseprite에서 일부 프레임을 삭제하세요.',
+  'toast.asepriteCelTooLarge': 'Aseprite 셀이 최대 가져오기 영역인 {max}픽셀을 초과합니다.',
   'toast.notBaipix': '올바른 .baipix 파일이 아닙니다.',
   'toast.notImage': '이미지 파일이 아닙니다. PNG, GIF, JPEG 또는 WebP를 사용하세요.',
   'toast.unreadableImage': '이미지를 읽을 수 없습니다.',
@@ -799,7 +880,8 @@ export const ko: Record<MessageKey, string> = {
   'toast.pixelsRecovered': '픽셀 복원 완료: {scale}배 확대된 이미지로부터 {w} × {h}.',
   'toast.groupTooDeep': '그룹은 최대 4단계까지 중첩할 수 있습니다.',
   'toast.instanceLocked': '이 항목은 인스턴스입니다: 모든 사본을 변경하려면 원본 컴포넌트에서 그리세요.',
-  'toast.layerFrames': '이 레이어는 애니메이션이 포함되어 있습니다: 동일한 프레임 수를 가진 보드로만 이동할 수 있습니다.',
+  'toast.layerFrames':
+    '이 레이어는 애니메이션이 포함되어 있습니다: 동일한 프레임 수를 가진 보드로만 이동할 수 있습니다.',
   'toast.layerToBoard': '{board}(으)로 이동되었습니다.',
   'toast.componentCreated': '컴포넌트가 생성되었습니다. 컴포넌트 목록에서 드래그하여 인스턴스를 배치하세요.',
   'toast.cut': '잘라내었습니다.',
@@ -824,7 +906,7 @@ export const ko: Record<MessageKey, string> = {
   'home.animated': '애니메이션',
   'home.title': 'Baipix에 오신 것을 환영합니다',
   'home.tagline': '첫 번째 픽셀을 찍어보세요.',
-  'home.formats': '.baipix, PNG, JPG, GIF 및 WebP 파일을 열 수 있습니다',
+  'home.formats': '.baipix, .ase, .aseprite, PNG, JPG, GIF 파일을 열 수 있습니다',
   'home.import': '가져오기',
   'home.downloadAll': '모두 다운로드',
   'home.downloadAllTip': '모든 그림을 .baipix 파일로 하나의 .zip에 압축하여 다운로드',
