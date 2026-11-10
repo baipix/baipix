@@ -21,6 +21,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The first files screen shows each preset as a small picture of what it's for, grey, and in the preset's palette on hover, with the palette's name under it. Templates are now called presets. ([#782](https://github.com/baipix/baipix/pull/782))
 - A shorter welcome line, bigger Create and Import buttons, and WebP in the list of files Baipix opens. ([#783](https://github.com/baipix/baipix/pull/783))
 - The links at the bottom of the files screen's sidebar show an arrow: they open in a new tab. ([#784](https://github.com/baipix/baipix/pull/784))
+- The opacity and size fields are sliders: they fill up to their value, a drag anywhere on them changes it, and a click lets you type a number. ([#790](https://github.com/baipix/baipix/pull/790))
 
 ### Fixed
 
