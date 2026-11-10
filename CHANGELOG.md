@@ -12,6 +12,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - With the Move tool, a right-click on the canvas opens the menu of the layer or group under the pointer. Arrange brings a layer to the front, forward, backward or to the back, also with Ctrl+] and Ctrl+[, and Shift for front and back. ([#779](https://github.com/baipix/baipix/pull/779))
 - On the files screen, an animated drawing plays in its card while the pointer is on it. ([#787](https://github.com/baipix/baipix/pull/787))
 - Baipix opens Aseprite files (.ase and .aseprite): layers and groups, frames and their durations, blend modes, opacity and the palette. What Baipix doesn't have yet, like tags, slices or tilesets, is left out, and a toast says what. ([#772](https://github.com/baipix/baipix/pull/772))
+- The editor in Korean (View › Language › 한국어). ([#791](https://github.com/baipix/baipix/pull/791))
 
 ### Changed
 
@@ -50,6 +51,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - [@jay23606](https://github.com/jay23606) for four new templates: Favicon, Small tile, Emote and Playing card. ([#757](https://github.com/baipix/baipix/pull/757))
 - [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, and for finding and fixing the linked cels exported at the wrong position. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778))
+- [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
 
 ## [0.8.0] - 2026-11-06
 
