@@ -245,9 +245,7 @@ function TypeBlock() {
         <div style={{ font: '800 22px/28px var(--font)', letterSpacing: '-0.02em' }}>
           Drawings · 22 Extra bold, the files screen's title
         </div>
-        <div style={{ font: '600 16px/24px var(--font)' }}>
-          Insert coin, drop your first pixel · 16 Semibold
-        </div>
+        <div style={{ font: '600 16px/24px var(--font)' }}>Drop your first pixel · 16 Semibold</div>
         <div style={{ font: '400 14px/22px var(--font)' }}>Body text on the home screen · 14 Regular</div>
         <div style={{ font: '600 11px/16px var(--font)' }}>Section title · 11 Semibold</div>
         <div style={{ font: '400 11px/16px var(--font)' }}>Interface text, labels, menus · 11 Regular</div>
