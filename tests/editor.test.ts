@@ -1026,6 +1026,29 @@ describe('Editor', () => {
       expect(names(e)).toBe('0123');
     });
 
+    it('brings a layer to the front or sends it to the back, in one undo step', () => {
+      const e = four();
+      e.setActiveLayer(1);
+      e.moveLayerToEnd(1);
+      expect(names(e)).toBe('0231');
+      expect(e.canMoveLayer(1)).toBe(false);
+      e.moveLayerToEnd(-1);
+      expect(names(e)).toBe('1023');
+      e.undo();
+      expect(names(e)).toBe('0231');
+    });
+
+    it('finds what a right-click with the Move tool opens the menu of', () => {
+      const e = four();
+      expect(e.menuTargetAt({ x: 2, y: 0 })).toEqual({ layer: 2 });
+      expect(e.menuTargetAt({ x: 5, y: 5 })).toBeNull();
+      e.selectLayer(2, 'single');
+      e.selectLayer(3, 'range');
+      e.groupSelection();
+      const group = e.getState().doc.layers[3].group;
+      expect(e.menuTargetAt({ x: 3, y: 0 })).toEqual({ group });
+    });
+
     it('moves the selected layers together', () => {
       const e = four();
       e.selectLayer(0, 'single');
@@ -1341,5 +1364,19 @@ describe('removing the reference image', () => {
     e.setReference(reference);
     e.undo();
     expect(e.getState().doc.reference).toBeDefined();
+  });
+});
+
+describe('download all', () => {
+  it("gives each file's boards, the way its own .baipix holds them", () => {
+    const e = new Editor();
+    e.newFile(8, 8, 'Slime');
+    e.addBoard(20, 0, 8, 8, 'Jump');
+    const slime = e.getState().files.find((f) => f.name === 'Slime')!;
+    e.newFile(16, 16, 'Car');
+    const car = e.getState().files.find((f) => f.name === 'Car')!;
+    expect(e.boardsOfFile(slime.id).map((d) => d.name)).toHaveLength(2);
+    expect(e.boardsOfFile(car.id).map((d) => d.width)).toEqual([16]);
+    expect(e.boardsOfFile('nope')).toEqual([]);
   });
 });

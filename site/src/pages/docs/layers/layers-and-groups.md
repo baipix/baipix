@@ -7,8 +7,8 @@ description: 'Layers in Baipix, the pixel art editor that works like a design to
 Each part of a drawing can have its own layer: the sky, the background, each character. Change one without touching the others.
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/layer-menu-light.webp" width="256" height="518" alt="A layer’s right-click menu: rename, duplicate, repeat in a grid, group, create component, merge, adjust, lock, show only this layer, delete." loading="lazy" />
-  <img class="for-dark" src="../../shots/layer-menu-dark.webp" width="256" height="518" alt="A layer’s right-click menu: rename, duplicate, repeat in a grid, group, create component, merge, adjust, lock, show only this layer, delete." loading="lazy" />
+  <img class="for-light" src="../../shots/layer-menu-light.webp" width="256" height="559" alt="A layer’s right-click menu: rename, duplicate, repeat in a grid, group, create component, merge, adjust, arrange, lock, show only this layer, delete." loading="lazy" />
+  <img class="for-dark" src="../../shots/layer-menu-dark.webp" width="256" height="559" alt="A layer’s right-click menu: rename, duplicate, repeat in a grid, group, create component, merge, adjust, arrange, lock, show only this layer, delete." loading="lazy" />
 </figure>
 
 ## Layers
@@ -17,7 +17,8 @@ Each part of a drawing can have its own layer: the sky, the background, each cha
 - **Duplicate** (<kbd>Shift</kbd>+<kbd>D</kbd>), **Merge down** (<kbd>Shift</kbd>+<kbd>M</kbd>), **Merge visible layers** and **Flatten image** are in a layer's right-click menu and the Layer menu.
 - **Hide** a layer with its eye. <kbd>Alt</kbd>-click the eye to show only that one.
 - **Lock** a layer so nothing draws on it by mistake.
-- **Reorder** by dragging a row, or with <kbd>Alt</kbd>+<kbd>↑</kbd> and <kbd>Alt</kbd>+<kbd>↓</kbd>.
+- **Reorder** by dragging a row, or with **Arrange** in a layer's right-click menu and the Layer menu: <kbd>Ctrl</kbd>+<kbd>]</kbd> brings it forward and <kbd>Ctrl</kbd>+<kbd>[</kbd> sends it backward (<kbd>Alt</kbd>+<kbd>↑</kbd> and <kbd>Alt</kbd>+<kbd>↓</kbd> too), with <kbd>Shift</kbd> to the front or the back of its group.
+- **Right-click on the canvas** with the Move tool: the layer under the pointer, or its group, gets picked and its menu opens there.
 - **Delete**: <kbd>Del</kbd> with nothing selected on the canvas, or Delete layer in its menu. The message that follows has an Undo.
 
 ## Several at once

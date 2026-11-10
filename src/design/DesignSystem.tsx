@@ -12,6 +12,8 @@ import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
 import { NumberField } from '../ui/components/NumberField';
+import { PresetCard } from '../ui/components/PresetCard';
+import { TEMPLATES } from '../ui/templates';
 import { Tooltips } from '../ui/components/Tooltips';
 import { ICONS, type IconName } from '../ui/icons';
 import { ColorRow } from '../ui/panels/ColorRow';
@@ -243,9 +245,7 @@ function TypeBlock() {
         <div style={{ font: '800 22px/28px var(--font)', letterSpacing: '-0.02em' }}>
           Drawings · 22 Extra bold, the files screen's title
         </div>
-        <div style={{ font: '600 16px/24px var(--font)' }}>
-          Insert coin, drop your first pixel · 16 Semibold
-        </div>
+        <div style={{ font: '600 16px/24px var(--font)' }}>Drop your first pixel · 16 Semibold</div>
         <div style={{ font: '400 14px/22px var(--font)' }}>Body text on the home screen · 14 Regular</div>
         <div style={{ font: '600 11px/16px var(--font)' }}>Section title · 11 Semibold</div>
         <div style={{ font: '400 11px/16px var(--font)' }}>Interface text, labels, menus · 11 Regular</div>
@@ -813,6 +813,18 @@ function SurfacesBlock() {
               Trash
               <span className="home-nav-count">2</span>
             </button>
+          </div>
+        </Specimen>
+        <Specimen
+          wide
+          label="Preset card"
+          use="A preset on the first files screen: a small picture in the interface's grey, in the preset's palette on hover, bigger as the board is."
+        >
+          <div className="home-templates-grid" style={{ maxWidth: 640 }}>
+            {['sprite', 'emote', 'gameboy'].map((id) => {
+              const preset = TEMPLATES.find((p) => p.id === id);
+              return preset && <PresetCard key={id} template={preset} />;
+            })}
           </div>
         </Specimen>
         <Specimen

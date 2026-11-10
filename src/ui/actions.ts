@@ -711,6 +711,25 @@ export function createActions(editor: Editor) {
       await report(filename, saveFile(filename, fileToJson(editor.fileBoards()), 'application/json'));
     },
 
+    /** Each of the given files as its own .baipix, in one .zip: a copy of the drawings kept in the browser. */
+    async downloadAllFiles(fileIds: string[]) {
+      const used = new Set<string>();
+      const encoder = new TextEncoder();
+      const files = fileIds
+        .map((id) => editor.boardsOfFile(id))
+        .filter((boards) => boards.length > 0)
+        .map((boards) => ({
+          name: uniqueArchiveName(
+            `${safeFileName(fileNameOf(boards[0])) || 'drawing'}${FILE_EXTENSION}`,
+            used,
+          ),
+          data: encoder.encode(fileToJson(boards)),
+        }));
+      if (!files.length) return;
+      const filename = `baipix-${new Date().toISOString().slice(0, 10)}.zip`;
+      await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
+    },
+
     async openDocument() {
       const file = await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite`);
       if (!file) return;

@@ -5,6 +5,7 @@ import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
 import type { Actions } from './actions';
 import type { MenuItem } from './components/Menu';
+import { arrangeItem } from './layerMenus';
 import { getTheme, setTheme, type ThemePreference } from './theme';
 import { openAdjust, openDialog, toast, toggleTimeline, uiStore } from './uiStore';
 
@@ -308,18 +309,7 @@ export const MENU_BAR: MenuBarMenu[] = [
           disabled: disabled || !editor.canMergeDown(),
           onSelect: () => editor.mergeDown(),
         },
-        {
-          label: t('menu.layerUp'),
-          shortcut: 'Alt+↑',
-          disabled: disabled || !editor.canMoveLayer(1),
-          onSelect: () => editor.moveLayer(1),
-        },
-        {
-          label: t('menu.layerDown'),
-          shortcut: 'Alt+↓',
-          disabled: disabled || !editor.canMoveLayer(-1),
-          onSelect: () => editor.moveLayer(-1),
-        },
+        { ...arrangeItem(editor), disabled },
         {
           label: t('menu.sortByDepth'),
           disabled: disabled || doc.layers.length < 2,

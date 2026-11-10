@@ -2735,6 +2735,11 @@ body.is-dragging-swatch * {
 .home-nav-link:hover {
   color: var(--text);
 }
+/* The arrow after a link that leaves Baipix: pushed to the end, fainter. */
+.home-nav-link .icon:last-child {
+  margin-left: auto;
+  opacity: 0.6;
+}
 .home-main {
   flex: 1;
   min-width: 0;
@@ -2766,8 +2771,9 @@ body.is-dragging-swatch * {
   margin-top: 24px;
 }
 .home-welcome-actions .btn {
-  height: 32px;
-  padding: 0 14px;
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
 }
 .home-welcome-title {
   align-self: flex-start;
@@ -2783,20 +2789,40 @@ body.is-dragging-swatch * {
   gap: 12px;
   text-align: left;
 }
-/* A template: its board's shape, striped with its palette, on the canvas. */
+/* A preset: a small picture of what it's for, in the muted ink, in its palette's colors on hover. */
 .home-template-preview {
   display: grid;
   place-items: center;
-  background: var(--canvas);
+  aspect-ratio: 3 / 2;
+  padding: 16px;
+  background: none;
 }
 .home-template-board {
-  display: flex;
-  overflow: hidden;
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px var(--frame);
+  display: grid;
+  padding: 6px;
+  border: 1.5px solid color-mix(in srgb, var(--muted) 50%, transparent);
+  border-radius: 3px;
+  transition: border-color 0.12s ease;
 }
-.home-template-board > span {
-  flex: 1;
+/* The board's frame around the picture, as on the canvas. */
+.home-template:hover .home-template-board {
+  border-color: var(--muted);
+}
+.home-template-art rect {
+  fill: var(--muted);
+  transition:
+    fill 0.15s ease,
+    opacity 0.15s ease;
+}
+.home-template-art .is-faint {
+  opacity: 0.4;
+}
+.home-template-art .is-color-only {
+  opacity: 0;
+}
+.home-template:hover .home-template-art rect {
+  fill: var(--color, transparent);
+  opacity: 1;
 }
 .home-empty {
   margin: 8px 0;

@@ -26,6 +26,7 @@ Deleted a file by mistake? It waits in the **Trash**, in the files screen's side
 After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. Your browser's storage is safe from one day to the next, but it isn't a backup: it goes away if you clear the site's data, and a private window forgets everything once it's closed. To keep a drawing for good, or to move it to another computer:
 
 - **File › Download as .baipix** saves the whole file: its boards, layers, groups, frames, components and palette.
+- **Download all**, at the top of the home screen, saves every drawing at once: one .baipix file each, in a .zip.
 - **File › Open a .baipix file…** opens it again, anywhere.
 
 To use the drawing elsewhere, export it instead: see [Export](../../export/export/), or the code button next to it.

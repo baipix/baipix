@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fileIdOf } from '../../engine/document';
-import { flatten } from '../../engine/composite';
+import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
 import type { PixelDoc } from '../../engine/document';
 import { getLocale, useT } from '../../i18n';
@@ -8,13 +8,13 @@ import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
+import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
-import { createFromTemplate, TEMPLATES, type Template } from '../templates';
+import { createFromTemplate, TEMPLATES } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
-import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
-import { toCss } from '../../engine/color';
+import { PALETTE_PRESETS } from '../../engine/palette';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 
@@ -38,23 +38,6 @@ function formatUpdated(time: number, justNow: string): string {
   });
 }
 
-/** A template as a board of its shape, striped with its palette's colors. */
-function TemplatePreview({ template }: { template: Template }) {
-  const colors = presetColors(template.palette).slice(0, 8);
-  // Fitted in the 16:9 picture, at most 80% of its width and 64% of its height.
-  const k = Math.min(80 / template.width, (0.64 * 56.25) / template.height);
-  const size = { width: `${template.width * k}%`, height: `${((template.height * k) / 56.25) * 100}%` };
-  return (
-    <span className="home-thumb home-template-preview" aria-hidden="true">
-      <span className="home-template-board" style={size}>
-        {colors.map((c, i) => (
-          <span key={i} style={{ background: toCss(c) }} />
-        ))}
-      </span>
-    </span>
-  );
-}
-
 /** The drawing at a whole scale, about 320 px on its long side; CSS crops it to the card. */
 function HomeThumb({ doc }: { doc: PixelDoc }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -67,13 +50,44 @@ function HomeThumb({ doc }: { doc: PixelDoc }) {
     src.height = doc.height;
     const sctx = src.getContext('2d')!;
     const image = sctx.createImageData(doc.width, doc.height);
-    new Uint32Array(image.data.buffer).set(flatten(doc));
-    sctx.putImageData(image, 0, 0);
     canvas.width = doc.width * k;
     canvas.height = doc.height * k;
     const ctx = canvas.getContext('2d')!;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    const draw = (pixels: Uint32Array) => {
+      new Uint32Array(image.data.buffer).set(pixels);
+      sctx.putImageData(image, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    };
+    draw(flatten(doc));
+
+    // An animation plays in its card while the pointer is on it, each frame for its own duration.
+    const card = canvas.closest('.home-card, tr');
+    const count = frameCount(doc);
+    if (!card || count < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let frames: Uint32Array[] | null = null;
+    let timer = 0;
+    const play = (f: number) => {
+      frames ??= Array.from({ length: count }, (_, i) => flattenFrame(doc, i));
+      draw(frames[f]);
+      timer = window.setTimeout(() => play((f + 1) % count), doc.frames?.[f]?.duration ?? 100);
+    };
+    const start = () => {
+      clearTimeout(timer);
+      play(0);
+    };
+    const stop = () => {
+      clearTimeout(timer);
+      draw(flatten(doc));
+    };
+    card.addEventListener('pointerenter', start);
+    card.addEventListener('pointerleave', stop);
+    return () => {
+      clearTimeout(timer);
+      card.removeEventListener('pointerenter', start);
+      card.removeEventListener('pointerleave', stop);
+    };
   }, [doc, doc.updatedAt]);
   return <canvas ref={ref} className="home-thumb" aria-hidden="true" />;
 }
@@ -192,6 +206,17 @@ export function HomeScreen() {
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
         {
           <div className="home-top-actions">
+            {shown.length > 0 && (
+              <button
+                type="button"
+                className="btn"
+                data-tip={t('home.downloadAllTip')}
+                onClick={() => void actions.downloadAllFiles(shown.map((f) => f.id))}
+              >
+                <Icon name="download" size={16} />
+                {t('home.downloadAll')}
+              </button>
+            )}
             <button type="button" className="btn" onClick={() => void importFile()}>
               <Icon name="upload" size={16} />
               {t('home.import')}
@@ -230,6 +255,7 @@ export function HomeScreen() {
                 <a className="home-nav-link" href={DOCS_URL} target="_blank" rel="noopener">
                   <Icon name="docs" size={14} />
                   {t('home.docsTitle')}
+                  <Icon name="external" size={12} />
                 </a>
                 <button
                   type="button"
@@ -239,10 +265,12 @@ export function HomeScreen() {
                 >
                   <Icon name="bug" size={14} />
                   {t('home.bugTitle')}
+                  <Icon name="external" size={12} />
                 </button>
                 <a className="home-nav-link" href={CHANGELOG_URL} target="_blank" rel="noopener">
                   <Icon name="news" size={14} />
                   {t('home.newsTitle', { version: __APP_VERSION__ })}
+                  <Icon name="external" size={12} />
                 </a>
               </div>
             </nav>
@@ -310,23 +338,14 @@ export function HomeScreen() {
                   <h2 className="home-welcome-title">{t('template.startTitle')}</h2>
                   <div className="home-templates-grid">
                     {TEMPLATES.map((tpl) => (
-                      <button
+                      <PresetCard
                         key={tpl.id}
-                        type="button"
-                        className="home-card home-template"
+                        template={tpl}
                         onClick={() => {
                           createFromTemplate(editor, tpl, t('default.untitled'));
                           leaveHome(editor);
                         }}
-                      >
-                        <TemplatePreview template={tpl} />
-                        <span className="home-card-info">
-                          <span className="home-card-name truncate">{t(tpl.label)}</span>
-                          <span className="home-card-meta muted truncate">
-                            {tpl.width} × {tpl.height}
-                          </span>
-                        </span>
-                      </button>
+                      />
                     ))}
                   </div>
                 </section>
