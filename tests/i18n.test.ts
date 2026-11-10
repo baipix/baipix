@@ -7,6 +7,7 @@ import { uk } from '../src/i18n/uk';
 import { es } from '../src/i18n/es';
 import { ja } from '../src/i18n/ja';
 import { it as itDictionary } from '../src/i18n/it';
+import { ko } from '../src/i18n/ko';
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
@@ -14,6 +15,7 @@ const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = 
   es,
   ja,
   it: itDictionary,
+  ko,
 };
 
 const getPlaceholders = (text: string): string[] =>
@@ -77,6 +79,14 @@ describe('browser language selection', () => {
   it('selects Ukrainian when it is the first supported browser language', () => {
     expect(resolveLocaleSelection(undefined, undefined, ['uk-UA', 'fr-FR'])).toEqual({
       locale: 'uk',
+      preference: 'auto',
+      notify: true,
+    });
+  });
+
+  it('selects Korean when it is the first supported browser language', () => {
+    expect(resolveLocaleSelection(undefined, undefined, ['ko-KR', 'en-US'])).toEqual({
+      locale: 'ko',
       preference: 'auto',
       notify: true,
     });
