@@ -911,4 +911,38 @@ describe('import from Aseprite', () => {
     const { warnings } = await fromAseprite(bytes);
     expect(warnings.map(({ code }) => code)).toEqual(expect.arrayContaining(['animationTags', 'slices']));
   });
+
+  it('opens files with malformed unsupported metadata chunks', async () => {
+    const bytes = makeFile([
+      {
+        chunks: [
+          layerChunk(),
+          celChunk(),
+
+          chunk(0x2018, word(1)), // Tags: missing tag records
+          chunk(0x2020, dword(0x80000000)), // User Data: unknown flag
+          chunk(0x2022, dword(1)), // Slices: missing slice data
+          chunk(0x2008, dword(1)), // External Files: missing entries
+          chunk(0x2023, new Uint8Array()), // Tilesets: missing metadata
+          chunk(0x2007, word(2)), // Color Profile: missing ICC data
+          chunk(0x2006, dword(1)), // Cel Extra: missing precise bounds
+        ],
+      },
+    ]);
+
+    const { document, warnings } = await fromAseprite(bytes);
+    expect(document.layers).toHaveLength(1);
+
+    expect(warnings.map(({ code }) => code)).toEqual(
+      expect.arrayContaining([
+        'animationTags',
+        'userData',
+        'slices',
+        'externalFiles',
+        'tilesetsSkipped',
+        'embeddedIccProfile',
+        'preciseCelBounds',
+      ]),
+    );
+  });
 });
