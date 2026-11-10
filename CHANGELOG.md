@@ -21,6 +21,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Fixed
 
 - The tour gave A as Spray's key; it's P (A is the Board tool). ([#758](https://github.com/baipix/baipix/pull/758))
+- Going back to the files screen during the tour left its bubble on top, pointing at nothing; the tour now waits for the editor and picks up at the same step. ([#785](https://github.com/baipix/baipix/pull/785))
 
 ### Website
 
