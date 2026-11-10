@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { fileIdOf } from '../../engine/document';
-import { flatten } from '../../engine/composite';
+import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
 import type { PixelDoc } from '../../engine/document';
 import { getLocale, useT } from '../../i18n';
@@ -50,13 +50,44 @@ function HomeThumb({ doc }: { doc: PixelDoc }) {
     src.height = doc.height;
     const sctx = src.getContext('2d')!;
     const image = sctx.createImageData(doc.width, doc.height);
-    new Uint32Array(image.data.buffer).set(flatten(doc));
-    sctx.putImageData(image, 0, 0);
     canvas.width = doc.width * k;
     canvas.height = doc.height * k;
     const ctx = canvas.getContext('2d')!;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    const draw = (pixels: Uint32Array) => {
+      new Uint32Array(image.data.buffer).set(pixels);
+      sctx.putImageData(image, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    };
+    draw(flatten(doc));
+
+    // An animation plays in its card while the pointer is on it, each frame for its own duration.
+    const card = canvas.closest('.home-card, tr');
+    const count = frameCount(doc);
+    if (!card || count < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let frames: Uint32Array[] | null = null;
+    let timer = 0;
+    const play = (f: number) => {
+      frames ??= Array.from({ length: count }, (_, i) => flattenFrame(doc, i));
+      draw(frames[f]);
+      timer = window.setTimeout(() => play((f + 1) % count), doc.frames?.[f]?.duration ?? 100);
+    };
+    const start = () => {
+      clearTimeout(timer);
+      play(0);
+    };
+    const stop = () => {
+      clearTimeout(timer);
+      draw(flatten(doc));
+    };
+    card.addEventListener('pointerenter', start);
+    card.addEventListener('pointerleave', stop);
+    return () => {
+      clearTimeout(timer);
+      card.removeEventListener('pointerenter', start);
+      card.removeEventListener('pointerleave', stop);
+    };
   }, [doc, doc.updatedAt]);
   return <canvas ref={ref} className="home-thumb" aria-hidden="true" />;
 }
