@@ -291,7 +291,8 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
           <ColorAdjustPanel />
           <MenuHost />
           <CommandPalette />
-          <Tour />
+          {/* The tour points at the editor: it waits while the home screen is open. */}
+          {!home && <Tour />}
           <Dialogs />
           <Tooltips />
           <Toasts />
