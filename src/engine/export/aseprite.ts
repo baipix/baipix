@@ -341,11 +341,7 @@ export async function toAseprite(doc: PixelDoc, options: AsepriteOptions): Promi
       const last = written.get(entry);
       if (last && samePixels(last.pixels, pixels)) {
         const bounds = pixelBounds(pixels, W, H);
-
-        if (bounds) {
-          addLinkedCelChunk(chunks, entry, last.frame, bounds.x, bounds.y);
-        }
-
+        if (bounds) addLinkedCelChunk(chunks, entry, last.frame, bounds.x, bounds.y);
         continue;
       }
       written.set(entry, { frame: f, pixels });
