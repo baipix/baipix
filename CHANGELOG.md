@@ -10,6 +10,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Help › Baipix on Bluesky, under the source code on GitHub. ([#765](https://github.com/baipix/baipix/pull/765))
 - Download all, at the top of the home screen: every drawing as its own .baipix file, in one .zip. ([#775](https://github.com/baipix/baipix/pull/775))
 - With the Move tool, a right-click on the canvas opens the menu of the layer or group under the pointer. Arrange brings a layer to the front, forward, backward or to the back, also with Ctrl+] and Ctrl+[, and Shift for front and back. ([#779](https://github.com/baipix/baipix/pull/779))
+- On the files screen, an animated drawing plays in its card while the pointer is on it. ([#787](https://github.com/baipix/baipix/pull/787))
 
 ### Changed
 
@@ -17,6 +18,9 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Help › Keyboard shortcuts lists every key that works, Q, Y and D for the lasso, magic wand and gradient included, and Ctrl+A, Ctrl+D, Ctrl+Shift+I, Ctrl+Y, Ctrl+0, Ctrl+S and ?. ([#761](https://github.com/baipix/baipix/pull/761))
 - The version in the editor's corner and at the bottom of the Help menu opens the release notes on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))
 - After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. ([#739](https://github.com/baipix/baipix/pull/739))
+- The first files screen shows each preset as a small picture of what it's for, grey, and in the preset's palette on hover, with the palette's name under it. Templates are now called presets. ([#782](https://github.com/baipix/baipix/pull/782))
+- A shorter welcome line, bigger Create and Import buttons, and WebP in the list of files Baipix opens. ([#783](https://github.com/baipix/baipix/pull/783))
+- The links at the bottom of the files screen's sidebar show an arrow: they open in a new tab. ([#784](https://github.com/baipix/baipix/pull/784))
 
 ### Fixed
 
