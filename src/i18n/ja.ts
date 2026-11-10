@@ -644,8 +644,8 @@ export const ja: Record<MessageKey, string> = {
   'template.mirrored': '対称',
   'template.tiled': 'タイル状',
   'dialog.swapSize': '幅と高さを入れ替え',
-  'template.title': 'テンプレート',
-  'template.startTitle': 'テンプレートから始める',
+  'template.title': 'プリセット',
+  'template.startTitle': 'プリセットを選ぶ',
   'upscaled.title': '拡大されたドット絵',
   'upscaled.hint':
     'この画像は、ドット絵を{scale}倍に拡大したもののようです。ピクセルを復元すると、本来のサイズで編集できます。うまく合わないときは、グリッドを調整してください。',
