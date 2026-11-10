@@ -120,7 +120,7 @@ export const pt: Record<MessageKey, string> = {
   'section.layer': 'Camada',
   'section.light': 'Luz',
   'light.info':
-    "De onde vem a luz, para sombrear. É apenas uma guia, como a grade: nada é pintado e ela não é exportada.",
+    'De onde vem a luz, para sombrear. É apenas uma guia, como a grade: nada é pintado e ela não é exportada.',
   'light.add': 'Adicionar uma luz',
   'light.remove': 'Remover a luz',
   'light.stage': 'Luz: arraste a lâmpada ao redor da esfera; quanto mais perto, mais alta a luz',
@@ -199,7 +199,7 @@ export const pt: Record<MessageKey, string> = {
   'outline.color': 'Na cor primária: escolha outra na paleta.',
   'adjust.remap': 'Remapear',
   'remap.palette': 'Paleta',
-  'remap.filePalette': "A paleta do arquivo",
+  'remap.filePalette': 'A paleta do arquivo',
   'remap.match': 'Correspondência de cores',
   'remap.nearest': 'Mais próxima',
   'remap.lightness': 'Por luminosidade',
@@ -207,7 +207,7 @@ export const pt: Record<MessageKey, string> = {
   'remap.lightnessHint':
     'As cores vão para as cores da paleta na mesma ordem, da mais escura para a mais escura da paleta: recolore e mantém sombras e destaques.',
   'remap.count': 'Cores',
-  'remap.replacePalette': "Substituir também a paleta do arquivo",
+  'remap.replacePalette': 'Substituir também a paleta do arquivo',
   'remap.background': 'Remapear também o plano de fundo',
   'adjust.open': 'Ajustar a camada…',
   'adjust.hue': 'Matiz',
@@ -434,7 +434,8 @@ export const pt: Record<MessageKey, string> = {
   'hint.gradient':
     'Arraste de onde o gradiente começa até onde termina (Shift: em passos de 45°). Ele preenche a área da mesma cor sob o primeiro clique, ou a seleção. Suas cores vêm da paleta, com pontilhado entre elas. Altere as opções logo em seguida: o último gradiente acompanha.',
   'gradient.stops': 'Paradas do gradiente',
-  'gradient.barHint': 'Clique para adicionar uma parada, arraste uma parada para movê-la, clique nela para escolher a cor',
+  'gradient.barHint':
+    'Clique para adicionar uma parada, arraste uma parada para movê-la, clique nela para escolher a cor',
   'gradient.stop': 'Parada em {at} %',
   'gradient.stopColor': 'Cor da parada',
   'gradient.transparent': 'Transparente',
@@ -490,7 +491,8 @@ export const pt: Record<MessageKey, string> = {
 
   'palette.preset': 'Paleta predefinida',
   'palette.drawing': 'Cores do desenho',
-  'palette.drawingEmpty': 'Desenhe: as cores que você usar aparecem aqui. Ou escolha uma paleta no menu acima.',
+  'palette.drawingEmpty':
+    'Desenhe: as cores que você usar aparecem aqui. Ou escolha uma paleta no menu acima.',
   'palette.mine': 'Minhas paletas',
   'palette.new': '+ Nova paleta',
   'palette.newFromFile': 'A partir da paleta deste arquivo',
@@ -603,7 +605,8 @@ export const pt: Record<MessageKey, string> = {
   'export.info': '{w} × {h} px,',
   'export.withBackground': 'com plano de fundo',
   'export.transparent': 'plano de fundo transparente',
-  'export.layerEmpty': '{name} está vazia. Desmarque "Somente a camada ativa" para exportar o desenho inteiro.',
+  'export.layerEmpty':
+    '{name} está vazia. Desmarque "Somente a camada ativa" para exportar o desenho inteiro.',
   'export.name': 'Nome',
   'export.includeBackground': 'Incluir o plano de fundo',
   'export.previewLabel': 'Pré-visualização da imagem exportada',
@@ -707,7 +710,8 @@ export const pt: Record<MessageKey, string> = {
   'output.copySvgBlocked':
     'O navegador bloqueou a cópia automática. Copie este código (Ctrl+C) e cole no Figma ou no Illustrator.',
   'output.copyPngTitle': 'Copiar a imagem',
-  'output.copyPngBlocked': 'O navegador bloqueou a cópia automática. Clique com o botão direito na imagem e escolha “Copiar imagem”.',
+  'output.copyPngBlocked':
+    'O navegador bloqueou a cópia automática. Clique com o botão direito na imagem e escolha “Copiar imagem”.',
 
   'shortcuts.tools': 'Ferramentas',
   'shortcuts.layers': 'Camadas',
@@ -795,7 +799,8 @@ export const pt: Record<MessageKey, string> = {
   'toast.pixelsRecovered': 'Pixels recuperados: {w} × {h}, de uma imagem ampliada em ×{scale}.',
   'toast.groupTooDeep': 'Os grupos vão até quatro níveis.',
   'toast.instanceLocked': 'Esta é uma instância: desenhe no componente dela para alterar todas as cópias.',
-  'toast.layerFrames': 'Esta camada é animada: ela só pode ir para uma prancheta com o mesmo número de quadros.',
+  'toast.layerFrames':
+    'Esta camada é animada: ela só pode ir para uma prancheta com o mesmo número de quadros.',
   'toast.layerToBoard': 'Movida para {board}.',
   'toast.componentCreated': 'Componente criado. Arraste-o da lista de Componentes para posicionar cópias.',
   'toast.cut': 'Recortado.',
