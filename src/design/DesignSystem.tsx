@@ -395,6 +395,7 @@ function SegmentedDemo() {
 
 function FieldsBlock() {
   const [n, setN] = useState(64);
+  const [opacity, setOpacity] = useState(60);
   const [checked, setChecked] = useState(true);
   const [anchor, setAnchor] = useState<Anchor>({ x: 1, y: 1 });
   const [light, setLight] = useState<BoardLight>(DEFAULT_LIGHT);
@@ -404,6 +405,24 @@ function FieldsBlock() {
         <Specimen label="Number field" use="Drag its label to scrub the value, or type it.">
           <div className="ds-field">
             <NumberField value={n} min={1} max={512} label="W" ariaLabel="Width" onChange={(v) => setN(v)} />
+          </div>
+        </Specimen>
+        <Specimen
+          label="Slider field"
+          use="A number with a short range (opacity, brush size): filled up to its value. Drag anywhere on it to change it, click it to type."
+        >
+          <div className="ds-field">
+            <NumberField
+              slider
+              value={opacity}
+              min={0}
+              max={100}
+              label="◐"
+              suffix="%"
+              ariaLabel="Opacity"
+              scrubHint="Drag to adjust"
+              onChange={(v) => setOpacity(v)}
+            />
           </div>
         </Specimen>
         <Specimen

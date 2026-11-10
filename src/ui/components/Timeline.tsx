@@ -215,6 +215,7 @@ export function Timeline() {
               onChange={(after) => setOnion({ after })}
             />
             <NumberField
+              slider
               value={Math.round(onion.opacity * 100)}
               min={5}
               max={100}
