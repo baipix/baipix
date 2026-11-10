@@ -522,6 +522,7 @@ export const es: Record<MessageKey, string> = {
   'palette.showAll': 'Mostrar todas las paletas',
   'palette.exportHex': 'Exportar como .hex (Lospec)',
   'palette.exportGpl': 'Exportar como .gpl (GIMP, Aseprite, Krita)',
+  'palette.exportPng': 'Exportar como imagen (PNG)',
   'palette.addColor': 'Añadir el color actual ({hex}) a la paleta',
   'palette.inPaletteAlready': 'El color actual ya está en la paleta',
 

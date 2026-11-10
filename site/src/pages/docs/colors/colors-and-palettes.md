@@ -34,6 +34,6 @@ Each file keeps its own palette, saved with it. Pick one in the menu next to the
   <img class="for-dark" src="../../shots/palette-manager-dark.webp" width="432" height="568" alt="The Palettes dialog: the presets to show in the palette menu, each with its colors, and your own palettes under them, to rename, replace or delete, with New palette." loading="lazy" />
 </figure>
 
-The **+** after the last swatch adds the current color to the palette. The palette's … menu sorts it by lightness, builds it from the drawing (every frame of an animation), makes a shade ramp, pastes colors, and opens or exports **.hex** (Lospec) and **.gpl** (GIMP, Aseprite, Krita) files. It also opens Paint.NET's **.txt** palettes. To use any palette from Lospec, paste its colors or open its .hex or .txt file.
+The **+** after the last swatch adds the current color to the palette. The palette's … menu sorts it by lightness, builds it from the drawing (every frame of an animation), makes a shade ramp, pastes colors, and opens or exports **.hex** (Lospec) and **.gpl** (GIMP, Aseprite, Krita) files, or exports the palette as a **PNG** picture with one square per color. It also opens Paint.NET's **.txt** palettes. To use any palette from Lospec, paste its colors or open its .hex or .txt file.
 
 Undo works on the palette too.

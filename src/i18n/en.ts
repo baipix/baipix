@@ -514,6 +514,7 @@ export const en = {
   'palette.showAll': 'Show all palettes',
   'palette.exportHex': 'Export as .hex (Lospec)',
   'palette.exportGpl': 'Export as .gpl (GIMP, Aseprite, Krita)',
+  'palette.exportPng': 'Export as a picture (PNG)',
   'palette.addColor': 'Add the current color ({hex}) to the palette',
   'palette.inPaletteAlready': 'The current color is in the palette',
 

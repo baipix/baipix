@@ -576,6 +576,7 @@ export const ko: Record<MessageKey, string> = {
   'palette.showAll': '모든 팔레트 표시',
   'palette.exportHex': '.hex로 내보내기 (Lospec)',
   'palette.exportGpl': '.gpl로 내보내기 (GIMP, Aseprite, Krita)',
+  'palette.exportPng': 'Export as a picture (PNG)',
   'palette.addColor': '현재 색상({hex})을 팔레트에 추가',
   'palette.inPaletteAlready': '현재 색상이 이미 팔레트에 있습니다',
 

@@ -520,6 +520,7 @@ export const fr: Record<MessageKey, string> = {
   'palette.showAll': 'Afficher toutes les palettes',
   'palette.exportHex': 'Exporter en .hex (Lospec)',
   'palette.exportGpl': 'Exporter en .gpl (GIMP, Aseprite, Krita)',
+  'palette.exportPng': 'Exporter en image (PNG)',
   'palette.addColor': 'Ajouter la couleur en cours ({hex}) à la palette',
   'palette.inPaletteAlready': 'La couleur en cours est déjà dans la palette',
 

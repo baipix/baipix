@@ -164,6 +164,7 @@ function PaletteSection() {
                 '-',
                 { label: t('palette.exportHex'), onSelect: () => void actions.exportPalette('hex') },
                 { label: t('palette.exportGpl'), onSelect: () => void actions.exportPalette('gpl') },
+                { label: t('palette.exportPng'), onSelect: () => void actions.exportPalette('png') },
               ])
             }
           />

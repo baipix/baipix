@@ -519,6 +519,7 @@ export const uk: Record<MessageKey, string> = {
   'palette.showAll': 'Показати всі палітри',
   'palette.exportHex': 'Експортувати як .hex (Lospec)',
   'palette.exportGpl': 'Експортувати як .gpl (GIMP, Aseprite, Krita)',
+  'palette.exportPng': 'Експортувати як зображення (PNG)',
   'palette.addColor': 'Додати поточний колір ({hex}) до палітри',
   'palette.inPaletteAlready': 'Поточний колір уже є в палітрі',
 
