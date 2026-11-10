@@ -740,7 +740,7 @@ export const fr: Record<MessageKey, string> = {
   'menu.code': 'Code…',
   'toast.pngCopied': 'Image copiée dans le presse-papier.',
   'toast.opened': '{name} ouvert.',
-  'toast.asepriteOpenedWithWarnings': '{name} a été ouvert avec quelques ajustements lors de l’importation.',
+  'toast.asepriteOpenedWithWarnings': '{name} ouvert, avec quelques ajustements.',
   'toast.asepriteWarningDetails': 'Détails ({count})',
   'toast.unreadableAseprite': 'Impossible de lire ce fichier Aseprite.',
   'toast.asepriteWarningLayerMovementLocks':
@@ -778,9 +778,9 @@ export const fr: Record<MessageKey, string> = {
   'toast.asepriteWarningUnsupportedChunks':
     'Les types de blocs Aseprite inconnus ont été ignorés ({count} types distincts ; exemples : {types}).',
   'toast.asepriteCanvasTooLarge':
-    'La taille du canevas {width} × {height} dépasse le maximum de Baipix ({max} × {max}). Redimensionnez le canevas dans Aseprite.',
+    'Le canevas fait {width} × {height}, Baipix va jusqu’à {max} × {max}. Redimensionne-le dans Aseprite.',
   'toast.asepriteTooManyFrames':
-    'Le fichier contient {count} images. Baipix en prend en charge {max} au maximum. Supprimez des images dans Aseprite.',
+    'Ce fichier a {count} images, Baipix va jusqu’à {max}. Supprime des images dans Aseprite.',
   'toast.asepriteCelTooLarge': 'Le cel Aseprite dépasse la limite d’importation de {max} pixels.',
   'toast.notBaipix': "Ce n'est pas un fichier .baipix valide.",
   'toast.notImage': "Ce fichier n'est pas une image. Utilise un PNG, GIF, JPEG ou WebP.",

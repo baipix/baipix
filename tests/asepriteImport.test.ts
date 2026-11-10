@@ -816,7 +816,7 @@ describe('import from Aseprite', () => {
     );
   });
 
-  it('validates nested property maps and mixed-type vectors', async () => {
+  it('skips user data containing nested property maps and mixed-type vectors', async () => {
     const nestedMap = propertyMap([
       propertyEntry('enabled', 0x0001, new Uint8Array([1])),
       propertyEntry('title', 0x000d, aseString('nested')),
