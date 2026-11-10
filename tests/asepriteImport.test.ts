@@ -155,14 +155,14 @@ function paletteChunk(colors: number[][]): Uint8Array {
   return chunk(0x2019, payload);
 }
 
-function tagsChunk(name = 'Walk'): Uint8Array {
+function tagsChunk(name = 'Walk', lastFrame = 0): Uint8Array {
   const nameBytes = encoder.encode(name);
   const payload = new Uint8Array(10 + 17 + 2 + nameBytes.length);
   const view = new DataView(payload.buffer);
 
   view.setUint16(0, 1, true);
   view.setUint16(10, 0, true); // first frame
-  view.setUint16(12, 0, true); // last frame
+  view.setUint16(12, lastFrame, true);
   view.setUint8(14, 0); // forward
   view.setUint16(27, nameBytes.length, true);
   payload.set(nameBytes, 29);
@@ -243,7 +243,7 @@ function userDataPropertiesChunk(properties: Uint8Array[]): Uint8Array {
   return chunk(0x2020, concatenate([dword(4), propertyData]));
 }
 
-function sliceChunk(name = 'Hitbox'): Uint8Array {
+function sliceChunk(name = 'Hitbox', frame = 0): Uint8Array {
   const nameBytes = encoder.encode(name);
   const payload = new Uint8Array(12 + 2 + nameBytes.length + 20);
   const view = new DataView(payload.buffer);
@@ -252,7 +252,7 @@ function sliceChunk(name = 'Hitbox'): Uint8Array {
   view.setUint32(4, 0, true); // no optional key fields
   view.setUint16(12, nameBytes.length, true);
   payload.set(nameBytes, 14);
-  view.setUint32(14 + nameBytes.length, 0, true); // frame 0
+  view.setUint32(14 + nameBytes.length, frame, true); // frame 0
 
   return chunk(0x2022, payload);
 }
@@ -807,9 +807,13 @@ describe('import from Aseprite', () => {
     expect(document.layers[0].pixels[0]).toBe(RED);
   });
 
-  it('rejects Cel Extra chunks without a preceding cel', async () => {
+  it('skips Cel Extra chunks without a preceding cel', async () => {
     const bytes = makeFile([{ chunks: [layerChunk(), celExtraChunk()] }]);
-    await expectImportError(bytes, 'unreadable');
+    const { warnings } = await fromAseprite(bytes);
+
+    expect(warnings.map(({ code }) => code)).toEqual(
+      expect.arrayContaining(['preciseCelBounds', 'unsupportedCelExtraFlags']),
+    );
   });
 
   it('validates nested property maps and mixed-type vectors', async () => {
@@ -844,7 +848,7 @@ describe('import from Aseprite', () => {
     expect(warnings).toContainEqual({ code: 'userData' });
   });
 
-  it('rejects unsupported and truncated nested user data properties', async () => {
+  it('skips unknown and truncated nested user data properties', async () => {
     const unsupportedType = makeFile([
       {
         chunks: [layerChunk(), userDataPropertiesChunk([propertyEntry('unknown', 0x7777, new Uint8Array())])],
@@ -866,24 +870,11 @@ describe('import from Aseprite', () => {
       },
     ]);
 
-    await expectImportError(unsupportedType, 'unreadable');
-    await expectImportError(truncatedValue, 'unreadable');
-  });
+    const unsupportedResult = await fromAseprite(unsupportedType);
+    const truncatedResult = await fromAseprite(truncatedValue);
 
-  it('rejects user data properties nested beyond 128 levels', async () => {
-    let nested = propertyMap([propertyEntry('value', 0x0001, new Uint8Array([1]))]);
-
-    for (let i = 0; i < 129; i++) {
-      nested = propertyMap([propertyEntry('nested', 0x0012, nested)]);
-    }
-
-    const bytes = makeFile([
-      {
-        chunks: [layerChunk(), userDataPropertiesChunk([propertyEntry('root', 0x0012, nested)])],
-      },
-    ]);
-
-    await expectImportError(bytes, 'unreadable');
+    expect(unsupportedResult.warnings).toContainEqual({ code: 'userData' });
+    expect(truncatedResult.warnings).toContainEqual({ code: 'userData' });
   });
 
   it('skips unknown chunk types and reports them once', async () => {
@@ -909,5 +900,15 @@ describe('import from Aseprite', () => {
         types: '0x7777, 0x7778',
       },
     });
+  });
+
+  it('skips tags and slices with references outside the document', async () => {
+    const bytes = makeFile([
+      {
+        chunks: [layerChunk(), celChunk(), tagsChunk('Walk', 1), sliceChunk('Hitbox', 1)],
+      },
+    ]);
+    const { warnings } = await fromAseprite(bytes);
+    expect(warnings.map(({ code }) => code)).toEqual(expect.arrayContaining(['animationTags', 'slices']));
   });
 });

@@ -16,8 +16,6 @@ const FRAME_MAGIC = 0xf1fa;
 
 // Maximum pixel area of a single cel (2048 × 2048), not a cumulative document limit.
 const MAX_CEL_PIXELS = 4_194_304;
-// Aseprite specifies a maximum nesting depth of 128 levels for user-data properties.
-const MAX_USER_DATA_NESTING = 128;
 
 const LAYER_CHUNK = 0x2004;
 const CEL_CHUNK = 0x2005;
@@ -266,366 +264,6 @@ function readString(
     value: new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(offset + 2, offset + 2 + length)),
     next: offset + 2 + length,
   };
-}
-
-/** Validates animation-tag records and returns the number of tags in the chunk. */
-function parseTagsChunk(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  frameCount: number,
-): number {
-  // Tags chunk header: 10 bytes (count plus reserved bytes).
-  assertChunkRange(bytes, start, 10, end);
-
-  const count = view.getUint16(start, true);
-  let at = start + 10;
-
-  // Each tag needs at least 17 fixed bytes and a 2-byte string length.
-  assertChunkRange(bytes, at, count * 19, end);
-
-  for (let i = 0; i < count; i++) {
-    // Fixed tag fields occupy 17 bytes; the name follows as a length-prefixed string.
-    assertChunkRange(bytes, at, 17, end);
-
-    const from = view.getUint16(at, true);
-    const to = view.getUint16(at + 2, true);
-    const direction = view.getUint8(at + 4);
-
-    if (from > to || to >= frameCount || direction > 3) {
-      fail('Invalid Aseprite animation tag.');
-    }
-
-    at += 17;
-    at = readString(bytes, view, at, end).next;
-  }
-
-  if (at !== end) {
-    fail('Invalid Aseprite animation tags chunk.');
-  }
-
-  return count;
-}
-
-/** Walks a user-data property map and returns the offset immediately after its entries. */
-function parsePropertiesMap(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  depth: number,
-): number {
-  if (depth > MAX_USER_DATA_NESTING) {
-    fail('Aseprite user data properties exceed the maximum nesting depth.');
-  }
-
-  assertChunkRange(bytes, start, 4, end);
-
-  const count = view.getUint32(start, true);
-  let at = start + 4;
-
-  // Every property needs at least a string length and a type.
-  if (count > Math.floor((end - at) / 4)) {
-    fail('Invalid Aseprite user data property count.');
-  }
-
-  for (let i = 0; i < count; i++) {
-    at = readString(bytes, view, at, end).next;
-    assertChunkRange(bytes, at, 2, end);
-
-    const type = view.getUint16(at, true);
-    at += 2;
-    at = parsePropertyValue(bytes, view, at, end, type, depth + 1);
-  }
-
-  return at;
-}
-
-/** Validates a user-data vector, supporting both mixed and homogeneous element types. */
-function parseVectorPropertyValue(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  depth: number,
-): number {
-  assertChunkRange(bytes, start, 6, end);
-
-  const count = view.getUint32(start, true);
-  const elementType = view.getUint16(start + 4, true);
-
-  let at = start + 6;
-
-  if (elementType === 0) {
-    // Mixed-type vectors store a type ID before each element.
-    if (count > Math.floor((end - at) / 2)) {
-      fail('Invalid Aseprite user data vector size.');
-    }
-
-    for (let i = 0; i < count; i++) {
-      assertChunkRange(bytes, at, 2, end);
-
-      const itemType = view.getUint16(at, true);
-      at += 2;
-
-      at = parsePropertyValue(bytes, view, at, end, itemType, depth + 1);
-    }
-  } else {
-    if (elementType > 0x0013 || count > end - at) {
-      fail('Invalid Aseprite user data vector type or size.');
-    }
-
-    // Homogeneous vectors store their element type once in the vector header.
-    for (let i = 0; i < count; i++) {
-      at = parsePropertyValue(bytes, view, at, end, elementType, depth + 1);
-    }
-  }
-
-  return at;
-}
-
-/** Advances over one user-data property value according to its encoded type ID. */
-function parsePropertyValue(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  type: number,
-  depth: number,
-): number {
-  if (depth > MAX_USER_DATA_NESTING) {
-    fail('Aseprite user data properties exceed the maximum nesting depth.');
-  }
-
-  switch (type) {
-    // bool, int8, uint8
-    case 0x0001:
-    case 0x0002:
-    case 0x0003:
-      assertChunkRange(bytes, start, 1, end);
-      return start + 1;
-
-    // int16, uint16
-    case 0x0004:
-    case 0x0005:
-      assertChunkRange(bytes, start, 2, end);
-      return start + 2;
-
-    // int32, uint32, fixed, float
-    case 0x0006:
-    case 0x0007:
-    case 0x000a:
-    case 0x000b:
-      assertChunkRange(bytes, start, 4, end);
-      return start + 4;
-
-    // int64, uint64, double
-    case 0x0008:
-    case 0x0009:
-    case 0x000c:
-      assertChunkRange(bytes, start, 8, end);
-      return start + 8;
-
-    // string
-    case 0x000d:
-      return readString(bytes, view, start, end).next;
-
-    // point, size
-    case 0x000e:
-    case 0x000f:
-      assertChunkRange(bytes, start, 8, end);
-      return start + 8;
-
-    // rectangle
-    case 0x0010:
-      assertChunkRange(bytes, start, 16, end);
-      return start + 16;
-
-    // vector
-    case 0x0011:
-      return parseVectorPropertyValue(bytes, view, start, end, depth);
-
-    // Nested properties map
-    case 0x0012:
-      return parsePropertiesMap(bytes, view, start, end, depth);
-
-    // UUID
-    case 0x0013:
-      assertChunkRange(bytes, start, 16, end);
-      return start + 16;
-
-    default:
-      fail(`Unsupported Aseprite user data property type: ${type}.`);
-  }
-}
-
-/** Validates the properties section, including each extension map and its declared size. */
-function parseUserDataProperties(bytes: Uint8Array, view: DataView, start: number, end: number): number {
-  assertChunkRange(bytes, start, 8, end);
-  const propertiesSize = view.getUint32(start, true);
-
-  if (propertiesSize < 8) {
-    fail('Invalid Aseprite user data properties.');
-  }
-
-  assertChunkRange(bytes, start, propertiesSize, end);
-
-  const propertiesEnd = start + propertiesSize;
-  const mapCount = view.getUint32(start + 4, true);
-  let at = start + 8;
-
-  // Every map needs a 4-byte extension entry ID and at least a 4-byte property count.
-  if (mapCount > Math.floor((propertiesEnd - at) / 8)) {
-    fail('Invalid Aseprite user data properties map count.');
-  }
-
-  for (let i = 0; i < mapCount; i++) {
-    assertChunkRange(bytes, at, 4, propertiesEnd);
-
-    // Extension entry ID.
-    at += 4;
-    at = parsePropertiesMap(bytes, view, at, propertiesEnd, 0);
-  }
-
-  if (at !== propertiesEnd) {
-    fail('Invalid Aseprite user data properties size.');
-  }
-
-  return propertiesEnd;
-}
-
-/** Validates optional user-data fields and reports whether the chunk contains metadata. */
-function parseUserDataChunk(bytes: Uint8Array, view: DataView, start: number, end: number): boolean {
-  assertChunkRange(bytes, start, 4, end);
-
-  const flags = view.getUint32(start, true);
-  const hasUnknownFlags = (flags & ~7) !== 0;
-
-  let at = start + 4;
-
-  if (flags & 1) {
-    at = readString(bytes, view, at, end).next;
-  }
-
-  if (flags & 2) {
-    assertChunkRange(bytes, at, 4, end);
-    at += 4;
-  }
-
-  if (flags & 4) {
-    at = parseUserDataProperties(bytes, view, at, end);
-  }
-
-  if (at > end) {
-    fail('Invalid Aseprite user data chunk.');
-  }
-
-  if (!hasUnknownFlags && at !== end) {
-    fail('Invalid Aseprite user data chunk.');
-  }
-
-  return flags !== 0;
-}
-
-/** Validates external-file records and returns how many references the chunk contains. */
-function parseExternalFilesChunk(bytes: Uint8Array, view: DataView, start: number, end: number): number {
-  // Chunk header: DWORD entry count followed by 8 reserved bytes.
-  assertChunkRange(bytes, start, 12, end);
-
-  const count = view.getUint32(start, true);
-  let at = start + 12;
-
-  for (let i = 0; i < count; i++) {
-    // Each entry starts with a 12-byte ID/type/reserved block, followed by its path string.
-    assertChunkRange(bytes, at, 12, end);
-    at += 12;
-    at = readString(bytes, view, at, end).next;
-  }
-
-  if (at !== end) {
-    fail('Invalid Aseprite external files chunk.');
-  }
-
-  return count;
-}
-
-/** Validates tileset metadata and skips optional external-link or embedded-tile payloads. */
-function parseTilesetChunk(bytes: Uint8Array, view: DataView, start: number, end: number): void {
-  // The fixed tileset fields occupy 32 bytes; the length-prefixed name starts at offset 32.
-  assertChunkRange(bytes, start, 34, end);
-
-  const flags = view.getUint32(start + 4, true);
-  let at = readString(bytes, view, start + 32, end).next;
-
-  if (flags & 1) {
-    // External tileset reference: 4-byte external file ID and 4-byte reserved field.
-    assertChunkRange(bytes, at, 8, end);
-    at += 8;
-  }
-
-  if (flags & 2) {
-    // Embedded tile data is prefixed by its byte length.
-    assertChunkRange(bytes, at, 4, end);
-
-    const dataSize = view.getUint32(at, true);
-    at += 4;
-
-    assertChunkRange(bytes, at, dataSize, end);
-    at += dataSize;
-  }
-
-  if (at !== end) {
-    fail('Invalid Aseprite tileset chunk.');
-  }
-}
-
-/** Validates slice keys and returns their count without importing slice metadata. */
-function parseSliceChunk(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  frameCount: number,
-): number {
-  // Slice header: key count (4), flags (4), reserved (4), then the name string.
-  assertChunkRange(bytes, start, 12, end);
-
-  const keyCount = view.getUint32(start, true);
-  const flags = view.getUint32(start + 4, true);
-  const hasNinePatch = (flags & 1) !== 0;
-  const hasPivot = (flags & 2) !== 0;
-  const hasUnknownFlags = (flags & ~3) !== 0;
-
-  let at = readString(bytes, view, start + 12, end).next;
-
-  // Each key has 20 fixed bytes; nine-patch data adds 16 and pivot data adds 8.
-  const keySize = 20 + (hasNinePatch ? 16 : 0) + (hasPivot ? 8 : 0);
-  assertChunkRange(bytes, at, keyCount * keySize, end);
-
-  for (let i = 0; i < keyCount; i++) {
-    const frame = view.getUint32(at, true);
-
-    if (frame >= frameCount) {
-      fail('Invalid Aseprite slice frame reference.');
-    }
-
-    at += 20;
-
-    if (hasNinePatch) {
-      at += 16;
-    }
-
-    if (hasPivot) {
-      at += 8;
-    }
-  }
-
-  if (!hasUnknownFlags && at !== end) {
-    fail('Invalid Aseprite slice chunk.');
-  }
-
-  return keyCount;
 }
 
 /** Reads and validates the fixed Aseprite file header. */
@@ -1140,8 +778,6 @@ interface FrameParseState {
   frameDurations: number[];
   /** A modern palette chunk takes precedence over legacy palette chunks. */
   hasNewPalette: boolean;
-  /** Whether a cel chunk has been read in the file so far. */
-  hasReadCel: boolean;
   /** Collects distinct unsupported chunk types for one warning after parsing. */
   unsupportedChunkTypes: Set<number>;
   endOffset: number;
@@ -1168,36 +804,6 @@ function warnAboutHeaderMetadata(header: AsepriteHeader, warn: WarningCollector)
       width: header.gridWidth,
       height: header.gridHeight,
     });
-  }
-}
-
-/** Validates a color-profile chunk and reports profiles that are not preserved by the importer. */
-function parseColorProfileChunk(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  warn: WarningCollector,
-): void {
-  // Color profile type: 0 none, 1 sRGB, 2 embedded ICC. Flag bit 1 indicates a fixed gamma value.
-  assertChunkRange(bytes, start, 16, end);
-
-  const profileType = view.getUint16(start, true);
-  const profileFlags = view.getUint16(start + 2, true);
-
-  if (profileType === 2) {
-    // For ICC profiles, the data length is at +16 and the profile bytes start at +20.
-    assertChunkRange(bytes, start + 16, 4, end);
-    const profileSize = view.getUint32(start + 16, true);
-    assertChunkRange(bytes, start + 20, profileSize, end);
-
-    if (start + 20 + profileSize !== end) {
-      fail('Invalid Aseprite color profile.');
-    }
-
-    warn('embeddedIccProfile');
-  } else if (profileType > 2 || profileFlags & 1) {
-    warn('customColorProfile');
   }
 }
 
@@ -1272,31 +878,6 @@ async function parseCelChunk(
   }
 }
 
-/** Validates the optional cel-extra metadata and reports fields the importer does not preserve. */
-function parseCelExtraChunk(
-  bytes: Uint8Array,
-  view: DataView,
-  start: number,
-  end: number,
-  warn: WarningCollector,
-): void {
-  assertChunkRange(bytes, start, 4, end);
-
-  const flags = view.getUint32(start, true);
-  const hasPreciseBounds = (flags & 1) !== 0;
-
-  // Fixed minimum: flags(4) + reserved(16); precise bounds add a fixed 16-byte rectangle.
-  assertChunkRange(bytes, start, hasPreciseBounds ? 36 : 20, end);
-
-  if (hasPreciseBounds) {
-    warn('preciseCelBounds');
-  }
-
-  if (flags >>> 1 !== 0) {
-    warn('unsupportedCelExtraFlags');
-  }
-}
-
 /** Dispatches a frame's chunks to their format-specific parsers and returns the next frame offset. */
 async function parseFrameChunks(
   bytes: Uint8Array,
@@ -1362,54 +943,68 @@ async function parseFrameChunks(
         break;
       }
 
-      case TAGS_CHUNK: {
-        const tagCount = parseTagsChunk(bytes, view, start, end, header.frames);
-
-        if (tagCount > 0) warn('animationTags');
+      case TAGS_CHUNK:
+        if (end - start >= 2 && view.getUint16(start, true) > 0) {
+          warn('animationTags');
+        }
         break;
-      }
 
       case USER_DATA_CHUNK:
-        if (parseUserDataChunk(bytes, view, start, end)) {
+        if (end - start >= 4 && view.getUint32(start, true) !== 0) {
           warn('userData');
         }
         break;
 
-      case SLICE_CHUNK: {
-        const keyCount = parseSliceChunk(bytes, view, start, end, header.frames);
-
-        if (keyCount > 0) warn('slices');
+      case SLICE_CHUNK:
+        if (end - start >= 4 && view.getUint32(start, true) > 0) {
+          warn('slices');
+        }
         break;
-      }
 
-      case EXTERNAL_FILES_CHUNK: {
-        const count = parseExternalFilesChunk(bytes, view, start, end);
-
-        if (count > 0) warn('externalFiles');
+      case EXTERNAL_FILES_CHUNK:
+        if (end - start >= 4 && view.getUint32(start, true) > 0) {
+          warn('externalFiles');
+        }
         break;
-      }
 
       case TILESET_CHUNK:
-        parseTilesetChunk(bytes, view, start, end);
         warn('tilesetsSkipped');
         break;
 
-      case COLOR_PROFILE_CHUNK:
-        parseColorProfileChunk(bytes, view, start, end, warn);
+      case COLOR_PROFILE_CHUNK: {
+        if (end - start < 2) break;
+
+        const profileType = view.getUint16(start, true);
+        const profileFlags = end - start >= 4 ? view.getUint16(start + 2, true) : 0;
+
+        if (profileType === 2) {
+          warn('embeddedIccProfile');
+        } else if (profileType > 2 || (profileFlags & 1) !== 0) {
+          warn('customColorProfile');
+        }
+
         break;
+      }
 
       case CEL_CHUNK:
-        state.hasReadCel = true;
         await parseCelChunk(bytes, view, start, end, header, frameCels, warn);
         break;
 
-      case CEL_EXTRA_CHUNK:
-        if (!state.hasReadCel) {
-          fail('Aseprite cel extra chunk has no preceding cel.');
+      case CEL_EXTRA_CHUNK: {
+        if (end - start < 4) break;
+
+        const flags = view.getUint32(start, true);
+
+        if (flags & 1) {
+          warn('preciseCelBounds');
         }
 
-        parseCelExtraChunk(bytes, view, start, end, warn);
+        if (flags >>> 1 !== 0) {
+          warn('unsupportedCelExtraFlags');
+        }
+
         break;
+      }
 
       default:
         state.unsupportedChunkTypes.add(chunkType);
@@ -1440,7 +1035,6 @@ async function parseFrames(
     frameLegacyPalettes: [],
     frameDurations: [],
     hasNewPalette: false,
-    hasReadCel: false,
     unsupportedChunkTypes: new Set<number>(),
     endOffset: HEADER_SIZE,
   };
