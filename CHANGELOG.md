@@ -11,6 +11,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Download all, at the top of the home screen: every drawing as its own .baipix file, in one .zip. ([#775](https://github.com/baipix/baipix/pull/775))
 - With the Move tool, a right-click on the canvas opens the menu of the layer or group under the pointer. Arrange brings a layer to the front, forward, backward or to the back, also with Ctrl+] and Ctrl+[, and Shift for front and back. ([#779](https://github.com/baipix/baipix/pull/779))
 - On the files screen, an animated drawing plays in its card while the pointer is on it. ([#787](https://github.com/baipix/baipix/pull/787))
+- Baipix opens Aseprite files (.ase and .aseprite): layers and groups, frames and their durations, blend modes, opacity and the palette. What Baipix doesn't have yet, like tags, slices or tilesets, is left out, and a toast says what. ([#772](https://github.com/baipix/baipix/pull/772))
 
 ### Changed
 
@@ -21,11 +22,14 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The first files screen shows each preset as a small picture of what it's for, grey, and in the preset's palette on hover, with the palette's name under it. Templates are now called presets. ([#782](https://github.com/baipix/baipix/pull/782))
 - A shorter welcome line, bigger Create and Import buttons, and WebP in the list of files Baipix opens. ([#783](https://github.com/baipix/baipix/pull/783))
 - The links at the bottom of the files screen's sidebar show an arrow: they open in a new tab. ([#784](https://github.com/baipix/baipix/pull/784))
+- The opacity and size fields are sliders: they fill up to their value, a drag anywhere on them changes it, and a click lets you type a number. ([#790](https://github.com/baipix/baipix/pull/790))
 
 ### Fixed
 
 - The tour gave A as Spray's key; it's P (A is the Board tool). ([#758](https://github.com/baipix/baipix/pull/758))
 - Going back to the files screen during the tour left its bubble on top, pointing at nothing; the tour now waits for the editor and picks up at the same step. ([#785](https://github.com/baipix/baipix/pull/785))
+- In a file exported for Aseprite, a layer that stays the same from one frame to the next no longer jumps to the top left corner on the frames after the first. ([#778](https://github.com/baipix/baipix/pull/778))
+- The Effects and Light sections had a caret to fold them even when empty; clicking it and then adding an effect left the section folded, as if nothing had been added. An empty section has no caret now, and adding an effect or the light opens it. ([#794](https://github.com/baipix/baipix/pull/794))
 
 ### Website
 
@@ -45,6 +49,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Thanks
 
 - [@jay23606](https://github.com/jay23606) for four new templates: Favicon, Small tile, Emote and Playing card. ([#757](https://github.com/baipix/baipix/pull/757))
+- [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, and for finding and fixing the linked cels exported at the wrong position. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778))
 
 ## [0.8.0] - 2026-11-06
 

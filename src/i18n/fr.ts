@@ -747,6 +747,48 @@ export const fr: Record<MessageKey, string> = {
   'menu.code': 'Code…',
   'toast.pngCopied': 'Image copiée dans le presse-papier.',
   'toast.opened': '{name} ouvert.',
+  'toast.asepriteOpenedWithWarnings': '{name} ouvert, avec quelques ajustements.',
+  'toast.asepriteWarningDetails': 'Détails ({count})',
+  'toast.unreadableAseprite': 'Impossible de lire ce fichier Aseprite.',
+  'toast.asepriteWarningLayerMovementLocks':
+    'Les verrouillages de déplacement des calques n’ont pas été conservés.',
+  'toast.asepriteWarningBackgroundLayers':
+    'Les calques d’arrière-plan ont été importés comme des calques ordinaires.',
+  'toast.asepriteWarningReferenceLayers':
+    'Les calques de référence ont été importés comme des calques ordinaires.',
+  'toast.asepriteWarningUnsupportedBlendModes':
+    'Les modes de fusion non pris en charge ont été remplacés par Normal.',
+  'toast.asepriteWarningDeepGroupsFlattened':
+    'Les calques appartenant à des groupes imbriqués à plus de quatre niveaux ont été déplacés dans le groupe pris en charge le plus profond.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'Les modes de fusion des groupes imbriqués à plus de quatre niveaux n’ont pas été conservés.',
+  'toast.asepriteWarningTilemapsSkipped': 'Les tilemaps ont été ignorées.',
+  'toast.asepriteWarningUnsupportedLayerTypes': 'Les types de calques non pris en charge ont été ignorés.',
+  'toast.asepriteWarningPixelAspectRatio':
+    'Le rapport d’aspect des pixels {width}:{height} n’a pas été conservé.',
+  'toast.asepriteWarningAnimationTags': 'Les tags d’animation n’ont pas été conservés.',
+  'toast.asepriteWarningUserData': 'Les données utilisateur Aseprite n’ont pas été conservées.',
+  'toast.asepriteWarningSlices': 'Les slices Aseprite n’ont pas été conservées.',
+  'toast.asepriteWarningEmbeddedIccProfile': 'Le profil colorimétrique ICC intégré a été ignoré.',
+  'toast.asepriteWarningCustomColorProfile':
+    'Les paramètres du profil colorimétrique personnalisé ont été ignorés.',
+  'toast.asepriteWarningCelOrdering': 'L’ordre des cels par image n’a pas été conservé.',
+  'toast.asepriteWarningUnsupportedCelTypes': 'Les types de cel non pris en charge ont été ignorés.',
+  'toast.asepriteWarningPreciseCelBounds': 'Les limites précises des cels n’ont pas été conservées.',
+  'toast.asepriteWarningUnsupportedCelExtraFlags':
+    'Les indicateurs Cel Extra non pris en charge ont été ignorés.',
+  'toast.asepriteWarningFrameDurations': 'Les durées d’image hors de la plage 10–10 000 ms ont été ajustées.',
+  'toast.asepriteWarningExternalFiles': 'Les fichiers externes liés n’ont pas été importés.',
+  'toast.asepriteWarningTilesetsSkipped': 'Les tilesets Aseprite ont été ignorés.',
+  'toast.asepriteWarningGridMetadata':
+    'Les paramètres de grille Aseprite ({width} × {height} à {x}, {y}) n’ont pas été conservés.',
+  'toast.asepriteWarningUnsupportedChunks':
+    'Les types de blocs Aseprite inconnus ont été ignorés ({count} types distincts ; exemples : {types}).',
+  'toast.asepriteCanvasTooLarge':
+    'Le canevas fait {width} × {height}, Baipix va jusqu’à {max} × {max}. Redimensionne-le dans Aseprite.',
+  'toast.asepriteTooManyFrames':
+    'Ce fichier a {count} images, Baipix va jusqu’à {max}. Supprime des images dans Aseprite.',
+  'toast.asepriteCelTooLarge': 'Le cel Aseprite dépasse la limite d’importation de {max} pixels.',
   'toast.notBaipix': "Ce n'est pas un fichier .baipix valide.",
   'toast.notImage': "Ce fichier n'est pas une image. Utilise un PNG, GIF, JPEG ou WebP.",
   'toast.unreadableImage': 'Impossible de lire cette image.',
@@ -790,7 +832,7 @@ export const fr: Record<MessageKey, string> = {
   'home.animated': 'Animation',
   'home.title': 'Bienvenue dans Baipix',
   'home.tagline': 'Pose ton premier pixel.',
-  'home.formats': 'Ouvre les fichiers .baipix, PNG, JPG, GIF et WebP',
+  'home.formats': 'Ouvre les fichiers .baipix, .ase, .aseprite, PNG, JPG et GIF',
   'home.import': 'Importer',
   'home.downloadAll': 'Tout télécharger',
   'home.downloadAllTip': 'Chaque dessin en fichier .baipix, dans un seul .zip',

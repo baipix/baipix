@@ -58,6 +58,7 @@ export function ColorRow({ slot, color, onChange, role, trailing, dimmed }: Colo
       {/* Like the canvas fields: drag the label left or right to scrub the opacity, or type it. */}
       <div className="opacity-field">
         <NumberField
+          slider
           value={Math.round(alpha(color) / 2.55)}
           min={0}
           max={100}

@@ -12,13 +12,25 @@ interface SectionProps {
   badge?: string;
   /** Makes the section collapsible from its title. Open/closed is remembered under this key. */
   id?: string;
+  /** Nothing in it yet (no effect, no light): no caret, there's nothing to fold. */
+  empty?: boolean;
   children?: ReactNode;
   className?: string;
 }
 
-export function Section({ title, aside, info, badge, id, children, className = '' }: SectionProps) {
+export function Section({
+  title,
+  aside,
+  info,
+  badge,
+  id,
+  empty = false,
+  children,
+  className = '',
+}: SectionProps) {
   const bodyId = useId();
-  const collapsed = uiStore.use((s) => !!id && s.collapsed.includes(id));
+  const folded = uiStore.use((s) => !!id && s.collapsed.includes(id));
+  const collapsed = folded && !empty;
   const toggle = () =>
     uiStore.set((s) => ({
       collapsed: collapsed ? s.collapsed.filter((x) => x !== id) : [...s.collapsed, id!],
@@ -26,7 +38,7 @@ export function Section({ title, aside, info, badge, id, children, className = '
   return (
     <section className={`section ${className}${collapsed ? ' is-collapsed' : ''}`}>
       <h2 className="section-title">
-        {id ? (
+        {id && !empty ? (
           <button
             type="button"
             className="section-name section-toggle"
@@ -48,9 +60,14 @@ export function Section({ title, aside, info, badge, id, children, className = '
         )}
         {aside}
       </h2>
-      {!collapsed && (id ? <div id={bodyId}>{children}</div> : children)}
+      {!collapsed && (id && !empty ? <div id={bodyId}>{children}</div> : children)}
     </section>
   );
+}
+
+/** Unfolds a section, so what was just added to it shows. */
+export function openSection(id: string): void {
+  uiStore.set((s) => ({ collapsed: s.collapsed.filter((x) => x !== id) }));
 }
 
 export function Row({ label, children }: { label: string; children: ReactNode }) {

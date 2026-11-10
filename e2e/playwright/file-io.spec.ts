@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 import {
   activeLayerThumbnailHasPixels,
@@ -117,4 +118,26 @@ test('exports PNG and Aseprite files', async ({ page }) => {
 
   // Aseprite file header magic.
   expect(aseprite.readUInt16LE(4)).toBe(0xa5e0);
+});
+
+test('opens an Aseprite file', async ({ page }) => {
+  await createNewFile(page);
+
+  // Open the Aseprite file through the regular File menu.
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await clickMenuItem(page, 'File', 'Open a .baipix file…');
+
+  const fileChooser = await fileChooserPromise;
+
+  await fileChooser.setFiles(
+    fileURLToPath(new URL('../../tests/fixtures/aseprite/abcd.aseprite', import.meta.url)),
+  );
+
+  // Verify that the file was opened as a new document.
+  await expect(page.locator('.menubar-file input')).toHaveValue('abcd');
+  await expect(page.locator('canvas.canvas')).toBeVisible();
+
+  // Verify that all four source layers are available in the editor.
+  await expect.poll(() => getLayerNames(page)).toHaveLength(4);
+  expect((await getLayerNames(page)).sort()).toEqual(['a', 'b', 'c', 'd']);
 });

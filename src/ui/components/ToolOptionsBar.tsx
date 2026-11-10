@@ -68,6 +68,7 @@ export function ToolOptionsBar() {
     <>
       <Row label={t('options.size')}>
         <NumberField
+          slider
           value={options.size}
           min={1}
           max={16}
@@ -755,6 +756,7 @@ export function ToolOptionsBar() {
         <>
           <Row label={t('options.size')}>
             <NumberField
+              slider
               value={options.spraySize}
               min={2}
               max={64}
@@ -768,6 +770,7 @@ export function ToolOptionsBar() {
           </Row>
           <Row label={t('options.density')}>
             <NumberField
+              slider
               value={options.sprayDensity}
               min={1}
               max={100}
@@ -794,6 +797,7 @@ export function ToolOptionsBar() {
         <>
           <Row label={t('options.size')}>
             <NumberField
+              slider
               value={options.jumbleSize}
               min={2}
               max={32}
@@ -841,6 +845,7 @@ export function ToolOptionsBar() {
           </div>
           <Row label={t('options.size')}>
             <NumberField
+              slider
               value={options.liquifySize}
               min={2}
               max={64}
@@ -854,6 +859,7 @@ export function ToolOptionsBar() {
           </Row>
           <Row label={t('options.strength')}>
             <NumberField
+              slider
               value={options.liquifyStrength}
               min={1}
               max={100}

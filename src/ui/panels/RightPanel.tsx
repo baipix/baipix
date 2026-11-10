@@ -22,7 +22,7 @@ import { openMenu, type MenuItem } from '../components/Menu';
 import { Icon } from '../components/Icon';
 import { NumberField } from '../components/NumberField';
 import { PaletteGrid } from '../components/PaletteGrid';
-import { Row, Section } from '../components/Section';
+import { openSection, Row, Section } from '../components/Section';
 import { openAdjust, openDialog, toast, uiStore, type UiState } from '../uiStore';
 import type { ExportFormat } from '../actions';
 import { copyText } from '../../io/clipboard';
@@ -252,6 +252,7 @@ function ReferenceSection() {
     >
       <div className="two-columns">
         <NumberField
+          slider
           value={Math.round(reference.opacity * 100)}
           min={0}
           max={100}
@@ -329,6 +330,7 @@ function GroupSection({ id }: { id: string }) {
           <Icon name="caret" size={12} />
         </button>
         <NumberField
+          slider
           value={Math.round(group.opacity * 100)}
           min={0}
           max={100}
@@ -401,6 +403,7 @@ function LayerSection() {
           <Icon name="caret" size={12} />
         </button>
         <NumberField
+          slider
           value={Math.round(layer.opacity * 100)}
           min={0}
           max={100}
@@ -554,6 +557,7 @@ function LightSection() {
   return (
     <Section
       id="light"
+      empty={!light}
       title={t('section.light')}
       badge={t('common.beta')}
       info={t('light.info')}
@@ -561,7 +565,14 @@ function LightSection() {
         light ? (
           <IconButton icon="minus" label={t('light.remove')} onClick={() => editor.setLight(null)} />
         ) : (
-          <IconButton icon="plus" label={t('light.add')} onClick={() => editor.setLight(DEFAULT_LIGHT)} />
+          <IconButton
+            icon="plus"
+            label={t('light.add')}
+            onClick={() => {
+              editor.setLight(DEFAULT_LIGHT);
+              openSection('light');
+            }}
+          />
         )
       }
     >
@@ -623,6 +634,7 @@ export function DisplayOptions() {
         // How visible the copies are: 100% shows the pattern as it will repeat.
         <Row label={t('display.tileOpacity')}>
           <NumberField
+            slider
             value={Math.round(view.tileOpacity * 100)}
             min={0}
             max={100}
