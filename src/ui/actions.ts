@@ -1,4 +1,4 @@
-import { alpha, type Color } from '../engine/color';
+import { alpha, toHex, type Color } from '../engine/color';
 import { flatten, flattenFrame } from '../engine/composite';
 import {
   createDocument,
@@ -88,6 +88,29 @@ const ASEPRITE_ERROR_KEYS: Record<AsepriteImportErrorCode, MessageKey> = {
   tooManyFrames: 'toast.asepriteTooManyFrames',
   celTooLarge: 'toast.asepriteCelTooLarge',
 };
+
+/** The palette as a picture: one square per color, in the palette's order. */
+const PALETTE_SWATCH_PX = 32;
+const PALETTE_SWATCHES_PER_ROW = 8;
+
+function paletteCanvas(colors: Color[]): HTMLCanvasElement {
+  const columns = Math.max(1, Math.min(PALETTE_SWATCHES_PER_ROW, colors.length));
+  const rows = Math.max(1, Math.ceil(colors.length / PALETTE_SWATCHES_PER_ROW));
+  const canvas = document.createElement('canvas');
+  canvas.width = columns * PALETTE_SWATCH_PX;
+  canvas.height = rows * PALETTE_SWATCH_PX;
+  const ctx = canvas.getContext('2d')!;
+  colors.forEach((c, i) => {
+    ctx.fillStyle = toHex(c);
+    ctx.fillRect(
+      (i % PALETTE_SWATCHES_PER_ROW) * PALETTE_SWATCH_PX,
+      Math.floor(i / PALETTE_SWATCHES_PER_ROW) * PALETTE_SWATCH_PX,
+      PALETTE_SWATCH_PX,
+      PALETTE_SWATCH_PX,
+    );
+  });
+  return canvas;
+}
 
 function uniqueArchiveName(filename: string, usedNames: Set<string>): string {
   const dot = filename.lastIndexOf('.');
@@ -696,9 +719,14 @@ export function createActions(editor: Editor) {
     },
 
     /** `.hex` (one hex code per line, Lospec) or `.gpl` (GIMP, Aseprite, Krita). */
-    async exportPalette(format: 'hex' | 'gpl' = 'hex') {
+    async exportPalette(format: 'hex' | 'gpl' | 'png' = 'hex') {
       const colors = editor.getState().palette.colors;
       const filename = `${baseName()}-palette.${format}`;
+      if (format === 'png') {
+        const blob = await canvasToBlob(paletteCanvas(colors));
+        await report(filename, saveFile(filename, blob, 'image/png'));
+        return;
+      }
       const content = format === 'gpl' ? toGpl(colors, `${doc().name} palette`) : toHexList(colors);
       await report(filename, saveFile(filename, content, 'text/plain'));
     },

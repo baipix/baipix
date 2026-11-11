@@ -515,6 +515,7 @@ export const ja: Record<MessageKey, string> = {
   'palette.showAll': 'すべてのパレットを表示',
   'palette.exportHex': '.hexで書き出し（Lospec）',
   'palette.exportGpl': '.gplで書き出し（GIMP、Aseprite、Krita）',
+  'palette.exportPng': '画像で書き出し（PNG）',
   'palette.addColor': '現在の色（{hex}）をパレットに追加',
   'palette.inPaletteAlready': '現在の色はパレットにあります',
 
