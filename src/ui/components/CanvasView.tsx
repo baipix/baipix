@@ -43,6 +43,7 @@ import { COMPONENT_MIME } from '../dragTypes';
 import { viewport } from '../viewport';
 import { openMenu } from './Menu';
 import { groupMenuItems, layerMenuItems } from '../layerMenus';
+import { createTouchGestures, type TouchPoint } from '../touchGestures';
 
 const DRAWING_TOOLS: ToolId[] = [
   'pencil',
@@ -838,6 +839,42 @@ export function CanvasView() {
       hoverStore.set({ x: p.x, y: p.y, color: d[3] ? pack(d[0], d[1], d[2], d[3]) : under || null });
     };
 
+    const touchPoint = (e: { pointerId: number; clientX: number; clientY: number }): TouchPoint => ({
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+    });
+  
+    const touchPixel = (point: TouchPoint) => {
+      const l = local({ clientX: point.x, clientY: point.y });
+      return viewport.toPixel(l.x, l.y);
+    };
+  
+    let touchGestureActive = false;
+  
+    const startTouchStroke = (from: TouchPoint, to: TouchPoint) => {
+      const start = touchPixel(from);
+      const current = touchPixel(to);
+      const started = editor.beginStroke(start, false, { shift: false });
+  
+      if (!started) return;
+      updateHover(start);
+  
+      if (current.x !== start.x || current.y !== start.y) editor.moveStroke(current, { shift: false });
+    };
+
+    const longPress = (point: TouchPoint) => {
+      if (!touchGestureActive) return;
+
+      const started = editor.beginStroke(touchPixel(point), false, { shift: false }, 'picker');
+      if (started) editor.endStroke();
+
+      updateHover(touchPixel(point));
+      request();
+    };
+  
+    const touchGestures = createTouchGestures({ onLongPress: longPress });
+
     // Bounds of the layer the Move tool would take, cached until the drawing changes.
     let boundsCache: { key: string; rect: Rect | null } | null = null;
     const moveTargetAt = (p: Point | null, mods: { metaKey: boolean; ctrlKey: boolean }): Rect | null => {
@@ -1005,12 +1042,21 @@ export function CanvasView() {
       const focused = document.activeElement;
       if (focused instanceof HTMLElement && focused.closest('.item-list')) focused.blur();
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
-      if (e.pointerType === 'touch' && touches().length >= 2) {
+
+      if (e.pointerType === 'touch') {
+        touchGestures.down(touchPoint(e));
+    
+        if (touches().length === 1)
+          touchGestureActive = !['move', 'hand', 'board'].includes(editor.getState().tool);
+      }
+  
+      if (e.pointerType === 'touch' && touches().length >= 2 && (!touchGestureActive || editor.isStroking)) {
         editor.cancelStroke();
         pinch = { ...pinchInfo(), zoom: viewport.zoom, panX: viewport.panX, panY: viewport.panY };
         updateHover(null);
         return;
       }
+      if (e.pointerType === 'touch' && touchGestureActive) return;
       if (pinch) return;
       // Pan: the middle button, Space held, or the hand tool.
       if (e.button === 1 || keyState.space || (e.button === 0 && editor.getState().tool === 'hand')) {
@@ -1143,6 +1189,25 @@ export function CanvasView() {
     const onMove = (e: PointerEvent) => {
       if (pointers.has(e.pointerId))
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
+
+      const touchMove =
+        e.pointerType === 'touch' ? touchGestures.move(touchPoint(e)) : { type: 'none' as const };
+
+      if (e.pointerType === 'touch' && touchMove.type === 'pinch-start' && !pinch) {
+        editor.cancelStroke();
+        pinch = {
+          ...pinchInfo(),
+          zoom: viewport.zoom,
+          panX: viewport.panX,
+          panY: viewport.panY,
+        };
+        updateHover(null);
+      }
+
+      if (e.pointerType === 'touch' && touchGestureActive && touchMove.type === 'draw-start') {
+        startTouchStroke(touchMove.from, touchMove.to);
+      }
+
       if (pinch) {
         const info = pinchInfo();
         const zoom = Math.min(96, Math.max(1, (pinch.zoom * info.distance) / Math.max(1, pinch.distance)));
@@ -1153,6 +1218,8 @@ export function CanvasView() {
         pinch = { ...pinch, cx: pinch.cx, cy: pinch.cy };
         return;
       }
+      if (e.pointerType === 'touch' && touchGestureActive && touchMove.type === 'none' && !editor.isStroking)
+        return;
       if (panStart) {
         viewport.set({
           zoom: viewport.zoom,
@@ -1276,7 +1343,20 @@ export function CanvasView() {
 
     const onUp = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      const touchEnd = e.pointerType === 'touch' ? touchGestures.up(e.pointerId) : { type: 'none' as const };
       pointers.delete(e.pointerId);
+      const gestureActive = touchGestureActive;
+      if (e.pointerType === 'touch' && !touches().length) touchGestureActive = false;
+      if (e.pointerType === 'touch' && touchEnd.type === 'tap' && (touchEnd.fingers !== 1 || gestureActive)) {
+        if (touchEnd.fingers === 1) {
+          const point = touchPoint(e);
+          startTouchStroke(point, point);
+          editor.endStroke();
+        }
+        if (touchEnd.fingers === 2) editor.undo();
+        if (touchEnd.fingers === 3) editor.redo();
+        return;
+      }
       if (pinch) {
         if (touches().length < 2) {
           const info = { cx: pinch.cx, cy: pinch.cy };
@@ -1285,6 +1365,7 @@ export function CanvasView() {
         }
         return;
       }
+      if (e.pointerType === 'touch' && gestureActive && touchEnd.type === 'none') return;
       if (panStart) {
         panStart = null;
         canvas.style.cursor = '';
@@ -1367,7 +1448,9 @@ export function CanvasView() {
 
     const onCancel = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      if (e.pointerType === 'touch') touchGestures.cancel(e.pointerId);
       pointers.delete(e.pointerId);
+      if (!touches().length) touchGestureActive = false;
       editor.cancelStroke();
       panStart = null;
       pinch = null;
@@ -1508,6 +1591,7 @@ export function CanvasView() {
       canvas.removeEventListener('pointerleave', onLeave);
       canvas.removeEventListener('wheel', onWheel);
       clearTimeout(settleTimer);
+      touchGestures.reset();
       canvas.removeEventListener('contextmenu', noMenu);
       canvas.removeEventListener('dblclick', onDoubleClick);
     };
