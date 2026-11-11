@@ -741,7 +741,7 @@ export const pt: Record<MessageKey, string> = {
   'menu.code': 'Código…',
   'toast.pngCopied': 'Imagem copiada para a área de transferência.',
   'toast.opened': '{name} aberto.',
-    'toast.asepriteOpenedWithWarnings': '{name} aberto com alguns ajustes de importação.',
+  'toast.asepriteOpenedWithWarnings': '{name} aberto com alguns ajustes de importação.',
   'toast.asepriteWarningDetails': 'Detalhes ({count})',
   'toast.unreadableAseprite': 'Não foi possível ler este arquivo do Aseprite.',
   'toast.asepriteWarningLayerMovementLocks': 'Os bloqueios de movimento das camadas não foram mantidos.',
