@@ -632,8 +632,6 @@ export const pt: Record<MessageKey, string> = {
   'coordinates.color': '{count} cor',
   'coordinates.colors': '{count} cores',
 
-  'template.title': 'Formatos',
-  'template.startTitle': 'Escolher um formato',
   'template.icon': 'Ícone',
   'template.favicon': 'Favicon',
   'template.smallTile': 'Tile pequeno',
@@ -651,6 +649,8 @@ export const pt: Record<MessageKey, string> = {
   'template.mirrored': 'simetria',
   'template.tiled': 'repetido',
   'dialog.swapSize': 'Trocar largura e altura',
+  'template.title': 'Formatos',
+  'template.startTitle': 'Escolher um formato',
   'upscaled.title': 'Pixel art ampliada',
   'upscaled.hint':
     'Esta imagem parece uma pixel art ampliada em ×{scale}. Recupere os pixels para editá-la no tamanho real; ajuste a grade se ela não encaixar direito.',
