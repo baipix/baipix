@@ -1347,16 +1347,20 @@ export function CanvasView() {
       pointers.delete(e.pointerId);
       const gestureActive = touchGestureActive;
       if (e.pointerType === 'touch' && !touches().length) touchGestureActive = false;
+      
       if (e.pointerType === 'touch' && touchEnd.type === 'tap' && (touchEnd.fingers !== 1 || gestureActive)) {
         if (touchEnd.fingers === 1) {
           const point = touchPoint(e);
           startTouchStroke(point, point);
           editor.endStroke();
         }
+      
         if (touchEnd.fingers === 2) editor.undo();
         if (touchEnd.fingers === 3) editor.redo();
+    
         return;
       }
+
       if (pinch) {
         if (touches().length < 2) {
           const info = { cx: pinch.cx, cy: pinch.cy };
