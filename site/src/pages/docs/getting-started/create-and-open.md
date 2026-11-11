@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Create and open files
-description: 'Start a new pixel art file from a size or a preset, import an image, recover the real pixels of upscaled pixel art, and open .baipix files.'
+description: 'Start a new pixel art file from a size or a preset, import an image, recover the real pixels of upscaled pixel art, and open .baipix and Aseprite files.'
 ---
 
 ## A new file
@@ -49,6 +49,18 @@ A screenshot of pixel art, or an export at 800%, has big blocks instead of pixel
 **File › Open a .baipix file…** (<kbd>Ctrl</kbd>+<kbd>O</kbd>), or drop the file on the canvas. A .baipix file holds everything: the boards, their layers and groups, their frames and light, the components, the palette and the guides. It opens as a new file next to the others.
 
 The drawings in the [gallery](../../../#gallery) can be opened the same way: their Open link takes you to the editor with the drawing ready.
+
+## Open an Aseprite file
+
+Baipix also opens .ase and .aseprite files: with **File › Open a .baipix file…** (<kbd>Ctrl</kbd>+<kbd>O</kbd>), with Import on the files screen, or by dropping the file on the canvas. It opens as a new file, with what Baipix knows how to keep:
+
+- the layers and groups, their opacity, visibility and blend modes;
+- every frame, with its duration;
+- the palette.
+
+What Baipix doesn't have yet is left out: tags, slices, tilemaps and tilesets, among others. Background and reference layers become regular layers, a blend mode Baipix doesn't have becomes Normal, and groups deeper than four levels are flattened. When something was left out or changed, the message after opening says so, and **Details** lists what.
+
+The drawing has to fit in Baipix: 512 × 512 pixels at most, and up to 999 frames.
 
 ## Several boards in one file
 
