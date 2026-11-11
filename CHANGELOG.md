@@ -15,6 +15,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The editor in Korean (View › Language › 한국어). ([#791](https://github.com/baipix/baipix/pull/791))
 - The palette's … menu exports the palette as a picture: a PNG with one 32 × 32 square per color, 8 a row, in the palette's order. ([#795](https://github.com/baipix/baipix/pull/795))
 - Six more palettes from Lospec: Endesga 64, Apollo, Lospec500, Vinik24, Bubblegum 16 and Steam Lords. ([#805](https://github.com/baipix/baipix/pull/805))
+- A language menu at the bottom of the files screen's sidebar, to switch languages before opening a drawing. ([#804](https://github.com/baipix/baipix/pull/804))
 
 ### Changed
 
@@ -33,6 +34,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Going back to the files screen during the tour left its bubble on top, pointing at nothing; the tour now waits for the editor and picks up at the same step. ([#785](https://github.com/baipix/baipix/pull/785))
 - In a file exported for Aseprite, a layer that stays the same from one frame to the next no longer jumps to the top left corner on the frames after the first. ([#778](https://github.com/baipix/baipix/pull/778))
 - The Effects and Light sections had a caret to fold them even when empty; clicking it and then adding an effect left the section folded, as if nothing had been added. An empty section has no caret now, and adding an effect or the light opens it. ([#794](https://github.com/baipix/baipix/pull/794))
+- After a language change from View › Language, new layers, boards and files get their default names in the new language, not the old one. ([#804](https://github.com/baipix/baipix/pull/804))
 
 ### Website
 
@@ -54,7 +56,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - [@jay23606](https://github.com/jay23606) for four new templates (Favicon, Small tile, Emote and Playing card) and the palette as a picture. ([#757](https://github.com/baipix/baipix/pull/757), [#795](https://github.com/baipix/baipix/pull/795))
 - [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, and for finding and fixing the linked cels exported at the wrong position. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778))
 - [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
-- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, and six Lospec palettes. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#805](https://github.com/baipix/baipix/pull/805))
+- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, and the language menu on the files screen. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805))
 
 ## [0.8.0] - 2026-11-06
 
