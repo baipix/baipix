@@ -7,7 +7,11 @@ import { uk } from '../src/i18n/uk';
 import { es } from '../src/i18n/es';
 import { ja } from '../src/i18n/ja';
 import { it as itDictionary } from '../src/i18n/it';
+<<<<<<< HEAD
 import { ko } from '../src/i18n/ko';
+=======
+import { pt_br } from '../src/i18n/pt_br';
+>>>>>>> 767917a (fix indentation)
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
@@ -15,7 +19,11 @@ const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = 
   es,
   ja,
   it: itDictionary,
+<<<<<<< HEAD
   ko,
+=======
+  pt_br,
+>>>>>>> 767917a (fix indentation)
 };
 
 const getPlaceholders = (text: string): string[] =>

@@ -1,7 +1,7 @@
 /** Source language. Every other dictionary must provide the same keys (enforced by TypeScript). */
 import type { MessageKey } from './en';
 
-export const pt_br: Record<MessageKey, string> = {
+export const pt: Record<MessageKey, string> = {
   'common.cancel': 'Cancelar',
   'common.close': 'Fechar',
   'common.create': 'Criar',
@@ -397,7 +397,7 @@ export const pt_br: Record<MessageKey, string> = {
   'options.boxLight': 'Borda de luz',
   'options.boxEdges': 'Arestas',
   'tileEdges.label': 'Bordas do bloco',
-   'tileEdges.hint':
+  'tileEdges.hint':
     'As arestas de um piso que recebem o contorno: deixe uma de fora para que pisos lado a lado compartilhem uma única linha.',
   'tileEdges.nw': 'Aresta superior esquerda',
   'tileEdges.ne': 'Aresta superior direita',
@@ -478,7 +478,7 @@ export const pt_br: Record<MessageKey, string> = {
   'hint.moveLayer':
     'Arraste um pixel para mover a camada dele, clique ao lado para soltar o quadro, Cmd/Ctrl para mover a ativa. Setas para 1 px, Shift para 8 px.',
 
- 'color.primary': 'Cor primária',
+  'color.primary': 'Cor primária',
   'color.secondary': 'Cor secundária',
   'color.background': 'Plano de fundo',
   'color.bringFront': 'Trazer para a frente: desenhar com ela',
@@ -645,8 +645,8 @@ export const pt_br: Record<MessageKey, string> = {
   'template.mirrored': 'simetria',
   'template.tiled': 'repetido',
   'dialog.swapSize': 'Trocar largura e altura',
-  'template.title': 'Modelos',
-  'template.startTitle': 'Começar a partir de um modelo',
+  'template.title': 'Formatos',
+  'template.startTitle': 'Escolher um formato',
   'upscaled.title': 'Pixel art ampliada',
   'upscaled.hint':
     'Esta imagem parece uma pixel art ampliada em ×{scale}. Recupere os pixels para editá-la no tamanho real; ajuste a grade se ela não encaixar direito.',
@@ -726,7 +726,7 @@ export const pt_br: Record<MessageKey, string> = {
   'shortcuts.play': 'Reproduzir, pausar',
   'shortcuts.stepFrame': 'Quadro anterior, seguinte',
 
-   'toast.saved': '{name} salvo.',
+  'toast.saved': '{name} salvo.',
   'toast.alreadySorted': 'As camadas já estão em ordem de profundidade: o desenho mais baixo na frente.',
   'toast.downloadCancelled': 'Download cancelado.',
   'toast.downloadBusy': 'Já existe uma solicitação de download aberta.',
@@ -741,6 +741,41 @@ export const pt_br: Record<MessageKey, string> = {
   'menu.code': 'Código…',
   'toast.pngCopied': 'Imagem copiada para a área de transferência.',
   'toast.opened': '{name} aberto.',
+    'toast.asepriteOpenedWithWarnings': '{name} aberto com alguns ajustes de importação.',
+  'toast.asepriteWarningDetails': 'Detalhes ({count})',
+  'toast.unreadableAseprite': 'Não foi possível ler este arquivo do Aseprite.',
+  'toast.asepriteWarningLayerMovementLocks': 'Os bloqueios de movimento das camadas não foram mantidos.',
+  'toast.asepriteWarningBackgroundLayers': 'As camadas de fundo foram importadas como camadas comuns.',
+  'toast.asepriteWarningReferenceLayers': 'As camadas de referência foram importadas como camadas comuns.',
+  'toast.asepriteWarningUnsupportedBlendModes': 'Os modos de mesclagem não suportados foram alterados para Normal.',
+  'toast.asepriteWarningDeepGroupsFlattened':
+    'As camadas em grupos com mais de quatro níveis foram movidas para o grupo mais profundo suportado.',
+  'toast.asepriteWarningDeepGroupBlendModes':
+    'Os modos de mesclagem de grupos com mais de quatro níveis não foram mantidos.',
+  'toast.asepriteWarningTilemapsSkipped': 'Os tilemaps foram ignorados.',
+  'toast.asepriteWarningUnsupportedLayerTypes': 'Os tipos de camada não suportados foram ignorados.',
+  'toast.asepriteWarningPixelAspectRatio': 'A proporção de pixel {width}:{height} não foi mantida.',
+  'toast.asepriteWarningAnimationTags': 'As tags de animação não foram mantidas.',
+  'toast.asepriteWarningUserData': 'Os dados de usuário do Aseprite não foram mantidos.',
+  'toast.asepriteWarningSlices': 'Os slices do Aseprite não foram mantidos.',
+  'toast.asepriteWarningEmbeddedIccProfile': 'O perfil de cor ICC incorporado foi ignorado.',
+  'toast.asepriteWarningCustomColorProfile': 'As configurações de perfil de cor personalizado foram ignoradas.',
+  'toast.asepriteWarningCelOrdering': 'A ordem dos cels por quadro não foi mantida.',
+  'toast.asepriteWarningUnsupportedCelTypes': 'Os tipos de cel não suportados foram ignorados.',
+  'toast.asepriteWarningPreciseCelBounds': 'Os limites precisos dos cels não foram mantidos.',
+  'toast.asepriteWarningUnsupportedCelExtraFlags': 'As flags Cel Extra não suportadas foram ignoradas.',
+  'toast.asepriteWarningFrameDurations': 'As durações de quadro fora do intervalo de 10–10.000 ms foram ajustadas.',
+  'toast.asepriteWarningExternalFiles': 'Os arquivos externos vinculados não foram importados.',
+  'toast.asepriteWarningTilesetsSkipped': 'Os tilesets do Aseprite foram ignorados.',
+  'toast.asepriteWarningGridMetadata':
+    'As configurações de grade do Aseprite ({width} × {height} em {x}, {y}) não foram mantidas.',
+  'toast.asepriteWarningUnsupportedChunks':
+    'Tipos de chunk desconhecidos do Aseprite foram ignorados ({count} tipos distintos; exemplos: {types}).',
+  'toast.asepriteCanvasTooLarge':
+    'O tamanho da tela {width} × {height} excede o máximo do Baipix, de {max} × {max}. Redimensione a tela no Aseprite.',
+  'toast.asepriteTooManyFrames':
+    'O arquivo contém {count} quadros. O Baipix suporta até {max} quadros. Remova alguns quadros no Aseprite.',
+  'toast.asepriteCelTooLarge': 'Um cel do Aseprite excede a área máxima de importação de {max} pixels.',
   'toast.notBaipix': 'Este não é um arquivo .baipix válido.',
   'toast.notImage': 'Este arquivo não é uma imagem. Use um PNG, GIF, JPEG ou WebP.',
   'toast.unreadableImage': 'Não foi possível ler esta imagem.',
@@ -783,8 +818,8 @@ export const pt_br: Record<MessageKey, string> = {
   'toast.legacyImported': '{count} desenhos recuperados da versão anterior.',
   'home.animated': 'Animação',
   'home.title': 'Bem-vindo ao Baipix',
-  'home.tagline': 'Insira a ficha, solte seu primeiro pixel.',
-  'home.formats': 'Abre arquivos .baipix, PNG, JPG e GIF',
+  'home.tagline': 'Solte seu primeiro pixel.',
+  'home.formats': 'Abre arquivos .baipix, PNG, JPG, GIF e WebP',
   'home.import': 'Importar',
   'home.downloadAll': 'Baixar tudo',
   'home.downloadAllTip': 'Todos os desenhos como arquivos .baipix, em um único .zip',
