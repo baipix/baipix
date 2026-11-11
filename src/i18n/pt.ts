@@ -518,6 +518,7 @@ export const pt: Record<MessageKey, string> = {
   'palette.showAll': 'Mostrar todas as paletas',
   'palette.exportHex': 'Exportar como .hex (Lospec)',
   'palette.exportGpl': 'Exportar como .gpl (GIMP, Aseprite, Krita)',
+  'palette.exportPng': 'Exportar como imagem (PNG)',
   'palette.addColor': 'Adicionar a cor atual ({hex}) à paleta',
   'palette.inPaletteAlready': 'A cor atual já está na paleta',
 
@@ -751,7 +752,8 @@ export const pt: Record<MessageKey, string> = {
   'toast.asepriteWarningLayerMovementLocks': 'Os bloqueios de movimento das camadas não foram mantidos.',
   'toast.asepriteWarningBackgroundLayers': 'As camadas de fundo foram importadas como camadas comuns.',
   'toast.asepriteWarningReferenceLayers': 'As camadas de referência foram importadas como camadas comuns.',
-  'toast.asepriteWarningUnsupportedBlendModes': 'Os modos de mesclagem não suportados foram alterados para Normal.',
+  'toast.asepriteWarningUnsupportedBlendModes':
+    'Os modos de mesclagem não suportados foram alterados para Normal.',
   'toast.asepriteWarningDeepGroupsFlattened':
     'As camadas em grupos com mais de quatro níveis foram movidas para o grupo mais profundo suportado.',
   'toast.asepriteWarningDeepGroupBlendModes':
@@ -763,12 +765,14 @@ export const pt: Record<MessageKey, string> = {
   'toast.asepriteWarningUserData': 'Os dados de usuário do Aseprite não foram mantidos.',
   'toast.asepriteWarningSlices': 'Os slices do Aseprite não foram mantidos.',
   'toast.asepriteWarningEmbeddedIccProfile': 'O perfil de cor ICC incorporado foi ignorado.',
-  'toast.asepriteWarningCustomColorProfile': 'As configurações de perfil de cor personalizado foram ignoradas.',
+  'toast.asepriteWarningCustomColorProfile':
+    'As configurações de perfil de cor personalizado foram ignoradas.',
   'toast.asepriteWarningCelOrdering': 'A ordem dos cels por quadro não foi mantida.',
   'toast.asepriteWarningUnsupportedCelTypes': 'Os tipos de cel não suportados foram ignorados.',
   'toast.asepriteWarningPreciseCelBounds': 'Os limites precisos dos cels não foram mantidos.',
   'toast.asepriteWarningUnsupportedCelExtraFlags': 'As flags Cel Extra não suportadas foram ignoradas.',
-  'toast.asepriteWarningFrameDurations': 'As durações de quadro fora do intervalo de 10–10.000 ms foram ajustadas.',
+  'toast.asepriteWarningFrameDurations':
+    'As durações de quadro fora do intervalo de 10–10.000 ms foram ajustadas.',
   'toast.asepriteWarningExternalFiles': 'Os arquivos externos vinculados não foram importados.',
   'toast.asepriteWarningTilesetsSkipped': 'Os tilesets do Aseprite foram ignorados.',
   'toast.asepriteWarningGridMetadata':
