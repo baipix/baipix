@@ -14,6 +14,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Baipix opens Aseprite files (.ase and .aseprite): layers and groups, frames and their durations, blend modes, opacity and the palette. What Baipix doesn't have yet, like tags, slices or tilesets, is left out, and a toast says what. ([#772](https://github.com/baipix/baipix/pull/772))
 - The editor in Korean (View › Language › 한국어). ([#791](https://github.com/baipix/baipix/pull/791))
 - The palette's … menu exports the palette as a picture: a PNG with one 32 × 32 square per color, 8 a row, in the palette's order. ([#795](https://github.com/baipix/baipix/pull/795))
+- Six more palettes from Lospec: Endesga 64, Apollo, Lospec500, Vinik24, Bubblegum 16 and Steam Lords. ([#805](https://github.com/baipix/baipix/pull/805))
 
 ### Changed
 
@@ -53,7 +54,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - [@jay23606](https://github.com/jay23606) for four new templates (Favicon, Small tile, Emote and Playing card) and the palette as a picture. ([#757](https://github.com/baipix/baipix/pull/757), [#795](https://github.com/baipix/baipix/pull/795))
 - [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, and for finding and fixing the linked cels exported at the wrong position. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778))
 - [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
-- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), and tests for the import from the old prototype. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802))
+- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, and six Lospec palettes. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#805](https://github.com/baipix/baipix/pull/805))
 
 ## [0.8.0] - 2026-11-06
 
