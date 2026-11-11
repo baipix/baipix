@@ -8,10 +8,14 @@ import { es } from '../src/i18n/es';
 import { ja } from '../src/i18n/ja';
 import { it as itDictionary } from '../src/i18n/it';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ko } from '../src/i18n/ko';
 =======
 import { pt_br } from '../src/i18n/pt_br';
 >>>>>>> 767917a (fix indentation)
+=======
+import { pt_br } from '../src/i18n/pt';
+>>>>>>> d911f90 (commit rename pt_br to pt)
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
