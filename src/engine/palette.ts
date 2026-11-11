@@ -36,6 +36,11 @@ export const PALETTE_PRESETS: Record<string, PalettePreset> = {
     colors:
       'be4a2f d77643 ead4aa e4a672 b86f50 733e39 3e2731 a22633 e43b44 f77622 feae34 fee761 63c74d 3e8948 265c42 193c3e 124e89 0099db 2ce8f5 ffffff c0cbdc 8b9bb4 5a6988 3a4466 262b44 181425 ff0044 68386c b55088 f6757a e8b796 c28569',
   },
+  endesga64: {
+    name: 'Endesga 64',
+    colors:
+      'ff0040 131313 1b1b1b 272727 3d3d3d 5d5d5d 858585 b4b4b4 ffffff c7cfdd 92a1b9 657392 424c6e 2a2f4e 1a1932 0e071b 1c121c 391f21 5d2c28 8a4836 bf6f4a e69c69 f6ca9f f9e6cf edab50 e07438 c64524 8e251d ff5000 ed7614 ffa214 ffc825 ffeb57 d3fc7e 99e65f 5ac54f 33984b 1e6f50 134c4c 0c2e44 00396d 0069aa 0098dc 00cdf9 0cf1ff 94fdff fdd2ed f389f5 db3ffd 7a09fa 3003d9 0c0293 03193f 3b1443 622461 93388f ca52c9 c85086 f68187 f5555d ea323c c42430 891e2b 571c27',
+  },
   dawnbringer16: {
     name: 'DawnBringer 16',
     colors:
@@ -55,6 +60,31 @@ export const PALETTE_PRESETS: Record<string, PalettePreset> = {
     name: 'AAP-64',
     colors:
       '060608 141013 3b1725 73172d b4202a df3e23 fa6a0a f9a31b ffd541 fffc40 d6f264 9cdb43 59c135 14a02e 1a7a3e 24523b 122020 143464 285cc4 249fde 20d6c7 a6fcdb ffffff fef3c0 fad6b8 f5a097 e86a73 bc4a9b 793a80 403353 242234 221c1a 322b28 71413b bb7547 dba463 f4d29c dae0ea b3b9d1 8b93af 6d758d 4a5462 333941 422433 5b3138 8e5252 ba756a e9b5a3 e3e6ff b9bffb 849be4 588dbe 477d85 23674e 328464 5daf8d 92dcba cdf7e2 e4d2aa c7b08b a08662 796755 5a4e44 423934',
+  },
+  apollo: {
+    name: 'Apollo',
+    colors:
+      '172038 253a5e 3c5e8b 4f8fba 73bed3 a4dddb 19332d 25562e 468232 75a743 a8ca58 d0da91 4d2b32 7a4841 ad7757 c09473 d7b594 e7d5b3 341c27 602c2c 884b2b be772b de9e41 e8c170 241527 411d31 752438 a53030 cf573c da863e 1e1d39 402751 7a367b a23e8c c65197 df84a5 090a14 10141f 151d28 202e37 394a50 577277 819796 a8b5b2 c7cfcc ebede9',
+  },
+  lospec500: {
+    name: 'Lospec500',
+    colors:
+      '10121c 2c1e31 6b2643 ac2847 ec273f 94493a de5d3a e98537 f3a833 4d3533 6e4c30 a26d3f ce9248 dab163 e8d282 f7f3b7 1e4044 006554 26854c 5ab552 9de64e 008b8b 62a477 a6cb96 d3eed3 3e3b65 3859b3 3388de 36c5f4 6dead6 5e5b8c 8c78a5 b0a7b8 deceed 9a4d76 c878af cc99ff fa6e79 ffa2ac ffd1d5 f6e8e0 ffffff',
+  },
+  vinik24: {
+    name: 'Vinik24',
+    colors:
+      '000000 6f6776 9a9a97 c5ccb8 8b5580 c38890 a593a5 666092 9a4f50 c28d75 7ca1c0 416aa3 8d6268 be955c 68aca9 387080 6e6962 93a167 6eaa78 557064 9d9f7f 7e9e99 5d6872 433455',
+  },
+  bubblegum16: {
+    name: 'Bubblegum 16',
+    colors:
+      '16171a 7f0622 d62411 ff8426 ffd100 fafdff ff80a4 ff2674 94216a 430067 234975 68aed4 bfff3c 10d275 007899 002859',
+  },
+  steamlords: {
+    name: 'Steam Lords',
+    colors:
+      '213b25 3a604a 4f7754 a19f7c 77744f 775c4f 603b3a 3b2137 170e19 2f213b 433a60 4f5277 65738c 7c94a1 a0b9ba c0d1cc',
   },
   slso8: {
     name: 'SLSO8',
