@@ -39,7 +39,7 @@ describe('browser language selection', () => {
   });
 
   it('falls back to English without a notice when no language is supported', () => {
-    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'zh-CN'])).toEqual({
+    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'ru-RU'])).toEqual({
       locale: 'en',
       preference: 'auto',
       notify: false,
