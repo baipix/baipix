@@ -2782,6 +2782,21 @@ body.is-dragging-swatch * {
   margin-left: auto;
   opacity: 0.6;
 }
+.home-nav-lang {
+  width: 100%;
+  max-width: none;
+  height: 28px;
+  padding: 0 10px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.home-nav-lang:hover {
+  color: var(--text);
+}
+.home-nav-lang option {
+  background: var(--panel);
+  color: var(--text);
+}
 .home-main {
   flex: 1;
   min-width: 0;
