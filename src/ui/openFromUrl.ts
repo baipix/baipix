@@ -24,10 +24,19 @@ export async function openFromUrl(editor: Editor): Promise<boolean> {
     return false;
   }
   if (url.origin !== location.origin || !url.pathname.endsWith(FILE_EXTENSION)) return false;
+
+  let text: string;
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(String(response.status));
-    const docs = fileFromJson(await response.text());
+    text = await response.text();
+  } catch {
+    toast(t('toast.offlineOpenFailed'));
+    return false;
+  }
+
+  try {
+    const docs = fileFromJson(text);
     editor.addDocuments(docs);
     toast(t('toast.opened', { name: docs[0].board?.fileName ?? docs[0].name }));
     return true;

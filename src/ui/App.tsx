@@ -34,6 +34,7 @@ import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
 import { useShiftArrowSteps } from './hooks/useShiftArrowSteps';
+import { PwaLifecycle } from './pwa';
 import { leaveHome, showEmptyHome } from './home';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
@@ -287,6 +288,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             </main>
             <RightPanel />
           </div>
+          {__PWA_ENABLED__ && <PwaLifecycle />}
           {home && <HomeScreen />}
           <ColorPicker />
           <ColorAdjustPanel />
