@@ -825,7 +825,7 @@ export const ja: Record<MessageKey, string> = {
   'home.animated': 'アニメーション',
   'home.title': 'Baipixへようこそ',
   'home.tagline': 'さあ、最初の1ピクセルを置こう。',
-  'home.formats': '.baipix、.ase、.aseprite、PNG、JPG、GIFファイルを開けます',
+  'home.formats': '.baipix、.ase、.aseprite、PNG、JPG、GIF、WebPファイルを開けます',
   'home.import': '読み込み',
   'home.downloadAll': 'すべてダウンロード',
   'home.downloadAllTip': 'すべての作品を .baipix ファイルにして、1つの .zip に',

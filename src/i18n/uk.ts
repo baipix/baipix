@@ -828,7 +828,7 @@ export const uk: Record<MessageKey, string> = {
   'home.animated': 'Анімація',
   'home.title': 'Вітаємо в Baipix',
   'home.tagline': 'Створіть свій перший піксель.',
-  'home.formats': 'Відкриває файли .baipix, .ase, .aseprite, PNG, JPG і GIF',
+  'home.formats': 'Відкриває файли .baipix, .ase, .aseprite, PNG, JPG, GIF і WebP',
   'home.import': 'Імпортувати',
   'home.downloadAll': 'Завантажити все',
   'home.downloadAllTip': 'Кожен малюнок як файл .baipix, в одному .zip',

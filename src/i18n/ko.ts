@@ -907,7 +907,7 @@ export const ko: Record<MessageKey, string> = {
   'home.animated': '애니메이션',
   'home.title': 'Baipix에 오신 것을 환영합니다',
   'home.tagline': '첫 번째 픽셀을 찍어보세요.',
-  'home.formats': '.baipix, .ase, .aseprite, PNG, JPG, GIF 파일을 열 수 있습니다',
+  'home.formats': '.baipix, .ase, .aseprite, PNG, JPG, GIF, WebP 파일을 열 수 있습니다',
   'home.import': '가져오기',
   'home.downloadAll': '모두 다운로드',
   'home.downloadAllTip': '모든 그림을 .baipix 파일로 하나의 .zip에 압축하여 다운로드',
