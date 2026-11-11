@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties 
 import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import { ONION } from '../engine/frames';
-import { resolveLocaleSelection, setLocale, t, useT } from '../i18n';
+import { resolveLocaleSelection, setLocale, subscribeLocale, t, useT } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
 import type { StorageAdapter } from '../storage/workspace';
 import { ActionsContext } from './ActionsContext';
@@ -240,6 +240,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   useEffect(() => {
     if (ready && !home) startTourOnce();
   }, [ready, home]);
+  useEffect(() => subscribeLocale(() => editor.setLabels(editorLabels())), [editor]);
   useNotices(editor);
   useShiftArrowSteps();
   useAutosave(editor, storage, ready);

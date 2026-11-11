@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clickMenuItem, createNewFile, drawAtCanvasCenter, getLayerNames } from './helpers';
+import { clickMenuItem, createNewFile, drawAtCanvasCenter, getLayerNames, waitUntilSaved } from './helpers';
 
 // Baipix opens in the browser's language (#565), and these tests look for English labels.
 test.use({ locale: 'en-US' });
@@ -93,4 +93,23 @@ test('switches the interface language', async ({ page }) => {
   const frenchMenubar = page.getByRole('menubar', { name: 'Menu principal' });
 
   await expect(frenchMenubar.getByRole('menuitem', { name: 'Fichier', exact: true })).toBeVisible();
+});
+
+test('switches and saves the language from the files screen', async ({ page, context }) => {
+  await page.goto('/');
+
+  const languageSelect = page.locator('.home-nav-bottom').getByLabel('Language');
+  await expect(languageSelect).toBeVisible();
+  await languageSelect.selectOption('fr');
+
+  await expect(
+    page.locator('.home-welcome-actions').getByRole('button', { name: 'Créer', exact: true }),
+  ).toBeVisible();
+
+  await waitUntilSaved(context, async (restored) => {
+    await expect(restored.locator('.home-nav-bottom').getByLabel('Langue')).toHaveValue('fr');
+    await expect(
+      restored.locator('.home-welcome-actions').getByRole('button', { name: 'Créer', exact: true }),
+    ).toBeVisible();
+  });
 });

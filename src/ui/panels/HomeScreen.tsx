@@ -3,7 +3,7 @@ import { fileIdOf } from '../../engine/document';
 import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
 import type { PixelDoc } from '../../engine/document';
-import { getLocale, useT } from '../../i18n';
+import { getLocale, LOCALES, setLocale, useT, type Locale } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
@@ -272,6 +272,18 @@ export function HomeScreen() {
                   {t('home.newsTitle', { version: __APP_VERSION__ })}
                   <Icon name="external" size={12} />
                 </a>
+                <select
+                  className="select-plain home-nav-lang"
+                  aria-label={t('menu.language')}
+                  value={getLocale()}
+                  onChange={(e) => setLocale(e.target.value as Locale, 'manual')}
+                >
+                  {LOCALES.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </nav>
             <main className="home-main">
