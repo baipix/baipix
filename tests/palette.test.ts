@@ -90,6 +90,20 @@ Columns: 4
     expect(ramp).toHaveLength(5);
     expect(ramp[2]).toBe(pack(200, 80, 60));
   });
+
+  it('includes the Lospec presets with their expected color counts', () => {
+    const expected = {
+      endesga64: 64,
+      apollo: 46,
+      lospec500: 42,
+      vinik24: 24,
+      bubblegum16: 16,
+      steamlords: 16,
+    };
+    for (const [key, count] of Object.entries(expected)) {
+      expect(presetColors(key), key).toHaveLength(count);
+    }
+  });
 });
 
 describe('remapTable', () => {
