@@ -36,6 +36,7 @@ To use the drawing elsewhere, export it instead: see [Export](../../export/expor
 On the files screen, or in the File menu:
 
 - **Rename file** (<kbd>F2</kbd>), **Duplicate file**, **Delete file**. A deleted file goes to the Trash, and comes back with Undo in the message that follows.
+- On the files screen, a double click on a drawing's name, or **Rename** in its … menu, lets you type a new one in place. <kbd>Enter</kbd> keeps it, <kbd>Esc</kbd> gives the old one back.
 - **File › Recent** switches between your last files.
 - A new file you never drew in goes away when you open another one, so tries don't pile up.
 

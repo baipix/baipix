@@ -896,7 +896,8 @@ body.is-resizing * {
 .item-name {
   user-select: none;
 }
-.item-name input {
+.item-name input,
+.home-file-name input {
   user-select: text;
   width: 100%;
   height: 22px;

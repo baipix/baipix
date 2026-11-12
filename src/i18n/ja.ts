@@ -239,6 +239,7 @@ export const ja: Record<MessageKey, string> = {
   'file.actions': 'ファイルの操作',
   'file.duplicate': '複製',
   'file.download': '.baipixでダウンロード',
+  'file.rename': '名前を変更',
 
   'group.create': '選択をグループ化',
   'group.ungroup': 'グループ解除',

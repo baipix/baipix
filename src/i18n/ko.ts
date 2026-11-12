@@ -268,6 +268,7 @@ export const ko: Record<MessageKey, string> = {
   'file.actions': '파일 작업',
   'file.duplicate': '복제',
   'file.download': '.baipix로 다운로드',
+  'file.rename': '이름 바꾸기',
 
   'group.create': '선택 항목 그룹화',
   'group.ungroup': '그룹 해제',

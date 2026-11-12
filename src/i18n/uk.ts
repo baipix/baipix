@@ -239,6 +239,7 @@ export const uk: Record<MessageKey, string> = {
   'file.actions': 'Дії з файлом',
   'file.duplicate': 'Створити копію',
   'file.download': 'Завантажити як .baipix',
+  'file.rename': 'Перейменувати',
 
   'group.create': 'Згрупувати виділення',
   'group.ungroup': 'Розгрупувати',

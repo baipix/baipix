@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type DragEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type DragEvent, type MouseEvent } from 'react';
 import { fileIdOf } from '../../engine/document';
 import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
@@ -6,6 +6,7 @@ import type { PixelDoc } from '../../engine/document';
 import { getLocale, LOCALES, setLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
+import { EditableName } from '../components/EditableName';
 import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { PresetCard } from '../components/PresetCard';
@@ -112,8 +113,10 @@ export function HomeScreen() {
   // A drawing dragged to the Trash: its card fades, and the Trash lights up while it's over it.
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [overTrash, setOverTrash] = useState(false);
+  // While its name is typed in, a card stays put: a drag in the field selects the text.
+  const [typingId, setTypingId] = useState<string | null>(null);
   const dragFile = (id: string) => ({
-    draggable: true,
+    draggable: typingId !== id,
     onDragStart: (e: DragEvent) => {
       e.dataTransfer.setData(FILE_MIME, id);
       e.dataTransfer.effectAllowed = 'move';
@@ -189,6 +192,28 @@ export function HomeScreen() {
     editor.switchFile(id);
     leaveHome(editor);
   };
+  // A double click on a drawing's name renames it in place: a single click on the name opens the
+  // drawing a moment later, unless a second click comes. The field being typed in opens nothing.
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const openTimer = useRef(0);
+  useEffect(() => () => clearTimeout(openTimer.current), []);
+  const clickCard = (e: MouseEvent, id: string) => {
+    const target = e.target as Element;
+    if (target.closest('input')) return;
+    clearTimeout(openTimer.current);
+    if (!target.closest('.home-file-name')) return open(id);
+    if (e.detail === 1) openTimer.current = window.setTimeout(() => open(id), 300);
+  };
+  const fileName = (f: { id: string; name: string }, className = '') => (
+    <EditableName
+      className={`home-file-name truncate ${className}`}
+      value={f.name}
+      onRename={(name) => editor.renameFile(f.id, name)}
+      startEditing={renamingId === f.id}
+      onEditingStarted={() => setRenamingId(null)}
+      onEditingChange={(editing) => setTypingId((id) => (editing ? f.id : id === f.id ? null : id))}
+    />
+  );
 
   const importFile = async (file?: File | null) => {
     if (await actions.openFile(file)) leaveHome(editor);
@@ -515,7 +540,7 @@ export function HomeScreen() {
                             className={draggedId === f.id ? 'is-dragging' : undefined}
                             {...dragFile(f.id)}
                             tabIndex={0}
-                            onClick={() => open(f.id)}
+                            onClick={(e) => clickCard(e, f.id)}
                             onKeyDown={(e) => {
                               if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' '))
                                 return;
@@ -526,7 +551,7 @@ export function HomeScreen() {
                             <td className="home-td-name">
                               <span>
                                 <HomeThumb doc={doc} />
-                                <span className="truncate">{f.name}</span>
+                                {fileName(f)}
                                 {animated(f.id) && (
                                   <span className="home-animated-inline" data-tip={t('home.animated')}>
                                     <Icon name="timeline" size={14} />
@@ -578,7 +603,7 @@ export function HomeScreen() {
                           {...dragFile(f.id)}
                           role="button"
                           tabIndex={0}
-                          onClick={() => open(f.id)}
+                          onClick={(e) => clickCard(e, f.id)}
                           onKeyDown={(e) => {
                             if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
                             e.preventDefault();
@@ -592,7 +617,7 @@ export function HomeScreen() {
                             </span>
                           )}
                           <span className="home-card-info">
-                            <span className="home-card-name truncate">{f.name}</span>
+                            {fileName(f, 'home-card-name')}
                             <span className="home-card-meta muted truncate">
                               {formatUpdated(f.updatedAt, t('home.justNow'))} · {f.width} × {f.height}
                             </span>
@@ -604,7 +629,10 @@ export function HomeScreen() {
                             aria-haspopup="menu"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openMenu(e.currentTarget, fileMenu(editor, actions, f));
+                              openMenu(
+                                e.currentTarget,
+                                fileMenu(editor, actions, f, () => setRenamingId(f.id)),
+                              );
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
                           />

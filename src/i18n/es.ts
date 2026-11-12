@@ -239,6 +239,7 @@ export const es: Record<MessageKey, string> = {
   'file.actions': 'Acciones del archivo',
   'file.duplicate': 'Duplicar',
   'file.download': 'Descargar como .baipix',
+  'file.rename': 'Renombrar',
 
   'group.create': 'Agrupar la selección',
   'group.ungroup': 'Desagrupar',
