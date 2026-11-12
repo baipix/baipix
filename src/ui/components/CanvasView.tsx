@@ -1065,6 +1065,7 @@ export function CanvasView() {
         updateHover(null);
         return;
       }
+      if (e.pointerType === 'touch' && touches().length >= 2) return;
       if (pinch) return;
       // Pan: the middle button, Space held, or the hand tool.
       if (e.button === 1 || keyState.space || (e.button === 0 && editor.getState().tool === 'hand')) {
