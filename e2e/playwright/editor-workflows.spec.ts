@@ -171,3 +171,18 @@ test('switches and saves the language from the files screen', async ({ page, con
     ).toBeVisible();
   });
 });
+
+test('a second click on Adjust the layer closes the Adjustments panel', async ({ page }) => {
+  await createNewFile(page);
+
+  const button = page.locator('aside.panel-right').getByRole('button', { name: 'Adjust the layer…' });
+  const panel = page.getByRole('dialog', { name: 'Adjustments' });
+
+  await button.click();
+  await expect(panel).toBeVisible();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+
+  await button.click();
+  await expect(panel).toBeHidden();
+  await expect(button).toHaveAttribute('aria-pressed', 'false');
+});

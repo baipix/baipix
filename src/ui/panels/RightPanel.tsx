@@ -354,6 +354,7 @@ function LayerSection() {
   const index = useEditorState((s) => s.doc.activeLayer);
   const referenceSelected = useEditorState((s) => s.referenceSelected);
   const selectedGroup = useEditorState((s) => s.selectedGroup);
+  const adjusting = uiStore.use((s) => s.adjust);
   useEditorState((s) => s.revision);
   if (referenceSelected) return <ReferenceSection />;
   if (selectedGroup) return <GroupSection id={selectedGroup} />;
@@ -369,7 +370,13 @@ function LayerSection() {
             label={layer.visible ? t('layer.hide') : t('layer.show')}
             onClick={() => editor.setLayerVisible(index, !layer.visible)}
           />
-          <IconButton icon="panel" label={t('adjust.open')} onClick={() => openAdjust('layer')} />
+          {/* A second click closes the panel, like the × in it. */}
+          <IconButton
+            icon="panel"
+            label={t('adjust.open')}
+            pressed={adjusting}
+            onClick={() => (adjusting ? uiStore.set({ adjust: false }) : openAdjust('layer'))}
+          />
         </>
       }
     >
