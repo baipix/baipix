@@ -818,7 +818,7 @@ export const en = {
   'home.animated': 'Animation',
   'home.title': 'Welcome to Baipix',
   'home.tagline': 'Drop your first pixel.',
-  'home.formats': 'Opens .baipix, .ase, .aseprite, PNG, JPG and GIF files',
+  'home.formats': 'Opens .baipix, .ase, .aseprite, PNG, JPG, GIF and WebP files',
   'home.import': 'Import',
   'home.downloadAll': 'Download all',
   'home.downloadAllTip': 'Every drawing as a .baipix file, in one .zip',

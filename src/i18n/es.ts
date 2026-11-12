@@ -835,7 +835,7 @@ export const es: Record<MessageKey, string> = {
   'home.animated': 'Animación',
   'home.title': 'Te damos la bienvenida a Baipix',
   'home.tagline': 'Coloca tu primer píxel.',
-  'home.formats': 'Abre archivos .baipix, .ase, .aseprite, PNG, JPG y GIF',
+  'home.formats': 'Abre archivos .baipix, .ase, .aseprite, PNG, JPG, GIF y WebP',
   'home.import': 'Importar',
   'home.downloadAll': 'Descargar todo',
   'home.downloadAllTip': 'Cada dibujo como archivo .baipix, en un solo .zip',
