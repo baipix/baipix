@@ -3,7 +3,7 @@ import { fileIdOf } from '../../engine/document';
 import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
 import type { PixelDoc } from '../../engine/document';
-import { getLocale, LOCALES, setLocale, useT, type Locale } from '../../i18n';
+import { getLocale, LOCALES, setLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
@@ -272,18 +272,26 @@ export function HomeScreen() {
                   {t('home.newsTitle', { version: __APP_VERSION__ })}
                   <Icon name="external" size={12} />
                 </a>
-                <select
-                  className="select-plain home-nav-lang"
+                <button
+                  type="button"
+                  className="home-nav-link"
+                  aria-haspopup="menu"
                   aria-label={t('menu.language')}
-                  value={getLocale()}
-                  onChange={(e) => setLocale(e.target.value as Locale, 'manual')}
+                  onClick={(e) =>
+                    openMenu(
+                      e.currentTarget,
+                      LOCALES.map((l) => ({
+                        label: l.label,
+                        checked: getLocale() === l.id,
+                        onSelect: () => setLocale(l.id, 'manual'),
+                      })),
+                    )
+                  }
                 >
-                  {LOCALES.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
+                  <Icon name="language" size={14} />
+                  {LOCALES.find((l) => l.id === getLocale())?.label}
+                  <Icon name="caret" size={12} />
+                </button>
               </div>
             </nav>
             <main className="home-main">
