@@ -189,7 +189,11 @@ export function HomeScreen() {
         e.preventDefault();
         setDropping(true);
       }}
-      onDragLeave={(e) => e.currentTarget === e.target && setDropping(false)}
+      // Leaving the window or cancelling the drag fires on the card or menu under the pointer, not on
+      // the screen itself: the label goes away unless the pointer moved to another part of the screen.
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropping(false);
+      }}
       onDrop={(e) => {
         e.preventDefault();
         setDropping(false);
