@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const harness = vi.hoisted(() => ({
   effect: undefined as (() => void) | undefined,
   toast: vi.fn(),
+  flushAutosave: vi.fn(async () => true),
   toastWhenIdle: vi.fn((message: string, beforeShow?: () => boolean) => {
     if (!beforeShow || beforeShow()) harness.toast(message);
   }),
@@ -68,6 +69,7 @@ beforeEach(() => {
   harness.effect = undefined;
   harness.toast.mockReset();
   harness.toastWhenIdle.mockClear();
+  harness.flushAutosave.mockClear();
   vi.unstubAllGlobals();
 });
 
@@ -130,13 +132,42 @@ describe('PwaLifecycle', () => {
     harness.effect?.();
     await Promise.resolve();
 
-    const action = harness.toast.mock.calls[0][1] as { run: () => void };
-    action.run();
+    const action = harness.toast.mock.calls[0][1] as { run: () => Promise<void> };
+    await action.run();
 
     expect(waiting.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
     expect(browser.reload).not.toHaveBeenCalled();
 
     browser.serviceWorker.dispatch('controllerchange');
     expect(browser.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for autosave before activating a waiting update', async () => {
+    const browser = makeBrowser();
+    const waiting = { postMessage: vi.fn() };
+    let finishSave!: (saved: boolean) => void;
+    const flushAutosave = vi.fn(() => new Promise<boolean>((resolve) => (finishSave = resolve)));
+    browser.registration.waiting = waiting as unknown as ServiceWorker;
+    vi.stubGlobal('navigator', {
+      serviceWorker: {
+        register: browser.register,
+        controller: {},
+        addEventListener: (type: string, listener: () => void) =>
+          browser.serviceWorker.addEventListener(type, listener),
+      },
+    });
+
+    PwaLifecycle({ flushAutosave });
+    harness.effect?.();
+    await Promise.resolve();
+
+    const action = harness.toast.mock.calls[0][1] as { run: () => Promise<void> };
+    const update = action.run();
+    await Promise.resolve();
+    expect(waiting.postMessage).not.toHaveBeenCalled();
+
+    finishSave(true);
+    await update;
+    expect(waiting.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
   });
 });

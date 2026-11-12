@@ -6,6 +6,8 @@ import { toast, toastWhenIdle } from './uiStore';
 const OFFLINE_READY_KEY = 'baipix.offlineReady';
 const watchedRegistrations = new WeakSet<ServiceWorkerRegistration>();
 
+type FlushAutosave = () => Promise<boolean>;
+
 function showOfflineReady(): void {
   toastWhenIdle(t('toast.offlineReady'), () => {
     try {
@@ -19,9 +21,14 @@ function showOfflineReady(): void {
   });
 }
 
-function reloadWithUpdate(registration: ServiceWorkerRegistration): void {
+async function reloadWithUpdate(
+  registration: ServiceWorkerRegistration,
+  flushAutosave: FlushAutosave,
+): Promise<void> {
   const waiting = registration.waiting;
   if (!waiting) return;
+
+  if (!(await flushAutosave())) return;
 
   navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload(), {
     once: true,
@@ -29,16 +36,19 @@ function reloadWithUpdate(registration: ServiceWorkerRegistration): void {
   waiting.postMessage({ type: 'SKIP_WAITING' });
 }
 
-function showUpdateReady(registration: ServiceWorkerRegistration): void {
-  toast(t('toast.updateReady'), { label: t('toast.reload'), run: () => reloadWithUpdate(registration) });
+function showUpdateReady(registration: ServiceWorkerRegistration, flushAutosave: FlushAutosave): void {
+  toast(t('toast.updateReady'), {
+    label: t('toast.reload'),
+    run: () => reloadWithUpdate(registration, flushAutosave),
+  });
 }
 
-function watchRegistration(registration: ServiceWorkerRegistration): void {
+function watchRegistration(registration: ServiceWorkerRegistration, flushAutosave: FlushAutosave): void {
   if (watchedRegistrations.has(registration)) return;
   watchedRegistrations.add(registration);
 
   if (registration.waiting && navigator.serviceWorker.controller) {
-    showUpdateReady(registration);
+    showUpdateReady(registration, flushAutosave);
     return;
   }
 
@@ -49,23 +59,23 @@ function watchRegistration(registration: ServiceWorkerRegistration): void {
     worker.addEventListener('statechange', () => {
       if (worker.state !== 'installed') return;
       if (!navigator.serviceWorker.controller) showOfflineReady();
-      else showUpdateReady(registration);
+      else showUpdateReady(registration, flushAutosave);
     });
   });
 }
 
 /** Registers the editor's worker and keeps updates out of the user's current stroke. */
-export function PwaLifecycle() {
+export function PwaLifecycle({ flushAutosave = async () => true }: { flushAutosave?: FlushAutosave } = {}) {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
     navigator.serviceWorker
       .register('./sw.js', { scope: './' })
-      .then(watchRegistration)
+      .then((registration) => watchRegistration(registration, flushAutosave))
       .catch(() => {
         /* The editor still works online when a browser refuses service workers. */
       });
-  }, []);
+  }, [flushAutosave]);
 
   return null;
 }

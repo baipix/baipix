@@ -247,7 +247,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   useEffect(() => subscribeLocale(() => editor.setLabels(editorLabels())), [editor]);
   useNotices(editor);
   useShiftArrowSteps();
-  useAutosave(editor, storage, ready);
+  const flushAutosave = useAutosave(editor, storage, ready);
 
   const style = {
     '--left-width': `${panelWidths.left}px`,
@@ -291,7 +291,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             </main>
             <RightPanel />
           </div>
-          {__PWA_ENABLED__ && pwaReady && <PwaLifecycle />}
+          {__PWA_ENABLED__ && pwaReady && <PwaLifecycle flushAutosave={flushAutosave} />}
           {home && <HomeScreen />}
           <ColorPicker />
           <ColorAdjustPanel />

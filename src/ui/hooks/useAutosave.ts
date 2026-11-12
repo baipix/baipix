@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import type { Editor } from '../../engine/editor';
 import { getLocale, getLocalePreference, subscribeLocale, t } from '../../i18n';
@@ -10,6 +10,9 @@ import { toast, uiStore } from '../uiStore';
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
 const HISTORY_SAVE_DEBOUNCE_MS = 2000;
+type FlushAutosave = () => Promise<boolean>;
+
+const successfulFlush: FlushAutosave = async () => true;
 
 type EditorDocument = ReturnType<Editor['getDocuments']>[number];
 type UiState = ReturnType<typeof uiStore.get>;
@@ -85,44 +88,49 @@ function getHistoriesToSave(editor: Editor) {
 /**
  * Installs autosave timers and browser subscriptions, and returns their cleanup.
  */
-function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
+function setupAutosave(
+  editor: Editor,
+  storage: StorageAdapter,
+  setFlush: (flush: FlushAutosave) => void,
+): () => void {
   // Workspace and history persistence.
   let workspaceSaveTimer = 0;
   let hasShownSaveFailureToast = false;
   const openedAt = Date.now();
 
-  const saveWorkspace = () => {
+  const saveWorkspace = async (): Promise<boolean> => {
     // Something drawn in this tab, not only files opened or an untouched new one: worth asking the
     // browser to keep it.
     const drawn = getNonFreshDocuments(editor).some((document) => (document.updatedAt ?? 0) > openedAt);
-    storage
-      .save(createWorkspaceSnapshot(editor, uiStore.get()))
-      .then(() => {
-        if (drawn) void keepStorage();
-        return refreshTrash(storage);
-      })
-      .catch(() => {
-        if (!hasShownSaveFailureToast) {
-          toast(t('toast.saveFailed'));
-        }
-
-        hasShownSaveFailureToast = true;
-      });
+    try {
+      await storage.save(createWorkspaceSnapshot(editor, uiStore.get()));
+      if (drawn) void keepStorage();
+      refreshTrash(storage);
+      return true;
+    } catch {
+      if (!hasShownSaveFailureToast) toast(t('toast.saveFailed'));
+      hasShownSaveFailureToast = true;
+      return false;
+    }
   };
 
   // The undo history, apart and less often: it's bigger, and only matters after a reload.
   let historySaveTimer = 0;
 
-  const saveHistory = () => {
+  const saveHistory = async (): Promise<boolean> => {
     clearTimeout(historySaveTimer);
 
     if (!storage.saveHistory) {
-      return;
+      return true;
     }
 
-    storage.saveHistory(getHistoriesToSave(editor)).catch(() => {
+    try {
+      await storage.saveHistory(getHistoriesToSave(editor));
+      return true;
+    } catch {
       /* the drawing is saved anyway; only the undo steps would be lost */
-    });
+      return false;
+    }
   };
 
   // Coalesce frequent workspace changes into one delayed save.
@@ -143,10 +151,18 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
     scheduleHistorySave();
   };
 
+  const flushSaves: FlushAutosave = async () => {
+    clearTimeout(workspaceSaveTimer);
+    clearTimeout(historySaveTimer);
+    const [workspaceSaved, historySaved] = await Promise.all([saveWorkspace(), saveHistory()]);
+    return workspaceSaved && historySaved;
+  };
+
+  setFlush(flushSaves);
+
   // Flush both saves immediately instead of waiting for their debounce timers.
   const saveBeforePageHide = () => {
-    saveWorkspace();
-    saveHistory();
+    void flushSaves();
   };
 
   // When this tab becomes active, adopt documents changed by another tab.
@@ -184,6 +200,7 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
   return () => {
     clearTimeout(workspaceSaveTimer);
     clearTimeout(historySaveTimer);
+    setFlush(successfulFlush);
 
     unsubscribe.forEach((removeSubscription) => removeSubscription());
 
@@ -196,12 +213,20 @@ function setupAutosave(editor: Editor, storage: StorageAdapter): () => void {
 /**
  * Saves the workspace (debounced) whenever the document, preferences or UI settings change.
  */
-export function useAutosave(editor: Editor, storage: StorageAdapter, ready: boolean) {
+export function useAutosave(editor: Editor, storage: StorageAdapter, ready: boolean): FlushAutosave {
+  const flushRef = useRef<FlushAutosave>(successfulFlush);
+  const flush = useCallback(() => flushRef.current(), []);
+
   useEffect(() => {
     if (!ready) {
+      flushRef.current = successfulFlush;
       return;
     }
 
-    return setupAutosave(editor, storage);
+    return setupAutosave(editor, storage, (save) => {
+      flushRef.current = save;
+    });
   }, [editor, storage, ready]);
+
+  return flush;
 }
