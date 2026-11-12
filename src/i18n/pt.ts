@@ -857,4 +857,8 @@ export const pt: Record<MessageKey, string> = {
   'file.restore': 'Restaurar',
   'toast.fileRestored': '“{name}” voltou.',
   'toast.saveFailed': 'Não foi possível salvar neste navegador: lembre-se de baixar seus arquivos.',
+  'toast.offlineReady': 'O Baipix está pronto para funcionar offline.',
+  'toast.updateReady': 'Uma nova versão do Baipix está disponível.',
+  'toast.reload': 'Recarregar',
+  'toast.offlineOpenFailed': 'Este exemplo não pode ser aberto sem uma conexão.',
 };
