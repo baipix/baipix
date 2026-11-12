@@ -35,12 +35,12 @@ export default defineConfig(({ mode }) => ({
             manifest: {
               name: 'Baipix',
               short_name: 'Baipix',
-              description: 'A free pixel art editor for designers.',
+              description: 'A free online pixel art editor, with the interface of a modern design tool.',
               start_url: '/app/',
               scope: '/app/',
               display: 'standalone',
-              background_color: '#f7f7f5',
-              theme_color: '#66c4ff',
+              background_color: '#f5f5f5',
+              theme_color: '#f9f9f9',
               icons: [
                 { src: '/app/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
                 { src: '/app/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
