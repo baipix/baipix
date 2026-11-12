@@ -76,6 +76,7 @@ What's selected, in five sections:
 - **Pan** with the Hand tool (<kbd>H</kbd>), or hold <kbd>Space</kbd> and drag with any tool.
 - **Zoom** with a pinch on a trackpad, the mouse wheel, or <kbd>Ctrl</kbd> with either, toward the pointer.
 - On a trackpad, **two fingers pan** in any direction.
+- On a phone or tablet, pinch with two fingers to zoom and pan. A **long press** picks the color under your finger, a **two-finger tap** undoes and a **three-finger tap** redoes.
 - In the top right corner: the drawing's size, its number of layers and colors, and the pointer's coordinates.
 - In the bottom right corner: the version, which opens what's new.
 
