@@ -3083,6 +3083,18 @@ body.is-dragging-swatch * {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
+.sprite-sheet-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 8px;
+}
+.sprite-sheet-duration {
+  grid-column: 1 / -1;
+}
+.sprite-sheet-error {
+  color: var(--danger, #e05252);
+  font-size: 12px;
+}
 
 /* ---------- Canvas size ---------- */
 /* W, H and the button opening the Canvas size dialog, in the Canvas section. */

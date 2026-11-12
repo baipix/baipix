@@ -22,8 +22,15 @@ export type DialogState =
       /** The imported image at its own size, and the pixel grid found in it. */
       image: PixelBlock;
       grid: PixelGrid;
-      onRecover: (block: PixelBlock) => void;
+      onRecover: (block: PixelBlock, grid: PixelGrid) => void;
       onKeep: () => void;
+    }
+  | {
+      type: 'spriteSheet';
+      image: PixelBlock;
+      onSlice: (cellWidth: number, cellHeight: number, cols: number, rows: number, duration: number) => void;
+      onSingleImage: () => void;
+      onCancel: () => void;
     };
 
 export interface PreviewWindow {
