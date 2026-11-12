@@ -2744,6 +2744,16 @@ body.is-dragging-swatch * {
   color: var(--text);
   background: var(--hover);
 }
+/* A drawing's card held over the Trash: the Trash takes it, outlined like a group taking a layer. */
+.home-nav-item.drop-into {
+  color: var(--text);
+  background: var(--hover);
+  box-shadow: inset 0 0 0 2px var(--drop-line, var(--accent));
+}
+.home-card.is-dragging,
+.home-table tr.is-dragging {
+  opacity: 0.5;
+}
 .home-nav-count {
   margin-left: auto;
   font-weight: 400;

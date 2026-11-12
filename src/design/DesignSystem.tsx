@@ -835,14 +835,14 @@ function SurfacesBlock() {
         </Specimen>
         <Specimen
           label="Sidebar item"
-          use="The sections of the files screen, its sidebar: the current one filled, a count at the right."
+          use="The sections of the files screen, its sidebar: the current one filled, a count at the right. A drawing's card held over Trash outlines it, like a group taking a layer."
         >
           <div style={{ width: 200 }}>
             <button type="button" className="home-nav-item is-active">
               <Icon name="image" size={16} />
               Drawings
             </button>
-            <button type="button" className="home-nav-item">
+            <button type="button" className="home-nav-item drop-into">
               <Icon name="trash" size={16} />
               Trash
               <span className="home-nav-count">2</span>

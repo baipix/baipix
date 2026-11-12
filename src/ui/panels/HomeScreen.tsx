@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type DragEvent } from 'react';
 import { fileIdOf } from '../../engine/document';
 import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
@@ -17,6 +17,7 @@ import { CHANGELOG_URL, DOCS_URL } from '../links';
 import { PALETTE_PRESETS } from '../../engine/palette';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
+import { FILE_MIME } from '../dragTypes';
 
 const DAY = 86_400_000;
 
@@ -108,6 +109,18 @@ export function HomeScreen() {
     toast(t('toast.fileRestored', { name }));
   };
   const [dropping, setDropping] = useState(false);
+  // A drawing dragged to the Trash: its card fades, and the Trash lights up while it's over it.
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [overTrash, setOverTrash] = useState(false);
+  const dragFile = (id: string) => ({
+    draggable: true,
+    onDragStart: (e: DragEvent) => {
+      e.dataTransfer.setData(FILE_MIME, id);
+      e.dataTransfer.effectAllowed = 'move';
+      setDraggedId(id);
+    },
+    onDragEnd: () => setDraggedId(null),
+  });
   const docs = editor.getDocuments();
   // A file with a board of several frames is an animation: its card says so.
   const animated = (id: string) => docs.some((d) => fileIdOf(d) === id && frameCount(d) > 1);
@@ -186,6 +199,8 @@ export function HomeScreen() {
       className={`home${dropping ? ' is-dropping' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
+        // Only files from outside open here: a drawing's own card is dragged to the Trash.
+        if (!e.dataTransfer.types.includes('Files')) return;
         e.preventDefault();
         setDropping(true);
       }}
@@ -248,8 +263,23 @@ export function HomeScreen() {
               </button>
               <button
                 type="button"
-                className={`home-nav-item${showDeleted ? ' is-active' : ''}`}
+                className={`home-nav-item${showDeleted ? ' is-active' : ''}${overTrash ? ' drop-into' : ''}`}
                 onClick={() => setShowDeleted(true)}
+                onDragOver={(e) => {
+                  if (!e.dataTransfer.types.includes(FILE_MIME)) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  setOverTrash(true);
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOverTrash(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setOverTrash(false);
+                  const file = files.find((f) => f.id === e.dataTransfer.getData(FILE_MIME));
+                  if (file) actions.deleteFile(file.id, file.name);
+                }}
               >
                 <Icon name="trash" size={16} />
                 {t('home.deleted')}
@@ -482,6 +512,8 @@ export function HomeScreen() {
                         return (
                           <tr
                             key={f.id}
+                            className={draggedId === f.id ? 'is-dragging' : undefined}
+                            {...dragFile(f.id)}
                             tabIndex={0}
                             onClick={() => open(f.id)}
                             onKeyDown={(e) => {
@@ -542,7 +574,8 @@ export function HomeScreen() {
                       return (
                         <div
                           key={f.id}
-                          className="home-card"
+                          className={`home-card${draggedId === f.id ? ' is-dragging' : ''}`}
+                          {...dragFile(f.id)}
                           role="button"
                           tabIndex={0}
                           onClick={() => open(f.id)}
