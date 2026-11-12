@@ -19,6 +19,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - A language menu at the bottom of the files screen's sidebar, to switch languages before opening a drawing. ([#804](https://github.com/baipix/baipix/pull/804), [#819](https://github.com/baipix/baipix/pull/819))
 - On the files screen, a drawing's card dragged onto Trash in the sidebar goes to the Trash, with Undo. ([#824](https://github.com/baipix/baipix/pull/824))
 - On the files screen, a double click on a drawing's name, or Rename in its … menu, renames it in place. ([#826](https://github.com/baipix/baipix/pull/826))
+- The editor works offline: once it has opened, baipix.app/app loads without a connection, and it can be installed as an app from the browser. A toast says when an update is ready; it never reloads on its own. ([#806](https://github.com/baipix/baipix/pull/806))
 
 ### Changed
 
@@ -59,7 +60,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 ### Thanks
 
 - [@jay23606](https://github.com/jay23606) for four new templates (Favicon, Small tile, Emote and Playing card) and the palette as a picture. ([#757](https://github.com/baipix/baipix/pull/757), [#795](https://github.com/baipix/baipix/pull/795))
-- [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, and for finding and fixing the linked cels exported at the wrong position. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778))
+- [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, for finding and fixing the linked cels exported at the wrong position, and for the editor working offline. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778), [#806](https://github.com/baipix/baipix/pull/806))
 - [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
 - [@OSilvaDevTI](https://github.com/OSilvaDevTI) for the Brazilian Portuguese translation, the eighth language. ([#789](https://github.com/baipix/baipix/pull/789))
 - [@exi66](https://github.com/exi66) for Remap offering the palettes you set up, a first contribution. ([#815](https://github.com/baipix/baipix/pull/815))
