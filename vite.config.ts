@@ -16,7 +16,7 @@ const analytics = (): Plugin => ({
 });
 
 // `npm run build:single` produces one self-contained index.html (handy for sharing or embedding).
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ command, mode }) => ({
   plugins:
     mode === 'single'
       ? [react(), viteSingleFile()]
@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => ({
   // Shown in the main menu, next to the link to the changelog.
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
-    __PWA_ENABLED__: mode !== 'single',
+    __PWA_ENABLED__: command === 'build' && mode !== 'single',
   },
   test: { environment: 'node', include: ['tests/**/*.test.ts'] },
 }));
