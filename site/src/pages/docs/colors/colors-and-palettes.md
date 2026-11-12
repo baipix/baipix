@@ -14,7 +14,7 @@ In the Colors section of the right panel, two overlapping chips: the front one i
 
 ## The eyedropper
 
-The eyedropper (<kbd>I</kbd>) picks the color under the pointer: left click for the front color, right click for the one behind. A loupe shows the pixels around it and the color's hex code. With any drawing tool, hold <kbd>Alt</kbd> to pick a color without switching tools.
+The eyedropper (<kbd>I</kbd>) picks the color under the pointer: left click for the front color, right click for the one behind. A loupe shows the pixels around it and the color's hex code. With any drawing tool, hold <kbd>Alt</kbd> to pick a color without switching tools. On a phone or tablet, a long press on the canvas does the same.
 
 ## The file's palette
 
