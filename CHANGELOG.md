@@ -42,6 +42,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The Effects and Light sections had a caret to fold them even when empty; clicking it and then adding an effect left the section folded, as if nothing had been added. An empty section has no caret now, and adding an effect or the light opens it. ([#794](https://github.com/baipix/baipix/pull/794))
 - After a language change from View › Language, new layers, boards and files get their default names in the new language, not the old one. ([#804](https://github.com/baipix/baipix/pull/804))
 - On the files screen, "Drop to open" no longer stays on screen after a drag leaves the window over a card or the sidebar. ([#823](https://github.com/baipix/baipix/pull/823))
+- A second click on Adjust the layer, in the Layer section, closes the Adjustments panel; it only opened it. ([#835](https://github.com/baipix/baipix/pull/835))
 
 ### Website
 
