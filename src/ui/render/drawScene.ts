@@ -178,7 +178,7 @@ export function axisPositions(doc: PixelDoc, camera: Camera): { x: number; y: nu
   return { x: at(axes.x, X), y: at(axes.y, Y) };
 }
 
-const FONT = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+const FONT = '"Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
 /** Frame name above the canvas, in CSS pixels. Shared with the inline rename field. */
 export const LABEL = { size: 11, gap: 6 };
