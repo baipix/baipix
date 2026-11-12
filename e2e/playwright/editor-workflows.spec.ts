@@ -98,16 +98,17 @@ test('switches the interface language', async ({ page }) => {
 test('switches and saves the language from the files screen', async ({ page, context }) => {
   await page.goto('/');
 
-  const languageSelect = page.locator('.home-nav-bottom').getByLabel('Language');
-  await expect(languageSelect).toBeVisible();
-  await languageSelect.selectOption('fr');
+  await page.locator('.home-nav-bottom').getByRole('button', { name: 'Language' }).click();
+  await page.getByRole('menuitem', { name: 'Français' }).click();
 
   await expect(
     page.locator('.home-welcome-actions').getByRole('button', { name: 'Créer', exact: true }),
   ).toBeVisible();
 
   await waitUntilSaved(context, async (restored) => {
-    await expect(restored.locator('.home-nav-bottom').getByLabel('Langue')).toHaveValue('fr');
+    await expect(restored.locator('.home-nav-bottom').getByRole('button', { name: 'Langue' })).toHaveText(
+      'Français',
+    );
     await expect(
       restored.locator('.home-welcome-actions').getByRole('button', { name: 'Créer', exact: true }),
     ).toBeVisible();
