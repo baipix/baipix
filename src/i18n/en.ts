@@ -238,6 +238,7 @@ export const en = {
   'file.actions': 'File actions',
   'file.duplicate': 'Duplicate',
   'file.download': 'Download as .baipix',
+  'file.rename': 'Rename',
 
   'group.create': 'Group selection',
   'group.ungroup': 'Ungroup',

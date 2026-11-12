@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { fileMasters, findMaster, spritePixels } from '../../engine/components';
 import { fileNameOf, isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
 import {
@@ -15,6 +15,7 @@ import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Icon } from '../components/Icon';
+import { EditableName } from '../components/EditableName';
 import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { groupMenuItems, layerMenuItems, renameStore } from '../layerMenus';
@@ -22,67 +23,6 @@ import { Section } from '../components/Section';
 import { Thumbnail } from '../components/Thumbnail';
 import { COMPONENT_MIME } from '../dragTypes';
 import { toggleLayersPanel, uiStore } from '../uiStore';
-
-/** Inline rename on double-click, used by files and layers. */
-function EditableName({
-  value,
-  onRename,
-  className = 'item-name',
-  startEditing = false,
-  onEditingStarted,
-}: {
-  value: string;
-  onRename: (v: string) => void;
-  className?: string;
-  /** Starts editing from outside (a menu's Rename); `onEditingStarted` then clears the request. */
-  startEditing?: boolean;
-  onEditingStarted?: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (editing) ref.current?.select();
-  }, [editing]);
-  useEffect(() => {
-    if (!startEditing) return;
-    setEditing(true);
-    onEditingStarted?.();
-  }, [startEditing, onEditingStarted]);
-  if (!editing)
-    return (
-      <span
-        className={className}
-        // The full name as a tooltip, only when it's cut with an ellipsis.
-        data-tip=""
-        onPointerEnter={(e) => {
-          const el = e.currentTarget;
-          el.dataset.tip = el.scrollWidth > el.clientWidth ? value : '';
-        }}
-        onDoubleClick={() => setEditing(true)}
-      >
-        {value}
-      </span>
-    );
-  const done = (save: boolean) => {
-    if (save && ref.current) onRename(ref.current.value);
-    setEditing(false);
-  };
-  return (
-    <span className={className}>
-      <input
-        ref={ref}
-        defaultValue={value}
-        autoFocus
-        onBlur={() => done(true)}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === 'Enter') done(true);
-          if (e.key === 'Escape') done(false);
-        }}
-      />
-    </span>
-  );
-}
 
 /** A row of the Layers panel: a layer or a group, at a depth (0: top level). */
 type LayerRow =

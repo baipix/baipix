@@ -129,6 +129,29 @@ test('drags a drawing to the Trash on the files screen', async ({ page }) => {
   await expect(page.locator('canvas.canvas')).toBeVisible();
 });
 
+test('renames a drawing from the files screen', async ({ page }) => {
+  await createNewFile(page);
+  await drawAtCanvasCenter(page);
+  await page.getByRole('button', { name: 'All files' }).click();
+
+  const name = page.locator('.home-grid .home-file-name');
+  await name.dblclick();
+  // While the name is typed in, the card can't be dragged away.
+  await expect(page.locator('.home-grid .home-card')).toHaveAttribute('draggable', 'false');
+  await name.locator('input').fill('Slime');
+  await name.locator('input').press('Enter');
+  await expect(name).toHaveText('Slime');
+  await expect(page.locator('.home-grid .home-card')).toHaveAttribute('draggable', 'true');
+
+  await page.getByRole('button', { name: 'List', exact: true }).click();
+  const row = page.locator('.home-table .home-file-name');
+  await row.dblclick();
+  await row.locator('input').fill('Car');
+  await row.locator('input').press('Escape');
+  await expect(row).toHaveText('Slime');
+  await expect(page.locator('.home')).toBeVisible();
+});
+
 test('switches and saves the language from the files screen', async ({ page, context }) => {
   await page.goto('/');
 

@@ -47,9 +47,10 @@ export function newIssueUrl(kind: 'bug' | 'idea'): string {
   return `${GITHUB_URL}/issues/new?${params}`;
 }
 
-/** A file's "…" menu, in the Files list and on the home screen cards. */
-export function fileMenu(editor: Editor, actions: Actions, file: FileInfo): MenuItem[] {
+/** A file's "…" menu, in the Files list and on the home screen cards (with `rename`, that types the name in place). */
+export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, rename?: () => void): MenuItem[] {
   return [
+    ...(rename ? [{ label: t('file.rename'), onSelect: rename }] : []),
     { label: t('file.duplicate'), onSelect: () => editor.duplicateFile(file.id) },
     {
       label: t('file.download'),

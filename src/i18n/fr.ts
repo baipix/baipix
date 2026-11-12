@@ -239,6 +239,7 @@ export const fr: Record<MessageKey, string> = {
   'file.actions': 'Actions du fichier',
   'file.duplicate': 'Dupliquer',
   'file.download': 'Télécharger en .baipix',
+  'file.rename': 'Renommer',
 
   'group.create': 'Grouper la sélection',
   'group.ungroup': 'Dégrouper',
