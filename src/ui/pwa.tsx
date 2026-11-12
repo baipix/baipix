@@ -1,19 +1,22 @@
 import { useEffect } from 'react';
+
 import { t } from '../i18n';
-import { toast } from './uiStore';
+import { toast, toastWhenIdle } from './uiStore';
 
 const OFFLINE_READY_KEY = 'baipix.offlineReady';
 const watchedRegistrations = new WeakSet<ServiceWorkerRegistration>();
 
 function showOfflineReady(): void {
-  try {
-    if (localStorage.getItem(OFFLINE_READY_KEY)) return;
-    localStorage.setItem(OFFLINE_READY_KEY, '1');
-  } catch {
-    return;
-  }
+  toastWhenIdle(t('toast.offlineReady'), () => {
+    try {
+      if (localStorage.getItem(OFFLINE_READY_KEY)) return false;
 
-  toast(t('toast.offlineReady'));
+      localStorage.setItem(OFFLINE_READY_KEY, '1');
+      return true;
+    } catch {
+      return false;
+    }
+  });
 }
 
 function reloadWithUpdate(registration: ServiceWorkerRegistration): void {

@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const harness = vi.hoisted(() => ({
   effect: undefined as (() => void) | undefined,
   toast: vi.fn(),
+  toastWhenIdle: vi.fn((message: string, beforeShow?: () => boolean) => {
+    if (!beforeShow || beforeShow()) harness.toast(message);
+  }),
 }));
 
 vi.mock('react', () => ({
@@ -11,7 +14,10 @@ vi.mock('react', () => ({
   },
 }));
 
-vi.mock('../src/ui/uiStore', () => ({ toast: harness.toast }));
+vi.mock('../src/ui/uiStore', () => ({
+  toast: harness.toast,
+  toastWhenIdle: harness.toastWhenIdle,
+}));
 
 const { PwaLifecycle } = await import('../src/ui/pwa');
 
@@ -61,6 +67,7 @@ function makeBrowser() {
 beforeEach(() => {
   harness.effect = undefined;
   harness.toast.mockReset();
+  harness.toastWhenIdle.mockClear();
   vi.unstubAllGlobals();
 });
 

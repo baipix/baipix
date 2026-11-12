@@ -89,8 +89,9 @@ function onionSkin(o: unknown): UiState['onion'] {
 }
 
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */
-function useRestore(editor: Editor, storage: StorageAdapter): boolean {
+function useRestore(editor: Editor, storage: StorageAdapter): { ready: boolean; pwaReady: boolean } {
   const [ready, setReady] = useState(false);
+  const [pwaReady, setPwaReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -221,18 +222,20 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           },
         });
       }
+
+      setPwaReady(true);
     })();
     return () => {
       cancelled = true;
     };
   }, [editor, storage]);
-  return ready;
+  return { ready, pwaReady };
 }
 
 export function App({ editor, storage }: { editor: Editor; storage: StorageAdapter }) {
   useT();
   const actions = useMemo(() => createActions(editor), [editor]);
-  const ready = useRestore(editor, storage);
+  const { ready, pwaReady } = useRestore(editor, storage);
   const { uiHidden, sheet, panelWidths, home, timeline } = uiStore.use((s) => s);
   // A file with no board: no size, coordinates or preview to show.
   const noBoard = useSyncExternalStore(editor.subscribe, () => !isBoard(editor.getState().doc));
@@ -288,7 +291,7 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             </main>
             <RightPanel />
           </div>
-          {__PWA_ENABLED__ && <PwaLifecycle />}
+          {__PWA_ENABLED__ && pwaReady && <PwaLifecycle />}
           {home && <HomeScreen />}
           <ColorPicker />
           <ColorAdjustPanel />

@@ -245,3 +245,25 @@ export function toast(message: string, action?: ToastAction, details?: ToastDeta
   const duration = hasExtraContent ? 6000 : 2800;
   scheduleToastDismiss(id, duration);
 }
+
+/** Shows a message after the currently visible toast has been dismissed. */
+export function toastWhenIdle(message: string, beforeShow?: () => boolean): void {
+  const show = () => {
+    if (beforeShow && !beforeShow()) return;
+    toast(message);
+  };
+
+  if (toastStore.get().toasts.length === 0) {
+    show();
+    return;
+  }
+
+  let unsubscribe = () => {};
+
+  unsubscribe = toastStore.subscribe(() => {
+    if (toastStore.get().toasts.length > 0) return;
+
+    unsubscribe();
+    show();
+  });
+}
