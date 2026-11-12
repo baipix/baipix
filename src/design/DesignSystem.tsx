@@ -748,6 +748,21 @@ function SurfacesBlock() {
           </div>
         </Specimen>
         <Specimen
+          label="Toast with details"
+          use="When there is more to say, like what an Aseprite file lost on the way: a Details line opens the list, and the toast stays while it's open."
+        >
+          <div className="toast is-visible ds-static">
+            Slime.aseprite opened with some import adjustments.
+            <details className="toast-details" open>
+              <summary>Details (2)</summary>
+              <ul className="toast-details-list">
+                <li>Animation tags were not preserved.</li>
+                <li>Aseprite slices were not preserved.</li>
+              </ul>
+            </details>
+          </div>
+        </Specimen>
+        <Specimen
           label="Floating window"
           use="A small tool window over the canvas (the preview): drag it by its title, fold or close it, resize it by its corner. Zoomed in on the canvas, a blue frame shows the part in view (a minimap)."
         >
