@@ -95,6 +95,21 @@ test('switches the interface language', async ({ page }) => {
   await expect(frenchMenubar.getByRole('menuitem', { name: 'Fichier', exact: true })).toBeVisible();
 });
 
+test('hides the drop label when a drag leaves the files screen over a button', async ({ page }) => {
+  await page.goto('/');
+  const home = page.locator('.home');
+  const button = page.locator('.home-nav-bottom').getByRole('button', { name: 'Language' });
+  const drag = async (type: string) => {
+    const data = await page.evaluateHandle(() => new DataTransfer());
+    await button.dispatchEvent(type, { dataTransfer: data, relatedTarget: null });
+  };
+
+  await drag('dragover');
+  await expect(home).toHaveClass(/is-dropping/);
+  await drag('dragleave');
+  await expect(home).not.toHaveClass(/is-dropping/);
+});
+
 test('switches and saves the language from the files screen', async ({ page, context }) => {
   await page.goto('/');
 
