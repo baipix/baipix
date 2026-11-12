@@ -16,7 +16,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The editor in Brazilian Portuguese (View › Language › Português (Brasil)). ([#789](https://github.com/baipix/baipix/pull/789))
 - The palette's … menu exports the palette as a picture: a PNG with one 32 × 32 square per color, 8 a row, in the palette's order. ([#795](https://github.com/baipix/baipix/pull/795))
 - Six more palettes from Lospec: Endesga 64, Apollo, Lospec500, Vinik24, Bubblegum 16 and Steam Lords. ([#805](https://github.com/baipix/baipix/pull/805))
-- A language menu at the bottom of the files screen's sidebar, to switch languages before opening a drawing. ([#804](https://github.com/baipix/baipix/pull/804))
+- A language menu at the bottom of the files screen's sidebar, to switch languages before opening a drawing. ([#804](https://github.com/baipix/baipix/pull/804), [#819](https://github.com/baipix/baipix/pull/819))
 
 ### Changed
 
@@ -60,7 +60,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
 - [@OSilvaDevTI](https://github.com/OSilvaDevTI) for the Brazilian Portuguese translation, the eighth language. ([#789](https://github.com/baipix/baipix/pull/789))
 - [@exi66](https://github.com/exi66) for Remap offering the palettes you set up, a first contribution. ([#815](https://github.com/baipix/baipix/pull/815))
-- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, and the language menu on the files screen. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805))
+- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, the language menu on the files screen, and a lint that fails on warnings. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805), [#818](https://github.com/baipix/baipix/pull/818))
 
 ## [0.8.0] - 2026-11-06
 
