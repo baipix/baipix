@@ -18,6 +18,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Six more palettes from Lospec: Endesga 64, Apollo, Lospec500, Vinik24, Bubblegum 16 and Steam Lords. ([#805](https://github.com/baipix/baipix/pull/805))
 - A language menu at the bottom of the files screen's sidebar, to switch languages before opening a drawing. ([#804](https://github.com/baipix/baipix/pull/804), [#819](https://github.com/baipix/baipix/pull/819))
 - On the files screen, a drawing's card dragged onto Trash in the sidebar goes to the Trash, with Undo. ([#824](https://github.com/baipix/baipix/pull/824))
+- On the files screen, a double click on a drawing's name, or Rename in its … menu, renames it in place. ([#826](https://github.com/baipix/baipix/pull/826))
 
 ### Changed
 
