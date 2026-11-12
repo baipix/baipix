@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { dismissToast, setToastDetailsOpen, toast, toastStore } from '../src/ui/uiStore';
+import { dismissToast, setToastDetailsOpen, toast, toastStore, toastWhenIdle } from '../src/ui/uiStore';
 
 describe('toast details', () => {
   afterEach(() => {
@@ -34,5 +34,20 @@ describe('toast details', () => {
 
     vi.advanceTimersByTime(1);
     expect(toastStore.get().toasts).toHaveLength(0);
+  });
+
+  it('waits for the language toast before showing the offline-ready toast', () => {
+    // Show the language notification that can already occupy the single toast slot.
+    toast('Language changed to Portuguese.');
+    const languageToast = toastStore.get().toasts[0];
+
+    // Queue the offline notification while the language notification is still visible.
+    toastWhenIdle('Baipix is ready to work offline.');
+    expect(toastStore.get().toasts).toEqual([languageToast]);
+
+    // Dismissing the first notification releases the slot for the queued notification.
+    dismissToast(languageToast.id);
+    expect(toastStore.get().toasts).toHaveLength(1);
+    expect(toastStore.get().toasts[0].message).toBe('Baipix is ready to work offline.');
   });
 });
