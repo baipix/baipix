@@ -100,7 +100,11 @@ test('hides the drop label when a drag leaves the files screen over a button', a
   const home = page.locator('.home');
   const button = page.locator('.home-nav-bottom').getByRole('button', { name: 'Language' });
   const drag = async (type: string) => {
-    const data = await page.evaluateHandle(() => new DataTransfer());
+    const data = await page.evaluateHandle(() => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([''], 'drawing.png', { type: 'image/png' }));
+      return dt;
+    });
     await button.dispatchEvent(type, { dataTransfer: data, relatedTarget: null });
   };
 
@@ -108,6 +112,21 @@ test('hides the drop label when a drag leaves the files screen over a button', a
   await expect(home).toHaveClass(/is-dropping/);
   await drag('dragleave');
   await expect(home).not.toHaveClass(/is-dropping/);
+});
+
+test('drags a drawing to the Trash on the files screen', async ({ page }) => {
+  await createNewFile(page);
+  await drawAtCanvasCenter(page);
+  await page.getByRole('button', { name: 'All files' }).click();
+
+  const card = page.locator('.home-grid .home-card');
+  await expect(card).toHaveCount(1);
+  await card.dragTo(page.locator('.home-nav').getByRole('button', { name: 'Trash' }));
+
+  await expect(card).toHaveCount(0);
+  await expect(page.locator('.toast')).toContainText('deleted');
+  await page.locator('.toast').getByRole('button', { name: 'Undo' }).click();
+  await expect(page.locator('canvas.canvas')).toBeVisible();
 });
 
 test('switches and saves the language from the files screen', async ({ page, context }) => {

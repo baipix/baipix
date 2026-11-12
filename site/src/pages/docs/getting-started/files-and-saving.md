@@ -16,7 +16,7 @@ Each board keeps its last 50 steps of undo and redo along with the drawing. Relo
 
 ## Keep a copy
 
-Deleted a file by mistake? It waits in the **Trash**, in the files screen's sidebar, for as long as you like: **Restore** brings it back as it was, and its … menu deletes it for good.
+On the files screen, a drawing goes to the Trash from its … menu, or by dragging its card onto **Trash** in the sidebar. Deleted one by mistake? It waits there for as long as you like: **Restore** brings it back as it was, and its … menu deletes it for good.
 
 <figure class="shot">
   <img class="for-light" src="../../shots/trash-light.webp" width="1440" height="316" alt="The Trash in the files screen’s sidebar, with a drawing deleted three days ago." loading="lazy" />
