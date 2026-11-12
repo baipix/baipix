@@ -113,7 +113,9 @@ A **sprite sheet** puts every frame on one picture, with a JSON next to it that 
 
 ## To keep going in Aseprite
 
-If you also use Aseprite, you can start an animation in Baipix and finish it there. The **Aseprite** export now writes every frame, with its duration.
+If you also use Aseprite, you can start an animation in Baipix and finish it there, without losing anything on the way. The **Aseprite** export now writes every frame, with its duration.
+
+When a layer doesn't change from one frame to the next, like the sky behind the slime, it becomes a linked cel there, which keeps the file small.
 
 The [animation docs](/docs/animation/animation/) go through all of this in more detail.
 
