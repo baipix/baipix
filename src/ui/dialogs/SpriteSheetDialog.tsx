@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MAX_SIZE } from '../../engine/document';
 import type { PixelBlock } from '../../engine/region';
 import { clampDuration, DEFAULT_DURATION, DURATION, MAX_FRAMES } from '../../engine/frames';
 import { useT } from '../../i18n';
+import { checkerPattern, readTheme } from '../render/theme';
 import { closeDialog } from '../uiStore';
 import { Dialog } from './Dialog';
 
-const PREVIEW_W = 360;
-const PREVIEW_H = 180;
+const PREVIEW = { w: 352, h: 220 };
 
 function positiveInt(value: string): number | null {
   const n = Math.floor(Number(value));
@@ -16,18 +16,16 @@ function positiveInt(value: string): number | null {
 
 /**
  * Splits an imported image into animation frames by cell size or column/row count,
- * or keeps it as a single frame.
+ * or imports it as a single image.
  */
 export function SpriteSheetDialog({
   image,
   onSlice,
   onSingleImage,
-  onCancel,
 }: {
   image: PixelBlock;
   onSlice: (cellWidth: number, cellHeight: number, cols: number, rows: number, duration: number) => void;
   onSingleImage: () => void;
-  onCancel: () => void;
 }) {
   const t = useT();
   const [cellWText, setCellWText] = useState(String(Math.min(image.width, MAX_SIZE)));
@@ -92,69 +90,65 @@ export function SpriteSheetDialog({
     }
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const scale = Math.min(PREVIEW_W / image.width, PREVIEW_H / image.height);
-    const cw = Math.max(1, Math.round(image.width * scale));
-    const ch = Math.max(1, Math.round(image.height * scale));
-    canvas.width = cw;
-    canvas.height = ch;
+  const source = useMemo(() => {
+    const c = document.createElement('canvas');
+    c.width = image.width;
+    c.height = image.height;
+    const ctx = c.getContext('2d')!;
+    const data = ctx.createImageData(image.width, image.height);
+    new Uint32Array(data.data.buffer).set(image.pixels);
+    ctx.putImageData(data, 0, 0);
+    return c;
+  }, [image]);
 
-    const ctx = canvas.getContext('2d');
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const dpr = window.devicePixelRatio || 1;
+    el.width = PREVIEW.w * dpr;
+    el.height = PREVIEW.h * dpr;
+    const ctx = el.getContext('2d');
     if (!ctx) return;
 
-    const offscreen = document.createElement('canvas');
-    offscreen.width = image.width;
-    offscreen.height = image.height;
-    const offCtx = offscreen.getContext('2d');
-    if (!offCtx) return;
+    const theme = readTheme();
+    const k = Math.min(el.width / image.width, el.height / image.height);
+    const w = image.width * k;
+    const h = image.height * k;
+    const x = Math.round((el.width - w) / 2);
+    const y = Math.round((el.height - h) / 2);
 
-    const imgData = offCtx.createImageData(image.width, image.height);
-    imgData.data.set(
-      new Uint8ClampedArray(image.pixels.buffer, image.pixels.byteOffset, image.pixels.byteLength),
-    );
-    offCtx.putImageData(imgData, 0, 0);
-
-    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = theme.canvas;
+    ctx.fillRect(0, 0, el.width, el.height);
+    ctx.fillStyle = checkerPattern(ctx, Math.round(5 * dpr), theme.checkA, theme.checkB);
+    ctx.fillRect(x, y, w, h);
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(offscreen, 0, 0, cw, ch);
+    ctx.drawImage(source, x, y, w, h);
 
     if (!valid) return;
 
-    const sx = cw / image.width;
-    const sy = ch / image.height;
-    const usedW = cols * cellWidth * sx;
-    const usedH = rows * cellHeight * sy;
+    const usedW = cols * cellWidth * k;
+    const usedH = rows * cellHeight * k;
 
-    if (usedW < cw) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-      ctx.fillRect(usedW, 0, cw - usedW, ch);
+    // Dim the unused image area outside the active sprite sheet cells.
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    if (usedW < w) {
+      ctx.fillRect(Math.round(x + usedW), y, Math.round(w - usedW), Math.round(h));
     }
-    if (usedH < ch) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-      ctx.fillRect(0, usedH, usedW, ch - usedH);
+    if (usedH < h) {
+      ctx.fillRect(x, Math.round(y + usedH), Math.round(usedW), Math.round(h - usedH));
     }
 
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255, 90, 50, 0.9)';
-    ctx.lineWidth = 1;
+    // Grid lines matching theme highlight color.
+    ctx.fillStyle = theme.highlight;
+    ctx.globalAlpha = 0.8;
     for (let c = 0; c <= cols; c++) {
-      const x = Math.min(cw - 0.5, Math.round(c * cellWidth * sx) + 0.5);
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, usedH);
-      ctx.stroke();
+      ctx.fillRect(Math.round(x + c * cellWidth * k), y, 1, Math.round(usedH));
     }
     for (let r = 0; r <= rows; r++) {
-      const y = Math.min(ch - 0.5, Math.round(r * cellHeight * sy) + 0.5);
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(usedW, y);
-      ctx.stroke();
+      ctx.fillRect(x, Math.round(y + r * cellHeight * k), Math.round(usedW), 1);
     }
-    ctx.restore();
-  }, [image, cols, rows, cellWidth, cellHeight, valid]);
+    ctx.globalAlpha = 1;
+  }, [image, source, cols, rows, cellWidth, cellHeight, valid]);
 
   let summary: string;
   if (!withinMaxSize) {
@@ -178,6 +172,7 @@ export function SpriteSheetDialog({
           ? t('spriteSheet.importFrames', { count: frameCount })
           : t('spriteSheet.import')
       }
+      cancelLabel={t('spriteSheet.singleImage')}
       submitDisabled={!valid}
       onSubmit={() => {
         if (!valid) return;
@@ -185,25 +180,14 @@ export function SpriteSheetDialog({
         onSlice(cellWidth, cellHeight, cols, rows, duration);
       }}
       onClose={() => {
+        // Closing without slicing imports the image as it is: it was still wanted.
+        if (!decided.current) onSingleImage();
+        decided.current = true;
         closeDialog();
-        if (!decided.current) onCancel();
       }}
-      footer={
-        <button
-          type="button"
-          className="link-btn"
-          onClick={() => {
-            decided.current = true;
-            onSingleImage();
-            closeDialog();
-          }}
-        >
-          {t('spriteSheet.singleImage')}
-        </button>
-      }
     >
       <p className="muted">{t('spriteSheet.hint')}</p>
-      <canvas ref={canvasRef} className="upscaled-preview" />
+      <canvas ref={canvasRef} className="upscaled-preview" style={{ width: PREVIEW.w, height: PREVIEW.h }} />
       <div className="sprite-sheet-fields">
         <label className="field">
           <span className="field-label">{t('spriteSheet.cellWidth')}</span>

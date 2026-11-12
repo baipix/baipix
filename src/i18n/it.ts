@@ -135,6 +135,7 @@ export const it: Record<MessageKey, string> = {
   'menu.newFile': 'Nuovo file…',
   'menu.open': 'Apri un file .baipix…',
   'menu.importImage': 'Importa un’immagine…',
+  'menu.importSpriteSheet': 'Importa uno sprite sheet…',
   'menu.export': 'Esporta',
   'menu.copySvg': 'Copia come SVG',
   'menu.copyPng': 'Copia come PNG',

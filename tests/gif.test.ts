@@ -371,4 +371,37 @@ describe('decodeGif', () => {
   it('returns null for non-GIF input', () => {
     expect(decodeGif(new Uint8Array([1, 2, 3, 4]))).toBeNull();
   });
+
+  it('truncates frames when the pixel budget is exceeded', async () => {
+    const f1 = new Uint8ClampedArray([255, 0, 0, 255, 0, 0, 0, 0]);
+    const f2 = new Uint8ClampedArray([0, 255, 0, 255, 0, 0, 0, 0]);
+    const f3 = new Uint8ClampedArray([0, 0, 255, 255, 0, 0, 0, 0]);
+    const bytes = await encodeGif(
+      [
+        { rgba: f1, duration: 100 },
+        { rgba: f2, duration: 100 },
+        { rgba: f3, duration: 100 },
+      ],
+      2,
+      1,
+    );
+
+    const decoded = decodeGif(bytes, { maxTotalPixels: 4 })!;
+    expect(decoded.frames).toHaveLength(2);
+    expect(decoded.truncated).toBe(true);
+  });
+
+  it('shrinks frames as decoded when dimensions exceed maxSide', async () => {
+    const rgba = new Uint8ClampedArray(4 * 4 * 4);
+    rgba.fill(255);
+    const bytes = await encodeGif([{ rgba, duration: 100 }], 4, 4);
+
+    const decoded = decodeGif(bytes, { maxSide: 2 })!;
+    expect(decoded.shrunk).toBe(true);
+    expect(decoded.width).toBe(2);
+    expect(decoded.height).toBe(2);
+    expect(decoded.originalWidth).toBe(4);
+    expect(decoded.originalHeight).toBe(4);
+    expect(decoded.frames[0].pixels.length).toBe(4);
+  });
 });

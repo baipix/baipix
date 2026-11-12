@@ -148,6 +148,7 @@ export const ko: Record<MessageKey, string> = {
   'menu.newFile': '새 파일…',
   'menu.open': '.baipix 파일 열기…',
   'menu.importImage': '이미지 가져오기…',
+  'menu.importSpriteSheet': '스프라이트 시트 가져오기…',
   'menu.export': '내보내기…',
   'menu.copySvg': 'SVG로 복사',
   'menu.copyPng': 'PNG로 복사',

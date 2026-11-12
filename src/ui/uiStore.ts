@@ -30,7 +30,6 @@ export type DialogState =
       image: PixelBlock;
       onSlice: (cellWidth: number, cellHeight: number, cols: number, rows: number, duration: number) => void;
       onSingleImage: () => void;
-      onCancel: () => void;
     };
 
 export interface PreviewWindow {

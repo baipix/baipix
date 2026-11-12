@@ -1,5 +1,8 @@
 import { pack } from '../engine/color';
+import { MAX_SIZE } from '../engine/document';
 import { clampDuration, DEFAULT_DURATION, MAX_FRAMES } from '../engine/frames';
+import { fitMaxSide, resizeBlockNearest } from '../engine/import/frames';
+import { detectPixelGrid, downscaleToGrid, gridSize } from '../engine/upscale';
 
 export interface DecodedGifFrame {
   pixels: Uint32Array;
@@ -9,8 +12,19 @@ export interface DecodedGifFrame {
 export interface DecodedGif {
   width: number;
   height: number;
+  originalWidth: number;
+  originalHeight: number;
   frames: DecodedGifFrame[];
   truncated: boolean;
+  shrunk: boolean;
+}
+
+export const DEFAULT_MAX_GIF_SIDE = MAX_SIZE;
+export const MAX_GIF_TOTAL_PIXELS = 16_777_216; // 16 Mpx (64 MB of packed 32-bit pixel data)
+
+export interface DecodeGifOptions {
+  maxSide?: number;
+  maxTotalPixels?: number;
 }
 
 const MAX_GIF_SIDE = 4096;
@@ -155,7 +169,7 @@ function decodeLzw(data: Uint8Array, minCodeSize: number, pixelCount: number): U
 }
 
 /** Decodes GIF87a/GIF89a bytes into composited RGBA frames and clamped millisecond durations. */
-export function decodeGif(bytes: Uint8Array): DecodedGif | null {
+export function decodeGif(bytes: Uint8Array, options?: DecodeGifOptions): DecodedGif | null {
   if (bytes.length < 13) return null;
   const sig = String.fromCharCode(...bytes.subarray(0, 6));
   if (sig !== 'GIF87a' && sig !== 'GIF89a') return null;
@@ -163,6 +177,9 @@ export function decodeGif(bytes: Uint8Array): DecodedGif | null {
   const width = readU16(bytes, 6);
   const height = readU16(bytes, 8);
   if (width < 1 || height < 1 || width > MAX_GIF_SIDE || height > MAX_GIF_SIDE) return null;
+
+  const maxSide = options?.maxSide ?? DEFAULT_MAX_GIF_SIDE;
+  const maxTotalPixels = options?.maxTotalPixels ?? MAX_GIF_TOTAL_PIXELS;
 
   const packed = bytes[10];
   let pos = 13;
@@ -177,6 +194,11 @@ export function decodeGif(bytes: Uint8Array): DecodedGif | null {
   const canvas = new Uint32Array(width * height);
   const frames: DecodedGifFrame[] = [];
   let truncated = false;
+  let shrunk = false;
+  let outWidth = width;
+  let outHeight = height;
+  let downscale: ((src: Uint32Array) => Uint32Array) | null = null;
+  let totalPixels = 0;
 
   let disposal = 0;
   let hasTransparent = false;
@@ -273,8 +295,39 @@ export function decodeGif(bytes: Uint8Array): DecodedGif | null {
       }
     }
 
+    if (!downscale) {
+      if (width > maxSide || height > maxSide) {
+        const grid = detectPixelGrid(canvas, width, height);
+        const detectedSize = grid && gridSize(width, height, grid);
+        if (grid && detectedSize && detectedSize.width <= maxSide && detectedSize.height <= maxSide) {
+          outWidth = detectedSize.width;
+          outHeight = detectedSize.height;
+          downscale = (src: Uint32Array) => downscaleToGrid(src, width, height, grid).pixels;
+          shrunk = true;
+        } else {
+          const fitted = fitMaxSide(width, height, maxSide);
+          outWidth = fitted.width;
+          outHeight = fitted.height;
+          downscale = (src: Uint32Array) =>
+            resizeBlockNearest(src, width, height, fitted.width, fitted.height);
+          shrunk = true;
+        }
+      } else {
+        outWidth = width;
+        outHeight = height;
+        downscale = (src: Uint32Array) => src.slice();
+      }
+    }
+
+    const storedPixels = downscale(canvas);
+    if (frames.length >= MAX_FRAMES || totalPixels + storedPixels.length > maxTotalPixels) {
+      truncated = true;
+      break;
+    }
+    totalPixels += storedPixels.length;
+
     frames.push({
-      pixels: canvas.slice(),
+      pixels: storedPixels,
       duration: delayCs === 0 ? DEFAULT_DURATION : clampDuration(delayCs * 10),
     });
 
@@ -294,5 +347,15 @@ export function decodeGif(bytes: Uint8Array): DecodedGif | null {
     delayCs = 0;
   }
 
-  return frames.length ? { width, height, frames, truncated } : null;
+  return frames.length
+    ? {
+        width: outWidth,
+        height: outHeight,
+        originalWidth: width,
+        originalHeight: height,
+        frames,
+        truncated,
+        shrunk,
+      }
+    : null;
 }

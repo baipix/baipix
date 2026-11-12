@@ -3092,7 +3092,7 @@ body.is-dragging-swatch * {
   grid-column: 1 / -1;
 }
 .sprite-sheet-error {
-  color: var(--danger, #e05252);
+  color: var(--danger);
   font-size: 12px;
 }
 

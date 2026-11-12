@@ -13,6 +13,7 @@ import type { Editor } from '../engine/editor';
 import { uniqueColors, type PixelBlock } from '../engine/region';
 import { detectPixelGrid, downscaleToGrid, gridSize } from '../engine/upscale';
 import {
+  MIN_SPRITE_SHEET_SIDE,
   createAnimatedDocument,
   fitMaxSide,
   resizeBlockNearest,
@@ -848,7 +849,7 @@ export function createActions(editor: Editor) {
           let targetHeight = decoded.height;
           let importedFrames: ImportedFrame[] = decoded.frames;
           let recoveredScale: number | null = null;
-          let shrunk = false;
+          let shrunk = decoded.shrunk;
 
           if (canRecover && grid) {
             const usedGrid = await new Promise<typeof grid | null>((resolve) =>
@@ -872,7 +873,7 @@ export function createActions(editor: Editor) {
             }
           }
 
-          if (recoveredScale === null) {
+          if (recoveredScale === null && !shrunk) {
             const fitted = fitMaxSide(targetWidth, targetHeight, MAX_SIZE);
             if (fitted.scaled) {
               shrunk = true;
@@ -967,6 +968,62 @@ export function createActions(editor: Editor) {
       };
       // Pixel art scaled up (a screenshot, an export at 800%): offer to bring it back to its pixels.
       const full = readPixels(img);
+      const grid = full && detectPixelGrid(full.pixels, full.width, full.height);
+      const size = full && grid && gridSize(full.width, full.height, grid);
+      if (!full || !grid || !size || size.width > MAX_SIZE || size.height > MAX_SIZE) return asItIs();
+      // Settles once a choice is made, so callers know whether a file was added.
+      await new Promise<void>((resolve) =>
+        openDialog({
+          type: 'upscaled',
+          image: full,
+          grid,
+          onRecover: (block) => {
+            addFile(
+              block,
+              t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: grid.scale }),
+            );
+            resolve();
+          },
+          onKeep: () => {
+            asItIs();
+            resolve();
+          },
+        }),
+      );
+    },
+
+    /** Slices a sprite sheet into frames by cell dimensions or columns/rows. */
+    async importSpriteSheet(file?: File | null) {
+      const f = file ?? (await pickFile('image/*'));
+      if (!f) return;
+      if (!isImageFile(f)) {
+        toast(t('toast.notImage'));
+        return;
+      }
+      let img: HTMLImageElement;
+      try {
+        img = await loadImage(f);
+      } catch {
+        toast(t('toast.unreadableImage'));
+        return;
+      }
+      const name = f.name.replace(/\.[^.]+$/, '') || t('default.image');
+      const addFile = (block: PixelBlock & { scaled?: boolean }, message: string) => {
+        const next = createDocument(name, block.width, block.height, t('default.image'));
+        next.layers[0].pixels.set(block.pixels);
+        editor.addDocument(next);
+        toast(message);
+      };
+      const asItIs = () => {
+        const block = imageToBlock(img, MAX_SIZE, MAX_SIZE);
+        addFile(
+          block,
+          block.scaled
+            ? t('toast.imageShrunk', { w: block.width, h: block.height, max: MAX_SIZE })
+            : t('toast.imageAsFile', { w: block.width, h: block.height }),
+        );
+      };
+      const full = readPixels(img);
       if (!full) return asItIs();
 
       let working: PixelBlock = full;
@@ -989,7 +1046,7 @@ export function createActions(editor: Editor) {
         }
       }
 
-      if (working.width < 8 && working.height < 8) {
+      if (working.width < MIN_SPRITE_SHEET_SIDE && working.height < MIN_SPRITE_SHEET_SIDE) {
         addFile(
           working,
           recoveredScale !== null
@@ -999,7 +1056,32 @@ export function createActions(editor: Editor) {
         return;
       }
 
-      // Settles once a choice is made, so callers know whether a file was added.
+      const singleImageAction = () => {
+        if (recoveredScale !== null) {
+          const fitted = fitMaxSide(working.width, working.height, MAX_SIZE);
+          const block: PixelBlock & { scaled?: boolean } = fitted.scaled
+            ? {
+                width: fitted.width,
+                height: fitted.height,
+                pixels: resizeBlockNearest(
+                  working.pixels,
+                  working.width,
+                  working.height,
+                  fitted.width,
+                  fitted.height,
+                ),
+                scaled: true,
+              }
+            : working;
+          addFile(
+            block,
+            t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: recoveredScale }),
+          );
+        } else {
+          asItIs();
+        }
+      };
+
       await new Promise<void>((resolve) =>
         openDialog({
           type: 'spriteSheet',
@@ -1035,32 +1117,9 @@ export function createActions(editor: Editor) {
             resolve();
           },
           onSingleImage: () => {
-            if (recoveredScale !== null) {
-              const fitted = fitMaxSide(working.width, working.height, MAX_SIZE);
-              const block: PixelBlock & { scaled?: boolean } = fitted.scaled
-                ? {
-                    width: fitted.width,
-                    height: fitted.height,
-                    pixels: resizeBlockNearest(
-                      working.pixels,
-                      working.width,
-                      working.height,
-                      fitted.width,
-                      fitted.height,
-                    ),
-                    scaled: true,
-                  }
-                : working;
-              addFile(
-                block,
-                t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: recoveredScale }),
-              );
-            } else {
-              asItIs();
-            }
+            singleImageAction();
             resolve();
           },
-          onCancel: () => resolve(),
         }),
       );
     },
