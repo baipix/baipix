@@ -855,4 +855,8 @@ export const ja: Record<MessageKey, string> = {
   'file.restore': '復元',
   'toast.fileRestored': '「{name}」を元に戻しました。',
   'toast.saveFailed': 'このブラウザには保存できません。忘れずにファイルをダウンロードしてください。',
+  'toast.offlineReady': 'Baipix はオフラインで使えるようになりました。',
+  'toast.updateReady': 'Baipix の新しいバージョンがあります。',
+  'toast.reload': '再読み込み',
+  'toast.offlineOpenFailed': 'このサンプルは接続なしでは開けません。',
 };

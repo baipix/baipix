@@ -858,4 +858,8 @@ export const uk: Record<MessageKey, string> = {
   'file.restore': 'Відновити',
   'toast.fileRestored': '«{name}» відновлено.',
   'toast.saveFailed': 'Не вдалося зберегти файл у цьому браузері. Не забудьте завантажити свої файли.',
+  'toast.offlineReady': 'Baipix готовий до роботи без підключення.',
+  'toast.updateReady': 'Доступна нова версія Baipix.',
+  'toast.reload': 'Перезавантажити',
+  'toast.offlineOpenFailed': 'Цей приклад неможливо відкрити без підключення.',
 };

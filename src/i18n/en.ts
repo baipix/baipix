@@ -848,6 +848,10 @@ export const en = {
   'file.restore': 'Restore',
   'toast.fileRestored': '“{name}” is back.',
   'toast.saveFailed': 'Unable to save in this browser: remember to download your files.',
+  'toast.offlineReady': 'Baipix is ready to work offline.',
+  'toast.updateReady': 'A new version of Baipix is ready.',
+  'toast.reload': 'Reload',
+  'toast.offlineOpenFailed': 'This example cannot be opened without a connection.',
 } as const;
 
 export type MessageKey = keyof typeof en;

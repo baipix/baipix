@@ -23,6 +23,7 @@
     "screenshots:docs": "node scripts/docs-screenshots.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
     "gifenc": "^1.0.3",
     "lucide-react": "1.49.0",
     "react": "^18.3.1",
@@ -44,6 +45,7 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^6.4.4",
+    "vite-plugin-pwa": "2.0.0",
     "vite-plugin-singlefile": "^2.3.4",
     "vitest": "^4.1.12"
   },
@@ -51,6 +53,9 @@
     "source-map-js": "^1.2.2",
     "@typescript-eslint/typescript-estree": {
       "minimatch": "^11.0.1"
+    },
+    "workbox-build": {
+      "glob": "^14.0.5"
     }
   },
   "repository": {

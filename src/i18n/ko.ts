@@ -941,4 +941,8 @@ export const ko: Record<MessageKey, string> = {
 
   'toast.fileRestored': '“{name}” 복원됨.',
   'toast.saveFailed': '이 브라우저에 저장할 수 없습니다: 파일을 반드시 다운로드해 두세요.',
+  'toast.offlineReady': 'Baipix를 오프라인에서 사용할 수 있습니다.',
+  'toast.updateReady': 'Baipix의 새 버전을 사용할 수 있습니다.',
+  'toast.reload': '새로 고침',
+  'toast.offlineOpenFailed': '연결 없이는 이 예제를 열 수 없습니다.',
 };
