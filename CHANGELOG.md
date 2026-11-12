@@ -28,6 +28,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - A shorter welcome line, bigger Create and Import buttons, and WebP in the list of files Baipix opens. ([#783](https://github.com/baipix/baipix/pull/783))
 - The links at the bottom of the files screen's sidebar show an arrow: they open in a new tab. ([#784](https://github.com/baipix/baipix/pull/784))
 - The opacity and size fields are sliders: they fill up to their value, a drag anywhere on them changes it, and a click lets you type a number. ([#790](https://github.com/baipix/baipix/pull/790))
+- Remap offers the same palettes as the Colors section: the file's own, your palettes, and the presets you keep shown in Manage palettes. ([#815](https://github.com/baipix/baipix/pull/815))
 
 ### Fixed
 
@@ -58,6 +59,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, and for finding and fixing the linked cels exported at the wrong position. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778))
 - [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
 - [@OSilvaDevTI](https://github.com/OSilvaDevTI) for the Brazilian Portuguese translation, the eighth language. ([#789](https://github.com/baipix/baipix/pull/789))
+- [@exi66](https://github.com/exi66) for Remap offering the palettes you set up, a first contribution. ([#815](https://github.com/baipix/baipix/pull/815))
 - [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, and the language menu on the files screen. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805))
 
 ## [0.8.0] - 2026-11-06
