@@ -33,6 +33,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - The links at the bottom of the files screen's sidebar show an arrow: they open in a new tab. ([#784](https://github.com/baipix/baipix/pull/784))
 - The opacity and size fields are sliders: they fill up to their value, a drag anywhere on them changes it, and a click lets you type a number. ([#790](https://github.com/baipix/baipix/pull/790))
 - Remap offers the same palettes as the Colors section: the file's own, your palettes, and the presets you keep shown in Manage palettes. ([#815](https://github.com/baipix/baipix/pull/815))
+- On the files screen, a dragged drawing follows the pointer as a small thumbnail instead of its whole card, so the Trash stays in view. ([#843](https://github.com/baipix/baipix/pull/843))
 
 ### Fixed
 
