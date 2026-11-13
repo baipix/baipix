@@ -21,6 +21,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - On the files screen, a double click on a drawing's name, or Rename in its … menu, renames it in place. ([#826](https://github.com/baipix/baipix/pull/826))
 - The editor works offline: once it has opened, baipix.app/app loads without a connection, and it can be installed as an app from the browser. A toast says when an update is ready; it never reloads on its own. ([#806](https://github.com/baipix/baipix/pull/806))
 - On a phone or tablet: a long press on the canvas picks the color under the finger, a two-finger tap undoes and a three-finger tap redoes. ([#807](https://github.com/baipix/baipix/pull/807))
+- An animated GIF imports as an animation: each of its frames becomes a frame, with its duration. File › Import a sprite sheet… cuts a picture into frames, by cell size or by columns and rows. ([#817](https://github.com/baipix/baipix/pull/817))
 
 ### Changed
 
@@ -68,7 +69,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
 - [@OSilvaDevTI](https://github.com/OSilvaDevTI) for the Brazilian Portuguese translation, the eighth language. ([#789](https://github.com/baipix/baipix/pull/789))
 - [@exi66](https://github.com/exi66) for Remap offering the palettes you set up, a first contribution. ([#815](https://github.com/baipix/baipix/pull/815))
-- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, the language menu on the files screen, and a lint that fails on warnings. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805), [#818](https://github.com/baipix/baipix/pull/818))
+- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, the language menu on the files screen, a lint that fails on warnings, and the import of animated GIFs and sprite sheets as frames. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805), [#817](https://github.com/baipix/baipix/pull/817), [#818](https://github.com/baipix/baipix/pull/818))
 
 ## [0.8.0] - 2026-11-06
 
