@@ -1,28 +1,11 @@
 import { createDocument, MAX_SIZE, type PixelDoc } from '../document';
-import {
-  clampDuration,
-  createFrame,
-  DEFAULT_DURATION,
-  MAX_FRAMES,
-  normalizeFrames,
-  type Cel,
-} from '../frames';
+import { clampDuration, createFrame, DEFAULT_DURATION, MAX_FRAMES, normalizeFrames } from '../frames';
 
 export const MIN_SPRITE_SHEET_SIDE = 8;
 
 export interface ImportedFrame {
   pixels: Uint32Array;
   duration: number;
-}
-
-/** Checks whether two pixel buffers contain identical packed colors. */
-export function samePixels(a: Uint32Array, b: Uint32Array): boolean {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
 }
 
 /** Slices a raster sprite sheet row-major into `cols * rows` cells of `cellWidth × cellHeight`. */
@@ -115,17 +98,7 @@ export function createAnimatedDocument(
   if (usable.length > 1) {
     doc.frames = usable.map((f) => createFrame(clampDuration(f.duration || DEFAULT_DURATION)));
     doc.activeFrame = 0;
-    const cels: (Cel | null)[] = [null];
-    for (let i = 1; i < usable.length; i++) {
-      const prevPixels = i === 1 ? doc.layers[0].pixels : cels[i - 1]!.pixels;
-      if (samePixels(usable[i].pixels, prevPixels)) {
-        // Linked cel: shares the pixel buffer with the earlier identical frame.
-        cels.push({ pixels: prevPixels });
-      } else {
-        cels.push({ pixels: usable[i].pixels.slice() });
-      }
-    }
-    doc.layers[0].cels = cels;
+    doc.layers[0].cels = usable.map((f, i) => (i === 0 ? null : { pixels: f.pixels.slice() }));
     normalizeFrames(doc);
   }
   return doc;

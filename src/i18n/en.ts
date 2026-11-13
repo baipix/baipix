@@ -808,6 +808,7 @@ export const en = {
   'spriteSheet.importFrames': 'Import {count} frames',
   'spriteSheet.tooLarge': 'Each frame must be at most {max} × {max} px.',
   'spriteSheet.tooManyFrames': 'Too many frames (maximum {max}).',
+  'spriteSheet.exceedsBounds': 'The cells go past the picture’s edge ({w} × {h} px).',
   'toast.gifImported': 'GIF imported: {count} frames ({w} × {h}).',
   'toast.gifPixelsRecovered': 'GIF imported: {count} frames at {w} × {h}, recovered from ×{scale}.',
   'toast.gifShrunk': 'GIF imported: {count} frames reduced to {w} × {h} (max {max} px).',

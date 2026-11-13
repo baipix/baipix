@@ -823,6 +823,7 @@ export const fr: Record<MessageKey, string> = {
   'spriteSheet.importFrames': 'Importer {count} frames',
   'spriteSheet.tooLarge': 'Chaque frame doit faire au maximum {max} × {max} px.',
   'spriteSheet.tooManyFrames': 'Trop de frames (maximum {max}).',
+  'spriteSheet.exceedsBounds': 'Les cellules dépassent du bord de l’image ({w} × {h} px).',
   'toast.gifImported': 'GIF importé : {count} frames ({w} × {h}).',
   'toast.gifPixelsRecovered': 'GIF importé : {count} frames en {w} × {h}, retrouvées depuis ×{scale}.',
   'toast.gifShrunk': 'GIF importé : {count} frames réduites à {w} × {h} (max {max} px).',

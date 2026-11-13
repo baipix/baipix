@@ -816,6 +816,7 @@ export const uk: Record<MessageKey, string> = {
   'spriteSheet.importFrames': 'Імпортувати {count} кадрів',
   'spriteSheet.tooLarge': 'Кожен кадр може бути не більшим за {max} × {max} px.',
   'spriteSheet.tooManyFrames': 'Забагато кадрів (максимум {max}).',
+  'spriteSheet.exceedsBounds': 'Клітинки виходять за межі зображення ({w} × {h} px).',
   'toast.gifImported': 'GIF імпортовано: {count} кадрів ({w} × {h}).',
   'toast.gifPixelsRecovered': 'GIF імпортовано: {count} кадрів {w} × {h}, відновлено з ×{scale}.',
   'toast.gifShrunk': 'GIF імпортовано: {count} кадрів зменшено до {w} × {h} (макс. {max} px).',

@@ -129,21 +129,23 @@ describe('sliceSpriteSheet & createAnimatedDocument', () => {
     );
   });
 
-  it('links consecutive identical frames by sharing cel pixel references', () => {
+  it('gives each frame cel an independent pixel copy so edits do not leak', () => {
     const frameA = Uint32Array.from([RED, 0, 0, RED]);
     const frameB = Uint32Array.from([RED, 0, 0, RED]);
     const frameC = Uint32Array.from([BLUE, 0, 0, BLUE]);
     const frameD = Uint32Array.from([BLUE, 0, 0, BLUE]);
 
-    const doc = createAnimatedDocument('linked', 2, 2, [
+    const doc = createAnimatedDocument('isolated', 2, 2, [
       { pixels: frameA, duration: 100 },
       { pixels: frameB, duration: 100 },
       { pixels: frameC, duration: 100 },
       { pixels: frameD, duration: 100 },
     ]);
 
-    expect(doc.layers[0].cels?.[1]?.pixels).toBe(doc.layers[0].pixels);
+    expect(doc.layers[0].cels?.[1]?.pixels).not.toBe(doc.layers[0].pixels);
+    expect(Array.from(doc.layers[0].cels?.[1]?.pixels ?? [])).toEqual(Array.from(frameB));
     expect(doc.layers[0].cels?.[2]?.pixels).not.toBe(doc.layers[0].pixels);
-    expect(doc.layers[0].cels?.[3]?.pixels).toBe(doc.layers[0].cels?.[2]?.pixels);
+    expect(doc.layers[0].cels?.[3]?.pixels).not.toBe(doc.layers[0].cels?.[2]?.pixels);
+    expect(Array.from(doc.layers[0].cels?.[3]?.pixels ?? [])).toEqual(Array.from(frameD));
   });
 });

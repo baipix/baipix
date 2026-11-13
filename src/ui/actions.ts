@@ -412,6 +412,136 @@ export function createActions(editor: Editor) {
     else toast(t('toast.downloadBusy'));
   }
 
+  /** Adds a new document from a pixel block and shows a toast (with "Use as reference" if from an imported file). */
+  function addDocumentFromBlock(
+    block: PixelBlock & { scaled?: boolean },
+    name: string,
+    message: string,
+    file?: File | null,
+    asNewFile = false,
+  ) {
+    const previous = doc().id;
+    const next = createDocument(name, block.width, block.height, t('default.image'));
+    next.layers[0].pixels.set(block.pixels);
+    editor.addDocument(next);
+    if (asNewFile || !file) return toast(message);
+    toast(
+      message,
+      asReferenceAction(file, () => {
+        editor.discardFile(next.id);
+        editor.switchBoard(previous);
+      }),
+    );
+  }
+
+  /** Imports an HTMLImageElement directly as a new document, scaling if larger than MAX_SIZE. */
+  function addImageAsFile(img: HTMLImageElement, name: string, file?: File | null, asNewFile = false) {
+    const block = imageToBlock(img, MAX_SIZE, MAX_SIZE);
+    addDocumentFromBlock(
+      block,
+      name,
+      block.scaled
+        ? t('toast.imageShrunk', { w: block.width, h: block.height, max: MAX_SIZE })
+        : t('toast.imageAsFile', { w: block.width, h: block.height }),
+      file,
+      asNewFile,
+    );
+  }
+
+  /** Decodes and imports an animated GIF into a multi-frame PixelDoc, offering pixel recovery when upscaled. */
+  async function importAnimatedGif(file: File, name: string): Promise<boolean> {
+    let decoded: ReturnType<typeof decodeGif> = null;
+    try {
+      decoded = decodeGif(new Uint8Array(await file.arrayBuffer()));
+    } catch {
+      return false;
+    }
+    if (!decoded || decoded.frames.length <= 1) return false;
+
+    let grid: ReturnType<typeof detectPixelGrid> = null;
+    let previewFrame = decoded.frames[0];
+    for (const candidate of decoded.frames.slice(0, 10)) {
+      const detected = detectPixelGrid(candidate.pixels, decoded.width, decoded.height);
+      if (detected) {
+        grid = detected;
+        previewFrame = candidate;
+        break;
+      }
+    }
+    const detectedSize = grid && gridSize(decoded.width, decoded.height, grid);
+    const canRecover = Boolean(
+      grid && detectedSize && detectedSize.width <= MAX_SIZE && detectedSize.height <= MAX_SIZE,
+    );
+
+    let targetWidth = decoded.width;
+    let targetHeight = decoded.height;
+    let importedFrames: ImportedFrame[] = decoded.frames;
+    let recoveredScale: number | null = null;
+    let shrunk = decoded.shrunk;
+
+    if (canRecover && grid) {
+      const usedGrid = await new Promise<typeof grid | null>((resolve) =>
+        openDialog({
+          type: 'upscaled',
+          image: { width: decoded.width, height: decoded.height, pixels: previewFrame.pixels },
+          grid,
+          onRecover: (_block, nextGrid) => resolve(nextGrid),
+          onKeep: () => resolve(null),
+        }),
+      );
+      if (usedGrid) {
+        const recoveredSize = gridSize(decoded.width, decoded.height, usedGrid);
+        targetWidth = recoveredSize.width;
+        targetHeight = recoveredSize.height;
+        recoveredScale = usedGrid.scale;
+        importedFrames = decoded.frames.map((frame) => ({
+          pixels: downscaleToGrid(frame.pixels, decoded.width, decoded.height, usedGrid).pixels,
+          duration: frame.duration,
+        }));
+      }
+    }
+
+    if (recoveredScale === null && !shrunk) {
+      const fitted = fitMaxSide(targetWidth, targetHeight, MAX_SIZE);
+      if (fitted.scaled) {
+        shrunk = true;
+        importedFrames = importedFrames.map((frame) => ({
+          pixels: resizeBlockNearest(frame.pixels, targetWidth, targetHeight, fitted.width, fitted.height),
+          duration: frame.duration,
+        }));
+        targetWidth = fitted.width;
+        targetHeight = fitted.height;
+      }
+    }
+
+    const next = createAnimatedDocument(name, targetWidth, targetHeight, importedFrames, t('default.image'));
+    editor.addDocument(next);
+    if (decoded.truncated) {
+      toast(t('toast.gifFramesTrimmed', { max: MAX_FRAMES }));
+    } else if (recoveredScale !== null) {
+      toast(
+        t('toast.gifPixelsRecovered', {
+          count: importedFrames.length,
+          w: targetWidth,
+          h: targetHeight,
+          scale: recoveredScale,
+        }),
+      );
+    } else if (shrunk) {
+      toast(
+        t('toast.gifShrunk', {
+          count: importedFrames.length,
+          w: targetWidth,
+          h: targetHeight,
+          max: MAX_SIZE,
+        }),
+      );
+    } else {
+      toast(t('toast.gifImported', { count: importedFrames.length, w: targetWidth, h: targetHeight }));
+    }
+    return true;
+  }
+
   const actions = {
     async exportImage(format: ExportFormat, onlyActiveLayer = false) {
       if (format === 'tileset') return actions.exportTileset(onlyActiveLayer);
@@ -776,16 +906,11 @@ export function createActions(editor: Editor) {
     },
 
     async openDocument() {
-      const file = await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite,image/*`);
+      const file = await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite`);
       if (!file) return;
 
       if (isAsepriteFile(file)) {
         await openAsepriteFile(file);
-        return;
-      }
-
-      if (isImageFile(file)) {
-        await actions.importImage(file, true);
         return;
       }
 
@@ -822,109 +947,8 @@ export function createActions(editor: Editor) {
       }
       const name = f.name.replace(/\.[^.]+$/, '') || t('default.image');
 
-      if (isGifFile(f)) {
-        let decoded: ReturnType<typeof decodeGif> = null;
-        try {
-          decoded = decodeGif(new Uint8Array(await f.arrayBuffer()));
-        } catch {
-          decoded = null;
-        }
-        if (decoded && decoded.frames.length > 1) {
-          let grid: ReturnType<typeof detectPixelGrid> = null;
-          let previewFrame = decoded.frames[0];
-          for (const candidate of decoded.frames.slice(0, 10)) {
-            const detected = detectPixelGrid(candidate.pixels, decoded.width, decoded.height);
-            if (detected) {
-              grid = detected;
-              previewFrame = candidate;
-              break;
-            }
-          }
-          const detectedSize = grid && gridSize(decoded.width, decoded.height, grid);
-          const canRecover = Boolean(
-            grid && detectedSize && detectedSize.width <= MAX_SIZE && detectedSize.height <= MAX_SIZE,
-          );
-
-          let targetWidth = decoded.width;
-          let targetHeight = decoded.height;
-          let importedFrames: ImportedFrame[] = decoded.frames;
-          let recoveredScale: number | null = null;
-          let shrunk = decoded.shrunk;
-
-          if (canRecover && grid) {
-            const usedGrid = await new Promise<typeof grid | null>((resolve) =>
-              openDialog({
-                type: 'upscaled',
-                image: { width: decoded.width, height: decoded.height, pixels: previewFrame.pixels },
-                grid,
-                onRecover: (_block, nextGrid) => resolve(nextGrid),
-                onKeep: () => resolve(null),
-              }),
-            );
-            if (usedGrid) {
-              const recoveredSize = gridSize(decoded.width, decoded.height, usedGrid);
-              targetWidth = recoveredSize.width;
-              targetHeight = recoveredSize.height;
-              recoveredScale = usedGrid.scale;
-              importedFrames = decoded.frames.map((frame) => ({
-                pixels: downscaleToGrid(frame.pixels, decoded.width, decoded.height, usedGrid).pixels,
-                duration: frame.duration,
-              }));
-            }
-          }
-
-          if (recoveredScale === null && !shrunk) {
-            const fitted = fitMaxSide(targetWidth, targetHeight, MAX_SIZE);
-            if (fitted.scaled) {
-              shrunk = true;
-              importedFrames = importedFrames.map((frame) => ({
-                pixels: resizeBlockNearest(
-                  frame.pixels,
-                  targetWidth,
-                  targetHeight,
-                  fitted.width,
-                  fitted.height,
-                ),
-                duration: frame.duration,
-              }));
-              targetWidth = fitted.width;
-              targetHeight = fitted.height;
-            }
-          }
-
-          const next = createAnimatedDocument(
-            name,
-            targetWidth,
-            targetHeight,
-            importedFrames,
-            t('default.image'),
-          );
-          editor.addDocument(next);
-          if (decoded.truncated) {
-            toast(t('toast.gifFramesTrimmed', { max: MAX_FRAMES }));
-          } else if (recoveredScale !== null) {
-            toast(
-              t('toast.gifPixelsRecovered', {
-                count: importedFrames.length,
-                w: targetWidth,
-                h: targetHeight,
-                scale: recoveredScale,
-              }),
-            );
-          } else if (shrunk) {
-            toast(
-              t('toast.gifShrunk', {
-                count: importedFrames.length,
-                w: targetWidth,
-                h: targetHeight,
-                max: MAX_SIZE,
-              }),
-            );
-          } else {
-            toast(t('toast.gifImported', { count: importedFrames.length, w: targetWidth, h: targetHeight }));
-          }
-          return;
-        }
+      if (isGifFile(f) && (await importAnimatedGif(f, name))) {
+        return;
       }
 
       let img: HTMLImageElement;
@@ -942,35 +966,15 @@ export function createActions(editor: Editor) {
         toast(t('toast.imageAsLayer'), asReferenceAction(f, removePastedLayer()));
         return;
       }
-      const previous = d.id;
-      const addFile = (block: PixelBlock & { scaled?: boolean }, message: string) => {
-        const next = createDocument(name, block.width, block.height, t('default.image'));
-        next.layers[0].pixels.set(block.pixels);
-        editor.addDocument(next);
-        // From the home screen the new file is the point; elsewhere, offer to trace over it instead.
-        if (asNewFile) return toast(message);
-        toast(
-          message,
-          asReferenceAction(f, () => {
-            editor.discardFile(next.id);
-            editor.switchBoard(previous);
-          }),
-        );
-      };
-      const asItIs = () => {
-        const block = imageToBlock(img, MAX_SIZE, MAX_SIZE);
-        addFile(
-          block,
-          block.scaled
-            ? t('toast.imageShrunk', { w: block.width, h: block.height, max: MAX_SIZE })
-            : t('toast.imageAsFile', { w: block.width, h: block.height }),
-        );
-      };
+
       // Pixel art scaled up (a screenshot, an export at 800%): offer to bring it back to its pixels.
       const full = readPixels(img);
       const grid = full && detectPixelGrid(full.pixels, full.width, full.height);
       const size = full && grid && gridSize(full.width, full.height, grid);
-      if (!full || !grid || !size || size.width > MAX_SIZE || size.height > MAX_SIZE) return asItIs();
+      if (!full || !grid || !size || size.width > MAX_SIZE || size.height > MAX_SIZE) {
+        addImageAsFile(img, name, f, asNewFile);
+        return;
+      }
       // Settles once a choice is made, so callers know whether a file was added.
       await new Promise<void>((resolve) =>
         openDialog({
@@ -978,14 +982,17 @@ export function createActions(editor: Editor) {
           image: full,
           grid,
           onRecover: (block) => {
-            addFile(
+            addDocumentFromBlock(
               block,
+              name,
               t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: grid.scale }),
+              f,
+              asNewFile,
             );
             resolve();
           },
           onKeep: () => {
-            asItIs();
+            addImageAsFile(img, name, f, asNewFile);
             resolve();
           },
         }),
@@ -1008,23 +1015,11 @@ export function createActions(editor: Editor) {
         return;
       }
       const name = f.name.replace(/\.[^.]+$/, '') || t('default.image');
-      const addFile = (block: PixelBlock & { scaled?: boolean }, message: string) => {
-        const next = createDocument(name, block.width, block.height, t('default.image'));
-        next.layers[0].pixels.set(block.pixels);
-        editor.addDocument(next);
-        toast(message);
-      };
-      const asItIs = () => {
-        const block = imageToBlock(img, MAX_SIZE, MAX_SIZE);
-        addFile(
-          block,
-          block.scaled
-            ? t('toast.imageShrunk', { w: block.width, h: block.height, max: MAX_SIZE })
-            : t('toast.imageAsFile', { w: block.width, h: block.height }),
-        );
-      };
       const full = readPixels(img);
-      if (!full) return asItIs();
+      if (!full) {
+        addImageAsFile(img, name, f);
+        return;
+      }
 
       let working: PixelBlock = full;
       let recoveredScale: number | null = null;
@@ -1046,17 +1041,7 @@ export function createActions(editor: Editor) {
         }
       }
 
-      if (working.width < MIN_SPRITE_SHEET_SIDE && working.height < MIN_SPRITE_SHEET_SIDE) {
-        addFile(
-          working,
-          recoveredScale !== null
-            ? t('toast.pixelsRecovered', { w: working.width, h: working.height, scale: recoveredScale })
-            : t('toast.imageAsFile', { w: working.width, h: working.height }),
-        );
-        return;
-      }
-
-      const singleImageAction = () => {
+      const singleImage = () => {
         if (recoveredScale !== null) {
           const fitted = fitMaxSide(working.width, working.height, MAX_SIZE);
           const block: PixelBlock & { scaled?: boolean } = fitted.scaled
@@ -1073,14 +1058,21 @@ export function createActions(editor: Editor) {
                 scaled: true,
               }
             : working;
-          addFile(
+          addDocumentFromBlock(
             block,
+            name,
             t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: recoveredScale }),
+            f,
           );
         } else {
-          asItIs();
+          addImageAsFile(img, name, f);
         }
       };
+
+      if (working.width < MIN_SPRITE_SHEET_SIDE && working.height < MIN_SPRITE_SHEET_SIDE) {
+        singleImage();
+        return;
+      }
 
       await new Promise<void>((resolve) =>
         openDialog({
@@ -1103,11 +1095,13 @@ export function createActions(editor: Editor) {
                 height: cellHeight,
                 pixels: frameList[0].pixels,
               };
-              addFile(
+              addDocumentFromBlock(
                 single,
+                name,
                 recoveredScale !== null
                   ? t('toast.pixelsRecovered', { w: single.width, h: single.height, scale: recoveredScale })
                   : t('toast.imageAsFile', { w: single.width, h: single.height }),
+                f,
               );
             } else {
               const next = createAnimatedDocument(name, cellWidth, cellHeight, frameList, t('default.image'));
@@ -1117,7 +1111,7 @@ export function createActions(editor: Editor) {
             resolve();
           },
           onSingleImage: () => {
-            singleImageAction();
+            singleImage();
             resolve();
           },
         }),

@@ -820,6 +820,7 @@ export const it: Record<MessageKey, string> = {
   'spriteSheet.importFrames': 'Importa {count} fotogrammi',
   'spriteSheet.tooLarge': 'Ogni fotogramma può essere al massimo {max} × {max} px.',
   'spriteSheet.tooManyFrames': 'Troppi fotogrammi (massimo {max}).',
+  'spriteSheet.exceedsBounds': 'Le celle superano il bordo dell’immagine ({w} × {h} px).',
   'toast.gifImported': 'GIF importata: {count} fotogrammi ({w} × {h}).',
   'toast.gifPixelsRecovered': 'GIF importata: {count} fotogrammi a {w} × {h}, recuperati da ×{scale}.',
   'toast.gifShrunk': 'GIF importata: {count} fotogrammi ridotti a {w} × {h} (max {max} px).',

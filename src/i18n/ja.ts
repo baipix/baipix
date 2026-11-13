@@ -812,6 +812,7 @@ export const ja: Record<MessageKey, string> = {
   'spriteSheet.importFrames': '{count}フレームを読み込む',
   'spriteSheet.tooLarge': '各フレームは最大 {max} × {max} px までです。',
   'spriteSheet.tooManyFrames': 'フレーム数が多すぎます（最大 {max}）。',
+  'spriteSheet.exceedsBounds': 'セルが画像の端を超えています（{w} × {h} px）。',
   'toast.gifImported': 'GIFを読み込みました：{count}フレーム（{w} × {h}）。',
   'toast.gifPixelsRecovered': 'GIFを読み込みました：{scale}倍の画像から {w} × {h} で{count}フレームを復元。',
   'toast.gifShrunk': 'GIFを読み込みました：{count}フレームを {w} × {h} に縮小（最大 {max} px）。',

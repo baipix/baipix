@@ -156,7 +156,7 @@ export function SpriteSheetDialog({
   } else if (!withinMaxFrames) {
     summary = t('spriteSheet.tooManyFrames', { max: MAX_FRAMES });
   } else if (!fitsBounds) {
-    summary = `${image.width} × ${image.height} px`;
+    summary = t('spriteSheet.exceedsBounds', { w: image.width, h: image.height });
   } else if (frameCount === 1) {
     summary = t('spriteSheet.summarySingle', { w: cellWidth, h: cellHeight });
   } else {

@@ -894,6 +894,7 @@ export const ko: Record<MessageKey, string> = {
   'spriteSheet.importFrames': '{count}프레임 가져오기',
   'spriteSheet.tooLarge': '각 프레임은 최대 {max} × {max} px여야 합니다.',
   'spriteSheet.tooManyFrames': '프레임이 너무 많습니다 (최대 {max}).',
+  'spriteSheet.exceedsBounds': '셀이 이미지 가장자리를 벗어납니다 ({w} × {h} px).',
   'toast.gifImported': 'GIF 가져옴: {count}프레임 ({w} × {h}).',
   'toast.gifPixelsRecovered': 'GIF 가져옴: {scale}배 확대 이미지에서 {w} × {h}, {count}프레임 복원.',
   'toast.gifShrunk': 'GIF 가져옴: {count}프레임을 {w} × {h}로 축소 (최대 {max} px).',
