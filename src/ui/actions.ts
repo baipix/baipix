@@ -37,7 +37,7 @@ import { canvasToBlob, renderToCanvas } from '../io/png';
 import { encodeGif } from '../io/gif';
 import { FILE_EXTENSION, fileFromJson, fileToJson } from '../storage/fileFormat';
 import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } from '../storage/layerClip';
-import { leaveHome, showEmptyHome } from './home';
+import { dropStarter, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
 /** Every export format, also to check the one read back from a save. */
@@ -942,7 +942,10 @@ export function createActions(editor: Editor) {
     },
 
     // No confirmation: deleting is instant, and the toast offers to bring it back.
-    /** Deleting the last file goes back to the empty home screen; Undo brings the file back. */
+    /**
+     * Deleting the last file goes back to the empty home screen. Undo brings the file back and stays
+     * on the files screen, where it was deleted from: it doesn't open it.
+     */
     deleteFile(id: string, name: string) {
       const last = editor.getState().files.length === 1;
       if (!editor.deleteFile(id)) return;
@@ -950,7 +953,7 @@ export function createActions(editor: Editor) {
       showEmptyHome(editor);
       toast(t('toast.deleted', { name }), {
         label: t('common.undo'),
-        run: () => editor.restoreDeleted() && leaveHome(editor),
+        run: () => editor.restoreDeleted() && dropStarter(editor),
       });
     },
 
