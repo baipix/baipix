@@ -2751,6 +2751,27 @@ body.is-dragging-swatch * {
   background: var(--hover);
   box-shadow: inset 0 0 0 2px var(--drop-line, var(--accent));
 }
+/* The thumbnail that follows the pointer during the drag, off screen until the browser pictures it. */
+.home-drag-preview {
+  position: fixed;
+  top: -200px;
+  left: -200px;
+  width: 96px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+.home-drag-preview canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: conic-gradient(var(--check-b) 25%, var(--check-a) 0 50%, var(--check-b) 0 75%, var(--check-a) 0)
+    0 0 / 8px 8px;
+}
 .home-card.is-dragging,
 .home-table tr.is-dragging {
   opacity: 0.5;
