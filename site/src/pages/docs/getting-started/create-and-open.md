@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Create and open files
-description: 'Start a new pixel art file from a size or a preset, import an image, recover the real pixels of upscaled pixel art, and open .baipix and Aseprite files.'
+description: 'Start a new pixel art file from a size or a preset, import an image, an animated GIF or a sprite sheet, recover the real pixels of upscaled pixel art, and open .baipix and Aseprite files.'
 ---
 
 ## A new file
@@ -39,6 +39,14 @@ You can change the size later with the W and H fields in the Board section, or *
 ### Pixel art that was scaled up
 
 A screenshot of pixel art, or an export at 800%, has big blocks instead of pixels. Baipix notices: it finds the pixel grid, even in a cropped image, and offers to **recover the pixels**, giving you the drawing at its real size. Adjust the scale or the offset if the grid doesn't fall right, or keep the image as it is.
+
+### An animated GIF
+
+An animated GIF comes in as an animation: a new file with one frame for each of the GIF's, each with its duration. If it was scaled up, Baipix offers to recover its pixels, on every frame at once. A GIF larger than 512 × 512 is reduced to fit, and one with more than 999 frames is cut there; the message after the import says so.
+
+### A sprite sheet
+
+**File › Import a sprite sheet…** cuts a picture into frames. Type the size of a cell, or the number of columns and rows: each follows the other, and the preview shows the grid over the picture. The cells are read from left to right, then top to bottom, and each becomes a frame with the duration you set. **Import as single image**, or closing the dialog, keeps the picture whole.
 
 ### A reference to trace over
 
