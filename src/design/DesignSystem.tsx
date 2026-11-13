@@ -12,6 +12,8 @@ import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
 import { IconButton } from '../ui/components/IconButton';
 import { NumberField } from '../ui/components/NumberField';
+import { PresetCard } from '../ui/components/PresetCard';
+import { TEMPLATES } from '../ui/templates';
 import { Tooltips } from '../ui/components/Tooltips';
 import { ICONS, type IconName } from '../ui/icons';
 import { ColorRow } from '../ui/panels/ColorRow';
@@ -243,9 +245,7 @@ function TypeBlock() {
         <div style={{ font: '800 22px/28px var(--font)', letterSpacing: '-0.02em' }}>
           Drawings · 22 Extra bold, the files screen's title
         </div>
-        <div style={{ font: '600 16px/24px var(--font)' }}>
-          Insert coin, drop your first pixel · 16 Semibold
-        </div>
+        <div style={{ font: '600 16px/24px var(--font)' }}>Drop your first pixel · 16 Semibold</div>
         <div style={{ font: '400 14px/22px var(--font)' }}>Body text on the home screen · 14 Regular</div>
         <div style={{ font: '600 11px/16px var(--font)' }}>Section title · 11 Semibold</div>
         <div style={{ font: '400 11px/16px var(--font)' }}>Interface text, labels, menus · 11 Regular</div>
@@ -395,6 +395,7 @@ function SegmentedDemo() {
 
 function FieldsBlock() {
   const [n, setN] = useState(64);
+  const [opacity, setOpacity] = useState(60);
   const [checked, setChecked] = useState(true);
   const [anchor, setAnchor] = useState<Anchor>({ x: 1, y: 1 });
   const [light, setLight] = useState<BoardLight>(DEFAULT_LIGHT);
@@ -404,6 +405,24 @@ function FieldsBlock() {
         <Specimen label="Number field" use="Drag its label to scrub the value, or type it.">
           <div className="ds-field">
             <NumberField value={n} min={1} max={512} label="W" ariaLabel="Width" onChange={(v) => setN(v)} />
+          </div>
+        </Specimen>
+        <Specimen
+          label="Slider field"
+          use="A number with a short range (opacity, brush size): filled up to its value. Drag anywhere on it to change it, click it to type."
+        >
+          <div className="ds-field">
+            <NumberField
+              slider
+              value={opacity}
+              min={0}
+              max={100}
+              label="◐"
+              suffix="%"
+              ariaLabel="Opacity"
+              scrubHint="Drag to adjust"
+              onChange={(v) => setOpacity(v)}
+            />
           </div>
         </Specimen>
         <Specimen
@@ -729,6 +748,21 @@ function SurfacesBlock() {
           </div>
         </Specimen>
         <Specimen
+          label="Toast with details"
+          use="When there is more to say, like what an Aseprite file lost on the way: a Details line opens the list, and the toast stays while it's open."
+        >
+          <div className="toast is-visible ds-static">
+            Slime.aseprite opened with some import adjustments.
+            <details className="toast-details" open>
+              <summary>Details (2)</summary>
+              <ul className="toast-details-list">
+                <li>Animation tags were not preserved.</li>
+                <li>Aseprite slices were not preserved.</li>
+              </ul>
+            </details>
+          </div>
+        </Specimen>
+        <Specimen
           label="Floating window"
           use="A small tool window over the canvas (the preview): drag it by its title, fold or close it, resize it by its corner. Zoomed in on the canvas, a blue frame shows the part in view (a minimap)."
         >
@@ -801,18 +835,30 @@ function SurfacesBlock() {
         </Specimen>
         <Specimen
           label="Sidebar item"
-          use="The sections of the files screen, its sidebar: the current one filled, a count at the right."
+          use="The sections of the files screen, its sidebar: the current one filled, a count at the right. A drawing's card held over Trash outlines it, like a group taking a layer."
         >
           <div style={{ width: 200 }}>
             <button type="button" className="home-nav-item is-active">
               <Icon name="image" size={16} />
               Drawings
             </button>
-            <button type="button" className="home-nav-item">
+            <button type="button" className="home-nav-item drop-into">
               <Icon name="trash" size={16} />
               Trash
               <span className="home-nav-count">2</span>
             </button>
+          </div>
+        </Specimen>
+        <Specimen
+          wide
+          label="Preset card"
+          use="A preset on the first files screen: a small picture in the interface's grey, in the preset's palette on hover, bigger as the board is."
+        >
+          <div className="home-templates-grid" style={{ maxWidth: 640 }}>
+            {['sprite', 'emote', 'gameboy'].map((id) => {
+              const preset = TEMPLATES.find((p) => p.id === id);
+              return preset && <PresetCard key={id} template={preset} />;
+            })}
           </div>
         </Specimen>
         <Specimen

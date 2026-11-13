@@ -7,7 +7,9 @@ import { uk } from '../src/i18n/uk';
 import { es } from '../src/i18n/es';
 import { ja } from '../src/i18n/ja';
 import { it as itDictionary } from '../src/i18n/it';
-import { zh_cn } from '../src/i18n/zh_cn';
+import { zh_cn } from '../src/i18n/zh';
+import { ko } from '../src/i18n/ko';
+import { pt } from '../src/i18n/pt';
 
 const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = {
   fr,
@@ -15,7 +17,9 @@ const translations: Record<Exclude<Locale, 'en'>, Record<MessageKey, string>> = 
   es,
   ja,
   it: itDictionary,
-  zh_cn,
+  zh,
+  ko,
+  pt,
 };
 
 const getPlaceholders = (text: string): string[] =>
@@ -37,7 +41,7 @@ describe('browser language selection', () => {
   });
 
   it('falls back to English without a notice when no language is supported', () => {
-    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'pt-BR'])).toEqual({
+    expect(resolveLocaleSelection(undefined, undefined, ['de-DE', 'ru-RU'])).toEqual({
       locale: 'en',
       preference: 'auto',
       notify: false,
@@ -79,6 +83,22 @@ describe('browser language selection', () => {
   it('selects Ukrainian when it is the first supported browser language', () => {
     expect(resolveLocaleSelection(undefined, undefined, ['uk-UA', 'fr-FR'])).toEqual({
       locale: 'uk',
+      preference: 'auto',
+      notify: true,
+    });
+  });
+
+  it('selects Korean when it is the first supported browser language', () => {
+    expect(resolveLocaleSelection(undefined, undefined, ['ko-KR', 'en-US'])).toEqual({
+      locale: 'ko',
+      preference: 'auto',
+      notify: true,
+    });
+  });
+
+  it('selects Portuguese when it is the first supported browser language', () => {
+    expect(resolveLocaleSelection(undefined, undefined, ['pt-BR', 'en-US'])).toEqual({
+      locale: 'pt',
       preference: 'auto',
       notify: true,
     });

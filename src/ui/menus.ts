@@ -5,6 +5,7 @@ import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
 import type { Actions } from './actions';
 import type { MenuItem } from './components/Menu';
+import { arrangeItem } from './layerMenus';
 import { getTheme, setTheme, type ThemePreference } from './theme';
 import { openAdjust, openDialog, toast, toggleTimeline, uiStore } from './uiStore';
 
@@ -46,9 +47,10 @@ export function newIssueUrl(kind: 'bug' | 'idea'): string {
   return `${GITHUB_URL}/issues/new?${params}`;
 }
 
-/** A file's "…" menu, in the Files list and on the home screen cards. */
-export function fileMenu(editor: Editor, actions: Actions, file: FileInfo): MenuItem[] {
+/** A file's "…" menu, in the Files list and on the home screen cards (with `rename`, that types the name in place). */
+export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, rename?: () => void): MenuItem[] {
   return [
+    ...(rename ? [{ label: t('file.rename'), onSelect: rename }] : []),
     { label: t('file.duplicate'), onSelect: () => editor.duplicateFile(file.id) },
     {
       label: t('file.download'),
@@ -79,6 +81,7 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
     { label: t('menu.newFile'), onSelect: () => openDialog({ type: 'newFile' }) },
     { label: t('menu.open'), shortcut: 'Ctrl+O', onSelect: () => void actions.openDocument() },
     { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
+    { label: t('menu.importSpriteSheet'), onSelect: () => void actions.importSpriteSheet() },
     '-',
     { label: t('file.allFiles'), onSelect: () => uiStore.set({ home: true }) },
   ];
@@ -136,6 +139,7 @@ export const MENU_BAR: MenuBarMenu[] = [
           ],
         },
         { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
+        { label: t('menu.importSpriteSheet'), onSelect: () => void actions.importSpriteSheet() },
         { label: t('menu.reference'), onSelect: () => void actions.addReference() },
         '-',
         { label: t('board.new'), onSelect: () => editor.addBoardBeside() },
@@ -308,18 +312,7 @@ export const MENU_BAR: MenuBarMenu[] = [
           disabled: disabled || !editor.canMergeDown(),
           onSelect: () => editor.mergeDown(),
         },
-        {
-          label: t('menu.layerUp'),
-          shortcut: 'Alt+↑',
-          disabled: disabled || !editor.canMoveLayer(1),
-          onSelect: () => editor.moveLayer(1),
-        },
-        {
-          label: t('menu.layerDown'),
-          shortcut: 'Alt+↓',
-          disabled: disabled || !editor.canMoveLayer(-1),
-          onSelect: () => editor.moveLayer(-1),
-        },
+        { ...arrangeItem(editor), disabled },
         {
           label: t('menu.sortByDepth'),
           disabled: disabled || doc.layers.length < 2,

@@ -14,9 +14,10 @@ import { hasBackground } from '../../engine/document';
 import { frameCount } from '../../engine/frames';
 import type { ColorMap } from '../../engine/editor';
 import { outlinePixels, type OutlineOptions } from '../../engine/outline';
-import { PALETTE_PRESETS, presetColors, remapTable, type RemapMode } from '../../engine/palette';
+import { remapTable, type RemapMode } from '../../engine/palette';
 import { useT, type MessageKey } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
+import { useUserPalettes } from '../hooks/useUserPalettes';
 import { uiStore, type AdjustTab } from '../uiStore';
 import { Checkbox } from './Checkbox';
 import { IconButton } from './IconButton';
@@ -111,12 +112,13 @@ function Panel() {
   const [palette, setPalette] = useState(false);
   // The file's palette as it was when the panel opened (previews may change the live one).
   const [ownPalette] = useState(filePalette);
+  const { palettes, paletteColors } = useUserPalettes();
   const [remap, setRemap] = useState<Remap>({ ...NO_REMAP, count: ownPalette.length });
   // A selection limits the remap to its pixels: the background stays as it is.
   const remapBackground = remap.background && !!background && !hasSelection;
   const target = useMemo(
-    () => (remap.target === 'file' ? ownPalette : presetColors(remap.target)),
-    [remap.target, ownPalette],
+    () => (remap.target === 'file' ? ownPalette : paletteColors(remap.target)),
+    [remap.target, ownPalette, paletteColors],
   );
 
   // Starts (or restarts on scope change) the adjustment; leaving without applying cancels it.
@@ -264,13 +266,13 @@ function Panel() {
                 value={remap.target}
                 onChange={(e) => {
                   const key = e.target.value;
-                  const size = key === 'file' ? ownPalette.length : presetColors(key).length;
+                  const size = key === 'file' ? ownPalette.length : paletteColors(key).length;
                   setRemap((r) => ({ ...r, target: key, count: size }));
                 }}
                 aria-label={t('remap.palette')}
               >
                 <option value="file">{t('remap.filePalette')}</option>
-                {Object.entries(PALETTE_PRESETS).map(([key, p]) => (
+                {Object.entries(palettes).map(([key, p]) => (
                   <option key={key} value={key}>
                     {p.name}
                   </option>

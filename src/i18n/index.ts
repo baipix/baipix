@@ -6,9 +6,11 @@ import { uk } from './uk';
 import { es } from './es';
 import { ja } from './ja';
 import { it } from './it';
-import { zh_cn } from './zh_cn';
+import { zh } from './zh';
+import { ko } from './ko';
+import { pt } from './pt';
 
-export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it' | 'zh_cn';
+export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it' | 'zh' | 'ko' | 'pt';
 export type { MessageKey };
 
 const dictionaries: Record<Locale, Record<MessageKey, string>> = {
@@ -18,7 +20,9 @@ const dictionaries: Record<Locale, Record<MessageKey, string>> = {
   es,
   ja,
   it,
-  zh_cn,
+  zh,
+  ko,
+  pt,
 };
 
 export const LOCALES: { id: Locale; label: string }[] = [
@@ -28,7 +32,9 @@ export const LOCALES: { id: Locale; label: string }[] = [
   { id: 'es', label: 'Español' },
   { id: 'ja', label: '日本語' },
   { id: 'it', label: 'Italiano' },
-  { id: 'zh_cn', label: '中文 (简体)' },
+  { id: 'zh', label: '中文 (简体)' },
+  { id: 'ko', label: '한국어' },
+  { id: 'pt', label: 'Português (Brasil)' },
 ];
 
 // Initialized to English until workspace restoration applies the saved or detected locale.

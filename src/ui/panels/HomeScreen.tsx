@@ -1,22 +1,24 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type DragEvent, type MouseEvent } from 'react';
 import { fileIdOf } from '../../engine/document';
-import { flatten } from '../../engine/composite';
+import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
 import type { PixelDoc } from '../../engine/document';
-import { getLocale, useT } from '../../i18n';
+import { getLocale, LOCALES, setLocale, useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
+import { EditableName } from '../components/EditableName';
 import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
+import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
 import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
-import { createFromTemplate, TEMPLATES, type Template } from '../templates';
+import { createFromTemplate, TEMPLATES } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
-import { PALETTE_PRESETS, presetColors } from '../../engine/palette';
-import { toCss } from '../../engine/color';
+import { PALETTE_PRESETS } from '../../engine/palette';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
+import { FILE_MIME } from '../dragTypes';
 
 const DAY = 86_400_000;
 
@@ -38,23 +40,6 @@ function formatUpdated(time: number, justNow: string): string {
   });
 }
 
-/** A template as a board of its shape, striped with its palette's colors. */
-function TemplatePreview({ template }: { template: Template }) {
-  const colors = presetColors(template.palette).slice(0, 8);
-  // Fitted in the 16:9 picture, at most 80% of its width and 64% of its height.
-  const k = Math.min(80 / template.width, (0.64 * 56.25) / template.height);
-  const size = { width: `${template.width * k}%`, height: `${((template.height * k) / 56.25) * 100}%` };
-  return (
-    <span className="home-thumb home-template-preview" aria-hidden="true">
-      <span className="home-template-board" style={size}>
-        {colors.map((c, i) => (
-          <span key={i} style={{ background: toCss(c) }} />
-        ))}
-      </span>
-    </span>
-  );
-}
-
 /** The drawing at a whole scale, about 320 px on its long side; CSS crops it to the card. */
 function HomeThumb({ doc }: { doc: PixelDoc }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -67,15 +52,66 @@ function HomeThumb({ doc }: { doc: PixelDoc }) {
     src.height = doc.height;
     const sctx = src.getContext('2d')!;
     const image = sctx.createImageData(doc.width, doc.height);
-    new Uint32Array(image.data.buffer).set(flatten(doc));
-    sctx.putImageData(image, 0, 0);
     canvas.width = doc.width * k;
     canvas.height = doc.height * k;
     const ctx = canvas.getContext('2d')!;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    const draw = (pixels: Uint32Array) => {
+      new Uint32Array(image.data.buffer).set(pixels);
+      sctx.putImageData(image, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    };
+    draw(flatten(doc));
+
+    // An animation plays in its card while the pointer is on it, each frame for its own duration.
+    const card = canvas.closest('.home-card, tr');
+    const count = frameCount(doc);
+    if (!card || count < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let frames: Uint32Array[] | null = null;
+    let timer = 0;
+    const play = (f: number) => {
+      frames ??= Array.from({ length: count }, (_, i) => flattenFrame(doc, i));
+      draw(frames[f]);
+      timer = window.setTimeout(() => play((f + 1) % count), doc.frames?.[f]?.duration ?? 100);
+    };
+    const start = () => {
+      clearTimeout(timer);
+      play(0);
+    };
+    const stop = () => {
+      clearTimeout(timer);
+      draw(flatten(doc));
+    };
+    card.addEventListener('pointerenter', start);
+    card.addEventListener('pointerleave', stop);
+    return () => {
+      clearTimeout(timer);
+      card.removeEventListener('pointerenter', start);
+      card.removeEventListener('pointerleave', stop);
+    };
   }, [doc, doc.updatedAt]);
   return <canvas ref={ref} className="home-thumb" aria-hidden="true" />;
+}
+
+/**
+ * What follows the pointer while a drawing is dragged: its thumbnail, small. The whole card would
+ * hide the Trash it's headed to.
+ */
+function dragPreview(source: HTMLElement): HTMLElement | null {
+  const thumb = source.querySelector<HTMLCanvasElement>('canvas.home-thumb');
+  if (!thumb) return null;
+  const copy = document.createElement('canvas');
+  copy.width = thumb.width;
+  copy.height = thumb.height;
+  copy.getContext('2d')?.drawImage(thumb, 0, 0);
+  const preview = document.createElement('div');
+  preview.className = 'home-drag-preview';
+  preview.append(copy);
+  document.body.append(preview);
+  // The browser takes its picture of it as the drag starts; after that it can go.
+  setTimeout(() => preview.remove());
+  return preview;
 }
 
 export function HomeScreen() {
@@ -94,6 +130,22 @@ export function HomeScreen() {
     toast(t('toast.fileRestored', { name }));
   };
   const [dropping, setDropping] = useState(false);
+  // A drawing dragged to the Trash: its card fades, and the Trash lights up while it's over it.
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [overTrash, setOverTrash] = useState(false);
+  // While its name is typed in, a card stays put: a drag in the field selects the text.
+  const [typingId, setTypingId] = useState<string | null>(null);
+  const dragFile = (id: string) => ({
+    draggable: typingId !== id,
+    onDragStart: (e: DragEvent<HTMLElement>) => {
+      e.dataTransfer.setData(FILE_MIME, id);
+      e.dataTransfer.effectAllowed = 'move';
+      const preview = dragPreview(e.currentTarget);
+      if (preview) e.dataTransfer.setDragImage(preview, 16, 16);
+      setDraggedId(id);
+    },
+    onDragEnd: () => setDraggedId(null),
+  });
   const docs = editor.getDocuments();
   // A file with a board of several frames is an animation: its card says so.
   const animated = (id: string) => docs.some((d) => fileIdOf(d) === id && frameCount(d) > 1);
@@ -162,6 +214,28 @@ export function HomeScreen() {
     editor.switchFile(id);
     leaveHome(editor);
   };
+  // A double click on a drawing's name renames it in place: a single click on the name opens the
+  // drawing a moment later, unless a second click comes. The field being typed in opens nothing.
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const openTimer = useRef(0);
+  useEffect(() => () => clearTimeout(openTimer.current), []);
+  const clickCard = (e: MouseEvent, id: string) => {
+    const target = e.target as Element;
+    if (target.closest('input')) return;
+    clearTimeout(openTimer.current);
+    if (!target.closest('.home-file-name')) return open(id);
+    if (e.detail === 1) openTimer.current = window.setTimeout(() => open(id), 300);
+  };
+  const fileName = (f: { id: string; name: string }, className = '') => (
+    <EditableName
+      className={`home-file-name truncate ${className}`}
+      value={f.name}
+      onRename={(name) => editor.renameFile(f.id, name)}
+      startEditing={renamingId === f.id}
+      onEditingStarted={() => setRenamingId(null)}
+      onEditingChange={(editing) => setTypingId((id) => (editing ? f.id : id === f.id ? null : id))}
+    />
+  );
 
   const importFile = async (file?: File | null) => {
     if (await actions.openFile(file)) leaveHome(editor);
@@ -172,10 +246,16 @@ export function HomeScreen() {
       className={`home${dropping ? ' is-dropping' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
+        // Only files from outside open here: a drawing's own card is dragged to the Trash.
+        if (!e.dataTransfer.types.includes('Files')) return;
         e.preventDefault();
         setDropping(true);
       }}
-      onDragLeave={(e) => e.currentTarget === e.target && setDropping(false)}
+      // Leaving the window or cancelling the drag fires on the card or menu under the pointer, not on
+      // the screen itself: the label goes away unless the pointer moved to another part of the screen.
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropping(false);
+      }}
       onDrop={(e) => {
         e.preventDefault();
         setDropping(false);
@@ -192,6 +272,17 @@ export function HomeScreen() {
         {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
         {
           <div className="home-top-actions">
+            {shown.length > 0 && (
+              <button
+                type="button"
+                className="btn"
+                data-tip={t('home.downloadAllTip')}
+                onClick={() => void actions.downloadAllFiles(shown.map((f) => f.id))}
+              >
+                <Icon name="download" size={16} />
+                {t('home.downloadAll')}
+              </button>
+            )}
             <button type="button" className="btn" onClick={() => void importFile()}>
               <Icon name="upload" size={16} />
               {t('home.import')}
@@ -219,8 +310,23 @@ export function HomeScreen() {
               </button>
               <button
                 type="button"
-                className={`home-nav-item${showDeleted ? ' is-active' : ''}`}
+                className={`home-nav-item${showDeleted ? ' is-active' : ''}${overTrash ? ' drop-into' : ''}`}
                 onClick={() => setShowDeleted(true)}
+                onDragOver={(e) => {
+                  if (!e.dataTransfer.types.includes(FILE_MIME)) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  setOverTrash(true);
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOverTrash(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setOverTrash(false);
+                  const file = files.find((f) => f.id === e.dataTransfer.getData(FILE_MIME));
+                  if (file) actions.deleteFile(file.id, file.name);
+                }}
               >
                 <Icon name="trash" size={16} />
                 {t('home.deleted')}
@@ -230,6 +336,7 @@ export function HomeScreen() {
                 <a className="home-nav-link" href={DOCS_URL} target="_blank" rel="noopener">
                   <Icon name="docs" size={14} />
                   {t('home.docsTitle')}
+                  <Icon name="external" size={12} />
                 </a>
                 <button
                   type="button"
@@ -239,11 +346,33 @@ export function HomeScreen() {
                 >
                   <Icon name="bug" size={14} />
                   {t('home.bugTitle')}
+                  <Icon name="external" size={12} />
                 </button>
                 <a className="home-nav-link" href={CHANGELOG_URL} target="_blank" rel="noopener">
                   <Icon name="news" size={14} />
                   {t('home.newsTitle', { version: __APP_VERSION__ })}
+                  <Icon name="external" size={12} />
                 </a>
+                <button
+                  type="button"
+                  className="home-nav-link"
+                  aria-haspopup="menu"
+                  aria-label={t('menu.language')}
+                  onClick={(e) =>
+                    openMenu(
+                      e.currentTarget,
+                      LOCALES.map((l) => ({
+                        label: l.label,
+                        checked: getLocale() === l.id,
+                        onSelect: () => setLocale(l.id, 'manual'),
+                      })),
+                    )
+                  }
+                >
+                  <Icon name="language" size={14} />
+                  {LOCALES.find((l) => l.id === getLocale())?.label}
+                  <Icon name="caret" size={12} />
+                </button>
               </div>
             </nav>
             <main className="home-main">
@@ -310,23 +439,14 @@ export function HomeScreen() {
                   <h2 className="home-welcome-title">{t('template.startTitle')}</h2>
                   <div className="home-templates-grid">
                     {TEMPLATES.map((tpl) => (
-                      <button
+                      <PresetCard
                         key={tpl.id}
-                        type="button"
-                        className="home-card home-template"
+                        template={tpl}
                         onClick={() => {
                           createFromTemplate(editor, tpl, t('default.untitled'));
                           leaveHome(editor);
                         }}
-                      >
-                        <TemplatePreview template={tpl} />
-                        <span className="home-card-info">
-                          <span className="home-card-name truncate">{t(tpl.label)}</span>
-                          <span className="home-card-meta muted truncate">
-                            {tpl.width} × {tpl.height}
-                          </span>
-                        </span>
-                      </button>
+                      />
                     ))}
                   </div>
                 </section>
@@ -439,8 +559,10 @@ export function HomeScreen() {
                         return (
                           <tr
                             key={f.id}
+                            className={draggedId === f.id ? 'is-dragging' : undefined}
+                            {...dragFile(f.id)}
                             tabIndex={0}
-                            onClick={() => open(f.id)}
+                            onClick={(e) => clickCard(e, f.id)}
                             onKeyDown={(e) => {
                               if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' '))
                                 return;
@@ -451,7 +573,7 @@ export function HomeScreen() {
                             <td className="home-td-name">
                               <span>
                                 <HomeThumb doc={doc} />
-                                <span className="truncate">{f.name}</span>
+                                {fileName(f)}
                                 {animated(f.id) && (
                                   <span className="home-animated-inline" data-tip={t('home.animated')}>
                                     <Icon name="timeline" size={14} />
@@ -499,10 +621,11 @@ export function HomeScreen() {
                       return (
                         <div
                           key={f.id}
-                          className="home-card"
+                          className={`home-card${draggedId === f.id ? ' is-dragging' : ''}`}
+                          {...dragFile(f.id)}
                           role="button"
                           tabIndex={0}
-                          onClick={() => open(f.id)}
+                          onClick={(e) => clickCard(e, f.id)}
                           onKeyDown={(e) => {
                             if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
                             e.preventDefault();
@@ -516,7 +639,7 @@ export function HomeScreen() {
                             </span>
                           )}
                           <span className="home-card-info">
-                            <span className="home-card-name truncate">{f.name}</span>
+                            {fileName(f, 'home-card-name')}
                             <span className="home-card-meta muted truncate">
                               {formatUpdated(f.updatedAt, t('home.justNow'))} · {f.width} × {f.height}
                             </span>
@@ -528,7 +651,10 @@ export function HomeScreen() {
                             aria-haspopup="menu"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openMenu(e.currentTarget, fileMenu(editor, actions, f));
+                              openMenu(
+                                e.currentTarget,
+                                fileMenu(editor, actions, f, () => setRenamingId(f.id)),
+                              );
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
                           />

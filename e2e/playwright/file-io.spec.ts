@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 import {
   activeLayerThumbnailHasPixels,
@@ -117,4 +118,71 @@ test('exports PNG and Aseprite files', async ({ page }) => {
 
   // Aseprite file header magic.
   expect(aseprite.readUInt16LE(4)).toBe(0xa5e0);
+});
+
+test('opens an Aseprite file', async ({ page }) => {
+  await createNewFile(page);
+
+  // Open the Aseprite file through the regular File menu.
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await clickMenuItem(page, 'File', 'Open a .baipix file…');
+
+  const fileChooser = await fileChooserPromise;
+
+  await fileChooser.setFiles(
+    fileURLToPath(new URL('../../tests/fixtures/aseprite/abcd.aseprite', import.meta.url)),
+  );
+
+  // Verify that the file was opened as a new document.
+  await expect(page.locator('.menubar-file input')).toHaveValue('abcd');
+  await expect(page.locator('canvas.canvas')).toBeVisible();
+
+  // Verify that all four source layers are available in the editor.
+  await expect.poll(() => getLayerNames(page)).toHaveLength(4);
+  expect((await getLayerNames(page)).sort()).toEqual(['a', 'b', 'c', 'd']);
+});
+
+test('imports a sprite sheet as animation frames from File menu', async ({ page }) => {
+  await createNewFile(page);
+
+  // Generate an 8×4 PNG buffer with two 4×4 cells side by side.
+  const pngBytes = await page.evaluate(async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 8;
+    canvas.height = 4;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not create canvas context.');
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(0, 0, 4, 4);
+    ctx.fillStyle = '#0000ff';
+    ctx.fillRect(4, 0, 4, 4);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Failed to encode PNG.');
+    return Array.from(new Uint8Array(await blob.arrayBuffer()));
+  });
+
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await clickMenuItem(page, 'File', 'Import a sprite sheet…');
+  const fileChooser = await fileChooserPromise;
+
+  await fileChooser.setFiles({
+    name: 'sheet.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(pngBytes),
+  });
+
+  const dialog = page.locator('dialog.sprite-sheet-dialog');
+  await expect(dialog).toBeVisible();
+
+  // Enter 2 columns (which automatically recalculates cell width to 4).
+  const colsInput = dialog.getByLabel('Columns');
+  await colsInput.fill('2');
+
+  await dialog.getByRole('button', { name: 'Import 2 frames' }).click();
+  await expect(dialog).toBeHidden();
+
+  // Open the timeline to verify the imported frames.
+  await page.locator('.animate-button').click();
+  await expect(page.locator('.timeline-frame')).toHaveCount(2);
+  await expect(page.locator('.timeline-count')).toHaveText('1 / 2');
 });

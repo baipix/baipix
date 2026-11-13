@@ -6,7 +6,7 @@ import { IconButton } from '../components/IconButton';
 import { openMenu } from '../components/Menu';
 import { NumberField } from '../components/NumberField';
 import { PaletteColorButton } from '../components/PaletteColorButton';
-import { Section } from '../components/Section';
+import { openSection, Section } from '../components/Section';
 
 /**
  * The active layer's effects, like in Figma: "+" adds one, each can be tuned, hidden or removed
@@ -51,6 +51,7 @@ export function EffectsSection() {
   return (
     <Section
       id="effects"
+      empty={effects.length === 0}
       title={t('section.effects')}
       info={t('effects.hint')}
       aside={
@@ -80,7 +81,10 @@ export function EffectsSection() {
                 e.currentTarget,
                 EFFECT_TYPES.map((type) => ({
                   label: t(`effects.${type}`),
-                  onSelect: () => editor.addEffect(type),
+                  onSelect: () => {
+                    editor.addEffect(type);
+                    openSection('effects');
+                  },
                 })),
               )
             }

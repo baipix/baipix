@@ -22,8 +22,14 @@ export type DialogState =
       /** The imported image at its own size, and the pixel grid found in it. */
       image: PixelBlock;
       grid: PixelGrid;
-      onRecover: (block: PixelBlock) => void;
+      onRecover: (block: PixelBlock, grid: PixelGrid) => void;
       onKeep: () => void;
+    }
+  | {
+      type: 'spriteSheet';
+      image: PixelBlock;
+      onSlice: (cellWidth: number, cellHeight: number, cols: number, rows: number, duration: number) => void;
+      onSingleImage: () => void;
     };
 
 export interface PreviewWindow {
@@ -155,18 +161,115 @@ export interface ToastAction {
   label: string;
   run: () => void;
 }
+
+export interface ToastDetails {
+  label: string;
+  items: string[];
+}
+
 export interface Toast {
   id: number;
   message: string;
   action?: ToastAction;
+  details?: ToastDetails;
+  detailsOpen?: boolean;
 }
+
 export const toastStore = createStore<{ toasts: Toast[] }>({ toasts: [] });
+
 let toastId = 0;
-export const dismissToast = (id: number): void =>
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+let toastTimerId: number | null = null;
+
+function clearToastTimer(id?: number): void {
+  // Nothing to cancel, or the timer belongs to a different toast
+  if (toastTimer === null) return;
+  if (id !== undefined && toastTimerId !== id) return;
+
+  clearTimeout(toastTimer);
+
+  toastTimer = null;
+  toastTimerId = null;
+}
+
+export const dismissToast = (id: number): void => {
+  clearToastTimer(id);
   toastStore.set((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) }));
+};
+
+function scheduleToastDismiss(id: number, delay: number): void {
+  clearToastTimer();
+
+  toastTimerId = id;
+  toastTimer = setTimeout(() => {
+    toastTimer = null;
+    toastTimerId = null;
+
+    const current = toastStore.get().toasts.find((item) => item.id === id);
+
+    if (current && !current.detailsOpen) {
+      dismissToast(id);
+    }
+  }, delay);
+}
+
+export function setToastDetailsOpen(id: number, open: boolean): void {
+  const current = toastStore.get().toasts.find((item) => item.id === id);
+
+  if (!current?.details) return;
+
+  toastStore.set((s) => ({
+    toasts: s.toasts.map((item) => (item.id === id ? { ...item, detailsOpen: open } : item)),
+  }));
+
+  if (open) {
+    clearToastTimer(id);
+  } else {
+    scheduleToastDismiss(id, 6000);
+  }
+}
+
 /** Shows a short message. With an action (e.g. Undo), it stays longer so there is time to click. */
-export function toast(message: string, action?: ToastAction): void {
+export function toast(message: string, action?: ToastAction, details?: ToastDetails): void {
   const id = ++toastId;
-  toastStore.set({ toasts: [{ id, message, action }] });
-  setTimeout(() => dismissToast(id), action ? 6000 : 2800);
+
+  toastStore.set({
+    toasts: [
+      {
+        id,
+        message,
+        ...(action && { action }),
+        ...(details && { details, detailsOpen: false }),
+      },
+    ],
+  });
+
+  // Additional details list.
+  const hasExtraContent = Boolean(action || details);
+  // The dismiss timer pauses while it is expanded, and after collapsing,
+  // the message stays for another six seconds.
+  const duration = hasExtraContent ? 6000 : 2800;
+  scheduleToastDismiss(id, duration);
+}
+
+/** Shows a message after the currently visible toast has been dismissed. */
+export function toastWhenIdle(message: string, beforeShow?: () => boolean): void {
+  const show = () => {
+    if (beforeShow && !beforeShow()) return;
+    toast(message);
+  };
+
+  if (toastStore.get().toasts.length === 0) {
+    show();
+    return;
+  }
+
+  let unsubscribe = () => {};
+
+  unsubscribe = toastStore.subscribe(() => {
+    if (toastStore.get().toasts.length > 0) return;
+
+    unsubscribe();
+    show();
+  });
 }

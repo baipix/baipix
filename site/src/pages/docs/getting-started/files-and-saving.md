@@ -16,7 +16,7 @@ Each board keeps its last 50 steps of undo and redo along with the drawing. Relo
 
 ## Keep a copy
 
-Deleted a file by mistake? It waits in the **Trash**, in the files screen's sidebar, for as long as you like: **Restore** brings it back as it was, and its … menu deletes it for good.
+On the files screen, a drawing goes to the Trash from its … menu, or by dragging its card onto **Trash** in the sidebar. Deleted one by mistake? It waits there for as long as you like: **Restore** brings it back as it was, and its … menu deletes it for good.
 
 <figure class="shot">
   <img class="for-light" src="../../shots/trash-light.webp" width="1440" height="316" alt="The Trash in the files screen’s sidebar, with a drawing deleted three days ago." loading="lazy" />
@@ -26,6 +26,7 @@ Deleted a file by mistake? It waits in the **Trash**, in the files screen's side
 After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. Your browser's storage is safe from one day to the next, but it isn't a backup: it goes away if you clear the site's data, and a private window forgets everything once it's closed. To keep a drawing for good, or to move it to another computer:
 
 - **File › Download as .baipix** saves the whole file: its boards, layers, groups, frames, components and palette.
+- **Download all**, at the top of the home screen, saves every drawing at once: one .baipix file each, in a .zip.
 - **File › Open a .baipix file…** opens it again, anywhere.
 
 To use the drawing elsewhere, export it instead: see [Export](../../export/export/), or the code button next to it.
@@ -35,6 +36,7 @@ To use the drawing elsewhere, export it instead: see [Export](../../export/expor
 On the files screen, or in the File menu:
 
 - **Rename file** (<kbd>F2</kbd>), **Duplicate file**, **Delete file**. A deleted file goes to the Trash, and comes back with Undo in the message that follows.
+- On the files screen, a double click on a drawing's name, or **Rename** in its … menu, lets you type a new one in place. <kbd>Enter</kbd> keeps it, <kbd>Esc</kbd> gives the old one back.
 - **File › Recent** switches between your last files.
 - A new file you never drew in goes away when you open another one, so tries don't pile up.
 

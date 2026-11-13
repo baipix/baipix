@@ -76,6 +76,7 @@ What's selected, in five sections:
 - **Pan** with the Hand tool (<kbd>H</kbd>), or hold <kbd>Space</kbd> and drag with any tool.
 - **Zoom** with a pinch on a trackpad, the mouse wheel, or <kbd>Ctrl</kbd> with either, toward the pointer.
 - On a trackpad, **two fingers pan** in any direction.
+- On a phone or tablet, pinch with two fingers to zoom and pan. A **long press** picks the color under your finger, a **two-finger tap** undoes and a **three-finger tap** redoes.
 - In the top right corner: the drawing's size, its number of layers and colors, and the pointer's coordinates.
 - In the bottom right corner: the version, which opens what's new.
 
@@ -97,4 +98,4 @@ A small floating window with the whole drawing at a fixed size, so you see it as
   <img class="for-dark" src="../../shots/files-dark.webp" width="1440" height="900" alt="The files screen: a sidebar with Drawings and Trash, the drawings as cards, a sort menu, grid and list views, and Import and Create at the top right." loading="lazy" />
 </figure>
 
-Baipix opens on your drawings, laid out like a files app: a sidebar with Drawings and the Trash, and at its bottom the docs, a bug or idea form, and what's new; Import and Create at the top right; a menu to sort the drawings (alphabetically or by last change, oldest or newest first) and a grid or a list view. The first time, before any drawing, the same screen welcomes you with the templates as cards: one click, and the canvas is ready, its palette and views set. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).
+Baipix opens on your drawings, laid out like a files app: a sidebar with Drawings and the Trash, and at its bottom the docs, a bug or idea form, and what's new; Import and Create at the top right; a menu to sort the drawings (alphabetically or by last change, oldest or newest first) and a grid or a list view. The first time, before any drawing, the same screen welcomes you with the presets as cards: one click, and the canvas is ready, its palette and views set. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).

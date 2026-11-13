@@ -61,8 +61,10 @@ export const SHORTCUT_GROUPS: { title: MessageKey; items: [MessageKey, string][]
       ['component.detach', 'Ctrl+Alt+B'],
       ['shortcuts.deleteLayer', 'Del'],
       ['adjust.outline', 'Shift+O'],
-      ['menu.layerUp', 'Alt+↑'],
-      ['menu.layerDown', 'Alt+↓'],
+      ['menu.bringToFront', 'Ctrl+Shift+]'],
+      ['menu.layerUp', 'Ctrl+] / Alt+↑'],
+      ['menu.layerDown', 'Ctrl+[ / Alt+↓'],
+      ['menu.sendToBack', 'Ctrl+Shift+['],
     ],
   },
   {

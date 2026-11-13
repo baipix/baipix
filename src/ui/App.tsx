@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties 
 import { isBoard } from '../engine/document';
 import type { Editor } from '../engine/editor';
 import { ONION } from '../engine/frames';
-import { resolveLocaleSelection, setLocale, t, useT } from '../i18n';
+import { resolveLocaleSelection, setLocale, subscribeLocale, t, useT } from '../i18n';
 import { importLegacyWorkspace } from '../io/legacy';
 import type { StorageAdapter } from '../storage/workspace';
 import { ActionsContext } from './ActionsContext';
@@ -34,6 +34,7 @@ import { useAutosave } from './hooks/useAutosave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useNotices } from './hooks/useNotices';
 import { useShiftArrowSteps } from './hooks/useShiftArrowSteps';
+import { PwaLifecycle } from './pwa';
 import { leaveHome, showEmptyHome } from './home';
 import { HomeScreen } from './panels/HomeScreen';
 import { LeftPanel } from './panels/LeftPanel';
@@ -88,8 +89,9 @@ function onionSkin(o: unknown): UiState['onion'] {
 }
 
 /** Restores the saved workspace (or imports the prototype's drawings) before enabling autosave. */
-function useRestore(editor: Editor, storage: StorageAdapter): boolean {
+function useRestore(editor: Editor, storage: StorageAdapter): { ready: boolean; pwaReady: boolean } {
   const [ready, setReady] = useState(false);
+  const [pwaReady, setPwaReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -220,18 +222,20 @@ function useRestore(editor: Editor, storage: StorageAdapter): boolean {
           },
         });
       }
+
+      setPwaReady(true);
     })();
     return () => {
       cancelled = true;
     };
   }, [editor, storage]);
-  return ready;
+  return { ready, pwaReady };
 }
 
 export function App({ editor, storage }: { editor: Editor; storage: StorageAdapter }) {
   useT();
   const actions = useMemo(() => createActions(editor), [editor]);
-  const ready = useRestore(editor, storage);
+  const { ready, pwaReady } = useRestore(editor, storage);
   const { uiHidden, sheet, panelWidths, home, timeline } = uiStore.use((s) => s);
   // A file with no board: no size, coordinates or preview to show.
   const noBoard = useSyncExternalStore(editor.subscribe, () => !isBoard(editor.getState().doc));
@@ -240,9 +244,10 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
   useEffect(() => {
     if (ready && !home) startTourOnce();
   }, [ready, home]);
+  useEffect(() => subscribeLocale(() => editor.setLabels(editorLabels())), [editor]);
   useNotices(editor);
   useShiftArrowSteps();
-  useAutosave(editor, storage, ready);
+  const flushAutosave = useAutosave(editor, storage, ready);
 
   const style = {
     '--left-width': `${panelWidths.left}px`,
@@ -286,12 +291,14 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             </main>
             <RightPanel />
           </div>
+          {__PWA_ENABLED__ && pwaReady && <PwaLifecycle flushAutosave={flushAutosave} />}
           {home && <HomeScreen />}
           <ColorPicker />
           <ColorAdjustPanel />
           <MenuHost />
           <CommandPalette />
-          <Tour />
+          {/* The tour points at the editor: it waits while the home screen is open. */}
+          {!home && <Tour />}
           <Dialogs />
           <Tooltips />
           <Toasts />

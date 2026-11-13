@@ -1,4 +1,4 @@
-import { alpha, type Color } from '../engine/color';
+import { alpha, toHex, type Color } from '../engine/color';
 import { flatten, flattenFrame } from '../engine/composite';
 import {
   createDocument,
@@ -8,11 +8,25 @@ import {
   MAX_SIZE,
   type PixelDoc,
 } from '../engine/document';
-import { DEFAULT_DURATION, celOf, frameCount } from '../engine/frames';
+import { DEFAULT_DURATION, MAX_FRAMES, celOf, frameCount } from '../engine/frames';
 import type { Editor } from '../engine/editor';
 import { uniqueColors, type PixelBlock } from '../engine/region';
-import { detectPixelGrid, gridSize } from '../engine/upscale';
+import { detectPixelGrid, downscaleToGrid, gridSize } from '../engine/upscale';
+import {
+  MIN_SPRITE_SHEET_SIDE,
+  createAnimatedDocument,
+  fitMaxSide,
+  resizeBlockNearest,
+  sliceSpriteSheet,
+  type ImportedFrame,
+} from '../engine/import/frames';
 import { toAseprite } from '../engine/export/aseprite';
+import {
+  AsepriteError,
+  fromAseprite,
+  type AsepriteImportErrorCode,
+  type AsepriteWarningCode,
+} from '../engine/import/aseprite';
 import { CODE_EXTENSIONS, codeOf, type CodeLanguage } from '../engine/export/code';
 import { MAX_EXPORT_SIZE, renderGeometry, toLayeredSvg, toSvg } from '../engine/export/svg';
 import { frameSpriteSheet } from '../engine/export/frames';
@@ -20,7 +34,7 @@ import { cutTiles, tiledMap, tiledTileset } from '../engine/export/tileset';
 import { exportableLayers, layerSpriteSheet, spriteSheetJson } from '../engine/export/layers';
 import { spriteSheetGrid } from '../engine/export/spriteSheet';
 import { parsePaletteFile, toGpl, toHexList } from '../engine/palette';
-import { t } from '../i18n';
+import { t, type MessageKey } from '../i18n';
 import { copyHtmlAndPng, copyPng, copyText } from '../io/clipboard';
 import { saveFile, safeFileName } from '../io/download';
 import { imageToBlock, loadImage, readPixels } from '../io/image';
@@ -29,9 +43,10 @@ import { referenceFromFile } from '../io/reference';
 import { zip } from '../io/zip';
 import { canvasToBlob, renderToCanvas } from '../io/png';
 import { encodeGif } from '../io/gif';
+import { decodeGif } from '../io/gifDecode';
 import { FILE_EXTENSION, fileFromJson, fileToJson } from '../storage/fileFormat';
 import { layerClipFromHtml, layerClipHtml, pixelClipHtml, pixelClipIdFromHtml } from '../storage/layerClip';
-import { leaveHome, showEmptyHome } from './home';
+import { dropStarter, showEmptyHome } from './home';
 import { openDialog, toast, uiStore } from './uiStore';
 
 /** Every export format, also to check the one read back from a save. */
@@ -49,6 +64,62 @@ export const EXPORT_FORMATS = [
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 const PALETTE_FILES = '.hex,.gpl,.txt,text/plain';
+
+const ASEPRITE_WARNING_KEYS: Record<AsepriteWarningCode, MessageKey> = {
+  layerMovementLocks: 'toast.asepriteWarningLayerMovementLocks',
+  backgroundLayers: 'toast.asepriteWarningBackgroundLayers',
+  referenceLayers: 'toast.asepriteWarningReferenceLayers',
+  unsupportedBlendModes: 'toast.asepriteWarningUnsupportedBlendModes',
+  deepGroupsFlattened: 'toast.asepriteWarningDeepGroupsFlattened',
+  deepGroupBlendModes: 'toast.asepriteWarningDeepGroupBlendModes',
+  tilemapsSkipped: 'toast.asepriteWarningTilemapsSkipped',
+  unsupportedLayerTypes: 'toast.asepriteWarningUnsupportedLayerTypes',
+  pixelAspectRatio: 'toast.asepriteWarningPixelAspectRatio',
+  animationTags: 'toast.asepriteWarningAnimationTags',
+  userData: 'toast.asepriteWarningUserData',
+  slices: 'toast.asepriteWarningSlices',
+  embeddedIccProfile: 'toast.asepriteWarningEmbeddedIccProfile',
+  customColorProfile: 'toast.asepriteWarningCustomColorProfile',
+  celOrdering: 'toast.asepriteWarningCelOrdering',
+  unsupportedCelTypes: 'toast.asepriteWarningUnsupportedCelTypes',
+  preciseCelBounds: 'toast.asepriteWarningPreciseCelBounds',
+  unsupportedCelExtraFlags: 'toast.asepriteWarningUnsupportedCelExtraFlags',
+  frameDurations: 'toast.asepriteWarningFrameDurations',
+  externalFiles: 'toast.asepriteWarningExternalFiles',
+  tilesetsSkipped: 'toast.asepriteWarningTilesetsSkipped',
+  gridMetadata: 'toast.asepriteWarningGridMetadata',
+  unsupportedChunks: 'toast.asepriteWarningUnsupportedChunks',
+};
+
+const ASEPRITE_ERROR_KEYS: Record<AsepriteImportErrorCode, MessageKey> = {
+  unreadable: 'toast.unreadableAseprite',
+  canvasTooLarge: 'toast.asepriteCanvasTooLarge',
+  tooManyFrames: 'toast.asepriteTooManyFrames',
+  celTooLarge: 'toast.asepriteCelTooLarge',
+};
+
+/** The palette as a picture: one square per color, in the palette's order. */
+const PALETTE_SWATCH_PX = 32;
+const PALETTE_SWATCHES_PER_ROW = 8;
+
+function paletteCanvas(colors: Color[]): HTMLCanvasElement {
+  const columns = Math.max(1, Math.min(PALETTE_SWATCHES_PER_ROW, colors.length));
+  const rows = Math.max(1, Math.ceil(colors.length / PALETTE_SWATCHES_PER_ROW));
+  const canvas = document.createElement('canvas');
+  canvas.width = columns * PALETTE_SWATCH_PX;
+  canvas.height = rows * PALETTE_SWATCH_PX;
+  const ctx = canvas.getContext('2d')!;
+  colors.forEach((c, i) => {
+    ctx.fillStyle = toHex(c);
+    ctx.fillRect(
+      (i % PALETTE_SWATCHES_PER_ROW) * PALETTE_SWATCH_PX,
+      Math.floor(i / PALETTE_SWATCHES_PER_ROW) * PALETTE_SWATCH_PX,
+      PALETTE_SWATCH_PX,
+      PALETTE_SWATCH_PX,
+    );
+  });
+  return canvas;
+}
 
 function uniqueArchiveName(filename: string, usedNames: Set<string>): string {
   const dot = filename.lastIndexOf('.');
@@ -248,6 +319,51 @@ export function createActions(editor: Editor) {
     return codeOf(language, { name: d.name, width: d.width, height: d.height, pixels, svg, flatSvg });
   }
 
+  function isAsepriteFile(file: File): boolean {
+    return /\.(?:ase|aseprite)$/i.test(file.name);
+  }
+
+  function isImageFile(file: File): boolean {
+    return file.type.startsWith('image/') || /\.(?:png|jpe?g|gif|webp|bmp|avif)$/i.test(file.name);
+  }
+
+  function isGifFile(file: File): boolean {
+    return file.type === 'image/gif' || /\.gif$/i.test(file.name);
+  }
+
+  async function openAsepriteFile(file: File): Promise<boolean> {
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const result = await fromAseprite(bytes);
+      const name = file.name.replace(/\.(?:ase|aseprite)$/i, '').trim() || 'Untitled';
+
+      result.document.name = name;
+
+      editor.addDocument(result.document);
+
+      if (result.warnings.length) {
+        const warnings = result.warnings.map(({ code, values }) => t(ASEPRITE_WARNING_KEYS[code], values));
+
+        toast(t('toast.asepriteOpenedWithWarnings', { name: file.name }), undefined, {
+          label: t('toast.asepriteWarningDetails', { count: warnings.length }),
+          items: warnings,
+        });
+      } else {
+        toast(t('toast.opened', { name: file.name }));
+      }
+
+      return true;
+    } catch (error) {
+      if (error instanceof AsepriteError) {
+        toast(t(ASEPRITE_ERROR_KEYS[error.code], error.values));
+      } else {
+        toast(t('toast.unreadableAseprite'));
+      }
+
+      return false;
+    }
+  }
+
   /** Replaces the palette with a .hex, .gpl or .txt file (picked, or dropped on the canvas). */
   async function importPalette(file?: File | null) {
     const f = file ?? (await pickFile(PALETTE_FILES));
@@ -294,6 +410,136 @@ export function createActions(editor: Editor) {
     if (r === 'saved') toast(t('toast.saved', { name: filename }));
     else if (r === 'cancelled') toast(t('toast.downloadCancelled'));
     else toast(t('toast.downloadBusy'));
+  }
+
+  /** Adds a new document from a pixel block and shows a toast (with "Use as reference" if from an imported file). */
+  function addDocumentFromBlock(
+    block: PixelBlock & { scaled?: boolean },
+    name: string,
+    message: string,
+    file?: File | null,
+    asNewFile = false,
+  ) {
+    const previous = doc().id;
+    const next = createDocument(name, block.width, block.height, t('default.image'));
+    next.layers[0].pixels.set(block.pixels);
+    editor.addDocument(next);
+    if (asNewFile || !file) return toast(message);
+    toast(
+      message,
+      asReferenceAction(file, () => {
+        editor.discardFile(next.id);
+        editor.switchBoard(previous);
+      }),
+    );
+  }
+
+  /** Imports an HTMLImageElement directly as a new document, scaling if larger than MAX_SIZE. */
+  function addImageAsFile(img: HTMLImageElement, name: string, file?: File | null, asNewFile = false) {
+    const block = imageToBlock(img, MAX_SIZE, MAX_SIZE);
+    addDocumentFromBlock(
+      block,
+      name,
+      block.scaled
+        ? t('toast.imageShrunk', { w: block.width, h: block.height, max: MAX_SIZE })
+        : t('toast.imageAsFile', { w: block.width, h: block.height }),
+      file,
+      asNewFile,
+    );
+  }
+
+  /** Decodes and imports an animated GIF into a multi-frame PixelDoc, offering pixel recovery when upscaled. */
+  async function importAnimatedGif(file: File, name: string): Promise<boolean> {
+    let decoded: ReturnType<typeof decodeGif> = null;
+    try {
+      decoded = decodeGif(new Uint8Array(await file.arrayBuffer()));
+    } catch {
+      return false;
+    }
+    if (!decoded || decoded.frames.length <= 1) return false;
+
+    let grid: ReturnType<typeof detectPixelGrid> = null;
+    let previewFrame = decoded.frames[0];
+    for (const candidate of decoded.frames.slice(0, 10)) {
+      const detected = detectPixelGrid(candidate.pixels, decoded.width, decoded.height);
+      if (detected) {
+        grid = detected;
+        previewFrame = candidate;
+        break;
+      }
+    }
+    const detectedSize = grid && gridSize(decoded.width, decoded.height, grid);
+    const canRecover = Boolean(
+      grid && detectedSize && detectedSize.width <= MAX_SIZE && detectedSize.height <= MAX_SIZE,
+    );
+
+    let targetWidth = decoded.width;
+    let targetHeight = decoded.height;
+    let importedFrames: ImportedFrame[] = decoded.frames;
+    let recoveredScale: number | null = null;
+    let shrunk = decoded.shrunk;
+
+    if (canRecover && grid) {
+      const usedGrid = await new Promise<typeof grid | null>((resolve) =>
+        openDialog({
+          type: 'upscaled',
+          image: { width: decoded.width, height: decoded.height, pixels: previewFrame.pixels },
+          grid,
+          onRecover: (_block, nextGrid) => resolve(nextGrid),
+          onKeep: () => resolve(null),
+        }),
+      );
+      if (usedGrid) {
+        const recoveredSize = gridSize(decoded.width, decoded.height, usedGrid);
+        targetWidth = recoveredSize.width;
+        targetHeight = recoveredSize.height;
+        recoveredScale = usedGrid.scale;
+        importedFrames = decoded.frames.map((frame) => ({
+          pixels: downscaleToGrid(frame.pixels, decoded.width, decoded.height, usedGrid).pixels,
+          duration: frame.duration,
+        }));
+      }
+    }
+
+    if (recoveredScale === null && !shrunk) {
+      const fitted = fitMaxSide(targetWidth, targetHeight, MAX_SIZE);
+      if (fitted.scaled) {
+        shrunk = true;
+        importedFrames = importedFrames.map((frame) => ({
+          pixels: resizeBlockNearest(frame.pixels, targetWidth, targetHeight, fitted.width, fitted.height),
+          duration: frame.duration,
+        }));
+        targetWidth = fitted.width;
+        targetHeight = fitted.height;
+      }
+    }
+
+    const next = createAnimatedDocument(name, targetWidth, targetHeight, importedFrames, t('default.image'));
+    editor.addDocument(next);
+    if (decoded.truncated) {
+      toast(t('toast.gifFramesTrimmed', { max: MAX_FRAMES }));
+    } else if (recoveredScale !== null) {
+      toast(
+        t('toast.gifPixelsRecovered', {
+          count: importedFrames.length,
+          w: targetWidth,
+          h: targetHeight,
+          scale: recoveredScale,
+        }),
+      );
+    } else if (shrunk) {
+      toast(
+        t('toast.gifShrunk', {
+          count: importedFrames.length,
+          w: targetWidth,
+          h: targetHeight,
+          max: MAX_SIZE,
+        }),
+      );
+    } else {
+      toast(t('toast.gifImported', { count: importedFrames.length, w: targetWidth, h: targetHeight }));
+    }
+    return true;
   }
 
   const actions = {
@@ -620,9 +866,14 @@ export function createActions(editor: Editor) {
     },
 
     /** `.hex` (one hex code per line, Lospec) or `.gpl` (GIMP, Aseprite, Krita). */
-    async exportPalette(format: 'hex' | 'gpl' = 'hex') {
+    async exportPalette(format: 'hex' | 'gpl' | 'png' = 'hex') {
       const colors = editor.getState().palette.colors;
       const filename = `${baseName()}-palette.${format}`;
+      if (format === 'png') {
+        const blob = await canvasToBlob(paletteCanvas(colors));
+        await report(filename, saveFile(filename, blob, 'image/png'));
+        return;
+      }
       const content = format === 'gpl' ? toGpl(colors, `${doc().name} palette`) : toHexList(colors);
       await report(filename, saveFile(filename, content, 'text/plain'));
     },
@@ -635,9 +886,34 @@ export function createActions(editor: Editor) {
       await report(filename, saveFile(filename, fileToJson(editor.fileBoards()), 'application/json'));
     },
 
+    /** Each of the given files as its own .baipix, in one .zip: a copy of the drawings kept in the browser. */
+    async downloadAllFiles(fileIds: string[]) {
+      const used = new Set<string>();
+      const encoder = new TextEncoder();
+      const files = fileIds
+        .map((id) => editor.boardsOfFile(id))
+        .filter((boards) => boards.length > 0)
+        .map((boards) => ({
+          name: uniqueArchiveName(
+            `${safeFileName(fileNameOf(boards[0])) || 'drawing'}${FILE_EXTENSION}`,
+            used,
+          ),
+          data: encoder.encode(fileToJson(boards)),
+        }));
+      if (!files.length) return;
+      const filename = `baipix-${new Date().toISOString().slice(0, 10)}.zip`;
+      await report(filename, saveFile(filename, new Blob([zip(files) as BlobPart]), 'application/zip'));
+    },
+
     async openDocument() {
-      const file = await pickFile(`${FILE_EXTENSION},application/json`);
+      const file = await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite`);
       if (!file) return;
+
+      if (isAsepriteFile(file)) {
+        await openAsepriteFile(file);
+        return;
+      }
+
       try {
         editor.addDocuments(fileFromJson(await file.text()));
         toast(t('toast.opened', { name: file.name }));
@@ -646,10 +922,13 @@ export function createActions(editor: Editor) {
       }
     },
 
+    openAsepriteDocument: openAsepriteFile,
+
     /** Same size as the canvas: added as a layer (unless `asNewFile`). Otherwise: a new file. */
     async importImage(file?: File | null, asNewFile = false) {
       const f = file ?? (await pickFile('image/*'));
       if (!f) return;
+
       if (/\.(hex|gpl)$/i.test(f.name)) {
         await importPalette(f);
         return;
@@ -662,7 +941,69 @@ export function createActions(editor: Editor) {
         }
         return;
       }
-      if (!f.type.startsWith('image/')) {
+      if (!isImageFile(f)) {
+        toast(t('toast.notImage'));
+        return;
+      }
+      const name = f.name.replace(/\.[^.]+$/, '') || t('default.image');
+
+      if (isGifFile(f) && (await importAnimatedGif(f, name))) {
+        return;
+      }
+
+      let img: HTMLImageElement;
+      try {
+        img = await loadImage(f);
+      } catch {
+        toast(t('toast.unreadableImage'));
+        return;
+      }
+      const d = doc();
+      if (!asNewFile && img.naturalWidth === d.width && img.naturalHeight === d.height) {
+        editor.paste(imageToBlock(img, d.width, d.height), name);
+        editor.deselect();
+        editor.setTool('pencil');
+        toast(t('toast.imageAsLayer'), asReferenceAction(f, removePastedLayer()));
+        return;
+      }
+
+      // Pixel art scaled up (a screenshot, an export at 800%): offer to bring it back to its pixels.
+      const full = readPixels(img);
+      const grid = full && detectPixelGrid(full.pixels, full.width, full.height);
+      const size = full && grid && gridSize(full.width, full.height, grid);
+      if (!full || !grid || !size || size.width > MAX_SIZE || size.height > MAX_SIZE) {
+        addImageAsFile(img, name, f, asNewFile);
+        return;
+      }
+      // Settles once a choice is made, so callers know whether a file was added.
+      await new Promise<void>((resolve) =>
+        openDialog({
+          type: 'upscaled',
+          image: full,
+          grid,
+          onRecover: (block) => {
+            addDocumentFromBlock(
+              block,
+              name,
+              t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: grid.scale }),
+              f,
+              asNewFile,
+            );
+            resolve();
+          },
+          onKeep: () => {
+            addImageAsFile(img, name, f, asNewFile);
+            resolve();
+          },
+        }),
+      );
+    },
+
+    /** Slices a sprite sheet into frames by cell dimensions or columns/rows. */
+    async importSpriteSheet(file?: File | null) {
+      const f = file ?? (await pickFile('image/*'));
+      if (!f) return;
+      if (!isImageFile(f)) {
         toast(t('toast.notImage'));
         return;
       }
@@ -674,58 +1015,103 @@ export function createActions(editor: Editor) {
         return;
       }
       const name = f.name.replace(/\.[^.]+$/, '') || t('default.image');
-      const d = doc();
-      if (!asNewFile && img.naturalWidth === d.width && img.naturalHeight === d.height) {
-        editor.paste(imageToBlock(img, d.width, d.height), name);
-        editor.deselect();
-        editor.setTool('pencil');
-        toast(t('toast.imageAsLayer'), asReferenceAction(f, removePastedLayer()));
+      const full = readPixels(img);
+      if (!full) {
+        addImageAsFile(img, name, f);
         return;
       }
-      const previous = d.id;
-      const addFile = (block: PixelBlock & { scaled?: boolean }, message: string) => {
-        const next = createDocument(name, block.width, block.height, t('default.image'));
-        next.layers[0].pixels.set(block.pixels);
-        editor.addDocument(next);
-        // From the home screen the new file is the point; elsewhere, offer to trace over it instead.
-        if (asNewFile) return toast(message);
-        toast(
-          message,
-          asReferenceAction(f, () => {
-            editor.discardFile(next.id);
-            editor.switchBoard(previous);
+
+      let working: PixelBlock = full;
+      let recoveredScale: number | null = null;
+      const grid = detectPixelGrid(full.pixels, full.width, full.height);
+      const size = grid && gridSize(full.width, full.height, grid);
+      if (grid && size && size.width <= MAX_SIZE && size.height <= MAX_SIZE) {
+        const recovered = await new Promise<{ block: PixelBlock; scale: number } | null>((resolve) =>
+          openDialog({
+            type: 'upscaled',
+            image: full,
+            grid,
+            onRecover: (block, usedGrid) => resolve({ block, scale: usedGrid.scale }),
+            onKeep: () => resolve(null),
           }),
         );
+        if (recovered) {
+          working = recovered.block;
+          recoveredScale = recovered.scale;
+        }
+      }
+
+      const singleImage = () => {
+        if (recoveredScale !== null) {
+          const fitted = fitMaxSide(working.width, working.height, MAX_SIZE);
+          const block: PixelBlock & { scaled?: boolean } = fitted.scaled
+            ? {
+                width: fitted.width,
+                height: fitted.height,
+                pixels: resizeBlockNearest(
+                  working.pixels,
+                  working.width,
+                  working.height,
+                  fitted.width,
+                  fitted.height,
+                ),
+                scaled: true,
+              }
+            : working;
+          addDocumentFromBlock(
+            block,
+            name,
+            t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: recoveredScale }),
+            f,
+          );
+        } else {
+          addImageAsFile(img, name, f);
+        }
       };
-      const asItIs = () => {
-        const block = imageToBlock(img, MAX_SIZE, MAX_SIZE);
-        addFile(
-          block,
-          block.scaled
-            ? t('toast.imageShrunk', { w: block.width, h: block.height, max: MAX_SIZE })
-            : t('toast.imageAsFile', { w: block.width, h: block.height }),
-        );
-      };
-      // Pixel art scaled up (a screenshot, an export at 800%): offer to bring it back to its pixels.
-      const full = readPixels(img);
-      const grid = full && detectPixelGrid(full.pixels, full.width, full.height);
-      const size = full && grid && gridSize(full.width, full.height, grid);
-      if (!full || !grid || !size || size.width > MAX_SIZE || size.height > MAX_SIZE) return asItIs();
-      // Settles once a choice is made, so callers know whether a file was added.
+
+      if (working.width < MIN_SPRITE_SHEET_SIDE && working.height < MIN_SPRITE_SHEET_SIDE) {
+        singleImage();
+        return;
+      }
+
       await new Promise<void>((resolve) =>
         openDialog({
-          type: 'upscaled',
-          image: full,
-          grid,
-          onRecover: (block) => {
-            addFile(
-              block,
-              t('toast.pixelsRecovered', { w: block.width, h: block.height, scale: grid.scale }),
+          type: 'spriteSheet',
+          image: working,
+          onSlice: (cellWidth, cellHeight, cols, rows, duration) => {
+            const cells = sliceSpriteSheet(
+              working.pixels,
+              working.width,
+              working.height,
+              cellWidth,
+              cellHeight,
+              cols,
+              rows,
             );
+            const frameList: ImportedFrame[] = cells.map((pixels) => ({ pixels, duration }));
+            if (frameList.length <= 1) {
+              const single: PixelBlock = {
+                width: cellWidth,
+                height: cellHeight,
+                pixels: frameList[0].pixels,
+              };
+              addDocumentFromBlock(
+                single,
+                name,
+                recoveredScale !== null
+                  ? t('toast.pixelsRecovered', { w: single.width, h: single.height, scale: recoveredScale })
+                  : t('toast.imageAsFile', { w: single.width, h: single.height }),
+                f,
+              );
+            } else {
+              const next = createAnimatedDocument(name, cellWidth, cellHeight, frameList, t('default.image'));
+              editor.addDocument(next);
+              toast(t('toast.spriteSheetImported', { count: frameList.length, w: cellWidth, h: cellHeight }));
+            }
             resolve();
           },
-          onKeep: () => {
-            asItIs();
+          onSingleImage: () => {
+            singleImage();
             resolve();
           },
         }),
@@ -810,7 +1196,10 @@ export function createActions(editor: Editor) {
     },
 
     // No confirmation: deleting is instant, and the toast offers to bring it back.
-    /** Deleting the last file goes back to the empty home screen; Undo brings the file back. */
+    /**
+     * Deleting the last file goes back to the empty home screen. Undo brings the file back and stays
+     * on the files screen, where it was deleted from: it doesn't open it.
+     */
     deleteFile(id: string, name: string) {
       const last = editor.getState().files.length === 1;
       if (!editor.deleteFile(id)) return;
@@ -818,7 +1207,7 @@ export function createActions(editor: Editor) {
       showEmptyHome(editor);
       toast(t('toast.deleted', { name }), {
         label: t('common.undo'),
-        run: () => editor.restoreDeleted() && leaveHome(editor),
+        run: () => editor.restoreDeleted() && dropStarter(editor),
       });
     },
 
@@ -887,8 +1276,13 @@ export function createActions(editor: Editor) {
      * Resolves true when a file was added.
      */
     async openFile(file?: File | null): Promise<boolean> {
-      const f = file ?? (await pickFile(`${FILE_EXTENSION},application/json,image/*`));
+      const f = file ?? (await pickFile(`${FILE_EXTENSION},application/json,.ase,.aseprite,image/*`));
       if (!f) return false;
+
+      if (isAsepriteFile(f)) {
+        return openAsepriteFile(f);
+      }
+
       const before = editor.getState().files.length;
       if (f.name.endsWith(FILE_EXTENSION) || f.type === 'application/json') {
         try {

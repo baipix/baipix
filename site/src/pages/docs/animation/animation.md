@@ -28,6 +28,8 @@ description: 'Animate pixel art in Baipix: a timeline of frames under the canvas
 
 Right-click a frame's number for its menu: new frames, copy, paste, reverse and delete.
 
+Got the frames already? An animated GIF or a sprite sheet [imports as an animation](../../getting-started/create-and-open/#an-animated-gif).
+
 ## Several frames at once
 
 **Shift-click** a frame's number to pick every frame from the shown one up to it, **Ctrl-click** to add or remove one. Picked frames get a light violet. Then:
@@ -73,6 +75,8 @@ With **All boards**, each board's animation is a GIF of its own, in a .zip.
 ## Keep working in Aseprite
 
 Pick **Aseprite** to open the animation there: every frame comes along with its duration, and so do the layers, groups, blend modes and the palette. A layer that stays the same from one frame to the next becomes a linked cel, as Aseprite makes them, so it stays one drawing there too.
+
+And the other way: Baipix [opens Aseprite files](../../getting-started/create-and-open/#open-an-aseprite-file), with their frames and durations.
 
 ## Export the frames apart
 

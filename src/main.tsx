@@ -10,6 +10,7 @@ import { initTheme } from './ui/theme';
 import { openScreenshotScene, prepareScreenshot, screenshotTheme } from './ui/screenshotMode';
 import './ui/styles/tokens.css';
 import './ui/styles/app.css';
+import '@fontsource-variable/inter';
 
 /** Storage falls back to memory only when IndexedDB is unavailable (private mode, sandboxed iframes). */
 const memoryStorage: StorageAdapter = { load: async () => null, save: async () => {} };

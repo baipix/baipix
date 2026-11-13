@@ -9,7 +9,7 @@ import { frameCount, onionFrames, stillUnder } from '../../engine/frames';
 import type { Point, Rect } from '../../engine/math';
 import { pixelBounds } from '../../engine/region';
 import { clipSelection, type Selection } from '../../engine/selection';
-import { isShown } from '../../engine/groups';
+import { findGroup, isShown } from '../../engine/groups';
 import { hasBackground, isBoard, isEmptyBoard, type Layer, type PixelDoc } from '../../engine/document';
 import { gridInk } from '../render/grid';
 import type { ToolId } from '../../engine/tools';
@@ -41,6 +41,9 @@ import { hoverStore, uiStore } from '../uiStore';
 import { referenceColorAt } from '../referenceColors';
 import { COMPONENT_MIME } from '../dragTypes';
 import { viewport } from '../viewport';
+import { openMenu } from './Menu';
+import { groupMenuItems, layerMenuItems } from '../layerMenus';
+import { createTouchGestures, type TouchPoint } from '../touchGestures';
 
 const DRAWING_TOOLS: ToolId[] = [
   'pencil',
@@ -836,6 +839,49 @@ export function CanvasView() {
       hoverStore.set({ x: p.x, y: p.y, color: d[3] ? pack(d[0], d[1], d[2], d[3]) : under || null });
     };
 
+    const touchPoint = (e: { pointerId: number; clientX: number; clientY: number }): TouchPoint => ({
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+    });
+
+    const touchPixel = (point: TouchPoint) => {
+      const l = local({ clientX: point.x, clientY: point.y });
+      return viewport.toPixel(l.x, l.y);
+    };
+
+    let touchGestureActive = false;
+
+    const startTouchStroke = (from: TouchPoint, to: TouchPoint) => {
+      const start = touchPixel(from);
+      const current = touchPixel(to);
+      const started = editor.beginStroke(start, false, { shift: false });
+
+      if (!started) return;
+      updateHover(start);
+
+      if (current.x !== start.x || current.y !== start.y) editor.moveStroke(current, { shift: false });
+    };
+
+    const longPress = (point: TouchPoint) => {
+      if (!touchGestureActive) return;
+
+      const started = editor.beginStroke(touchPixel(point), false, { shift: false }, 'picker');
+      if (started) editor.endStroke();
+
+      updateHover(touchPixel(point));
+      request();
+    };
+
+    const touchGestures = createTouchGestures({ onLongPress: longPress });
+
+    const cancelPendingTouchGesture = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+
+      touchGestures.cancel(e.pointerId);
+      touchGestureActive = false;
+    };
+
     // Bounds of the layer the Move tool would take, cached until the drawing changes.
     let boundsCache: { key: string; rect: Rect | null } | null = null;
     const moveTargetAt = (p: Point | null, mods: { metaKey: boolean; ctrlKey: boolean }): Rect | null => {
@@ -1003,18 +1049,30 @@ export function CanvasView() {
       const focused = document.activeElement;
       if (focused instanceof HTMLElement && focused.closest('.item-list')) focused.blur();
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
-      if (e.pointerType === 'touch' && touches().length >= 2) {
+
+      if (e.pointerType === 'touch') {
+        touchGestures.down(touchPoint(e));
+
+        if (touches().length === 1)
+          touchGestureActive = !['move', 'hand', 'board', 'spray', 'jumble', 'liquify'].includes(
+            editor.getState().tool,
+          );
+      }
+
+      if (e.pointerType === 'touch' && touches().length >= 2 && (!touchGestureActive || editor.isStroking)) {
         editor.cancelStroke();
         pinch = { ...pinchInfo(), zoom: viewport.zoom, panX: viewport.panX, panY: viewport.panY };
         updateHover(null);
         return;
       }
+      if (e.pointerType === 'touch' && touches().length >= 2) return;
       if (pinch) return;
       // Pan: the middle button, Space held, or the hand tool.
       if (e.button === 1 || keyState.space || (e.button === 0 && editor.getState().tool === 'hand')) {
         panStart = { x: e.clientX, y: e.clientY, panX: viewport.panX, panY: viewport.panY };
         canvas.style.cursor = 'grabbing';
         e.preventDefault();
+        cancelPendingTouchGesture(e);
         return;
       }
       if (e.button !== 0 && e.button !== 2) return;
@@ -1025,15 +1083,18 @@ export function CanvasView() {
         const axis = ruler ?? guide!.axis;
         guideDrag = { axis, index: guide ? guide.index : null, at: edgeAt(axis, l) };
         request();
+        cancelPendingTouchGesture(e);
         return;
       }
       const axis = e.button === 0 ? axisAt(l) : null;
       if (axis) {
         axisDrag = axis;
+        cancelPendingTouchGesture(e);
         return;
       }
       if (e.button === 0 && onSun(l)) {
         sunDrag = true;
+        cancelPendingTouchGesture(e);
         return;
       }
       // The selected board's sides resize it.
@@ -1043,6 +1104,7 @@ export function CanvasView() {
         const at = activePlace();
         const from = { x: at.x, y: at.y, w: st.doc.width, h: st.doc.height };
         boardResize = { from, sides, rect: from };
+        cancelPendingTouchGesture(e);
         return;
       }
       // A board's name moves it, and a click selects it, to resize it by its sides: even when it's
@@ -1057,11 +1119,15 @@ export function CanvasView() {
             moved: false,
             copy: e.altKey,
           };
+          cancelPendingTouchGesture(e);
           return;
         }
       }
       // The frame name is renamed by double-click, so clicking it never draws.
-      if (onLabel(l)) return;
+      if (onLabel(l)) {
+        cancelPendingTouchGesture(e);
+        return;
+      }
       let p = viewport.toPixel(l.x, l.y);
       // Another board of the file: a click makes it the active one, and draws nothing.
       const { doc } = editor.getState();
@@ -1081,6 +1147,7 @@ export function CanvasView() {
             copy: e.altKey,
           };
         else boardDraft = { a: { x: p.x + at.x, y: p.y + at.y }, b: { x: p.x + at.x, y: p.y + at.y } };
+        cancelPendingTouchGesture(e);
         return;
       }
       // Free layers under the pointer, beside the boards: they become the active ones.
@@ -1089,17 +1156,26 @@ export function CanvasView() {
         const before = activePlace();
         editor.switchBoard(board ? board.id : free!.id);
         // The Move tool takes what's under the pointer at once, to drag it in the same gesture.
-        if (editor.getState().tool !== 'move') return;
+        if (editor.getState().tool !== 'move') {
+          cancelPendingTouchGesture(e);
+          return;
+        }
         const after = activePlace();
         p = { x: p.x + before.x - after.x, y: p.y + before.y - after.y };
       }
       updateHover(p);
-      if (e.button === 0 && beginRefDrag(l, e.metaKey || e.ctrlKey)) return;
+      // Right-click with the Move tool, as in Figma: what's under the pointer gets picked, and its menu opens.
+      if (e.button === 2 && editor.getState().tool === 'move' && openLayerMenuAt(p, e)) return;
+      if (e.button === 0 && beginRefDrag(l, e.metaKey || e.ctrlKey)) {
+        cancelPendingTouchGesture(e);
+        return;
+      }
       if (e.button === 0) {
         const handle = handleAt(l);
         const from = handle && editor.beginScale();
         if (handle && from) {
           scaleDrag = { from, corner: handle.corner };
+          cancelPendingTouchGesture(e);
           return;
         }
         const zone = rotateZoneAt(l);
@@ -1109,11 +1185,13 @@ export function CanvasView() {
           rotateDrag = { center, start: pointerAngle(center, l) };
           scaleNote = '0°';
           request();
+          cancelPendingTouchGesture(e);
           return;
         }
       }
       const tool = editor.getState().tool;
       const override = e.altKey && DRAWING_TOOLS.includes(tool) ? 'picker' : undefined;
+      if (e.pointerType === 'touch' && touchGestureActive) return;
       const started = editor.beginStroke(
         p,
         e.button === 2,
@@ -1139,6 +1217,25 @@ export function CanvasView() {
     const onMove = (e: PointerEvent) => {
       if (pointers.has(e.pointerId))
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
+
+      const touchMove =
+        e.pointerType === 'touch' ? touchGestures.move(touchPoint(e)) : { type: 'none' as const };
+
+      if (e.pointerType === 'touch' && touchMove.type === 'pinch-start' && !pinch) {
+        editor.cancelStroke();
+        pinch = {
+          ...pinchInfo(),
+          zoom: viewport.zoom,
+          panX: viewport.panX,
+          panY: viewport.panY,
+        };
+        updateHover(null);
+      }
+
+      if (e.pointerType === 'touch' && touchGestureActive && touchMove.type === 'draw-start') {
+        startTouchStroke(touchMove.from, touchMove.to);
+      }
+
       if (pinch) {
         const info = pinchInfo();
         const zoom = Math.min(96, Math.max(1, (pinch.zoom * info.distance) / Math.max(1, pinch.distance)));
@@ -1149,6 +1246,8 @@ export function CanvasView() {
         pinch = { ...pinch, cx: pinch.cx, cy: pinch.cy };
         return;
       }
+      if (e.pointerType === 'touch' && touchGestureActive && touchMove.type === 'none' && !editor.isStroking)
+        return;
       if (panStart) {
         viewport.set({
           zoom: viewport.zoom,
@@ -1272,7 +1371,24 @@ export function CanvasView() {
 
     const onUp = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      const touchEnd = e.pointerType === 'touch' ? touchGestures.up(e.pointerId) : { type: 'none' as const };
       pointers.delete(e.pointerId);
+      const gestureActive = touchGestureActive;
+      if (e.pointerType === 'touch' && !touches().length) touchGestureActive = false;
+
+      if (e.pointerType === 'touch' && touchEnd.type === 'tap' && (touchEnd.fingers !== 1 || gestureActive)) {
+        if (touchEnd.fingers === 1) {
+          const point = touchPoint(e);
+          startTouchStroke(point, point);
+          editor.endStroke();
+        }
+
+        if (touchEnd.fingers === 2) editor.undo();
+        if (touchEnd.fingers === 3) editor.redo();
+
+        return;
+      }
+
       if (pinch) {
         if (touches().length < 2) {
           const info = { cx: pinch.cx, cy: pinch.cy };
@@ -1281,6 +1397,7 @@ export function CanvasView() {
         }
         return;
       }
+      if (e.pointerType === 'touch' && gestureActive && touchEnd.type === 'none') return;
       if (panStart) {
         panStart = null;
         canvas.style.cursor = '';
@@ -1363,7 +1480,9 @@ export function CanvasView() {
 
     const onCancel = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      if (e.pointerType === 'touch') touchGestures.cancel(e.pointerId);
       pointers.delete(e.pointerId);
+      if (!touches().length) touchGestureActive = false;
       editor.cancelStroke();
       panStart = null;
       pinch = null;
@@ -1438,6 +1557,23 @@ export function CanvasView() {
     };
 
     const noMenu = (e: Event) => e.preventDefault();
+    /** The menu of the layer or group at `p`, opened at the pointer. False with nothing there. */
+    const openLayerMenuAt = (p: Point, e: PointerEvent): boolean => {
+      const target = editor.menuTargetAt(p);
+      if (!target) return false;
+      const group = 'group' in target ? findGroup(editor.getState().doc, target.group) : undefined;
+      const items =
+        'group' in target
+          ? group && groupMenuItems(editor, actions, group)
+          : layerMenuItems(editor, actions, target.layer);
+      if (!items) return false;
+      // The menu opens under an anchor: a point where the pointer is.
+      const anchor = document.createElement('div');
+      anchor.style.cssText = `position: fixed; left: ${e.clientX}px; top: ${e.clientY}px; width: 1px; height: 1px`;
+      document.body.append(anchor);
+      openMenu(anchor, items, { onClose: () => anchor.remove() });
+      return true;
+    };
     // Double-click: on the frame name, rename; on an axis grip, put the axis back in the middle;
     // with the Move tool on a group, go into it (to a subgroup, then a layer).
     const onDoubleClick = (e: MouseEvent) => {
@@ -1487,10 +1623,11 @@ export function CanvasView() {
       canvas.removeEventListener('pointerleave', onLeave);
       canvas.removeEventListener('wheel', onWheel);
       clearTimeout(settleTimer);
+      touchGestures.reset();
       canvas.removeEventListener('contextmenu', noMenu);
       canvas.removeEventListener('dblclick', onDoubleClick);
     };
-  }, [editor]);
+  }, [editor, actions]);
 
   return (
     <div
@@ -1532,7 +1669,14 @@ export function CanvasView() {
           return;
         }
         const file = e.dataTransfer.files[0];
-        if (file) void actions.importImage(file);
+
+        if (file) {
+          if (/\.(?:ase|aseprite)$/i.test(file.name)) {
+            void actions.openAsepriteDocument(file);
+          } else {
+            void actions.importImage(file);
+          }
+        }
       }}
     >
       <canvas ref={canvasRef} className="canvas" />

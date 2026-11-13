@@ -1,7 +1,7 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Create and open files
-description: 'Start a new pixel art file from a size or a template, import an image, recover the real pixels of upscaled pixel art, and open .baipix files.'
+description: 'Start a new pixel art file from a size or a preset, import an image, an animated GIF or a sprite sheet, recover the real pixels of upscaled pixel art, and open .baipix and Aseprite files.'
 ---
 
 ## A new file
@@ -9,13 +9,13 @@ description: 'Start a new pixel art file from a size or a template, import an im
 **File › New file…**, or Create on the files screen. Type a width and a height, or pick one of the sizes you used last, and press <kbd>Enter</kbd>. **From an image…** at the bottom starts from a picture instead.
 
 <figure class="shot">
-  <img class="for-light" src="../../shots/new-file-light.webp" width="352" height="498" alt="The New file dialog: width and height, recent sizes, and the templates with their sizes." loading="lazy" />
-  <img class="for-dark" src="../../shots/new-file-dark.webp" width="352" height="498" alt="The New file dialog: width and height, recent sizes, and the templates with their sizes." loading="lazy" />
+  <img class="for-light" src="../../shots/new-file-light.webp" width="352" height="610" alt="The New file dialog: width and height, recent sizes, and the presets with their sizes." loading="lazy" />
+  <img class="for-dark" src="../../shots/new-file-dark.webp" width="352" height="610" alt="The New file dialog: width and height, recent sizes, and the presets with their sizes." loading="lazy" />
 </figure>
 
-Or start from a **template**, each with a size and a palette that suit it. Before your first drawing, the files screen shows them as cards: one click and the canvas is ready.
+Or start from a **preset**, each with a size and a palette that suit it. Before your first drawing, the files screen shows them as cards: one click and the canvas is ready.
 
-| Template         | Size      | Palette        | Comes with                   |
+| Preset           | Size      | Palette        | Comes with                   |
 | ---------------- | --------- | -------------- | ---------------------------- |
 | Icon             | 16 × 16   | Sweetie 16     |                              |
 | Favicon          | 32 × 32   | Sweetie 16     |                              |
@@ -40,6 +40,14 @@ You can change the size later with the W and H fields in the Board section, or *
 
 A screenshot of pixel art, or an export at 800%, has big blocks instead of pixels. Baipix notices: it finds the pixel grid, even in a cropped image, and offers to **recover the pixels**, giving you the drawing at its real size. Adjust the scale or the offset if the grid doesn't fall right, or keep the image as it is.
 
+### An animated GIF
+
+An animated GIF comes in as an animation: a new file with one frame for each of the GIF's, each with its duration. If it was scaled up, Baipix offers to recover its pixels, on every frame at once. A GIF larger than 512 × 512 is reduced to fit, and one with more than 999 frames is cut there; the message after the import says so.
+
+### A sprite sheet
+
+**File › Import a sprite sheet…** cuts a picture into frames. Type the size of a cell, or the number of columns and rows: each follows the other, and the preview shows the grid over the picture. The cells are read from left to right, then top to bottom, and each becomes a frame with the duration you set. **Import as single image**, or closing the dialog, keeps the picture whole.
+
 ### A reference to trace over
 
 **File › Reference image…** places a photo or a sketch under the layers. It's never exported. Move it, resize it and fade it like a layer, then draw over it and hide it.
@@ -49,6 +57,18 @@ A screenshot of pixel art, or an export at 800%, has big blocks instead of pixel
 **File › Open a .baipix file…** (<kbd>Ctrl</kbd>+<kbd>O</kbd>), or drop the file on the canvas. A .baipix file holds everything: the boards, their layers and groups, their frames and light, the components, the palette and the guides. It opens as a new file next to the others.
 
 The drawings in the [gallery](../../../#gallery) can be opened the same way: their Open link takes you to the editor with the drawing ready.
+
+## Open an Aseprite file
+
+Baipix also opens .ase and .aseprite files: with **File › Open a .baipix file…** (<kbd>Ctrl</kbd>+<kbd>O</kbd>), with Import on the files screen, or by dropping the file on the canvas. It opens as a new file, with what Baipix knows how to keep:
+
+- the layers and groups, their opacity, visibility and blend modes;
+- every frame, with its duration;
+- the palette.
+
+What Baipix doesn't have yet is left out: tags, slices, tilemaps and tilesets, among others. Background and reference layers become regular layers, a blend mode Baipix doesn't have becomes Normal, and groups deeper than four levels are flattened. When something was left out or changed, the message after opening says so, and **Details** lists what.
+
+The drawing has to fit in Baipix: 512 × 512 pixels at most, and up to 999 frames.
 
 ## Several boards in one file
 

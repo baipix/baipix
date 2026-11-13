@@ -8,6 +8,20 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - Four more templates: Favicon (32 × 32), Small tile (16 × 16, tiled), Emote (112 × 112) and Playing card (64 × 96). ([#757](https://github.com/baipix/baipix/pull/757))
 - Help › Baipix on Bluesky, under the source code on GitHub. ([#765](https://github.com/baipix/baipix/pull/765))
+- Download all, at the top of the home screen: every drawing as its own .baipix file, in one .zip. ([#775](https://github.com/baipix/baipix/pull/775))
+- With the Move tool, a right-click on the canvas opens the menu of the layer or group under the pointer. Arrange brings a layer to the front, forward, backward or to the back, also with Ctrl+] and Ctrl+[, and Shift for front and back. ([#779](https://github.com/baipix/baipix/pull/779))
+- On the files screen, an animated drawing plays in its card while the pointer is on it. ([#787](https://github.com/baipix/baipix/pull/787))
+- Baipix opens Aseprite files (.ase and .aseprite): layers and groups, frames and their durations, blend modes, opacity and the palette. What Baipix doesn't have yet, like tags, slices or tilesets, is left out, and a toast says what. ([#772](https://github.com/baipix/baipix/pull/772))
+- The editor in Korean (View › Language › 한국어). ([#791](https://github.com/baipix/baipix/pull/791))
+- The editor in Brazilian Portuguese (View › Language › Português (Brasil)). ([#789](https://github.com/baipix/baipix/pull/789))
+- The palette's … menu exports the palette as a picture: a PNG with one 32 × 32 square per color, 8 a row, in the palette's order. ([#795](https://github.com/baipix/baipix/pull/795))
+- Six more palettes from Lospec: Endesga 64, Apollo, Lospec500, Vinik24, Bubblegum 16 and Steam Lords. ([#805](https://github.com/baipix/baipix/pull/805))
+- A language menu at the bottom of the files screen's sidebar, to switch languages before opening a drawing. ([#804](https://github.com/baipix/baipix/pull/804), [#819](https://github.com/baipix/baipix/pull/819))
+- On the files screen, a drawing's card dragged onto Trash in the sidebar goes to the Trash, with Undo. ([#824](https://github.com/baipix/baipix/pull/824))
+- On the files screen, a double click on a drawing's name, or Rename in its … menu, renames it in place. ([#826](https://github.com/baipix/baipix/pull/826))
+- The editor works offline: once it has opened, baipix.app/app loads without a connection, and it can be installed as an app from the browser. A toast says when an update is ready; it never reloads on its own. ([#806](https://github.com/baipix/baipix/pull/806))
+- On a phone or tablet: a long press on the canvas picks the color under the finger, a two-finger tap undoes and a three-finger tap redoes. ([#807](https://github.com/baipix/baipix/pull/807))
+- An animated GIF imports as an animation: each of its frames becomes a frame, with its duration. File › Import a sprite sheet… cuts a picture into frames, by cell size or by columns and rows. ([#817](https://github.com/baipix/baipix/pull/817))
 
 ### Changed
 
@@ -15,10 +29,23 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Help › Keyboard shortcuts lists every key that works, Q, Y and D for the lasso, magic wand and gradient included, and Ctrl+A, Ctrl+D, Ctrl+Shift+I, Ctrl+Y, Ctrl+0, Ctrl+S and ?. ([#761](https://github.com/baipix/baipix/pull/761))
 - The version in the editor's corner and at the bottom of the Help menu opens the release notes on baipix.app at that version, instead of the changelog on GitHub. ([#745](https://github.com/baipix/baipix/pull/745))
 - After your first drawing, Baipix asks the browser to keep its storage, so it isn't cleared on its own when the disk runs low or, in Safari, after a week without a visit; Firefox asks you once. ([#739](https://github.com/baipix/baipix/pull/739))
+- The first files screen shows each preset as a small picture of what it's for, grey, and in the preset's palette on hover, with the palette's name under it. Templates are now called presets. ([#782](https://github.com/baipix/baipix/pull/782))
+- A shorter welcome line, bigger Create and Import buttons, and WebP in the list of files Baipix opens. ([#783](https://github.com/baipix/baipix/pull/783))
+- The links at the bottom of the files screen's sidebar show an arrow: they open in a new tab. ([#784](https://github.com/baipix/baipix/pull/784))
+- The opacity and size fields are sliders: they fill up to their value, a drag anywhere on them changes it, and a click lets you type a number. ([#790](https://github.com/baipix/baipix/pull/790))
+- Remap offers the same palettes as the Colors section: the file's own, your palettes, and the presets you keep shown in Manage palettes. ([#815](https://github.com/baipix/baipix/pull/815))
+- On the files screen, a dragged drawing follows the pointer as a small thumbnail instead of its whole card, so the Trash stays in view. ([#843](https://github.com/baipix/baipix/pull/843))
 
 ### Fixed
 
 - The tour gave A as Spray's key; it's P (A is the Board tool). ([#758](https://github.com/baipix/baipix/pull/758))
+- Going back to the files screen during the tour left its bubble on top, pointing at nothing; the tour now waits for the editor and picks up at the same step. ([#785](https://github.com/baipix/baipix/pull/785))
+- In a file exported for Aseprite, a layer that stays the same from one frame to the next no longer jumps to the top left corner on the frames after the first. ([#778](https://github.com/baipix/baipix/pull/778))
+- The Effects and Light sections had a caret to fold them even when empty; clicking it and then adding an effect left the section folded, as if nothing had been added. An empty section has no caret now, and adding an effect or the light opens it. ([#794](https://github.com/baipix/baipix/pull/794))
+- After a language change from View › Language, new layers, boards and files get their default names in the new language, not the old one. ([#804](https://github.com/baipix/baipix/pull/804))
+- On the files screen, "Drop to open" no longer stays on screen after a drag leaves the window over a card or the sidebar. ([#823](https://github.com/baipix/baipix/pull/823))
+- A second click on Adjust the layer, in the Layer section, closes the Adjustments panel; it only opened it. ([#835](https://github.com/baipix/baipix/pull/835))
+- On the files screen, Undo after deleting the only drawing brings it back without opening it in the editor. ([#845](https://github.com/baipix/baipix/pull/845))
 
 ### Website
 
@@ -34,6 +61,15 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - A Release notes page: what changed in the editor, version by version, with what's coming next, the contributors to thank, and an RSS feed. ([#745](https://github.com/baipix/baipix/pull/745), [#753](https://github.com/baipix/baipix/pull/753))
 - The Draw page's Remap example is the car from the animation tutorial: it drives while its colors switch from one palette to the next, on every frame. ([#737](https://github.com/baipix/baipix/pull/737))
 - The home page's screenshot loads faster: WebP at the size of the screen, from about 166 KB down to 21–54 KB. ([#736](https://github.com/baipix/baipix/pull/736))
+
+### Thanks
+
+- [@jay23606](https://github.com/jay23606) for four new templates (Favicon, Small tile, Emote and Playing card) and the palette as a picture. ([#757](https://github.com/baipix/baipix/pull/757), [#795](https://github.com/baipix/baipix/pull/795))
+- [@mykola-lp](https://github.com/mykola-lp) for opening Aseprite files, finding and fixing the linked cels exported at the wrong position, the editor working offline, and the touch gestures. ([#772](https://github.com/baipix/baipix/pull/772), [#778](https://github.com/baipix/baipix/pull/778), [#806](https://github.com/baipix/baipix/pull/806), [#807](https://github.com/baipix/baipix/pull/807))
+- [@nococn](https://github.com/nococn) for the Korean translation, the editor's seventh language. ([#791](https://github.com/baipix/baipix/pull/791))
+- [@OSilvaDevTI](https://github.com/OSilvaDevTI) for the Brazilian Portuguese translation, the eighth language. ([#789](https://github.com/baipix/baipix/pull/789))
+- [@exi66](https://github.com/exi66) for Remap offering the palettes you set up, a first contribution. ([#815](https://github.com/baipix/baipix/pull/815))
+- [@abhirajadhikary06](https://github.com/abhirajadhikary06) for clearing the npm audit alerts in the development tools (Vite 6, Vitest 4), tests for the import from the old prototype, six Lospec palettes, the language menu on the files screen, a lint that fails on warnings, and the import of animated GIFs and sprite sheets as frames. ([#798](https://github.com/baipix/baipix/pull/798), [#802](https://github.com/baipix/baipix/pull/802), [#804](https://github.com/baipix/baipix/pull/804), [#805](https://github.com/baipix/baipix/pull/805), [#817](https://github.com/baipix/baipix/pull/817), [#818](https://github.com/baipix/baipix/pull/818))
 
 ## [0.8.0] - 2026-11-06
 

@@ -629,6 +629,48 @@ body.is-resizing * {
   padding-right: 7px;
   color: var(--muted);
 }
+/* A field that is also a slider: filled up to its value, a thin thumb at the edge of the fill. */
+.field.is-slider {
+  position: relative;
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+.field.is-slider:focus-within {
+  cursor: auto;
+}
+.field-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill);
+  background: var(--slider-fill);
+  pointer-events: none;
+}
+.field-fill::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  right: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--muted);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.field.is-slider:hover .field-fill::after,
+.field.is-sliding .field-fill::after {
+  opacity: 1;
+}
+.field.is-slider:focus-within .field-fill {
+  display: none;
+}
+.field.is-slider > :not(.field-fill) {
+  position: relative;
+}
+.field.is-slider:not(:focus-within) input {
+  pointer-events: none;
+}
 .checkbox {
   display: flex;
   align-items: center;
@@ -854,7 +896,8 @@ body.is-resizing * {
 .item-name {
   user-select: none;
 }
-.item-name input {
+.item-name input,
+.home-file-name input {
   user-select: text;
   width: 100%;
   height: 22px;
@@ -1668,6 +1711,27 @@ body.is-dragging-swatch * {
 }
 .toast-action:hover {
   background: var(--toast-hover);
+}
+.toast-details {
+  margin-top: 6px;
+  text-align: left;
+  pointer-events: auto;
+}
+.toast-details summary {
+  width: fit-content;
+  margin: 0 auto;
+  font-weight: 600;
+  cursor: pointer;
+}
+.toast-details-list {
+  max-height: min(160px, 30vh);
+  margin: 6px 0 0;
+  padding-left: 18px;
+  overflow-y: auto;
+  text-align: left;
+}
+.toast-details-list li + li {
+  margin-top: 4px;
 }
 
 /* ---------- Dialogs ---------- */
@@ -2681,6 +2745,37 @@ body.is-dragging-swatch * {
   color: var(--text);
   background: var(--hover);
 }
+/* A drawing's card held over the Trash: the Trash takes it, outlined like a group taking a layer. */
+.home-nav-item.drop-into {
+  color: var(--text);
+  background: var(--hover);
+  box-shadow: inset 0 0 0 2px var(--drop-line, var(--accent));
+}
+/* The thumbnail that follows the pointer during the drag, off screen until the browser pictures it. */
+.home-drag-preview {
+  position: fixed;
+  top: -200px;
+  left: -200px;
+  width: 96px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+.home-drag-preview canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: conic-gradient(var(--check-b) 25%, var(--check-a) 0 50%, var(--check-b) 0 75%, var(--check-a) 0)
+    0 0 / 8px 8px;
+}
+.home-card.is-dragging,
+.home-table tr.is-dragging {
+  opacity: 0.5;
+}
 .home-nav-count {
   margin-left: auto;
   font-weight: 400;
@@ -2714,6 +2809,11 @@ body.is-dragging-swatch * {
 .home-nav-link:hover {
   color: var(--text);
 }
+/* The arrow after a link that leaves Baipix: pushed to the end, fainter. */
+.home-nav-link .icon:last-child {
+  margin-left: auto;
+  opacity: 0.6;
+}
 .home-main {
   flex: 1;
   min-width: 0;
@@ -2745,8 +2845,9 @@ body.is-dragging-swatch * {
   margin-top: 24px;
 }
 .home-welcome-actions .btn {
-  height: 32px;
-  padding: 0 14px;
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
 }
 .home-welcome-title {
   align-self: flex-start;
@@ -2762,20 +2863,40 @@ body.is-dragging-swatch * {
   gap: 12px;
   text-align: left;
 }
-/* A template: its board's shape, striped with its palette, on the canvas. */
+/* A preset: a small picture of what it's for, in the muted ink, in its palette's colors on hover. */
 .home-template-preview {
   display: grid;
   place-items: center;
-  background: var(--canvas);
+  aspect-ratio: 3 / 2;
+  padding: 16px;
+  background: none;
 }
 .home-template-board {
-  display: flex;
-  overflow: hidden;
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px var(--frame);
+  display: grid;
+  padding: 6px;
+  border: 1.5px solid color-mix(in srgb, var(--muted) 50%, transparent);
+  border-radius: 3px;
+  transition: border-color 0.12s ease;
 }
-.home-template-board > span {
-  flex: 1;
+/* The board's frame around the picture, as on the canvas. */
+.home-template:hover .home-template-board {
+  border-color: var(--muted);
+}
+.home-template-art rect {
+  fill: var(--muted);
+  transition:
+    fill 0.15s ease,
+    opacity 0.15s ease;
+}
+.home-template-art .is-faint {
+  opacity: 0.4;
+}
+.home-template-art .is-color-only {
+  opacity: 0;
+}
+.home-template:hover .home-template-art rect {
+  fill: var(--color, transparent);
+  opacity: 1;
 }
 .home-empty {
   margin: 8px 0;
@@ -2978,6 +3099,18 @@ body.is-dragging-swatch * {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+}
+.sprite-sheet-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 8px;
+}
+.sprite-sheet-duration {
+  grid-column: 1 / -1;
+}
+.sprite-sheet-error {
+  color: var(--danger);
+  font-size: 12px;
 }
 
 /* ---------- Canvas size ---------- */

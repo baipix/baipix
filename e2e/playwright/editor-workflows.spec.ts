@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clickMenuItem, createNewFile, drawAtCanvasCenter, getLayerNames } from './helpers';
+import { clickMenuItem, createNewFile, drawAtCanvasCenter, getLayerNames, waitUntilSaved } from './helpers';
 
 // Baipix opens in the browser's language (#565), and these tests look for English labels.
 test.use({ locale: 'en-US' });
@@ -31,9 +31,10 @@ test('adds, hides, reorders and merges layers', async ({ page }) => {
 
   await expect(topLayer).toHaveClass(/is-hidden/);
 
-  // Select the top layer and move it down through the Layer menu.
+  // Select the top layer and move it down through Layer › Arrange.
   await topLayer.click();
-  await clickMenuItem(page, 'Layer', 'Move layer down');
+  await clickMenuItem(page, 'Layer', 'Arrange');
+  await page.getByRole('menuitem', { name: 'Send backward' }).click();
 
   await expect.poll(() => getLayerNames(page)).toEqual(['Layer 2', 'Layer 3', 'Layer 1']);
 
@@ -92,4 +93,111 @@ test('switches the interface language', async ({ page }) => {
   const frenchMenubar = page.getByRole('menubar', { name: 'Menu principal' });
 
   await expect(frenchMenubar.getByRole('menuitem', { name: 'Fichier', exact: true })).toBeVisible();
+});
+
+test('hides the drop label when a drag leaves the files screen over a button', async ({ page }) => {
+  await page.goto('/');
+  const home = page.locator('.home');
+  const button = page.locator('.home-nav-bottom').getByRole('button', { name: 'Language' });
+  const drag = async (type: string) => {
+    const data = await page.evaluateHandle(() => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([''], 'drawing.png', { type: 'image/png' }));
+      return dt;
+    });
+    await button.dispatchEvent(type, { dataTransfer: data, relatedTarget: null });
+  };
+
+  await drag('dragover');
+  await expect(home).toHaveClass(/is-dropping/);
+  await drag('dragleave');
+  await expect(home).not.toHaveClass(/is-dropping/);
+});
+
+test('drags a drawing to the Trash on the files screen', async ({ page }) => {
+  await createNewFile(page);
+  await drawAtCanvasCenter(page);
+  await page.getByRole('button', { name: 'All files' }).click();
+
+  const card = page.locator('.home-grid .home-card');
+  await expect(card).toHaveCount(1);
+  // What follows the pointer is a small thumbnail, not the whole card, which would hide the Trash.
+  await page.evaluate(() => {
+    const setDragImage = DataTransfer.prototype.setDragImage;
+    DataTransfer.prototype.setDragImage = function (image, x, y) {
+      document.body.dataset.dragWidth = String(Math.round(image.getBoundingClientRect().width));
+      setDragImage.call(this, image, x, y);
+    };
+  });
+  const cardWidth = (await card.boundingBox())!.width;
+  await card.dragTo(page.locator('.home-nav').getByRole('button', { name: 'Trash' }));
+
+  const dragWidth = Number(await page.locator('body').getAttribute('data-drag-width'));
+  expect(dragWidth).toBeGreaterThan(0);
+  expect(dragWidth).toBeLessThan(cardWidth / 2);
+  await expect(page.locator('.home-drag-preview')).toHaveCount(0);
+  await expect(card).toHaveCount(0);
+  await expect(page.locator('.toast')).toContainText('deleted');
+  // Undo brings it back on the files screen, without opening it.
+  await page.locator('.toast').getByRole('button', { name: 'Undo' }).click();
+  await expect(card).toHaveCount(1);
+  await expect(page.locator('.home-grid')).toBeVisible();
+});
+
+test('renames a drawing from the files screen', async ({ page }) => {
+  await createNewFile(page);
+  await drawAtCanvasCenter(page);
+  await page.getByRole('button', { name: 'All files' }).click();
+
+  const name = page.locator('.home-grid .home-file-name');
+  await name.dblclick();
+  // While the name is typed in, the card can't be dragged away.
+  await expect(page.locator('.home-grid .home-card')).toHaveAttribute('draggable', 'false');
+  await name.locator('input').fill('Slime');
+  await name.locator('input').press('Enter');
+  await expect(name).toHaveText('Slime');
+  await expect(page.locator('.home-grid .home-card')).toHaveAttribute('draggable', 'true');
+
+  await page.getByRole('button', { name: 'List', exact: true }).click();
+  const row = page.locator('.home-table .home-file-name');
+  await row.dblclick();
+  await row.locator('input').fill('Car');
+  await row.locator('input').press('Escape');
+  await expect(row).toHaveText('Slime');
+  await expect(page.locator('.home')).toBeVisible();
+});
+
+test('switches and saves the language from the files screen', async ({ page, context }) => {
+  await page.goto('/');
+
+  await page.locator('.home-nav-bottom').getByRole('button', { name: 'Language' }).click();
+  await page.getByRole('menuitem', { name: 'Français' }).click();
+
+  await expect(
+    page.locator('.home-welcome-actions').getByRole('button', { name: 'Créer', exact: true }),
+  ).toBeVisible();
+
+  await waitUntilSaved(context, async (restored) => {
+    await expect(restored.locator('.home-nav-bottom').getByRole('button', { name: 'Langue' })).toHaveText(
+      'Français',
+    );
+    await expect(
+      restored.locator('.home-welcome-actions').getByRole('button', { name: 'Créer', exact: true }),
+    ).toBeVisible();
+  });
+});
+
+test('a second click on Adjust the layer closes the Adjustments panel', async ({ page }) => {
+  await createNewFile(page);
+
+  const button = page.locator('aside.panel-right').getByRole('button', { name: 'Adjust the layer…' });
+  const panel = page.getByRole('dialog', { name: 'Adjustments' });
+
+  await button.click();
+  await expect(panel).toBeVisible();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+
+  await button.click();
+  await expect(panel).toBeHidden();
+  await expect(button).toHaveAttribute('aria-pressed', 'false');
 });

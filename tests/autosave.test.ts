@@ -40,6 +40,8 @@ vi.mock('react', () => ({
   useEffect: (effect: Effect) => {
     harness.effect = effect;
   },
+  useRef: (value: unknown) => ({ current: value }),
+  useCallback: (callback: unknown) => callback,
 }));
 
 vi.mock('../src/i18n', () => ({
@@ -150,9 +152,15 @@ function makeStorage(overrides: Partial<StorageAdapter> = {}): StorageAdapter {
   };
 }
 
-function useAutosaveForTest(editor: TestEditor, storage: StorageAdapter, ready = true): () => void {
+function useAutosaveForTest(
+  editor: TestEditor,
+  storage: StorageAdapter,
+  ready = true,
+  captureFlush?: (flush: () => Promise<boolean>) => void,
+): () => void {
   harness.effect = undefined;
-  useAutosave(editor as unknown as Editor, storage, ready);
+  const flush = useAutosave(editor as unknown as Editor, storage, ready);
+  captureFlush?.(flush);
 
   const registeredEffect = harness.effect as Effect | undefined;
 
@@ -367,6 +375,30 @@ describe('useAutosave', () => {
       expect(storage.save).toHaveBeenCalledTimes(1);
       expect(saveHistory).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('waits for an explicit flush to finish the workspace save', async () => {
+    let finishSave!: () => void;
+    const save = vi.fn(() => new Promise<void>((resolve) => (finishSave = resolve)));
+    const storage = makeStorage({ save });
+    let flush!: () => Promise<boolean>;
+
+    useAutosaveForTest(makeEditor(), storage, true, (value) => {
+      flush = value;
+    });
+
+    const pending = flush();
+    expect(save).toHaveBeenCalledTimes(1);
+
+    let finished = false;
+    void pending.then(() => {
+      finished = true;
+    });
+    await Promise.resolve();
+    expect(finished).toBe(false);
+
+    finishSave();
+    await expect(pending).resolves.toBe(true);
   });
 
   it('adopts changed documents only when the page is visible', async () => {
