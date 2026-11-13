@@ -81,6 +81,7 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
     { label: t('menu.newFile'), onSelect: () => openDialog({ type: 'newFile' }) },
     { label: t('menu.open'), shortcut: 'Ctrl+O', onSelect: () => void actions.openDocument() },
     { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
+    { label: t('menu.importSpriteSheet'), onSelect: () => void actions.importSpriteSheet() },
     '-',
     { label: t('file.allFiles'), onSelect: () => uiStore.set({ home: true }) },
   ];
@@ -138,6 +139,7 @@ export const MENU_BAR: MenuBarMenu[] = [
           ],
         },
         { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
+        { label: t('menu.importSpriteSheet'), onSelect: () => void actions.importSpriteSheet() },
         { label: t('menu.reference'), onSelect: () => void actions.addReference() },
         '-',
         { label: t('board.new'), onSelect: () => editor.addBoardBeside() },

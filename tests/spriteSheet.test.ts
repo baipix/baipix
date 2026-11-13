@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { pack } from '../src/engine/color';
 import { composeSpriteSheet, spriteSheetGrid } from '../src/engine/export/spriteSheet';
+import { createAnimatedDocument, sliceSpriteSheet } from '../src/engine/import/frames';
 
 const RED = pack(255, 0, 0);
 const GREEN = pack(0, 255, 0);
@@ -86,5 +87,65 @@ describe('composeSpriteSheet', () => {
     expect(() => composeSpriteSheet(items, 2, 1)).toThrow(
       'Sprite sheet item pixel buffer does not match document dimensions.',
     );
+  });
+});
+
+describe('sliceSpriteSheet & createAnimatedDocument', () => {
+  it('round-trips composed sprite sheets into animated document frames', () => {
+    const items = [
+      Uint32Array.from([RED, 0, 0, RED]),
+      Uint32Array.from([0, GREEN, GREEN, 0]),
+      Uint32Array.from([BLUE, BLUE, 0, 0]),
+    ];
+    const sheet = composeSpriteSheet(items, 2, 2, 2);
+
+    const sliced = sliceSpriteSheet(sheet.pixels, sheet.width, sheet.height, 2, 2, 2, 2);
+    expect(sliced).toHaveLength(4);
+    expect(Array.from(sliced[0])).toEqual(Array.from(items[0]));
+    expect(Array.from(sliced[1])).toEqual(Array.from(items[1]));
+    expect(Array.from(sliced[2])).toEqual(Array.from(items[2]));
+    expect(Array.from(sliced[3])).toEqual([0, 0, 0, 0]);
+
+    const doc = createAnimatedDocument(
+      'walk',
+      2,
+      2,
+      sliced.slice(0, 3).map((pixels, idx) => ({ pixels, duration: 100 + idx * 50 })),
+    );
+    expect(doc.width).toBe(2);
+    expect(doc.height).toBe(2);
+    expect(doc.frames?.map((f) => f.duration)).toEqual([100, 150, 200]);
+    expect(doc.activeFrame).toBe(0);
+    expect(Array.from(doc.layers[0].pixels)).toEqual(Array.from(items[0]));
+    expect(doc.layers[0].cels?.[0]).toBeNull();
+    expect(Array.from(doc.layers[0].cels?.[1]?.pixels ?? [])).toEqual(Array.from(items[1]));
+    expect(Array.from(doc.layers[0].cels?.[2]?.pixels ?? [])).toEqual(Array.from(items[2]));
+  });
+
+  it('rejects sprite sheet grids exceeding the image dimensions', () => {
+    const pixels = new Uint32Array(4 * 4);
+    expect(() => sliceSpriteSheet(pixels, 4, 4, 3, 2, 2, 2)).toThrow(
+      'Sprite sheet grid exceeds the image dimensions.',
+    );
+  });
+
+  it('gives each frame cel an independent pixel copy so edits do not leak', () => {
+    const frameA = Uint32Array.from([RED, 0, 0, RED]);
+    const frameB = Uint32Array.from([RED, 0, 0, RED]);
+    const frameC = Uint32Array.from([BLUE, 0, 0, BLUE]);
+    const frameD = Uint32Array.from([BLUE, 0, 0, BLUE]);
+
+    const doc = createAnimatedDocument('isolated', 2, 2, [
+      { pixels: frameA, duration: 100 },
+      { pixels: frameB, duration: 100 },
+      { pixels: frameC, duration: 100 },
+      { pixels: frameD, duration: 100 },
+    ]);
+
+    expect(doc.layers[0].cels?.[1]?.pixels).not.toBe(doc.layers[0].pixels);
+    expect(Array.from(doc.layers[0].cels?.[1]?.pixels ?? [])).toEqual(Array.from(frameB));
+    expect(doc.layers[0].cels?.[2]?.pixels).not.toBe(doc.layers[0].pixels);
+    expect(doc.layers[0].cels?.[3]?.pixels).not.toBe(doc.layers[0].cels?.[2]?.pixels);
+    expect(Array.from(doc.layers[0].cels?.[3]?.pixels ?? [])).toEqual(Array.from(frameD));
   });
 });

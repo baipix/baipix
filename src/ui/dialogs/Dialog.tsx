@@ -16,6 +16,7 @@ interface DialogProps {
   /** Called on submit (Enter / primary button). Without it, no footer: the × closes it. */
   onSubmit?: () => void;
   submitLabel?: string;
+  submitDisabled?: boolean;
   /** The cancel button's label, when it does something else than cancel. */
   cancelLabel?: string;
   /** Extra class on the dialog (its width, for one). */
@@ -33,6 +34,7 @@ export function Dialog({
   onClose,
   onSubmit,
   submitLabel,
+  submitDisabled,
   cancelLabel,
   className = '',
   footer,
@@ -106,7 +108,7 @@ export function Dialog({
             <button type="button" className="btn" onClick={onClose}>
               {cancelLabel ?? t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={submitDisabled}>
               {submitLabel ?? t('common.ok')}
             </button>
           </div>

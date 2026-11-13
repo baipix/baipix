@@ -20,7 +20,7 @@ export function UpscaledDialog({
 }: {
   image: PixelBlock;
   grid: PixelGrid;
-  onRecover: (block: PixelBlock) => void;
+  onRecover: (block: PixelBlock, grid: PixelGrid) => void;
   onKeep: () => void;
 }) {
   const t = useT();
@@ -99,7 +99,7 @@ export function UpscaledDialog({
       cancelLabel={t('upscaled.keep')}
       onSubmit={() => {
         decided.current = true;
-        onRecover(downscaleToGrid(image.pixels, image.width, image.height, grid));
+        onRecover(downscaleToGrid(image.pixels, image.width, image.height, grid), grid);
       }}
       onClose={() => {
         // Closing without recovering imports the image as it is: it was still wanted.

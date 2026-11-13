@@ -14,6 +14,7 @@ import { hasUntouchedStarter, leaveHome } from '../home';
 import { closeDialog, toast, uiStore } from '../uiStore';
 import { Dialog } from './Dialog';
 import { UpscaledDialog } from './UpscaledDialog';
+import { SpriteSheetDialog } from './SpriteSheetDialog';
 import { CanvasSizeDialog } from './CanvasSizeDialog';
 import { SizeList, type SizeChoice } from '../components/SizeList';
 import { Icon } from '../components/Icon';
@@ -360,6 +361,8 @@ export function Dialogs() {
       return <CanvasSizeDialog />;
     case 'upscaled':
       return <UpscaledDialog {...dialog} />;
+    case 'spriteSheet':
+      return <SpriteSheetDialog {...dialog} />;
     case 'confirm':
       return (
         <Dialog
