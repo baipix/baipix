@@ -44,6 +44,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - After a language change from View › Language, new layers, boards and files get their default names in the new language, not the old one. ([#804](https://github.com/baipix/baipix/pull/804))
 - On the files screen, "Drop to open" no longer stays on screen after a drag leaves the window over a card or the sidebar. ([#823](https://github.com/baipix/baipix/pull/823))
 - A second click on Adjust the layer, in the Layer section, closes the Adjustments panel; it only opened it. ([#835](https://github.com/baipix/baipix/pull/835))
+- On the files screen, Undo after deleting the only drawing brings it back without opening it in the editor. ([#845](https://github.com/baipix/baipix/pull/845))
 
 ### Website
 
