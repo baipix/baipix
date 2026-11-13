@@ -94,6 +94,26 @@ function HomeThumb({ doc }: { doc: PixelDoc }) {
   return <canvas ref={ref} className="home-thumb" aria-hidden="true" />;
 }
 
+/**
+ * What follows the pointer while a drawing is dragged: its thumbnail, small. The whole card would
+ * hide the Trash it's headed to.
+ */
+function dragPreview(source: HTMLElement): HTMLElement | null {
+  const thumb = source.querySelector<HTMLCanvasElement>('canvas.home-thumb');
+  if (!thumb) return null;
+  const copy = document.createElement('canvas');
+  copy.width = thumb.width;
+  copy.height = thumb.height;
+  copy.getContext('2d')?.drawImage(thumb, 0, 0);
+  const preview = document.createElement('div');
+  preview.className = 'home-drag-preview';
+  preview.append(copy);
+  document.body.append(preview);
+  // The browser takes its picture of it as the drag starts; after that it can go.
+  setTimeout(() => preview.remove());
+  return preview;
+}
+
 export function HomeScreen() {
   const t = useT();
   const editor = useEditor();
@@ -117,9 +137,11 @@ export function HomeScreen() {
   const [typingId, setTypingId] = useState<string | null>(null);
   const dragFile = (id: string) => ({
     draggable: typingId !== id,
-    onDragStart: (e: DragEvent) => {
+    onDragStart: (e: DragEvent<HTMLElement>) => {
       e.dataTransfer.setData(FILE_MIME, id);
       e.dataTransfer.effectAllowed = 'move';
+      const preview = dragPreview(e.currentTarget);
+      if (preview) e.dataTransfer.setDragImage(preview, 16, 16);
       setDraggedId(id);
     },
     onDragEnd: () => setDraggedId(null),

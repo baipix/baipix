@@ -121,8 +121,21 @@ test('drags a drawing to the Trash on the files screen', async ({ page }) => {
 
   const card = page.locator('.home-grid .home-card');
   await expect(card).toHaveCount(1);
+  // What follows the pointer is a small thumbnail, not the whole card, which would hide the Trash.
+  await page.evaluate(() => {
+    const setDragImage = DataTransfer.prototype.setDragImage;
+    DataTransfer.prototype.setDragImage = function (image, x, y) {
+      document.body.dataset.dragWidth = String(Math.round(image.getBoundingClientRect().width));
+      setDragImage.call(this, image, x, y);
+    };
+  });
+  const cardWidth = (await card.boundingBox())!.width;
   await card.dragTo(page.locator('.home-nav').getByRole('button', { name: 'Trash' }));
 
+  const dragWidth = Number(await page.locator('body').getAttribute('data-drag-width'));
+  expect(dragWidth).toBeGreaterThan(0);
+  expect(dragWidth).toBeLessThan(cardWidth / 2);
+  await expect(page.locator('.home-drag-preview')).toHaveCount(0);
   await expect(card).toHaveCount(0);
   await expect(page.locator('.toast')).toContainText('deleted');
   await page.locator('.toast').getByRole('button', { name: 'Undo' }).click();
