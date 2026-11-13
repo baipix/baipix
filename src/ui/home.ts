@@ -24,12 +24,17 @@ export function hasUntouchedStarter(editor: Editor): boolean {
   return editor.getState().files.some(isUntouchedStarter);
 }
 
-/** Back to the editor, dropping the blank starter file once there is another one. */
-export function leaveHome(editor: Editor): void {
-  uiStore.set({ home: false });
+/** Drops the blank starter file once there is another one: it was only there to hold the editor. */
+export function dropStarter(editor: Editor): void {
   if (!starter) return;
   const { files } = editor.getState();
   const file = files.find((f) => f.id === starter!.id);
   if (file && files.length > 1 && isUntouchedStarter(file)) editor.discardFile(file.id);
   starter = null;
+}
+
+/** Back to the editor, dropping the blank starter file once there is another one. */
+export function leaveHome(editor: Editor): void {
+  uiStore.set({ home: false });
+  dropStarter(editor);
 }

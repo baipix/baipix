@@ -138,8 +138,10 @@ test('drags a drawing to the Trash on the files screen', async ({ page }) => {
   await expect(page.locator('.home-drag-preview')).toHaveCount(0);
   await expect(card).toHaveCount(0);
   await expect(page.locator('.toast')).toContainText('deleted');
+  // Undo brings it back on the files screen, without opening it.
   await page.locator('.toast').getByRole('button', { name: 'Undo' }).click();
-  await expect(page.locator('canvas.canvas')).toBeVisible();
+  await expect(card).toHaveCount(1);
+  await expect(page.locator('.home-grid')).toBeVisible();
 });
 
 test('renames a drawing from the files screen', async ({ page }) => {
