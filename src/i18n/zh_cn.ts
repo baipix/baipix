@@ -1,6 +1,6 @@
 import type { MessageKey } from './en';
 
-export const zh_cn: Record<MessageKey, string> = {
+export const zh: Record<MessageKey, string> = {
   'common.cancel': '取消',
   'common.close': '关闭',
   'common.create': '新建',
@@ -119,7 +119,7 @@ export const zh_cn: Record<MessageKey, string> = {
   'section.layer': '图层',
   'section.light': '光照',
   'light.info':
-    "光照方向，用于明暗着色。它仅作为视觉参考，如同网格：不会被绘制，也不会被导出。",
+    '光照方向，用于明暗着色。它仅作为视觉参考，如同网格：不会被绘制，也不会被导出。',
   'light.add': '添加光照',
   'light.remove': '移除光照',
   'light.stage': '光照：在球面上拖动光源，越靠近，光照越高',
