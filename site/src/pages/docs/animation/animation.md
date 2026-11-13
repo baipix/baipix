@@ -28,6 +28,8 @@ description: 'Animate pixel art in Baipix: a timeline of frames under the canvas
 
 Right-click a frame's number for its menu: new frames, copy, paste, reverse and delete.
 
+Got the frames already? An animated GIF or a sprite sheet [imports as an animation](../../getting-started/create-and-open/#an-animated-gif).
+
 ## Several frames at once
 
 **Shift-click** a frame's number to pick every frame from the shown one up to it, **Ctrl-click** to add or remove one. Picked frames get a light violet. Then:
