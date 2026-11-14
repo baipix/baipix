@@ -290,13 +290,17 @@ function SizesTable() {
     ['--icon-btn', 'An icon button'],
     ['--row', 'A row in a list: a layer, a board'],
     ['--menu-row', 'A row in a menu'],
+    ['--control', 'A field, a text button, a select'],
+    ['--check', 'The box of a checkbox'],
   ];
+  const touch: Record<string, string> = { '--control': '36px', '--check': '18px' };
   return (
     <>
       <p className="ds-intro">
         What gets clicked has its size in a token. On a touch screen (<code>pointer: coarse</code>: a phone, a
-        tablet, whatever the window's width) they all take <code>--touch</code>, what a finger needs to land
-        on. New targets use these tokens rather than a size of their own.
+        tablet, whatever the window's width) they grow: what's tapped on its own takes <code>--touch</code>,
+        what a finger needs to land on, and fields and text buttons, which sit in rows with air around them, a
+        little less. New targets use these tokens rather than a size of their own.
       </p>
       <table className="ds-table">
         <thead>
@@ -315,7 +319,7 @@ function SizesTable() {
               </td>
               <td className="muted">{use}</td>
               <td>{value(name)}</td>
-              <td>{value('--touch')}</td>
+              <td>{touch[name] ?? value('--touch')}</td>
             </tr>
           ))}
         </tbody>
@@ -1016,8 +1020,8 @@ function AccessibilityBlock() {
         <li>Focus is always visible: a 2px blue outline (--glow-line).</li>
         <li>Animations are turned off with “reduce motion”.</li>
         <li>
-          On a touch screen, tools, icon buttons, list rows and menu rows are 44 px (--touch). Fields and text
-          buttons are still to do, with the tablet layout (#139).
+          On a touch screen, tools, icon buttons, list rows and menu rows are 44 px (--touch); fields, text
+          buttons and selects are 36 px, checkboxes 18 px, and icons 20 px.
         </li>
         <li>Everything in the panels can be reached with the keyboard (to do, #33).</li>
       </ul>

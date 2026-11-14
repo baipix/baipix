@@ -156,7 +156,7 @@ body.is-resizing * {
 .segmented button {
   flex: 1;
   min-width: 0;
-  height: 20px;
+  height: calc(var(--control) - 4px);
   padding: 0;
   border: 0;
   border-radius: calc(var(--radius) - 1px);
@@ -523,6 +523,14 @@ body.is-resizing * {
   background: transparent;
   color: var(--text);
 }
+/* On a touch screen the icons grow with their buttons, so they read as something to tap. */
+@media (pointer: coarse) {
+  .icon-btn:not(.large) > .icon,
+  .tool-btn > .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
 .icon-btn.large {
   width: max(32px, var(--icon-btn));
   height: max(32px, var(--icon-btn));
@@ -537,7 +545,7 @@ body.is-resizing * {
   background: transparent;
 }
 .btn {
-  height: 24px;
+  height: var(--control);
   padding: 0 8px;
   display: inline-flex;
   align-items: center;
@@ -571,7 +579,7 @@ body.is-resizing * {
 }
 
 .field {
-  height: 24px;
+  height: var(--control);
   min-width: 0;
   display: flex;
   align-items: center;
@@ -682,14 +690,14 @@ body.is-resizing * {
   min-height: 28px;
 }
 .checkbox input {
-  width: 12px;
-  height: 12px;
+  width: var(--check);
+  height: var(--check);
   margin: 0;
   accent-color: var(--accent);
 }
 .select-plain {
   max-width: 128px;
-  height: 24px;
+  height: var(--control);
   padding: 0 2px;
   border: 0;
   border-radius: var(--radius);
