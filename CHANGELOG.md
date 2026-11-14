@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- The choices that were plain lists (the dithering, the gradient's shape, the export format, Remap's palette and a few more) are fields with a caret that open the editor's own menu: they look the same in every browser, and read as a choice on a phone. ([#863](https://github.com/baipix/baipix/pull/863))
 - On a phone or tablet, a submenu takes its menu's place, under a row with its name that goes back, instead of opening over it. A menu taller than the screen scrolls. ([#854](https://github.com/baipix/baipix/pull/854))
 - On a phone, the layers and properties sheets have a button to close them, and every sheet has the same header: its name, and ×. ([#855](https://github.com/baipix/baipix/pull/855))
 - On a touch screen, fields, text buttons, checkboxes and icons are bigger, and so is Export in the phone's top bar. ([#857](https://github.com/baipix/baipix/pull/857), [#858](https://github.com/baipix/baipix/pull/858))
