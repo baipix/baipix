@@ -2181,7 +2181,7 @@ body.is-dragging-swatch * {
     z-index: 30;
     display: block;
     max-height: 88vh;
-    padding: 4px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 0 12px calc(16px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     overscroll-behavior: contain;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -2193,13 +2193,11 @@ body.is-dragging-swatch * {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 48px;
-    padding-left: 4px;
+    margin: 0 -12px 12px;
   }
   .mobile-sheet-header h2 {
     margin: 0;
-    font-size: 15px;
-    font-weight: 600;
+    font: inherit;
   }
   .mobile-sheet-header .icon-btn {
     margin-left: auto;
@@ -2351,6 +2349,34 @@ body.is-dragging-swatch * {
   }
   .mobile-sheet {
     animation: none;
+  }
+}
+
+/* What a panel only has as a sheet, on a phone: a button to close it, and for the right one a header. */
+.icon-btn.sheet-close,
+.sheet-header {
+  display: none;
+}
+@media (max-width: 820px) {
+  .icon-btn.sheet-close {
+    display: grid;
+  }
+  .sheet-header {
+    display: flex;
+  }
+  .panel-left:not(.is-folded) .panel-fold {
+    display: none;
+  }
+  /* Every sheet starts the same way: its name, and the button that closes it, with room around them. */
+  .panel .panel-header,
+  .mobile-sheet-header,
+  .popover.color-picker .popover-header {
+    height: 56px;
+    min-height: 56px;
+    padding: 0 6px 0 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+    font-weight: 600;
   }
 }
 
