@@ -106,3 +106,10 @@ test.describe('on a phone, the file', () => {
     await expect(bar.locator('.mobile-name')).toContainText('Robot');
   });
 });
+
+test('the right panel has no sheet header on a computer', async ({ page }) => {
+  await createNewFile(page);
+  await expect(page.locator('.panel-right')).toBeVisible();
+  await expect(page.locator('.panel-right .sheet-header')).toBeHidden();
+  await expect(page.locator('.sheet-close').first()).toBeHidden();
+});
