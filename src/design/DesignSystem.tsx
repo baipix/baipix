@@ -27,7 +27,7 @@ const SECTIONS = [
   ['logo', 'Logo'],
   ['colors', 'Colors'],
   ['type', 'Type'],
-  ['shapes', 'Shapes and shadows'],
+  ['shapes', 'Shapes, shadows and sizes'],
   ['icons', 'Icons'],
   ['buttons', 'Buttons'],
   ['fields', 'Fields'],
@@ -261,7 +261,7 @@ function ShapesBlock() {
   return (
     <Block
       id="shapes"
-      title="Shapes and shadows"
+      title="Shapes, shadows and sizes"
       intro="Plain and precise, like a design tool: soft rounded corners and soft shadows. The pixel style is for the logo, the site and what people draw, not the interface."
     >
       <div className="ds-shapes">
@@ -277,7 +277,50 @@ function ShapesBlock() {
           </button>
         </Specimen>
       </div>
+      <SizesTable />
     </Block>
+  );
+}
+
+/** The sizes of what gets clicked, read from the tokens: with a mouse, and on a touch screen. */
+function SizesTable() {
+  const value = (name: string) => TOKENS.find((t) => t.name === name)?.value ?? '';
+  const rows = [
+    ['--tool', 'A tool in the toolbar'],
+    ['--icon-btn', 'An icon button'],
+    ['--row', 'A row in a list: a layer, a board'],
+    ['--menu-row', 'A row in a menu'],
+  ];
+  return (
+    <>
+      <p className="ds-intro">
+        What gets clicked has its size in a token. On a touch screen (<code>pointer: coarse</code>: a phone, a
+        tablet, whatever the window's width) they all take <code>--touch</code>, what a finger needs to land
+        on. New targets use these tokens rather than a size of their own.
+      </p>
+      <table className="ds-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>For</th>
+            <th>Mouse</th>
+            <th>Touch</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([name, use]) => (
+            <tr key={name}>
+              <td>
+                <code>{name}</code>
+              </td>
+              <td className="muted">{use}</td>
+              <td>{value(name)}</td>
+              <td>{value('--touch')}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }
 
@@ -972,7 +1015,10 @@ function AccessibilityBlock() {
         <li>Every icon button has a label (aria-label and tooltip).</li>
         <li>Focus is always visible: a 2px blue outline (--glow-line).</li>
         <li>Animations are turned off with “reduce motion”.</li>
-        <li>Touch targets are at least 44 px on tablets and phones (to do with the tablet layout).</li>
+        <li>
+          On a touch screen, tools, icon buttons, list rows and menu rows are 44 px (--touch). Fields and text
+          buttons are still to do, with the tablet layout (#139).
+        </li>
         <li>Everything in the panels can be reached with the keyboard (to do, #33).</li>
       </ul>
     </Block>
