@@ -17,6 +17,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
 - On a phone or tablet, a submenu opens where its menu is instead of jumping up the screen, and a long one scrolls. ([#866](https://github.com/baipix/baipix/pull/866))
 - Zooming with two fingers no longer shakes the drawing. ([#859](https://github.com/baipix/baipix/pull/859))
 - On a phone, the file can be renamed: Rename in its menu, or File › Rename file, turns its name into a field. ([#856](https://github.com/baipix/baipix/pull/856))
