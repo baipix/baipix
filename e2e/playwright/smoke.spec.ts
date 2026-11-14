@@ -136,3 +136,21 @@ test('the right panel has no sheet header on a computer', async ({ page }) => {
   await expect(page.locator('.panel-right .sheet-header')).toBeHidden();
   await expect(page.locator('.sheet-close').first()).toBeHidden();
 });
+
+test.describe('on a phone, the timeline', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
+
+  test('sits under the tools, not over them', async ({ page }) => {
+    await createNewFile(page);
+    await page.keyboard.press('Shift+A');
+    const timeline = page.locator('.timeline');
+    await expect(timeline).toBeVisible();
+    await expect
+      .poll(async () => {
+        const top = (await timeline.boundingBox())!.y;
+        const bar = (await page.locator('.mobile-toolbar').boundingBox())!;
+        return bar.y + bar.height <= top;
+      })
+      .toBe(true);
+  });
+});

@@ -2358,9 +2358,20 @@ body.is-dragging-swatch * {
   .help-corner {
     display: none;
   }
+  /* The timeline is as wide as the toolbar that sits on it. */
+  .app .timeline {
+    left: 8px;
+    right: 8px;
+  }
+  /* Its bar scrolls sideways: what goes under the button that closes it fades out. */
+  .app .timeline-bar > :last-child {
+    box-shadow:
+      6px 0 0 var(--panel),
+      -8px 0 8px var(--panel);
+  }
   /* The phone's bars are made for a finger, even in a narrow window on a computer. */
   :root {
-    --toolbar-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    --toolbar-bottom: calc(10px + var(--timeline-space, 0px) + env(safe-area-inset-bottom, 0px));
     --tool: var(--touch);
   }
   /* Tighter tool options: the field's own icon stands in for its label. What doesn't fit scrolls
@@ -3986,6 +3997,8 @@ body.is-dragging-swatch * {
   position: sticky;
   right: 0;
   background: var(--panel);
+  /* Covers the bar's own padding at the right, where what scrolls would show through. */
+  box-shadow: 6px 0 0 var(--panel);
 }
 .timeline-title {
   margin-right: 8px;
