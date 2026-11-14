@@ -68,4 +68,21 @@ test.describe('on a phone', () => {
     await expect(colors).toBeHidden();
     await expect(toolbar.locator('.mobile-chip.is-primary')).toHaveCSS('background-color', color);
   });
+
+  test("a submenu takes its menu's place, with a way back", async ({ page }) => {
+    await createNewFile(page);
+
+    await page.locator('.mobile-bar').getByRole('button', { name: 'Main menu' }).tap();
+    const menu = page.locator('.menu');
+    await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeVisible();
+
+    await menu.getByRole('menuitem', { name: 'File', exact: true }).tap();
+    // One menu, showing File's items under its name.
+    await expect(menu).toHaveCount(1);
+    await expect(menu.getByRole('menuitem', { name: 'New file…' })).toBeVisible();
+    await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeHidden();
+
+    await menu.getByRole('button', { name: 'File', exact: true }).tap();
+    await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeVisible();
+  });
 });

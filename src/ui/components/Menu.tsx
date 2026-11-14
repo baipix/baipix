@@ -85,9 +85,15 @@ const ownButtons = (panel: HTMLElement | null) => [
   ...(panel?.querySelectorAll<HTMLButtonElement>(':scope > button:not(:disabled)') ?? []),
 ];
 
+/**
+ * On a touch screen or in a narrow window, a submenu takes its menu's place, with a row to go back:
+ * there's no room beside the menu, and nothing to hover.
+ */
+const stacksSubmenus = (): boolean => matchMedia('(pointer: coarse), (max-width: 820px)').matches;
+
 /** One level of a menu: under its anchor, or beside the item that opened it. */
 function MenuPanel({
-  items,
+  items: all,
   anchor,
   side,
   autoFocus,
@@ -104,6 +110,19 @@ function MenuPanel({
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ left: -9999, top: 0 });
   const [open, setOpen] = useState<{ index: number; rect: DOMRect; focus: boolean } | null>(null);
+  const [stacked] = useState(stacksSubmenus);
+  // Stacked: the submenus entered, from the menu down. The last one is the level shown.
+  const [path, setPath] = useState<number[]>([]);
+  let items = all;
+  let title = '';
+  for (const i of path) {
+    const parent = items[i];
+    if (parent === '-' || !parent.items) break;
+    title = parent.label;
+    items = parent.items;
+  }
+  const enter = (index: number) => setPath((p) => [...p, index]);
+  const leave = () => setPath((p) => p.slice(0, -1));
 
   useLayoutEffect(() => {
     if (!ref.current) return;
@@ -113,6 +132,7 @@ function MenuPanel({
     if (left + w > innerWidth - 8) left = side ? anchor.left - 4 - w : innerWidth - 8 - w;
     if (top + h > innerHeight - 8) top = side ? innerHeight - 8 - h : Math.max(8, anchor.top - 4 - h);
     setPos({ left: Math.max(8, left), top: Math.max(8, top) });
+    // `items` changes with the level shown: its height does too.
   }, [anchor, side, items]);
 
   useEffect(() => {
@@ -132,7 +152,10 @@ function MenuPanel({
       const n = buttons.length;
       buttons[e.key === 'ArrowDown' ? (i + 1) % n : (i - 1 + n) % n]?.focus();
     } else if (e.key === 'ArrowRight' && item && item !== '-' && item.items) {
-      openSub(items.indexOf(item), buttons[i], true);
+      if (stacked) enter(items.indexOf(item));
+      else openSub(items.indexOf(item), buttons[i], true);
+    } else if (e.key === 'ArrowLeft' && path.length) {
+      leave();
     } else if (e.key === 'ArrowLeft' && onBack) {
       onBack();
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -156,6 +179,14 @@ function MenuPanel({
           menuStore.get().options.onHoverEnd?.();
       }}
     >
+      {path.length > 0 && (
+        <div className="menu-head">
+          <button type="button" className="menu-item menu-back" onClick={leave}>
+            <Icon name="back" size={16} />
+            <span>{title}</span>
+          </button>
+        </div>
+      )}
       {items.map((item, i) =>
         item === '-' ? (
           <div key={i} className="menu-separator" />
@@ -172,11 +203,13 @@ function MenuPanel({
             disabled={item.disabled}
             onPointerEnter={(e) => {
               item.onHover?.();
+              if (stacked) return;
               if (item.items) openSub(i, e.currentTarget, false);
               else setOpen(null);
             }}
             onFocus={() => item.onHover?.()}
             onClick={(e) => {
+              if (item.items && stacked) return enter(i);
               if (item.items) return openSub(i, e.currentTarget, false);
               closeMenu();
               item.onSelect?.();
