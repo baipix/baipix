@@ -77,9 +77,14 @@ test.describe('on a phone', () => {
     const menu = page.locator('.menu');
     await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeVisible();
 
+    const top = (await menu.boundingBox())!.y;
     await menu.getByRole('menuitem', { name: 'File', exact: true }).tap();
     // One menu, showing File's items under its name.
     await expect(menu).toHaveCount(1);
+    // It stays where it was, however tall the submenu: it doesn't jump over the top bar.
+    await expect.poll(async () => (await menu.boundingBox())!.y).toBe(top);
+    const box = (await menu.boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(812);
     await expect(menu.getByRole('menuitem', { name: 'New file…' })).toBeVisible();
     await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeHidden();
 

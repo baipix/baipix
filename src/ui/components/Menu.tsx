@@ -108,7 +108,7 @@ function MenuPanel({
   onBack?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ left: -9999, top: 0 });
+  const [pos, setPos] = useState<{ left: number; top: number; maxHeight?: number }>({ left: -9999, top: 0 });
   const [open, setOpen] = useState<{ index: number; rect: DOMRect; focus: boolean } | null>(null);
   const [stacked] = useState(stacksSubmenus);
   // Stacked: the submenus entered, from the menu down. The last one is the level shown.
@@ -126,6 +126,17 @@ function MenuPanel({
 
   useLayoutEffect(() => {
     if (!ref.current) return;
+    // A submenu shown in its menu's place starts at its top, and stays where the menu is: a taller
+    // one scrolls in the room under it rather than jumping up over what's above. (Unless there's
+    // hardly any room there: then it's placed again.)
+    if (path.length > 0 && pos.left !== -9999) {
+      ref.current.scrollTop = 0;
+      const room = innerHeight - 8 - pos.top;
+      if (room >= Math.min(ref.current.scrollHeight, 240)) {
+        if (pos.maxHeight !== room) setPos({ ...pos, maxHeight: room });
+        return;
+      }
+    }
     const { offsetWidth: w, offsetHeight: h } = ref.current;
     let left = side ? anchor.right + 4 : anchor.left;
     let top = side ? anchor.top - 8 : anchor.bottom + 4;
@@ -133,6 +144,7 @@ function MenuPanel({
     if (top + h > innerHeight - 8) top = side ? innerHeight - 8 - h : Math.max(8, anchor.top - 4 - h);
     setPos({ left: Math.max(8, left), top: Math.max(8, top) });
     // `items` changes with the level shown: its height does too.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- placed when the level changes, not when `pos` does
   }, [anchor, side, items]);
 
   useEffect(() => {
