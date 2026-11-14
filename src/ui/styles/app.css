@@ -2072,6 +2072,13 @@ body.is-dragging-swatch * {
     background: var(--panel);
     box-shadow: var(--shadow);
   }
+  /* Export, the main action: as tall as a finger needs next to the bar's icons, and clear of its edge. */
+  .mobile-bar .btn-primary {
+    height: 36px;
+    margin: 0 4px;
+    padding: 0 14px;
+    font-weight: 600;
+  }
   .mobile-name {
     flex: 1;
     min-width: 0;
