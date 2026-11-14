@@ -27,6 +27,9 @@ The short version, for when you add or change something in the interface:
   toolbar is `MobileToolbar`: the colors, four pinned tools, the last other tool taken, and a button
   for all of them. The tools and the colors open in sheets too (`MobileSheets`). A new tool goes in
   `MOBILE_TOOL_GROUPS` (`src/ui/tools.ts`), or nobody can reach it there; a test checks it.
+  Its sizes follow Apple's for a compact screen, a little tighter for a tool: text at 14 px (15 for a
+  section's name, 16 in menus, 17 for a sheet's), rows of 44 px, palette swatches of 40 px or more.
+  Every sheet starts with the same header, its name and a × that closes it.
 - **Choices.** A choice among a few is a `SelectField`: a field with a caret that opens our menu. A
   choice among many, or with families, is a `.field-menu` button opening `openMenu` itself. Never a
   native `<select>`: it looks different in every browser and on a phone.
