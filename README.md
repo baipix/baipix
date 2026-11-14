@@ -33,8 +33,10 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Symmetry** around axes you can drag anywhere, **tile preview** for seamless textures, rulers and guides, a reference image to trace over.
 - **Rendering for design work:** choose the exported pixel size and a gap between pixels (LED / dot-matrix look), previewed live on the canvas.
 - **Export:** PNG, animated GIF, PNG sequences, clean SVG (a group per layer, one path per color, merged runs), **copy as SVG to paste straight into Figma or Illustrator**, `.aseprite` files with every frame to keep working in Aseprite, sprite sheets of the frames or the layers with their JSON for game engines, tilesets, every board at once as a .zip, `.baipix` project files, Lospec `.hex` palettes.
-- **Local-first:** everything is saved in your browser (IndexedDB), each board's last 50 undo steps included. Nothing is sent anywhere.
-- English, French, Ukrainian, Spanish, Japanese and Italian, opening in your browser's language; light and dark themes. Missing yours? [Add it](CONTRIBUTING.md#adding-a-language).
+- **Import:** images (PNG, JPG, GIF, WebP), with the real pixels of upscaled pixel art recovered; animated GIFs and sprite sheets as animations; Aseprite files with their layers, frames and palette.
+- **Local-first:** everything is saved in your browser (IndexedDB), each board's last 50 undo steps included. Nothing is sent anywhere. It works offline once opened, and installs as an app.
+- **Touch:** on a phone or tablet, a long press picks a color, a two-finger tap undoes and a three-finger tap redoes.
+- English, French, Ukrainian, Spanish, Japanese, Italian, Korean and Brazilian Portuguese, opening in your browser's language; light and dark themes. Missing yours? [Add it](CONTRIBUTING.md#adding-a-language).
 
 ## Getting started
 
