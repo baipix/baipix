@@ -69,3 +69,22 @@ test.describe('on a phone', () => {
     await expect(toolbar.locator('.mobile-chip.is-primary')).toHaveCSS('background-color', color);
   });
 });
+
+test.describe('on a phone, the file', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
+
+  test('is renamed from the top bar', async ({ page }) => {
+    await createNewFile(page);
+
+    const bar = page.locator('.mobile-bar');
+    await bar.locator('.mobile-name').tap();
+    await page.getByRole('menuitem', { name: 'Rename', exact: true }).tap();
+
+    const field = bar.getByRole('textbox', { name: 'File name' });
+    await expect(field).toBeFocused();
+    await field.fill('Robot');
+    await field.press('Enter');
+
+    await expect(bar.locator('.mobile-name')).toContainText('Robot');
+  });
+});
