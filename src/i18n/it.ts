@@ -46,6 +46,12 @@ export const it: Record<MessageKey, string> = {
   'toolbar.shading': 'Scurisci e schiarisci',
   'toolbar.rework': 'Strumenti di ritocco',
   'toolbar.selections': 'Strumenti di selezione',
+  'mobile.allTools': 'Tutti gli strumenti',
+  'mobile.selectAndMove': 'Seleziona e sposta',
+  'mobile.draw': 'Disegna',
+  'mobile.shadeAndRework': 'Scurisci e ritocca',
+  'mobile.editColor': 'Modifica colore…',
+  'mobile.pickHint': 'Tieni premuto sul disegno per prelevare un colore.',
   'hint.lassoSelect':
     'Disegna attorno a ciò che vuoi selezionare; il tracciato si chiude quando rilasci. Maiusc aggiunge alla selezione, Alt la riduce.',
   'hint.wand':

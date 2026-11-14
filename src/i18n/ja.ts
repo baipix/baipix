@@ -46,6 +46,12 @@ export const ja: Record<MessageKey, string> = {
   'toolbar.shading': '暗くする・明るくする',
   'toolbar.rework': '加工ツール',
   'toolbar.selections': '選択ツール',
+  'mobile.allTools': 'すべてのツール',
+  'mobile.selectAndMove': '選択と移動',
+  'mobile.draw': '描く',
+  'mobile.shadeAndRework': '陰影と加工',
+  'mobile.editColor': '色を編集…',
+  'mobile.pickHint': '絵を長押しすると色を取得できます。',
   'hint.lassoSelect':
     '選びたい部分を囲むようになぞります。離すと線が閉じます。Shiftで選択範囲に追加、Altで選択範囲から除きます。',
   'hint.wand':
