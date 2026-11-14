@@ -90,8 +90,8 @@ body.is-resizing * {
   --toolbar-bottom: calc(16px + var(--timeline-space, 0px) + env(safe-area-inset-bottom, 0px));
   /* Just above the toolbar, whatever the size of its tools: where the next floating bar goes. */
   --above-toolbar: calc(var(--toolbar-bottom) + var(--tool) + 16px);
-  /* The tool options' bar: tall enough for its icon buttons, with some air around them. */
-  --options-height: max(36px, calc(var(--icon-btn) + 8px));
+  /* The tool options' bar. */
+  --options-height: 36px;
 }
 .app {
   height: 100%;
@@ -1190,6 +1190,38 @@ body.is-panning .canvas:active {
 .tool-options .button-group {
   padding: 0;
 }
+/* Flush with the group here: its end buttons take its corners. */
+.tool-options .button-group .icon-btn:first-child:not(:only-child) {
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+.tool-options .button-group .icon-btn:last-child:not(:only-child) {
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+/* On a touch screen everything in the bar has one height, the fields as tall as the buttons: 36 px to
+   look at, and the bar's whole height to tap. */
+@media (pointer: coarse) {
+  :root {
+    --options-height: var(--touch);
+  }
+  .tool-options {
+    --icon-btn: 36px;
+  }
+  .tool-options .field,
+  .tool-options .btn {
+    height: 36px;
+  }
+  .tool-options .checkbox {
+    min-height: 36px;
+  }
+  .tool-options .icon-btn {
+    position: relative;
+  }
+  .tool-options .icon-btn::before {
+    content: '';
+    position: absolute;
+    inset: -4px 0;
+  }
+}
 .tool-btn {
   width: var(--tool);
   height: var(--tool);
@@ -1373,7 +1405,9 @@ body.is-dragging-swatch * {
   opacity: 1;
 }
 .mobile-bar,
-.mobile-colors {
+.mobile-toolbar,
+.mobile-history,
+.mobile-sheet {
   display: none;
 }
 
@@ -2055,43 +2089,64 @@ body.is-dragging-swatch * {
   .resizer {
     display: none;
   }
-  /* The colors stay in view, between the toolbar and the tool options. */
-  .mobile-colors {
-    position: absolute;
-    left: 50%;
-    bottom: var(--above-toolbar);
-    max-width: calc(100% - 24px);
-    height: 40px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 6px;
-    transform: translateX(-50%);
-    background: var(--panel);
-  }
-  /* Above the colors' bar (40 px and a gap). */
-  .tool-options {
-    bottom: calc(var(--above-toolbar) + 48px);
-  }
-  .toast {
-    bottom: calc(var(--above-toolbar) + 48px + var(--options-height) + 12px);
-  }
-  .app.ui-hidden .mobile-colors {
+  /* The toolbar: a few tools under the thumb, and nothing that scrolls. The rest is in a sheet. */
+  .toolbar {
     display: none;
   }
+  .mobile-toolbar {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: var(--toolbar-bottom);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+  /* Undo and Redo float over the tool options, on the left. */
+  .mobile-history {
+    position: absolute;
+    left: 8px;
+    bottom: calc(var(--above-toolbar) + var(--options-height) + 8px);
+    display: flex;
+    align-items: center;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+  .tool-options {
+    max-width: calc(100% - 16px);
+  }
+  .toast {
+    bottom: calc(var(--above-toolbar) + var(--options-height) + var(--touch) + 20px);
+  }
+  .app.ui-hidden .mobile-toolbar,
+  .app.ui-hidden .mobile-history {
+    display: none;
+  }
+  /* The two colors, on the toolbar (they open the colors' sheet) and in that sheet (the picker). */
   .mobile-chips {
     position: relative;
     flex: none;
-    width: 34px;
-    height: 28px;
+    width: var(--touch);
+    height: var(--touch);
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+  }
+  .mobile-chips[aria-pressed='true'] {
+    background: var(--selected);
   }
   /* Primary on top, secondary peeking out behind it. */
   .mobile-chip {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border: 0;
+    border-radius: var(--radius);
     background: conic-gradient(
         var(--check-b) 25%,
         var(--check-a) 0 50%,
@@ -2099,40 +2154,114 @@ body.is-dragging-swatch * {
         var(--check-a) 0
       )
       0 0 / 8px 8px;
-    box-shadow: 0 0 0 2px var(--panel);
+    box-shadow:
+      0 0 0 1px var(--swatch-edge),
+      0 0 0 3px var(--panel);
   }
   .mobile-chip i {
     position: absolute;
     inset: 0;
-    box-shadow: inset 0 0 0 1px var(--swatch-edge);
+    border-radius: inherit;
   }
   .mobile-chip.is-primary {
     z-index: 1;
-    top: 0;
-    left: 0;
+    top: 7px;
+    left: 7px;
   }
   .mobile-chip.is-secondary {
+    right: 7px;
+    bottom: 7px;
+  }
+  /* A sheet from the bottom, over the toolbar: all the tools, or the colors. */
+  .mobile-sheet {
+    position: fixed;
+    left: 0;
     right: 0;
     bottom: 0;
+    z-index: 30;
+    display: block;
+    max-height: 88vh;
+    padding: 4px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--panel);
+    box-shadow: var(--shadow-pop);
+    animation: mobile-sheet-in 0.2s ease;
+  }
+  .mobile-sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding-left: 4px;
+  }
+  .mobile-sheet-header h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .mobile-sheet-header .icon-btn {
+    margin-left: auto;
+  }
+  .mobile-tools-group h3 {
+    margin: 10px 4px 6px;
+    color: var(--muted);
+    font-size: inherit;
+    font-weight: 500;
+  }
+  .mobile-tools-group:first-of-type h3 {
+    margin-top: 0;
+  }
+  .mobile-tools {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .mobile-tool {
+    min-width: 0;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--input);
+    color: var(--muted);
+  }
+  .mobile-tool .icon {
+    color: var(--text);
+  }
+  /* Long names (the isometric shapes) take two lines rather than being cut. */
+  .mobile-tool span {
+    max-width: 100%;
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.15;
+    text-align: center;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .mobile-tool[aria-pressed='true'],
+  .mobile-tool[aria-pressed='true'] .icon {
+    background: var(--glow);
+    color: var(--glow-ink);
   }
   .mobile-swatches {
-    min-width: 0;
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .mobile-swatches::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    padding: 0 4px;
   }
   .mobile-swatch {
-    flex: none;
-    width: 28px;
-    height: 28px;
+    height: var(--touch);
     padding: 0;
     border: 0;
-    box-shadow: inset 0 0 0 1px var(--swatch-edge);
     border-radius: var(--radius);
+    box-shadow: inset 0 0 0 1px var(--swatch-edge);
     -webkit-touch-callout: none;
     user-select: none;
   }
@@ -2146,21 +2275,52 @@ body.is-dragging-swatch * {
       inset 0 0 0 2px var(--glow),
       inset 0 0 0 4px var(--panel);
   }
+  .mobile-color-edit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 4px;
+  }
+  .mobile-hex {
+    flex: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .mobile-color-edit .btn {
+    height: 36px;
+    padding: 0 12px;
+  }
+  .mobile-sheet-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 4px 0;
+  }
   /* On a phone the bottom belongs to the tools. */
   .help-corner {
     display: none;
   }
-  /* The toolbar scrolls sideways here: on a touch screen its tools grow in height only, so as many
-     stay in view. (Until the phone gets its own bar, #839.) */
-  .toolbar .tool-btn {
-    width: 32px;
-  }
+  /* The phone's bars are made for a finger, even in a narrow window on a computer. */
   :root {
     --toolbar-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    --tool: var(--touch);
   }
-  /* Tighter tool options: the field's own icon stands in for its label. */
+  /* Tighter tool options: the field's own icon stands in for its label. What doesn't fit scrolls
+     sideways, and fades out at the right edge rather than being cut there. */
   .tool-options {
     gap: 10px;
+    padding-right: 0;
+  }
+  .tool-options::after {
+    content: '';
+    position: sticky;
+    right: 0;
+    width: 28px;
+    flex: none;
+    align-self: stretch;
+    margin-left: -10px;
+    background: linear-gradient(90deg, transparent, var(--panel) 80%);
+    pointer-events: none;
   }
   .tool-options .row-label {
     display: none;
@@ -2180,9 +2340,17 @@ body.is-dragging-swatch * {
   }
 }
 
+@keyframes mobile-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+  .mobile-sheet {
+    animation: none;
   }
 }
 
@@ -2250,7 +2418,8 @@ body.is-dragging-swatch * {
 .menu,
 .command-palette,
 .mobile-bar,
-.mobile-colors,
+.mobile-toolbar,
+.mobile-history,
 .floating-preview {
   border-radius: var(--radius-lg);
 }

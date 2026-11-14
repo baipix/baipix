@@ -45,6 +45,12 @@ export const en = {
   'toolbar.shading': 'Shade and lighten',
   'toolbar.rework': 'Rework tools',
   'toolbar.selections': 'Selection tools',
+  'mobile.allTools': 'All tools',
+  'mobile.selectAndMove': 'Select and move',
+  'mobile.draw': 'Draw',
+  'mobile.shadeAndRework': 'Shade and rework',
+  'mobile.editColor': 'Edit color…',
+  'mobile.pickHint': 'Long press the drawing to pick a color.',
   'hint.lassoSelect':
     'Draw around what to select; the path closes when you let go. Shift adds to the selection, Alt takes from it.',
   'hint.wand':

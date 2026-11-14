@@ -51,8 +51,8 @@ export interface UiState {
   dialog: DialogState | null;
   /** Open color picker: which color it edits and where to anchor it vertically. */
   picker: { slot: ColorSlot; top: number } | null;
-  /** Mobile bottom sheet. */
-  sheet: 'left' | 'right' | null;
+  /** Mobile bottom sheet: the two panels, and the toolbar's sheets for the tools and the colors. */
+  sheet: 'left' | 'right' | 'tools' | 'colors' | null;
   /** Color adjustment panel open. */
   adjust: boolean;
   /** The floating preview window: shown or not, folded, where (null: the default spot), its size and zoom. */

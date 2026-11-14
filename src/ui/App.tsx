@@ -19,7 +19,8 @@ import { Coordinates } from './components/Coordinates';
 import { MenuBar } from './components/MenuBar';
 import { MenuHost } from './components/Menu';
 import { MobileBar } from './components/MobileBar';
-import { MobileColors } from './components/MobileColors';
+import { MobileSheets } from './components/MobileSheets';
+import { MobileToolbar } from './components/MobileToolbar';
 import { PanelResizer } from './components/PanelResizer';
 import { Timeline } from './components/Timeline';
 import { ToolOptionsBar } from './components/ToolOptionsBar';
@@ -271,7 +272,6 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
               <PanelResizer side="left" />
               <PanelResizer side="right" />
               <MobileBar />
-              <MobileColors />
               {!noBoard && <Coordinates />}
               {/* The window's bottom right corner: the version, which opens what's new. */}
               <div className="help-corner">
@@ -288,6 +288,8 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
               {!noBoard && timeline && <Timeline />}
               <ToolOptionsBar />
               <Toolbar />
+              <MobileToolbar />
+              <MobileSheets />
             </main>
             <RightPanel />
           </div>

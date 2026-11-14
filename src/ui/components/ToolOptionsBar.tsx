@@ -960,7 +960,8 @@ export function ToolOptionsBar() {
   // Tools that paint: symmetry is at hand while drawing, like Aseprite's.
   const paints = TOOLS[tool].editsPixels && tool !== 'move';
   return (
-    <div className="tool-options" role="toolbar" aria-label={t(meta.label)}>
+    // One bar per tool: on a narrow screen, where it scrolls sideways, a new tool starts at its beginning.
+    <div key={tool} className="tool-options" role="toolbar" aria-label={t(meta.label)}>
       <span className="tool-options-name" data-tip={info} data-kbd={meta.shortcut} tabIndex={info ? 0 : -1}>
         {t(meta.label)}
         {info && <Icon name="info" size={14} />}
