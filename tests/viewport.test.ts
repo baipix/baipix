@@ -55,4 +55,26 @@ describe('viewport', () => {
     expect(viewport.zoom).toBe(4);
     vi.unstubAllGlobals();
   });
+
+  it('keeps the art under the fingers during a pinch, at every step of the zoom', () => {
+    // A phone: 3 device pixels to a CSS pixel, so a pixel's size on screen jumps by thirds.
+    const dpr = viewport.dpr;
+    viewport.dpr = 3;
+    viewport.set({ zoom: 4, panX: 40, panY: 60 });
+    const from = { zoom: 4, panX: 40, panY: 60, cx: 180, cy: 300 };
+    const art = {
+      x: (from.cx - from.panX) / viewport.effectiveZoom,
+      y: (from.cy - from.panY) / viewport.effectiveZoom,
+    };
+
+    // The fingers spread and drift: the zoom glides through values the screen can't show exactly.
+    for (let k = 0; k <= 60; k++) {
+      const cx = from.cx + k * 0.7;
+      const cy = from.cy - k * 0.4;
+      viewport.pinch(from, 4 + k * 0.071, cx, cy);
+      expect((cx - viewport.panX) / viewport.effectiveZoom).toBeCloseTo(art.x, 9);
+      expect((cy - viewport.panY) / viewport.effectiveZoom).toBeCloseTo(art.y, 9);
+    }
+    viewport.dpr = dpr;
+  });
 });
