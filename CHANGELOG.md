@@ -4,6 +4,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- On a phone or tablet, the tools, icon buttons, rows of layers and rows of menus are bigger, 44 px, the size a finger needs. With a mouse nothing changes. ([#850](https://github.com/baipix/baipix/pull/850))
+
 ## [0.8.1] - 2026-11-14
 
 Baipix works offline and installs as an app, takes touch gestures on phones and tablets, opens Aseprite files, imports animated GIFs and sprite sheets as animations, and speaks Korean and Brazilian Portuguese.
