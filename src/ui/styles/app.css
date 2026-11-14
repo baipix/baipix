@@ -1606,8 +1606,10 @@ body.is-dragging-swatch * {
   position: fixed;
   z-index: 60;
   min-width: 220px;
-  /* Long menus (the palettes) scroll instead of leaving the window. */
+  /* Long menus (the palettes) scroll instead of leaving the window: what shows of it on a phone,
+     where the browser's bars take part of the height (dvh). */
   max-height: calc(100vh - 16px);
+  max-height: calc(100dvh - 16px);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -1691,6 +1693,25 @@ body.is-dragging-swatch * {
   height: 1px;
   margin: 8px -8px;
   background: var(--menu-line);
+}
+/* A submenu shown in its menu's place (touch screens, narrow windows): its name, which goes back. */
+.menu-head {
+  /* It stays in view while a long submenu scrolls under it. */
+  position: sticky;
+  top: -8px;
+  z-index: 1;
+  margin: -8px -8px 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--menu-line);
+  background: var(--menu-bg);
+}
+.menu-back {
+  gap: 8px;
+  padding-left: 8px;
+  font-weight: 600;
+}
+.menu-back > .icon {
+  margin-right: 0;
 }
 .tooltip {
   position: fixed;
@@ -2562,6 +2583,19 @@ body.is-dragging-swatch * {
   --muted: var(--glow-muted);
   background: var(--glow);
   color: var(--glow-ink);
+}
+/* A finger doesn't hover: after a tap, the row that comes under it doesn't light up as if it were
+   picked. It does while it's pressed. */
+@media (hover: none) {
+  .menu-item:hover:not(:active):not(:focus-visible) {
+    --muted: inherit;
+    background: transparent;
+    color: var(--menu-text);
+  }
+  .menu-item:hover:not(:active):not(:focus-visible) .menu-shortcut {
+    color: var(--menu-shortcut);
+    opacity: 1;
+  }
 }
 
 /* Checkboxes: the native ones, in the accent color. */
