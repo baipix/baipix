@@ -88,6 +88,17 @@ export const TOOL_GROUPS: (ToolMeta | ToolMeta[])[][] = [
 ];
 
 export const TOOL_LIST: ToolMeta[] = TOOL_GROUPS.flat(2);
+
+/** A phone's toolbar has room for a few tools: these stay on it, the others are in a sheet. */
+export const MOBILE_PINNED_TOOLS: ToolId[] = ['pencil', 'eraser', 'bucket', 'select'];
+
+/** The sheet with every tool, on a phone: by what they're for, each with its name. */
+export const MOBILE_TOOL_GROUPS: { label: MessageKey; tools: ToolId[] }[] = [
+  { label: 'mobile.selectAndMove', tools: ['move', 'select', 'lassoSelect', 'wand', 'hand', 'board'] },
+  { label: 'mobile.draw', tools: ['pencil', 'lassoFill', 'eraser', 'bucket', 'gradient', 'picker', 'spray'] },
+  { label: 'toolbar.shapes', tools: SHAPE_IDS },
+  { label: 'mobile.shadeAndRework', tools: ['shade', 'lighten', 'blur', 'jumble', 'liquify'] },
+];
 export const toolMeta = (id: ToolId): ToolMeta => TOOL_LIST.find((t) => t.id === id)!;
 
 /** Tools that show a brush footprint under the cursor. */

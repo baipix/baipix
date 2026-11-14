@@ -46,6 +46,12 @@ export const fr: Record<MessageKey, string> = {
   'toolbar.shading': 'Ombrer et éclaircir',
   'toolbar.rework': 'Outils de retouche',
   'toolbar.selections': 'Outils de sélection',
+  'mobile.allTools': 'Tous les outils',
+  'mobile.selectAndMove': 'Sélectionner et déplacer',
+  'mobile.draw': 'Dessiner',
+  'mobile.shadeAndRework': 'Ombrer et retoucher',
+  'mobile.editColor': 'Modifier la couleur…',
+  'mobile.pickHint': 'Appuie longuement sur le dessin pour prendre une couleur.',
   'hint.lassoSelect':
     'Dessine autour de ce que tu veux sélectionner ; le tracé se ferme quand tu lâches. Shift ajoute à la sélection, Alt en retire.',
   'hint.wand':

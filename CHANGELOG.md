@@ -4,6 +4,19 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Changed
+
+- On a phone, one toolbar instead of three bars: the two colors, the pencil, the eraser, the paint bucket and the selection, the last other tool taken, and … for all the tools, in a sheet with their names. The colors open the palette in a sheet, and Undo and Redo float above the tool's options. ([#852](https://github.com/baipix/baipix/pull/852))
+- On a phone or tablet, the tools, icon buttons, rows of layers and rows of menus are bigger, 44 px, the size a finger needs. With a mouse nothing changes. ([#850](https://github.com/baipix/baipix/pull/850))
+
+### Fixed
+
+- In the tool's options, the pressed button of a group (the brush's square or round shape) keeps to the group's rounded corners. ([#852](https://github.com/baipix/baipix/pull/852))
+
+## [0.8.1] - 2026-11-14
+
+Baipix works offline and installs as an app, takes touch gestures on phones and tablets, opens Aseprite files, imports animated GIFs and sprite sheets as animations, and speaks Korean and Brazilian Portuguese.
+
 ### Added
 
 - Four more templates: Favicon (32 × 32), Small tile (16 × 16, tiled), Emote (112 × 112) and Playing card (64 × 96). ([#757](https://github.com/baipix/baipix/pull/757))
@@ -643,7 +656,8 @@ The first public version.
 - Everything saved in the browser, English and French, light and dark themes.
 - The website, with a gallery of drawings rendered by the editor itself.
 
-[Unreleased]: https://github.com/baipix/baipix/compare/v0.8.0...main
+[Unreleased]: https://github.com/baipix/baipix/compare/v0.8.1...main
+[0.8.1]: https://github.com/baipix/baipix/releases/tag/v0.8.1
 [0.8.0]: https://github.com/baipix/baipix/releases/tag/v0.8.0
 [0.7.7]: https://github.com/baipix/baipix/releases/tag/v0.7.7
 [0.7.6]: https://github.com/baipix/baipix/releases/tag/v0.7.6

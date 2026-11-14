@@ -95,7 +95,27 @@
 
   --radius: 5px;
   --radius-lg: 13px;
+
+  /* Sizes of what gets clicked: a tool in the toolbar, an icon button, a row in a list (a layer, a
+     board) and a row in a menu. On a touch screen they all take --touch (below). */
+  --tool: 32px;
+  --icon-btn: 24px;
+  --row: 32px;
+  --menu-row: 24px;
+  /* What a finger needs to land on: Apple and Google both ask for about this much. */
+  --touch: 44px;
   --font: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* A finger or a stylus as the main pointer (a phone, a tablet, whatever the window's width): every
+   target grows to --touch. A laptop with a touch screen keeps the mouse's sizes. */
+@media (pointer: coarse) {
+  :root {
+    --tool: var(--touch);
+    --icon-btn: var(--touch);
+    --row: var(--touch);
+    --menu-row: var(--touch);
+  }
 }
 
 :root[data-theme='light'] {

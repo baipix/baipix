@@ -48,6 +48,12 @@ export const ko: Record<MessageKey, string> = {
   'toolbar.shading': '음영 및 밝게 하기',
   'toolbar.rework': '가공 도구',
   'toolbar.selections': '선택 도구',
+  'mobile.allTools': '모든 도구',
+  'mobile.selectAndMove': '선택 및 이동',
+  'mobile.draw': '그리기',
+  'mobile.shadeAndRework': '음영 및 가공',
+  'mobile.editColor': '색상 편집…',
+  'mobile.pickHint': '그림을 길게 누르면 색을 가져옵니다.',
 
   'hint.lassoSelect':
     '선택할 부분을 둘러서 그립니다. 마우스를 놓으면 닫힙니다. Shift는 선택 영역에 추가하고, Alt는 선택 영역에서 뺍니다.',

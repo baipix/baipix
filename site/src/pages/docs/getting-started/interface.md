@@ -99,3 +99,12 @@ A small floating window with the whole drawing at a fixed size, so you see it as
 </figure>
 
 Baipix opens on your drawings, laid out like a files app: a sidebar with Drawings and the Trash, and at its bottom the docs, a bug or idea form, and what's new; Import and Create at the top right; a menu to sort the drawings (alphabetically or by last change, oldest or newest first) and a grid or a list view. The first time, before any drawing, the same screen welcomes you with the presets as cards: one click, and the canvas is ready, its palette and views set. Come back to it with File › Recent › All files. See [Create and open files](../create-and-open/).
+
+## On a phone
+
+On a phone, or in a narrow window, the interface folds up around the drawing:
+
+- **The toolbar** at the bottom holds the two colors, the pencil, the eraser, the paint bucket and the selection, then the last other tool you took, and **…** for all the tools, by what they're for and with their names.
+- **The two colors** open the palette: tap a color to draw with it, press longer to make it the color behind. **Edit color…** opens the picker.
+- **Undo** and **Redo** float just above, with the tool's options.
+- At the top, **☰** is the menu bar, the file's name switches files, and the two buttons next to Export open the layers and the properties from the bottom. A tap on the drawing closes them.

@@ -46,6 +46,12 @@ export const uk: Record<MessageKey, string> = {
   'toolbar.shading': 'Затемнення й освітлення',
   'toolbar.rework': 'Інструменти корекції',
   'toolbar.selections': 'Інструменти вибору',
+  'mobile.allTools': 'Усі інструменти',
+  'mobile.selectAndMove': 'Вибір і переміщення',
+  'mobile.draw': 'Малювання',
+  'mobile.shadeAndRework': 'Затемнення й корекція',
+  'mobile.editColor': 'Змінити колір…',
+  'mobile.pickHint': 'Довго натисніть на малюнок, щоб узяти колір.',
   'hint.lassoSelect':
     'Обведіть контур навколо того, що потрібно виділити; контур замикається, коли ви відпустите кнопку. Клавіша Shift додає до виділення, а Alt — видаляє їх.',
   'hint.wand':
