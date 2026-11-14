@@ -805,6 +805,13 @@ body.is-resizing * {
 .palette-grid.is-sortable .swatch {
   touch-action: none;
 }
+/* Under a finger, an up or down swipe that starts on a swatch scrolls what holds the palette (the
+   phone's sheet); a sideways one still moves the swatch. */
+@media (pointer: coarse) {
+  .palette-grid.is-sortable .swatch {
+    touch-action: pan-y;
+  }
+}
 .swatch.is-secondary::before {
   content: '';
   position: absolute;
@@ -2422,8 +2429,73 @@ body.is-dragging-swatch * {
     min-height: 56px;
     padding: 0 6px 0 16px;
     border-bottom: 1px solid var(--line);
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 600;
+  }
+
+  /* A phone's sizes, after Apple's for a compact screen: text read at arm's length (14 px, 15 for a
+     section's name, 16 in menus, 17 for a sheet's), rows of 44 px, swatches a finger can pick. */
+  body {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .menu-item {
+    font-size: 16px;
+  }
+  .section {
+    padding-bottom: 16px;
+  }
+  .section-title {
+    height: auto;
+    min-height: var(--touch);
+    font-size: 15px;
+  }
+  /* A section with only its name (no light yet, no effect): the name sits in the middle of it. */
+  .section:has(> .section-title:only-child) {
+    padding-bottom: 4px;
+  }
+  /* A part of a section with its own name (the board's background): a line sets it apart. */
+  .subsection-title {
+    height: auto;
+    min-height: var(--touch);
+    margin: 12px -16px 0;
+    padding: 4px 16px 0;
+    border-top: 1px solid var(--line);
+  }
+  .row,
+  .checkbox {
+    min-height: var(--touch);
+  }
+  .row-label {
+    width: auto;
+    min-width: 96px;
+  }
+  /* A number is short: its field keeps to the right, and doesn't take the whole row. */
+  .panel .row-control {
+    flex: 0 1 190px;
+    margin-left: auto;
+  }
+  /* The palette under the two colors, on the whole width: about seven swatches a row. */
+  .colors-row {
+    flex-direction: column;
+  }
+  .colors-palette {
+    align-self: stretch;
+  }
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 6px;
+  }
+  .swatch,
+  .swatch-add {
+    border-radius: 6px;
+  }
+  .swatch.is-primary::after,
+  .swatch.is-secondary::before {
+    border-radius: 9px;
+  }
+  .mobile-tool {
+    font-size: 12px;
   }
 }
 
