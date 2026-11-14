@@ -12,7 +12,7 @@ export const GET: APIRoute = ({ site }) => {
   const url = (path: string) => new URL(`${base}${path}`, site).href;
   const text = `# Baipix
 
-> Baipix is a free, open source pixel art editor that runs in the browser, with the interface of a modern design tool (layers, components, a command palette), animation and isometric drawing. No account and no install: drawings are saved in the browser. It exports clean SVG that pastes straight into Figma or Illustrator, PNG, animated GIF, sprite sheets, Aseprite files, tilesets and code. Current version: ${pkg.version}. License: MIT.
+> Baipix is a free, open source pixel art editor that runs in the browser, with the interface of a modern design tool (layers, components, a command palette), animation and isometric drawing. No account and no install: drawings are saved in the browser, and it works offline once opened. It exports clean SVG that pastes straight into Figma or Illustrator, PNG, animated GIF, sprite sheets, Aseprite files, tilesets and code. Current version: ${pkg.version}. License: MIT.
 
 Baipix is made for pixel artists, game developers and designers who want pixel art in their projects.
 
@@ -26,8 +26,10 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - Light: a light per board to shade by, that drop shadows can follow.
 - Layers like a design tool: groups, blend modes, effects (outline, shadow, glow), components and instances, several boards (artboards) in one file.
 - Symmetry, rulers and guides, seamless tile preview, a reference image to trace over.
+- Import: PNG, JPG, GIF and WebP images, with the real pixels of upscaled pixel art recovered; animated GIFs and sprite sheets as animations; Aseprite files (.ase, .aseprite) with their layers, frames and palette.
 - Export: PNG from 1× to 32×, animated GIF, PNG sequences, sprite sheets of the frames or the layers with TexturePacker JSON, SVG (one path per color, layers kept), copy as SVG for Figma, Aseprite (.aseprite, every frame and its duration), tilesets for Godot and Tiled, every board at once, and code: a React component, CSS, JSON or ASCII.
-- In English, French, Ukrainian, Spanish, Japanese and Italian.
+- Offline and on touch screens: it can be installed as an app from the browser, and takes touch gestures (long press to pick a color, two-finger tap to undo, three-finger tap to redo).
+- In English, French, Ukrainian, Spanish, Japanese, Italian, Korean and Brazilian Portuguese.
 - Privacy: drawings never leave the browser. Page views are counted without cookies.
 
 ## Links
