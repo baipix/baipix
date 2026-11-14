@@ -2401,14 +2401,14 @@ body.is-dragging-swatch * {
 
 /* What a panel only has as a sheet, on a phone: a button to close it, and for the right one a header. */
 .icon-btn.sheet-close,
-.sheet-header {
+.panel-header.sheet-header {
   display: none;
 }
 @media (max-width: 820px) {
   .icon-btn.sheet-close {
     display: grid;
   }
-  .sheet-header {
+  .panel-header.sheet-header {
     display: flex;
   }
   .panel-left:not(.is-folded) .panel-fold {
