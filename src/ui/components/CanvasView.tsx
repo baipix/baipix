@@ -1238,12 +1238,7 @@ export function CanvasView() {
 
       if (pinch) {
         const info = pinchInfo();
-        const zoom = Math.min(96, Math.max(1, (pinch.zoom * info.distance) / Math.max(1, pinch.distance)));
-        const k = viewport.stepFactor;
-        const px = (pinch.cx - pinch.panX) / (pinch.zoom * k);
-        const py = (pinch.cy - pinch.panY) / (pinch.zoom * k);
-        viewport.set({ zoom, panX: info.cx - px * zoom * k, panY: info.cy - py * zoom * k });
-        pinch = { ...pinch, cx: pinch.cx, cy: pinch.cy };
+        viewport.pinch(pinch, (pinch.zoom * info.distance) / Math.max(1, pinch.distance), info.cx, info.cy);
         return;
       }
       if (e.pointerType === 'touch' && touchGestureActive && touchMove.type === 'none' && !editor.isStroking)

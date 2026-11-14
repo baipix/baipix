@@ -264,6 +264,37 @@ class Viewport {
     this.emit();
   }
 
+  /**
+   * The step between art pixels at `zoom`, in CSS pixels: what `effectiveZoom` is, or would be. A
+   * pixel is drawn on whole device pixels, so the step moves in small jumps while the zoom glides.
+   */
+  stepAt(zoom: number): number {
+    const pixel = Math.max(1, Math.round(zoom * this.dpr));
+    const gap = this.gapRatio > 0 ? Math.max(1, Math.round(pixel * this.gapRatio)) : 0;
+    return (pixel + gap) / this.dpr;
+  }
+
+  /**
+   * A pinch: the zoom follows the fingers, and the art that was under their middle when it started
+   * (`from`) stays under it (`cx`, `cy`). It's placed with the step the drawing is really shown at:
+   * with the zoom as it glides, the drawing would shake at every jump of that step.
+   */
+  pinch(
+    from: { zoom: number; panX: number; panY: number; cx: number; cy: number },
+    zoom: number,
+    cx: number,
+    cy: number,
+  ): void {
+    const to = clamp(zoom, 1, 96);
+    const before = this.stepAt(from.zoom);
+    const after = this.stepAt(to);
+    this.set({
+      zoom: to,
+      panX: cx - ((from.cx - from.panX) / before) * after,
+      panY: cy - ((from.cy - from.panY) / before) * after,
+    });
+  }
+
   /** Continuous zoom (pinch). Call `settle` when the gesture ends to snap to a whole zoom. */
   set(view: View): void {
     this.stopGlide();
