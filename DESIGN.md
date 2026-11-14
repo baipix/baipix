@@ -18,6 +18,10 @@ The short version, for when you add or change something in the interface:
 - **Shapes.** Soft rounded corners (`--radius` for controls, `--radius-lg` for panels and dialogs) and
   soft shadows (`--shadow`, `--shadow-pop`, `--shadow-menu`) on what floats over the canvas. The pixel
   look is kept for the logo and the website.
+- **Sizes.** What gets clicked takes its size from a token: `--tool` (a tool in the toolbar),
+  `--icon-btn`, `--row` (a layer, a board) and `--menu-row`. On a touch screen (`pointer: coarse`,
+  whatever the window's width) they all become `--touch`, 44 px. A new target uses one of them rather
+  than a size of its own, and what holds it grows with it (`max(36px, var(--icon-btn))`).
 - **Buttons.** `.btn` for actions in panels and dialogs, `.btn-primary` for the one main action,
   `.action-btn` for big actions on full screens (the home screen), `IconButton` for compact actions.
 - **Icons.** [Lucide](https://lucide.dev) line icons, through `Icon` (16 px in the panels, 18 px in

@@ -88,6 +88,10 @@ body.is-resizing * {
 :root {
   /* The timeline, when shown, sets --timeline-space: everything at the bottom moves up above it. */
   --toolbar-bottom: calc(16px + var(--timeline-space, 0px) + env(safe-area-inset-bottom, 0px));
+  /* Just above the toolbar, whatever the size of its tools: where the next floating bar goes. */
+  --above-toolbar: calc(var(--toolbar-bottom) + var(--tool) + 16px);
+  /* The tool options' bar: tall enough for its icon buttons, with some air around them. */
+  --options-height: max(36px, calc(var(--icon-btn) + 8px));
 }
 .app {
   height: 100%;
@@ -508,8 +512,8 @@ body.is-resizing * {
 
 /* ---------- Controls ---------- */
 .icon-btn {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-btn);
+  height: var(--icon-btn);
   flex: none;
   display: grid;
   place-items: center;
@@ -520,8 +524,8 @@ body.is-resizing * {
   color: var(--text);
 }
 .icon-btn.large {
-  width: 32px;
-  height: 32px;
+  width: max(32px, var(--icon-btn));
+  height: max(32px, var(--icon-btn));
 }
 .icon-btn:hover,
 .icon-btn[aria-expanded='true'],
@@ -814,7 +818,7 @@ body.is-resizing * {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 32px;
+  height: var(--row);
   padding: 0 4px 0 8px;
   border-radius: var(--radius);
 }
@@ -1121,11 +1125,11 @@ body.is-panning .canvas:active {
 .tool-options {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--toolbar-bottom) + 48px);
+  bottom: var(--above-toolbar);
   /* Its own width: placed at 50%, it would otherwise shrink to half the workspace and scroll. */
   width: max-content;
   max-width: calc(100% - 24px);
-  height: 36px;
+  height: var(--options-height);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1187,8 +1191,8 @@ body.is-panning .canvas:active {
   padding: 0;
 }
 .tool-btn {
-  width: 32px;
-  height: 32px;
+  width: var(--tool);
+  height: var(--tool);
   flex: none;
   display: grid;
   place-items: center;
@@ -1302,6 +1306,12 @@ body.is-dragging-swatch * {
   align-items: center;
   gap: 8px;
 }
+/* On a touch screen the toolbar is wider and can reach that corner: the version stays in Help. */
+@media (pointer: coarse) {
+  .help-corner {
+    display: none;
+  }
+}
 /* Quiet, like a status line: the version, which opens what's new. */
 .app-version {
   padding: 2px 4px;
@@ -1391,7 +1401,7 @@ body.is-dragging-swatch * {
   padding: 12px 16px 16px;
 }
 .adjust-panel {
-  bottom: calc(var(--toolbar-bottom) + 96px);
+  bottom: calc(var(--above-toolbar) + var(--options-height) + 12px);
   width: 260px;
 }
 .adjust-row {
@@ -1576,7 +1586,7 @@ body.is-dragging-swatch * {
 .menu-item {
   position: relative;
   width: 100%;
-  height: 24px;
+  height: var(--menu-row);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1674,7 +1684,7 @@ body.is-dragging-swatch * {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--toolbar-bottom) + 96px);
+  bottom: calc(var(--above-toolbar) + var(--options-height) + 12px);
   z-index: 80;
   max-width: calc(100vw - 32px);
   padding: 8px 12px;
@@ -2049,7 +2059,7 @@ body.is-dragging-swatch * {
   .mobile-colors {
     position: absolute;
     left: 50%;
-    bottom: calc(var(--toolbar-bottom) + 48px);
+    bottom: var(--above-toolbar);
     max-width: calc(100% - 24px);
     height: 40px;
     display: flex;
@@ -2059,11 +2069,12 @@ body.is-dragging-swatch * {
     transform: translateX(-50%);
     background: var(--panel);
   }
+  /* Above the colors' bar (40 px and a gap). */
   .tool-options {
-    bottom: calc(var(--toolbar-bottom) + 96px);
+    bottom: calc(var(--above-toolbar) + 48px);
   }
   .toast {
-    bottom: calc(var(--toolbar-bottom) + 144px);
+    bottom: calc(var(--above-toolbar) + 48px + var(--options-height) + 12px);
   }
   .app.ui-hidden .mobile-colors {
     display: none;
@@ -2138,6 +2149,11 @@ body.is-dragging-swatch * {
   /* On a phone the bottom belongs to the tools. */
   .help-corner {
     display: none;
+  }
+  /* The toolbar scrolls sideways here: on a touch screen its tools grow in height only, so as many
+     stay in view. (Until the phone gets its own bar, #839.) */
+  .toolbar .tool-btn {
+    width: 32px;
   }
   :root {
     --toolbar-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
@@ -2955,7 +2971,7 @@ body.is-dragging-swatch * {
   background: var(--panel);
 }
 .floating-preview-header {
-  height: 32px;
+  height: max(32px, var(--icon-btn));
   flex: none;
   display: flex;
   align-items: center;
@@ -3619,10 +3635,24 @@ body.is-dragging-swatch * {
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 36px;
+  height: max(36px, var(--icon-btn));
   flex: none;
   padding: 0 6px 0 12px;
   border-bottom: 1px solid var(--line);
+  /* Too narrow for all of it (a phone): it scrolls sideways, and the button that closes it stays. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.timeline-bar::-webkit-scrollbar {
+  display: none;
+}
+.timeline-bar > * {
+  flex: none;
+}
+.timeline-bar > :last-child {
+  position: sticky;
+  right: 0;
+  background: var(--panel);
 }
 .timeline-title {
   margin-right: 8px;
