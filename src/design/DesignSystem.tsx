@@ -10,8 +10,10 @@ import { PaletteColorButton } from '../ui/components/PaletteColorButton';
 import { ColorChips } from '../ui/components/ColorChips';
 import { Checkbox } from '../ui/components/Checkbox';
 import { Icon } from '../ui/components/Icon';
+import { MenuHost } from '../ui/components/Menu';
 import { IconButton } from '../ui/components/IconButton';
 import { NumberField } from '../ui/components/NumberField';
+import { SelectField } from '../ui/components/SelectField';
 import { PresetCard } from '../ui/components/PresetCard';
 import { TEMPLATES } from '../ui/templates';
 import { Tooltips } from '../ui/components/Tooltips';
@@ -282,6 +284,23 @@ function ShapesBlock() {
   );
 }
 
+/** A select field with a few choices, to try. */
+function SelectDemo() {
+  const [format, setFormat] = useState('png');
+  return (
+    <SelectField
+      label="Format"
+      value={format}
+      options={[
+        { value: 'png', label: 'PNG' },
+        { value: 'gif', label: 'GIF' },
+        { value: 'svg', label: 'SVG' },
+      ]}
+      onChange={setFormat}
+    />
+  );
+}
+
 /** The sizes of what gets clicked, read from the tokens: with a mouse, and on a touch screen. */
 function SizesTable() {
   const value = (name: string) => TOKENS.find((t) => t.name === name)?.value ?? '';
@@ -511,6 +530,14 @@ function FieldsBlock() {
               <span className="truncate">Multiply</span>
               <Icon name="caret" size={12} />
             </button>
+          </div>
+        </Specimen>
+        <Specimen
+          label="Select field"
+          use="A choice among a few (a format, a dithering, a direction): SelectField. The one picked shows in a field with a caret, the others in our menu. Never a native select: it looks different in every browser, and like plain text once its border is off."
+        >
+          <div className="ds-field">
+            <SelectDemo />
           </div>
         </Specimen>
         <Specimen
@@ -1064,6 +1091,8 @@ export function DesignSystem() {
         </main>
       </div>
       <Tooltips />
+      {/* For the specimens that open a menu. */}
+      <MenuHost />
     </div>
   );
 }

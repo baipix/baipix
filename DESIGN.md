@@ -27,6 +27,9 @@ The short version, for when you add or change something in the interface:
   toolbar is `MobileToolbar`: the colors, four pinned tools, the last other tool taken, and a button
   for all of them. The tools and the colors open in sheets too (`MobileSheets`). A new tool goes in
   `MOBILE_TOOL_GROUPS` (`src/ui/tools.ts`), or nobody can reach it there; a test checks it.
+- **Choices.** A choice among a few is a `SelectField`: a field with a caret that opens our menu. A
+  choice among many, or with families, is a `.field-menu` button opening `openMenu` itself. Never a
+  native `<select>`: it looks different in every browser and on a phone.
 - **Buttons.** `.btn` for actions in panels and dialogs, `.btn-primary` for the one main action,
   `.action-btn` for big actions on full screens (the home screen), `IconButton` for compact actions.
 - **Icons.** [Lucide](https://lucide.dev) line icons, through `Icon` (16 px in the panels, 18 px in

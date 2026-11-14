@@ -21,6 +21,7 @@ import { useUserPalettes } from '../hooks/useUserPalettes';
 import { uiStore, type AdjustTab } from '../uiStore';
 import { Checkbox } from './Checkbox';
 import { IconButton } from './IconButton';
+import { SelectField } from './SelectField';
 
 const close = () => uiStore.set({ adjust: false });
 
@@ -171,7 +172,8 @@ function Panel() {
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === 'Escape') close();
-        if (e.key === 'Enter' && !(e.target instanceof HTMLSelectElement)) apply();
+        // Enter on a field that opens a menu opens it: it doesn't apply.
+        if (e.key === 'Enter' && !(e.target as HTMLElement).closest('[aria-haspopup]')) apply();
       }}
     >
       <div className="popover-header">
@@ -267,23 +269,18 @@ function Panel() {
           <>
             <label className="adjust-label">
               <span>{t('remap.palette')}</span>
-              <select
-                className="select-plain"
+              <SelectField
+                label={t('remap.palette')}
                 value={remap.target}
-                onChange={(e) => {
-                  const key = e.target.value;
+                options={[
+                  { value: 'file', label: t('remap.filePalette') },
+                  ...Object.entries(palettes).map(([key, p]) => ({ value: key, label: p.name })),
+                ]}
+                onChange={(key) => {
                   const size = key === 'file' ? ownPalette.length : paletteColors(key).length;
                   setRemap((r) => ({ ...r, target: key, count: size }));
                 }}
-                aria-label={t('remap.palette')}
-              >
-                <option value="file">{t('remap.filePalette')}</option>
-                {Object.entries(palettes).map(([key, p]) => (
-                  <option key={key} value={key}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+              />
             </label>
             <div className="remap-preview" aria-hidden="true">
               {target.map((c) => (

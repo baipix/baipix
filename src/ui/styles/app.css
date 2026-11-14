@@ -593,8 +593,7 @@ body.is-resizing * {
 .field:focus-within {
   border-color: var(--accent);
 }
-.field input,
-.field select {
+.field input {
   width: 100%;
   min-width: 0;
   height: 22px;
@@ -614,6 +613,13 @@ body.is-resizing * {
 }
 .field-menu[aria-expanded='true'] {
   border-color: var(--accent);
+}
+/* A choice among a few (SelectField): as wide as what it shows where it stands on its own (the tool
+   options, a row of the Adjustments), cut with an ellipsis past that. */
+.tool-options .select-field,
+.adjust-label .select-field {
+  flex: none;
+  max-width: 168px;
 }
 .field input[type='number'] {
   -moz-appearance: textfield;
