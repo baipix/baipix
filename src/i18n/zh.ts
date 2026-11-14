@@ -46,10 +46,8 @@ export const zh: Record<MessageKey, string> = {
   'toolbar.shading': '明暗调整',
   'toolbar.rework': '修饰工具',
   'toolbar.selections': '选区工具',
-  'hint.lassoSelect':
-    '围绕要选择的区域绘制，松开后路径闭合。Shift 添加到选区，Alt 从选区减去。',
-  'hint.wand':
-    '点击某种颜色以选中其所在区域，或选中所有该颜色。Shift 添加到选区，Alt 从选区减去。',
+  'hint.lassoSelect': '围绕要选择的区域绘制，松开后路径闭合。Shift 添加到选区，Alt 从选区减去。',
+  'hint.wand': '点击某种颜色以选中其所在区域，或选中所有该颜色。Shift 添加到选区，Alt 从选区减去。',
   'options.wandContiguous': '仅相连区域',
   'tool.lassoFill': '套索填充',
   'tool.eraser': '橡皮擦',
@@ -77,8 +75,7 @@ export const zh: Record<MessageKey, string> = {
 
   'section.layers': '图层',
   'section.effects': '效果',
-  'effects.hint':
-    '基于图层像素生成且不改变像素：可随时调整、隐藏或移除。效果会显示在画布上并包含在导出中。',
+  'effects.hint': '基于图层像素生成且不改变像素：可随时调整、隐藏或移除。效果会显示在画布上并包含在导出中。',
   'effects.add': '添加效果',
   'effects.outline': '描边',
   'effects.shadow': '投影',
@@ -118,8 +115,7 @@ export const zh: Record<MessageKey, string> = {
   'section.palette': '调色板',
   'section.layer': '图层',
   'section.light': '光照',
-  'light.info':
-    '光照方向，用于明暗着色。它仅作为视觉参考，如同网格：不会被绘制，也不会被导出。',
+  'light.info': '光照方向，用于明暗着色。它仅作为视觉参考，如同网格：不会被绘制，也不会被导出。',
   'light.add': '添加光照',
   'light.remove': '移除光照',
   'light.stage': '光照：在球面上拖动光源，越靠近，光照越高',
@@ -135,6 +131,7 @@ export const zh: Record<MessageKey, string> = {
   'menu.newFile': '新建文件…',
   'menu.open': '打开 .baipix 文件…',
   'menu.importImage': '导入图片…',
+  'menu.importSpriteSheet': '导入雪碧图…',
   'menu.export': '导出…',
   'menu.copySvg': '复制为 SVG',
   'menu.copyPng': '复制为 PNG',
@@ -198,15 +195,14 @@ export const zh: Record<MessageKey, string> = {
   'outline.color': '使用主颜色：可在调色板中另选颜色。',
   'adjust.remap': '颜色重映射',
   'remap.palette': '调色板',
-  'remap.filePalette': "当前文件的调色板",
+  'remap.filePalette': '当前文件的调色板',
   'remap.match': '匹配颜色',
   'remap.nearest': '最近色',
   'remap.lightness': '按亮度',
   'remap.nearestHint': '每种颜色映射到调色板中最接近的颜色，用于清理画作。',
-  'remap.lightnessHint':
-    '颜色按相同顺序映射到调色板颜色，最暗对应最暗：重新着色并保留阴影与高光。',
+  'remap.lightnessHint': '颜色按相同顺序映射到调色板颜色，最暗对应最暗：重新着色并保留阴影与高光。',
   'remap.count': '颜色数',
-  'remap.replacePalette': "同时替换文件的调色板",
+  'remap.replacePalette': '同时替换文件的调色板',
   'remap.background': '同时重映射背景',
   'adjust.open': '调整图层…',
   'adjust.hue': '色相',
@@ -240,6 +236,7 @@ export const zh: Record<MessageKey, string> = {
   'file.duplicate': '复制副本',
   'file.download': '下载为 .baipix',
 
+  'file.rename': '重命名',
   'group.create': '组合选区',
   'group.ungroup': '取消组合',
   'group.merge': '合并组',
@@ -296,8 +293,11 @@ export const zh: Record<MessageKey, string> = {
   'menu.clearSelection': '清除选区',
   'menu.canvasSize': '画板大小…',
   'menu.background': '背景颜色…',
+  'menu.arrange': '排列',
+  'menu.bringToFront': '置于顶层',
   'menu.layerUp': '上移图层',
   'menu.layerDown': '下移图层',
+  'menu.sendToBack': '置于底层',
   'menu.sortByDepth': '按深度排序',
   'menu.hideLayer': '隐藏图层',
   'menu.showLayer': '显示图层',
@@ -335,11 +335,10 @@ export const zh: Record<MessageKey, string> = {
   'brush.normal': '画笔：普通笔尖',
   'brush.item': '画笔：{name}（{w}×{h}）',
   'brush.fromSelection': '从选区创建画笔',
-  'brush.ownColors': "使用画笔自身颜色绘制",
+  'brush.ownColors': '使用画笔自身颜色绘制',
   'brush.delete': '删除 {name}',
   'options.stabilizer': '防抖',
-  'options.stabilizerHint':
-    '平滑抖动的笔画：线条会在相当于该像素长度的距离内跟随指针。0 为关闭。拖动调整。',
+  'options.stabilizerHint': '平滑抖动的笔画：线条会在相当于该像素长度的距离内跟随指针。0 为关闭。拖动调整。',
   'options.filled': '填充形状',
   'options.radius': '半径',
   'options.contiguous': '仅相连区域',
@@ -355,8 +354,7 @@ export const zh: Record<MessageKey, string> = {
 
   'hint.pencil':
     'Alt 取色。Shift+点击从上一点画直线，Cmd/Ctrl+Shift+点击按 0°、45°、90° 或 2:1 角度绘制。抖动会交替使用左键与右键颜色。',
-  'hint.lassoFill':
-    '徒手绘制形状：松开后自动闭合并填充颜色。右键使用次要颜色。',
+  'hint.lassoFill': '徒手绘制形状：松开后自动闭合并填充颜色。右键使用次要颜色。',
   'hint.eraser':
     '擦除为透明。Shift+点击从上一点擦除直线，Cmd/Ctrl+Shift+点击按 0°、45°、90° 或 2:1 角度擦除。',
   'hint.line': 'Shift 锁定到 0°、45°、90° 或 2:1，用于等距线条。',
@@ -382,8 +380,7 @@ export const zh: Record<MessageKey, string> = {
     'Shift 将其平放在地面上，保持规则形状：方形地砖、圆形、正星形……从菱形上角拖到下角（椭圆：横向拖动）。平面选项可将其放到墙面上。',
   'hint.box':
     '从立方体的上角拖到下角：顶面为当前颜色，侧面更暗。Shift：深度与宽度相等。宽度、深度和高度会更新上一个立方体。',
-  'hint.cylinder':
-    '横向拖动其顶部，即一个平躺的椭圆，宽为高的两倍。高度、描边和亮边会更新上一个圆柱体。',
+  'hint.cylinder': '横向拖动其顶部，即一个平躺的椭圆，宽为高的两倍。高度、描边和亮边会更新上一个圆柱体。',
   'hint.pyramid':
     '从底座的上角拖到下角（Shift：方形）。顶点位于底面中心上方“高度”处。各选项会更新上一个棱锥。',
   'options.boxWidth': '宽度',
@@ -393,8 +390,7 @@ export const zh: Record<MessageKey, string> = {
   'options.boxLight': '亮边',
   'options.boxEdges': '边',
   'tileEdges.label': '地砖边',
-  'tileEdges.hint':
-    '地砖获得描边的边：留一边不描边，相邻地砖即可共用一条线。',
+  'tileEdges.hint': '地砖获得描边的边：留一边不描边，相邻地砖即可共用一条线。',
   'tileEdges.nw': '左上边缘',
   'tileEdges.ne': '右上边缘',
   'tileEdges.sw': '左下边缘',
@@ -454,12 +450,9 @@ export const zh: Record<MessageKey, string> = {
   'hint.shadeRamp': '使用调色板中同色系的下一个颜色',
   'hint.shadePalette': '使用调色板中的下一个颜色，来自任意色系',
   'hint.shadeFree': '颜色本身，调色板之外',
-  'hint.blurSnap':
-    '混合相邻像素后，选取最接近的调色板颜色。再次涂抹可进一步模糊。',
-  'hint.blurFree':
-    '混合相邻像素，产生新颜色与半透明效果。再次涂抹可进一步模糊。',
-  'hint.spray':
-    '在圆形范围内随机洒落像素，如同喷漆罐。保持静止可持续喷洒。右键喷次要颜色。',
+  'hint.blurSnap': '混合相邻像素后，选取最接近的调色板颜色。再次涂抹可进一步模糊。',
+  'hint.blurFree': '混合相邻像素，产生新颜色与半透明效果。再次涂抹可进一步模糊。',
+  'hint.spray': '在圆形范围内随机洒落像素，如同喷漆罐。保持静止可持续喷洒。右键喷次要颜色。',
   'hint.jumble':
     '随机打乱画笔经过区域的像素，且不添加任何新颜色：用于制作树叶、岩石或噪点纹理。保持不动可继续打乱。',
   'hint.liquify':
@@ -512,6 +505,7 @@ export const zh: Record<MessageKey, string> = {
   'palette.showAll': '显示全部调色板',
   'palette.exportHex': '导出为 .hex（Lospec）',
   'palette.exportGpl': '导出为 .gpl（GIMP、Aseprite、Krita）',
+  'palette.exportPng': '导出为图片（PNG）',
   'palette.addColor': '将当前颜色（{hex}）加入调色板',
   'palette.inPaletteAlready': '当前颜色已在调色板中',
 
@@ -527,8 +521,7 @@ export const zh: Record<MessageKey, string> = {
   'toast.imagePasted': '图片已粘贴到新图层。',
   'reference.hint':
     '位于所有图层下方，永远不会被导出。使用移动工具拖动可移动它，拖动角点可调整大小。Delete 移除它。',
-  'toast.referenceAdded':
-    '参考图已添加到图层下方。拖动它或角点可调整大小。它永远不会被导出。',
+  'toast.referenceAdded': '参考图已添加到图层下方。拖动它或角点可调整大小。它永远不会被导出。',
   'toast.referenceRemoved': '参考图已移除。',
   'reference.title': '参考',
   'reference.add': '添加参考图片以供描摹',
@@ -542,8 +535,7 @@ export const zh: Record<MessageKey, string> = {
   'display.tileOpacity': '副本',
   'display.mirrorX': '左右对称',
   'display.rulers': '标尺与参考线',
-  'display.rulersHint':
-    '从标尺拖动以添加参考线。使用移动工具拖动参考线可移动它，拖回标尺可移除它。',
+  'display.rulersHint': '从标尺拖动以添加参考线。使用移动工具拖动参考线可移动它，拖回标尺可移除它。',
   'display.mirrorY': '上下对称',
   'display.isoGrid': '等距网格',
 
@@ -612,8 +604,7 @@ export const zh: Record<MessageKey, string> = {
   'code.hint.react':
     '一个将精灵绘制为 SVG 的组件。可为其传入宽度、className 或任意 SVG 属性，如同图标一样使用。',
   'code.hint.svg': '“复制为 SVG”的 SVG：每个图层一个组，每种颜色一条路径。',
-  'code.hint.css':
-    '将画作作为背景图像，其颜色作为自定义属性。将类名添加到任意元素上即可。',
+  'code.hint.css': '将画作作为背景图像，其颜色作为自定义属性。将类名添加到任意元素上即可。',
   'code.hint.json': '尺寸、带名称的颜色，以及以颜色编号行表示的像素（0 为空白）。',
   'code.hint.ascii': '字符形式的画作，图例在顶部：用于 README 或注释。',
   'export.shrunk': '已缩减为 {size}×（过大）',
@@ -670,17 +661,14 @@ export const zh: Record<MessageKey, string> = {
   'tour.draw':
     '铅笔（B）、用于填充徒手绘制形状的套索填充（K）、橡皮擦（E）和油漆桶（G）。在铅笔的 … 菜单中提供：抖动，以及从选区创建的画笔。',
   'tour.shapesTitle': '形状',
-  'tour.shapes':
-    '直线（L）、矩形（R）、椭圆（C），更多选项在此按钮的菜单中。Shift 保持方形或圆形。',
+  'tour.shapes': '直线（L）、矩形（R）、椭圆（C），更多选项在此按钮的菜单中。Shift 保持方形或圆形。',
   'tour.colorsTitle': '颜色修饰',
-  'tour.colors':
-    '加深（S）与减淡（O）遵循调色板色系，喷枪（P）像喷漆罐一样洒落像素。',
+  'tour.colors': '加深（S）与减淡（O）遵循调色板色系，喷枪（P）像喷漆罐一样洒落像素。',
   'tour.warpTitle': '扭曲，不产生新颜色',
   'tour.warp':
     '模糊（F）柔化边缘，打散（J）打乱像素形成纹理，液化（W）推挤、放大或缩小画作局部。保持静止可继续操作。',
   'tour.paletteTitle': '调色板',
-  'tour.palette':
-    '点击颜色设为主颜色，右键更多操作：设为次要颜色、全局替换……在上方即可另选调色板。',
+  'tour.palette': '点击颜色设为主颜色，右键更多操作：设为次要颜色、全局替换……在上方即可另选调色板。',
   'tour.gapTitle': '像素间距',
   'tour.gap': '在画布与导出中将像素拉开间距，呈现 LED 或点阵效果。',
   'tour.exportTitle': '导出',
@@ -693,15 +681,13 @@ export const zh: Record<MessageKey, string> = {
   'menu.tour': '查看导览',
   'dialog.newFile': '新建文件',
   'dialog.reference': '从图片…',
-  'dialog.pasteColorsHint':
-    '粘贴以空格、逗号或换行分隔的十六进制代码。Lospec .hex 文件可直接使用。',
+  'dialog.pasteColorsHint': '粘贴以空格、逗号或换行分隔的十六进制代码。Lospec .hex 文件可直接使用。',
   'dialog.replacePalette': '替换调色板',
   'dialog.appendPalette': '添加到调色板',
   'dialog.useColors': '使用这些颜色',
 
   'output.copySvgTitle': '复制 SVG',
-  'output.copySvgBlocked':
-    '浏览器阻止了自动复制。请复制此代码（Ctrl+C），然后粘贴到 Figma 或 Illustrator。',
+  'output.copySvgBlocked': '浏览器阻止了自动复制。请复制此代码（Ctrl+C），然后粘贴到 Figma 或 Illustrator。',
   'output.copyPngTitle': '复制图片',
   'output.copyPngBlocked': '浏览器阻止了自动复制。右键点击图片，然后选择“复制图片”。',
 
@@ -737,6 +723,37 @@ export const zh: Record<MessageKey, string> = {
   'menu.code': '代码…',
   'toast.pngCopied': '图片已复制到剪贴板。',
   'toast.opened': '已打开 {name}。',
+  'toast.asepriteOpenedWithWarnings': '已打开 {name}，导入时做了一些调整。',
+  'toast.asepriteWarningDetails': '详情（{count}）',
+  'toast.unreadableAseprite': '无法读取此 Aseprite 文件。',
+  'toast.asepriteWarningLayerMovementLocks': '图层的移动锁定未保留。',
+  'toast.asepriteWarningBackgroundLayers': '背景图层已作为普通图层导入。',
+  'toast.asepriteWarningReferenceLayers': '参考图层已作为普通图层导入。',
+  'toast.asepriteWarningUnsupportedBlendModes': '不支持的混合模式已改为正常。',
+  'toast.asepriteWarningDeepGroupsFlattened': '超过四级的组中的图层已移入支持的最深一级组。',
+  'toast.asepriteWarningDeepGroupBlendModes': '超过四级的组的混合模式未保留。',
+  'toast.asepriteWarningTilemapsSkipped': '已跳过瓦片地图。',
+  'toast.asepriteWarningUnsupportedLayerTypes': '已跳过不支持的图层类型。',
+  'toast.asepriteWarningPixelAspectRatio': '像素宽高比 {width}:{height} 未保留。',
+  'toast.asepriteWarningAnimationTags': '动画标签未保留。',
+  'toast.asepriteWarningUserData': 'Aseprite 用户数据未保留。',
+  'toast.asepriteWarningSlices': 'Aseprite 切片未保留。',
+  'toast.asepriteWarningEmbeddedIccProfile': '已忽略内嵌的 ICC 颜色配置文件。',
+  'toast.asepriteWarningCustomColorProfile': '已忽略自定义颜色配置设置。',
+  'toast.asepriteWarningCelOrdering': '各帧的帧画面顺序未保留。',
+  'toast.asepriteWarningUnsupportedCelTypes': '已跳过不支持的帧画面类型。',
+  'toast.asepriteWarningPreciseCelBounds': '帧画面的精确边界未保留。',
+  'toast.asepriteWarningUnsupportedCelExtraFlags': '已忽略不支持的 Cel Extra 标志。',
+  'toast.asepriteWarningFrameDurations': '超出 10–10,000 毫秒的帧时长已调整。',
+  'toast.asepriteWarningExternalFiles': '链接的外部文件未导入。',
+  'toast.asepriteWarningTilesetsSkipped': '已跳过 Aseprite 瓦片集。',
+  'toast.asepriteWarningGridMetadata': 'Aseprite 网格设置（{width} × {height}，位于 {x}, {y}）未保留。',
+  'toast.asepriteWarningUnsupportedChunks': '已跳过未知的 Aseprite 数据块类型（{count} 种；例如：{types}）。',
+  'toast.asepriteCanvasTooLarge':
+    '画布尺寸 {width} × {height} 超过了 Baipix 的上限 {max} × {max}。请在 Aseprite 中调整画布大小。',
+  'toast.asepriteTooManyFrames':
+    '文件包含 {count} 帧。Baipix 最多支持 {max} 帧。请在 Aseprite 中删除一些帧。',
+  'toast.asepriteCelTooLarge': 'Aseprite 帧画面超过了 {max} 像素的最大导入面积。',
   'toast.notBaipix': '这不是有效的 .baipix 文件。',
   'toast.notImage': '此文件不是图片。请使用 PNG、GIF、JPEG 或 WebP。',
   'toast.unreadableImage': '无法读取此图片。',
@@ -754,6 +771,26 @@ export const zh: Record<MessageKey, string> = {
   'toast.layerPasted': '图层已粘贴。',
   'toast.layersPasted': '已粘贴 {count} 个图层。',
   'toast.pixelsRecovered': '像素已还原：{w} × {h}，来自放大 ×{scale} 的图像。',
+  'spriteSheet.title': '导入雪碧图',
+  'spriteSheet.hint': '选择单元格大小或列数和行数，把每个单元格变成一帧，或作为单张图片导入。',
+  'spriteSheet.cellWidth': '单元格宽度',
+  'spriteSheet.cellHeight': '单元格高度',
+  'spriteSheet.columns': '列',
+  'spriteSheet.rows': '行',
+  'spriteSheet.duration': '帧时长（毫秒）',
+  'spriteSheet.summary': '{count} 帧 · {w} × {h} px',
+  'spriteSheet.summarySingle': '单张图片 · {w} × {h} px',
+  'spriteSheet.singleImage': '作为单张图片导入',
+  'spriteSheet.import': '导入',
+  'spriteSheet.importFrames': '导入 {count} 帧',
+  'spriteSheet.tooLarge': '每帧最大为 {max} × {max} px。',
+  'spriteSheet.tooManyFrames': '帧数过多（最多 {max} 帧）。',
+  'spriteSheet.exceedsBounds': '单元格超出了图片边缘（{w} × {h} px）。',
+  'toast.gifImported': 'GIF 已导入：{count} 帧（{w} × {h}）。',
+  'toast.gifPixelsRecovered': 'GIF 已导入：{count} 帧，{w} × {h}，由 ×{scale} 还原。',
+  'toast.gifShrunk': 'GIF 已导入：{count} 帧，已缩减为 {w} × {h}（最大 {max} px）。',
+  'toast.gifFramesTrimmed': 'GIF 已限制为 {max} 帧。',
+  'toast.spriteSheetImported': '雪碧图已导入：{count} 帧（{w} × {h}）。',
   'toast.groupTooDeep': '组最多嵌套四层。',
   'toast.instanceLocked': '这是实例：在其组件上绘制即可修改所有副本。',
   'toast.layerFrames': '此图层是动画图层：只能移入帧数相同的画板。',
@@ -780,8 +817,10 @@ export const zh: Record<MessageKey, string> = {
   'home.animated': '动画',
   'home.title': '欢迎使用 Baipix',
   'home.tagline': '投入硬币，落下你的第一颗像素。',
-  'home.formats': '可打开 .baipix、PNG、JPG 和 GIF 文件',
+  'home.formats': '可打开 .baipix、.ase、.aseprite、PNG、JPG、GIF 和 WebP 文件',
   'home.import': '导入',
+  'home.downloadAll': '全部下载',
+  'home.downloadAllTip': '每幅画作各存为一个 .baipix 文件，打包成一个 .zip',
   'home.docsTitle': '学习 Baipix',
   'home.bugTitle': '发现问题，或有想法？',
   'home.drop': '拖入以打开',
@@ -807,4 +846,8 @@ export const zh: Record<MessageKey, string> = {
   'file.restore': '还原',
   'toast.fileRestored': '“{name}”已恢复。',
   'toast.saveFailed': '无法在此浏览器中保存：记得下载你的文件。',
+  'toast.offlineReady': 'Baipix 已可离线使用。',
+  'toast.updateReady': 'Baipix 有新版本可用。',
+  'toast.reload': '重新加载',
+  'toast.offlineOpenFailed': '没有网络连接，无法打开此示例。',
 };

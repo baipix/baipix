@@ -7,7 +7,7 @@ import { uk } from '../src/i18n/uk';
 import { es } from '../src/i18n/es';
 import { ja } from '../src/i18n/ja';
 import { it as itDictionary } from '../src/i18n/it';
-import { zh_cn } from '../src/i18n/zh';
+import { zh } from '../src/i18n/zh';
 import { ko } from '../src/i18n/ko';
 import { pt } from '../src/i18n/pt';
 
