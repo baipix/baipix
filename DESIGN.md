@@ -30,6 +30,8 @@ The short version, for when you add or change something in the interface:
   Its sizes follow Apple's for a compact screen, a little tighter for a tool: text at 14 px (15 for a
   section's name, 16 in menus, 17 for a sheet's), rows of 44 px, palette swatches of 40 px or more.
   Every sheet starts with the same header, its name and a × that closes it.
+  What sits at the bottom (the timeline) goes under the toolbar, which moves up: `--toolbar-bottom`
+  counts `--timeline-space` there too, so nothing ever covers the tools.
 - **Choices.** A choice among a few is a `SelectField`: a field with a caret that opens our menu. A
   choice among many, or with families, is a `.field-menu` button opening `openMenu` itself. Never a
   native `<select>`: it looks different in every browser and on a phone.
