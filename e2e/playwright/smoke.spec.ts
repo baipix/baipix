@@ -88,6 +88,24 @@ test.describe('on a phone', () => {
   });
 });
 
+test.describe('on a phone, the properties', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
+
+  test('have swatches and rows a finger can pick', async ({ page }) => {
+    await createNewFile(page);
+    await page.locator('.mobile-bar').getByRole('button', { name: 'Properties' }).tap();
+
+    const sheet = page.locator('.panel-right');
+    const swatch = (await sheet.locator('.palette-grid .swatch').first().boundingBox())!;
+    expect(swatch.width).toBeGreaterThanOrEqual(40);
+    expect(swatch.height).toBeGreaterThanOrEqual(40);
+    const title = (await sheet.locator('.section-title').first().boundingBox())!;
+    expect(title.height).toBeGreaterThanOrEqual(44);
+    // A swipe that starts on a swatch scrolls the sheet.
+    await expect(sheet.locator('.palette-grid .swatch').first()).toHaveCSS('touch-action', 'pan-y');
+  });
+});
+
 test.describe('on a phone, the file', () => {
   test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
 
