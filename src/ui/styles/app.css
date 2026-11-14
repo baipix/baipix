@@ -2106,6 +2106,17 @@ body.is-dragging-swatch * {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* Renaming: the name as a field, in its place. */
+  input.mobile-name.is-editing {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--glow-line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    font-weight: 600;
+    outline: none;
+    user-select: text;
+  }
   .coordinates,
   .resizer {
     display: none;

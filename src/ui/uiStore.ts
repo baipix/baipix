@@ -51,6 +51,8 @@ export interface UiState {
   dialog: DialogState | null;
   /** Open color picker: which color it edits and where to anchor it vertically. */
   picker: { slot: ColorSlot; top: number } | null;
+  /** The phone's top bar shows the file's name as a field, to rename it. */
+  renamingFile: boolean;
   /** Mobile bottom sheet: the two panels, and the toolbar's sheets for the tools and the colors. */
   sheet: 'left' | 'right' | 'tools' | 'colors' | null;
   /** Color adjustment panel open. */
@@ -108,6 +110,7 @@ export const PANEL_LIMITS = {
 export const uiStore = createStore<UiState>({
   dialog: null,
   picker: null,
+  renamingFile: false,
   sheet: null,
   adjust: false,
   adjustScope: 'all',
