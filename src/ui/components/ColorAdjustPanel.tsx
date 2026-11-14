@@ -12,7 +12,7 @@ import {
 } from '../../engine/color';
 import { hasBackground } from '../../engine/document';
 import { frameCount } from '../../engine/frames';
-import type { ColorMap } from '../../engine/editor';
+import type { ColorMap, PaletteChange } from '../../engine/editor';
 import { outlinePixels, type OutlineOptions } from '../../engine/outline';
 import { remapTable, type RemapMode } from '../../engine/palette';
 import { useT, type MessageKey } from '../../i18n';
@@ -51,7 +51,7 @@ interface Remap {
   background: boolean;
 }
 
-const NO_REMAP = { target: 'file', mode: 'nearest', replacePalette: false, background: true } as const;
+const NO_REMAP = { target: 'file', mode: 'nearest', replacePalette: true, background: true } as const;
 
 /**
  * The Adjustments panel, floating: changes to the existing pixels of the active layer or all
@@ -72,7 +72,7 @@ function changeFor(
   remap: Remap,
   target: Color[],
   used: Map<Color, number>,
-): { map: ColorMap; palette: ((colors: Color[]) => Color[]) | null; background: boolean } {
+): { map: ColorMap; palette: PaletteChange | null; background: boolean } {
   if (tab === 'colors')
     return {
       map: (c) => adjustColor(c, adj),
@@ -82,7 +82,13 @@ function changeFor(
   const { table, colors } = remapTable(used, target, remap.mode, remap.count);
   return {
     map: (c) => (alpha(c) ? withAlpha(table.get(opaque(c)) ?? opaque(c), alpha(c)) : c),
-    palette: remap.replacePalette ? () => colors : null,
+    // The palette picked takes the file's place, under its name; cut down to fewer colors, or the
+    // file's own, it's those colors that become the file's.
+    palette: !remap.replacePalette
+      ? null
+      : remap.target !== 'file' && remap.count >= target.length
+        ? { key: remap.target, colors: target }
+        : () => colors,
     background: remap.background,
   };
 }

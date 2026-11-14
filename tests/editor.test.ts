@@ -711,6 +711,30 @@ describe('Editor', () => {
       expect(on(e, 2)[0]).toBe(RED);
     });
 
+    it("puts the palette remapped to in the file's place, and undo brings the old one back", () => {
+      const e = animation();
+      e.setPalettePreset('sweetie16');
+      const before = e.getState().palette;
+      e.beginAdjust(false, true);
+      const pico = { key: 'pico8', colors: [RED, GREEN] };
+      e.previewMap(toGreen, pico);
+      expect(e.getState().palette.key).toBe('pico8');
+      e.applyMap(toGreen, pico);
+      expect(e.getState().palette.key).toBe('pico8');
+      expect(e.getState().palette.colors).toEqual([RED, GREEN]);
+      e.undo();
+      expect(e.getState().palette.key).toBe('sweetie16');
+      expect(e.getState().palette.colors).toEqual(before.colors);
+    });
+
+    it('takes the palette remapped to even from the colors of the drawing', () => {
+      const e = animation();
+      e.setPalettePreset('drawing');
+      e.beginAdjust(false, true);
+      e.applyMap(toGreen, { key: 'pico8', colors: [RED, GREEN] });
+      expect(e.getState().palette.key).toBe('pico8');
+    });
+
     it('remaps a color found only on another frame', () => {
       const e = animation();
       e.beginAdjust(false);
