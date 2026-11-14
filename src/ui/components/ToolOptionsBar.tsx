@@ -1,28 +1,24 @@
-import { RAMP_DIRECTIONS, type RampDirection } from '../../engine/isoRamp';
+import { RAMP_DIRECTIONS } from '../../engine/isoRamp';
 import { toCss } from '../../engine/color';
 import type { ReactNode } from 'react';
 import { isBoard } from '../../engine/document';
 import { useActions } from '../ActionsContext';
-import { ISO_PLANES, type IsoPlane } from '../../engine/isoPlane';
+import { ISO_PLANES } from '../../engine/isoPlane';
 import { TOOLS, type ToolOptions } from '../../engine/tools';
-import { CYLINDER_AXES, type CylinderAxis } from '../../engine/tools/types';
+import { CYLINDER_AXES } from '../../engine/tools/types';
 import { useT, type MessageKey } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { toolMeta } from '../tools';
 import { Checkbox } from './Checkbox';
 import { Icon } from './Icon';
-import { DITHER_PATTERNS, type DitherPattern } from '../../engine/dither';
-import {
-  GRADIENT_DITHERS,
-  GRADIENT_SHAPES,
-  type GradientDither,
-  type GradientShape,
-} from '../../engine/gradient';
+import { DITHER_PATTERNS } from '../../engine/dither';
+import { GRADIENT_DITHERS, GRADIENT_SHAPES } from '../../engine/gradient';
 import { GradientEditor } from './GradientEditor';
 import { IconButton } from './IconButton';
 import { openMenu, type MenuItem } from './Menu';
 import { NumberField } from './NumberField';
 import { Row } from './Section';
+import { SelectField } from './SelectField';
 
 /** Options of the active tool, in a small bar right above the toolbar. Hidden for tools without any. */
 /** Options of the "…" menu, with labels that say what they do on their own. */
@@ -390,18 +386,12 @@ export function ToolOptionsBar() {
         <>
           {/* On an isometric grid: draw it flat, on a wall, or on the ground. */}
           {isoGrid && (
-            <select
-              className="select-plain"
-              aria-label={t('plane.label')}
+            <SelectField
+              label={t('plane.label')}
               value={options.plane}
-              onChange={(e) => editor.setOption('plane', e.target.value as IsoPlane)}
-            >
-              {ISO_PLANES.map((p) => (
-                <option key={p} value={p}>
-                  {t(`plane.${p}`)}
-                </option>
-              ))}
-            </select>
+              options={ISO_PLANES.map((p) => ({ value: p, label: t(`plane.${p}`) }))}
+              onChange={(v) => editor.setOption('plane', v)}
+            />
           )}
           {size}
           {tool === 'roundRect' && (
@@ -487,19 +477,13 @@ export function ToolOptionsBar() {
           {(tool === 'box' || tool === 'ramp') && field('boxDepth', '↙', true)}
           {tool === 'cylinder' && (
             // Standing up, or lying along one of the two axes, for barrels, logs and wheels.
-            <select
-              className="select-plain"
-              aria-label={t('cylinder.axis')}
-              data-tip={t('cylinder.axis')}
+            <SelectField
+              label={t('cylinder.axis')}
+              tip
               value={options.cylinderAxis}
-              onChange={(e) => editor.setOption('cylinderAxis', e.target.value as CylinderAxis)}
-            >
-              {CYLINDER_AXES.map((a) => (
-                <option key={a} value={a}>
-                  {t(`cylinder.${a}`)}
-                </option>
-              ))}
-            </select>
+              options={CYLINDER_AXES.map((a) => ({ value: a, label: t(`cylinder.${a}`) }))}
+              onChange={(v) => editor.setOption('cylinderAxis', v)}
+            />
           )}
           {/* Lying down, the height is the cylinder's length. */}
           {tool === 'cylinder' && options.cylinderAxis !== 'up'
@@ -508,19 +492,13 @@ export function ToolOptionsBar() {
           {tool === 'ramp' && (
             <>
               {/* Where it rises, and in how many steps (0: a smooth slope). */}
-              <select
-                className="select-plain"
-                aria-label={t('ramp.direction')}
-                data-tip={t('ramp.direction')}
+              <SelectField
+                label={t('ramp.direction')}
+                tip
                 value={options.rampDirection}
-                onChange={(e) => editor.setOption('rampDirection', e.target.value as RampDirection)}
-              >
-                {RAMP_DIRECTIONS.map((d) => (
-                  <option key={d} value={d}>
-                    {t(`ramp.${d}`)}
-                  </option>
-                ))}
-              </select>
+                options={RAMP_DIRECTIONS.map((d) => ({ value: d, label: t(`ramp.${d}`) }))}
+                onChange={(v) => editor.setOption('rampDirection', v)}
+              />
               <NumberField
                 value={options.rampSteps}
                 min={0}
@@ -541,10 +519,9 @@ export function ToolOptionsBar() {
           <Checkbox checked={options.boxEdges} onChange={set('boxEdges')} label={t('options.boxEdges')} />
           {tool === 'box' && (
             // Bevels, for crates, stone blocks and rounded tiles: along the top, on the front corner.
-            <select
-              className="select-plain"
-              aria-label={t('bevel.label')}
-              data-tip={t('bevel.label')}
+            <SelectField
+              label={t('bevel.label')}
+              tip
               value={
                 options.boxBevelTop && options.boxBevelSides
                   ? 'both'
@@ -554,18 +531,15 @@ export function ToolOptionsBar() {
                       ? 'sides'
                       : 'none'
               }
-              onChange={(e) => {
-                const v = e.target.value;
+              options={(['none', 'top', 'sides', 'both'] as const).map((v) => ({
+                value: v,
+                label: t(`bevel.${v}`),
+              }))}
+              onChange={(v) => {
                 editor.setOption('boxBevelTop', v === 'top' || v === 'both');
                 editor.setOption('boxBevelSides', v === 'sides' || v === 'both');
               }}
-            >
-              {(['none', 'top', 'sides', 'both'] as const).map((v) => (
-                <option key={v} value={v}>
-                  {t(`bevel.${v}`)}
-                </option>
-              ))}
-            </select>
+            />
           )}
           <div className="toolbar-divider" />
           {/* The faces: shaded from the color, or picked by hand, one click each with the current color. */}
@@ -604,24 +578,19 @@ export function ToolOptionsBar() {
             onChange={set('contiguous')}
             label={t('options.contiguous')}
           />
-          <select
-            className="select-plain"
-            aria-label={t('options.dither')}
+          <SelectField
+            label={t('options.dither')}
             value={options.dither ? options.ditherPattern : 'none'}
-            onChange={(e) => {
-              const v = e.target.value;
+            options={[
+              { value: 'none', label: t('dither.none') },
+              ...DITHER_PATTERNS.map((p) => ({ value: p, label: t(`dither.${p}`) })),
+            ]}
+            onChange={(v) => {
               if (v === 'none') return editor.setOption('dither', false);
-              editor.setOption('ditherPattern', v as DitherPattern);
+              editor.setOption('ditherPattern', v);
               editor.setOption('dither', true);
             }}
-          >
-            <option value="none">{t('dither.none')}</option>
-            {DITHER_PATTERNS.map((p) => (
-              <option key={p} value={p}>
-                {t(`dither.${p}`)}
-              </option>
-            ))}
-          </select>
+          />
           <div className="button-row">
             <button type="button" className="btn" data-kbd="Shift+Del" onClick={() => editor.fill()}>
               {hasSelection ? t('menu.fillSelection') : t('menu.fillLayer')}
@@ -634,35 +603,23 @@ export function ToolOptionsBar() {
       info = t('hint.gradient');
       body = (
         <>
-          <select
-            className="select-plain"
-            aria-label={t('gradient.shape')}
+          <SelectField
+            label={t('gradient.shape')}
             value={options.gradientShape}
-            onChange={(e) => editor.setOption('gradientShape', e.target.value as GradientShape)}
-          >
-            {GRADIENT_SHAPES.map((s) => (
-              <option key={s} value={s}>
-                {t(`gradient.${s}`)}
-              </option>
-            ))}
-          </select>
+            options={GRADIENT_SHAPES.map((s) => ({ value: s, label: t(`gradient.${s}`) }))}
+            onChange={(v) => editor.setOption('gradientShape', v)}
+          />
           <GradientEditor />
           <div className="button-group">
             <IconButton icon="swap" label={t('gradient.reverse')} onClick={() => editor.reverseGradient()} />
             <IconButton icon="rotate" label={t('gradient.rotate')} onClick={() => editor.rotateGradient()} />
           </div>
-          <select
-            className="select-plain"
-            aria-label={t('options.dither')}
+          <SelectField
+            label={t('options.dither')}
             value={options.gradientDither}
-            onChange={(e) => editor.setOption('gradientDither', e.target.value as GradientDither)}
-          >
-            {GRADIENT_DITHERS.map((d) => (
-              <option key={d} value={d}>
-                {t(`gradient.dither.${d}`)}
-              </option>
-            ))}
-          </select>
+            options={GRADIENT_DITHERS.map((d) => ({ value: d, label: t(`gradient.dither.${d}`) }))}
+            onChange={(v) => editor.setOption('gradientDither', v)}
+          />
           <IconButton
             icon="more"
             className={`icon-btn options-more${options.gradientLayer ? ' has-active' : ''}`}
@@ -693,17 +650,17 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
-          <label className="field" data-tip={t('options.shadeMode')}>
-            <select
-              value={options.shadeMode}
-              onChange={(e) => editor.setOption('shadeMode', e.target.value as ToolOptions['shadeMode'])}
-              aria-label={t('options.shadeMode')}
-            >
-              <option value="ramp">{t('shade.ramp')}</option>
-              <option value="palette">{t('shade.palette')}</option>
-              <option value="free">{t('shade.free')}</option>
-            </select>
-          </label>
+          <SelectField
+            label={t('options.shadeMode')}
+            tip
+            value={options.shadeMode}
+            options={[
+              { value: 'ramp', label: t('shade.ramp') },
+              { value: 'palette', label: t('shade.palette') },
+              { value: 'free', label: t('shade.free') },
+            ]}
+            onChange={(v) => editor.setOption('shadeMode', v)}
+          />
           {options.shadeMode === 'free' && (
             <>
               <Row label={t('options.strength')}>
