@@ -584,11 +584,19 @@ export function LeftPanel() {
     <div className="panel-header">
       <span className="panel-file truncate">{name}</span>
       <IconButton
+        className="icon-btn panel-fold"
         icon="panelLeft"
         label={t(folded ? 'panel.unfold' : 'panel.fold')}
         shortcut={'Ctrl+Shift+\\'}
         pressed={folded}
         onClick={toggleLayersPanel}
+      />
+      {/* On a phone the panel is a sheet: it closes, it doesn't fold. */}
+      <IconButton
+        className="icon-btn sheet-close"
+        icon="close"
+        label={t('common.close')}
+        onClick={() => uiStore.set({ sheet: null })}
       />
     </div>
   );

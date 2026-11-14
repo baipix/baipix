@@ -898,6 +898,16 @@ export function RightPanel() {
   const board = useEditorState((s) => isBoard(s.doc));
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
+      {/* On a phone the panel is a sheet, with its name and a way to close it. */}
+      <div className="panel-header sheet-header">
+        <span className="panel-file truncate">{t('panel.right')}</span>
+        <IconButton
+          className="icon-btn sheet-close"
+          icon="close"
+          label={t('common.close')}
+          onClick={() => uiStore.set({ sheet: null })}
+        />
+      </div>
       {board && <CanvasSection />}
       {board && <LightSection />}
       <PaletteSection />
