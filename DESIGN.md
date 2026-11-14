@@ -19,8 +19,9 @@ The short version, for when you add or change something in the interface:
   soft shadows (`--shadow`, `--shadow-pop`, `--shadow-menu`) on what floats over the canvas. The pixel
   look is kept for the logo and the website.
 - **Sizes.** What gets clicked takes its size from a token: `--tool` (a tool in the toolbar),
-  `--icon-btn`, `--row` (a layer, a board) and `--menu-row`. On a touch screen (`pointer: coarse`,
-  whatever the window's width) they all become `--touch`, 44 px. A new target uses one of them rather
+  `--icon-btn`, `--row` (a layer, a board), `--menu-row`, and `--control` for fields, text buttons and
+  selects. On a touch screen (`pointer: coarse`, whatever the window's width) the first four become
+  `--touch`, 44 px, and `--control` 36 px; icons in buttons grow to 20 px. A new target uses one of them rather
   than a size of its own, and what holds it grows with it (`max(36px, var(--icon-btn))`).
 - **On a phone** (a window up to 820 px wide) the panels become sheets from the bottom, and the
   toolbar is `MobileToolbar`: the colors, four pinned tools, the last other tool taken, and a button

@@ -22,6 +22,7 @@ test.describe('on a touch screen', () => {
     expect(await height('.toolbar .tool-btn')).toBe(44);
     expect(await height('.panel-left .icon-btn')).toBe(44);
     expect(await height('.panel-left .item')).toBe(44);
+    expect(await height('.panel-right .field')).toBe(36);
 
     await page
       .getByRole('menubar', { name: 'Main menu' })
