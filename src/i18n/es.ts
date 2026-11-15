@@ -378,6 +378,7 @@ export const es: Record<MessageKey, string> = {
   'board.new': 'Nuevo tablero',
   'board.duplicate': 'Duplicar el tablero',
   'board.delete': 'Eliminar el tablero',
+  'board.collapse': 'Plegar el tablero',
   'board.deleted': '{name} eliminado.',
   'board.deletedMany': '{count} tableros eliminados.',
   'board.none': 'Este archivo todavía no tiene ningún tablero.',

@@ -377,6 +377,7 @@ export const fr: Record<MessageKey, string> = {
   'board.new': 'Nouveau plan',
   'board.duplicate': 'Dupliquer le plan',
   'board.delete': 'Supprimer le plan',
+  'board.collapse': 'Replier le plan',
   'board.deleted': '{name} supprimé.',
   'board.deletedMany': '{count} plans supprimés.',
   'board.none': 'Ce fichier n’a pas encore de plan.',
