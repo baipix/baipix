@@ -1,5 +1,6 @@
 export interface StylusInput {
   pointerDown(pointerType: string, pointerId: number): void;
+  pointerHover(pointerType: string): void;
   pointerEnd(pointerType: string, pointerId: number): void;
   isEnabled(): boolean;
   hasActivePointer(): boolean;
@@ -11,26 +12,39 @@ export function createStylusInput(): StylusInput {
   let enabled = false;
   const activePointers = new Set<number>();
 
-  return {
-    pointerDown(pointerType, pointerId) {
+  const stylusInput: StylusInput = {
+    pointerHover(pointerType: string): void {
+      if (pointerType === 'pen') enabled = true;
+    },
+
+    pointerDown(pointerType: string, pointerId: number): void {
       if (pointerType !== 'pen') return;
 
       enabled = true;
       activePointers.add(pointerId);
     },
 
-    pointerEnd(pointerType, pointerId) {
+    pointerEnd(pointerType: string, pointerId: number): void {
       if (pointerType === 'pen') activePointers.delete(pointerId);
     },
 
-    isEnabled: () => enabled,
-    hasActivePointer: () => activePointers.size > 0,
+    isEnabled(): boolean {
+      return enabled;
+    },
 
-    shouldIgnoreTouch: (pointerType) => pointerType === 'touch' && enabled && activePointers.size > 0,
+    hasActivePointer(): boolean {
+      return activePointers.size > 0;
+    },
 
-    reset() {
+    shouldIgnoreTouch(pointerType: string): boolean {
+      return pointerType === 'touch' && enabled && activePointers.size > 0;
+    },
+
+    reset(): void {
       enabled = false;
       activePointers.clear();
     },
   };
+
+  return stylusInput;
 }

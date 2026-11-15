@@ -9,6 +9,25 @@ describe('stylus input', () => {
     expect(stylus.shouldIgnoreTouch('touch')).toBe(false);
   });
 
+  it('enables stylus mode when a pen hovers before contact', () => {
+    const stylus = createStylusInput();
+
+    stylus.pointerHover('pen');
+
+    expect(stylus.isEnabled()).toBe(true);
+    expect(stylus.hasActivePointer()).toBe(false);
+    expect(stylus.shouldIgnoreTouch('touch')).toBe(false);
+  });
+
+  it('does not enable stylus mode for touch or mouse hover', () => {
+    const stylus = createStylusInput();
+
+    stylus.pointerHover('touch');
+    stylus.pointerHover('mouse');
+
+    expect(stylus.isEnabled()).toBe(false);
+  });
+
   it('enables stylus mode when a pen is detected', () => {
     const stylus = createStylusInput();
 

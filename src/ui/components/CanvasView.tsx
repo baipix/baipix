@@ -1035,6 +1035,31 @@ export function CanvasView() {
     let lastLocal = { x: 0, y: 0 };
 
     const touches = () => [...pointers.values()].filter((p) => p.touch);
+
+    const onPenDetected = () => {
+      stylus.pointerHover('pen');
+      if (!touches().length) return;
+
+      // A hovering pen can be detected while a palm is already touching the canvas.
+      // Cancel the active touch gesture before it can commit an accidental mark.
+      touchGestures.reset();
+      touchGestureActive = false;
+
+      pointers.forEach((pointer, id) => {
+        if (pointer.touch) pointers.delete(id);
+      });
+
+      panStart = null;
+      pinch = null;
+
+      if (editor.isStroking) editor.cancelStroke();
+    };
+
+    // Detect a hovering pen before its first contact with the canvas.
+    const onPointerOver = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') onPenDetected();
+    };
+
     const pinchInfo = () => {
       const [a, b] = touches();
       const r = canvas.getBoundingClientRect();
@@ -1052,21 +1077,8 @@ export function CanvasView() {
       if (focused instanceof HTMLElement && focused.closest('.item-list')) focused.blur();
 
       if (e.pointerType === 'pen') {
+        onPenDetected();
         stylus.pointerDown(e.pointerType, e.pointerId);
-
-        if (touches().length) {
-          touchGestures.reset();
-          touchGestureActive = false;
-
-          pointers.forEach((pointer, id) => {
-            if (pointer.touch) pointers.delete(id);
-          });
-
-          panStart = null;
-          pinch = null;
-
-          if (editor.isStroking) editor.cancelStroke();
-        }
       }
 
       if (e.pointerType === 'touch' && stylus.shouldIgnoreTouch(e.pointerType)) return;
@@ -1262,6 +1274,8 @@ export function CanvasView() {
     };
 
     const onMove = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') onPenDetected();
+
       if (pointers.has(e.pointerId))
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
@@ -1669,6 +1683,7 @@ export function CanvasView() {
       else if (editor.getState().tool === 'move') editor.enterAt(viewport.toPixel(l.x, l.y));
     };
     wrap.addEventListener('pointerdown', closeSheets, true);
+    canvas.addEventListener('pointerover', onPointerOver);
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
@@ -1701,6 +1716,7 @@ export function CanvasView() {
       motionMedia.removeEventListener('change', onMotion);
       unsubs.forEach((u) => u());
       wrap.removeEventListener('pointerdown', closeSheets, true);
+      canvas.removeEventListener('pointerover', onPointerOver);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
