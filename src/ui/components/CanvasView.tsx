@@ -45,6 +45,7 @@ import { openMenu } from './Menu';
 import { groupMenuItems, layerMenuItems } from '../layerMenus';
 import { createTouchGestures, type TouchPoint } from '../touchGestures';
 import { createStylusInput } from '../stylusInput';
+import { createStylusPanStart, type StylusPanStart } from '../stylusPan';
 
 const DRAWING_TOOLS: ToolId[] = [
   'pencil',
@@ -135,7 +136,7 @@ export function CanvasView() {
     let frame = 0;
     const motionMedia = matchMedia('(prefers-reduced-motion: reduce)');
     let reduceMotion = motionMedia.matches;
-    let panStart: { x: number; y: number; panX: number; panY: number } | null = null;
+    let panStart: StylusPanStart | null = null;
     /** A board moved by its name: where the drag started and where the board was, in file pixels. */
     let boardDrag: { id: string; start: Point; from: Point; moved: boolean; copy: boolean } | null = null;
     /** A board being drawn with the board tool, corner to corner in file pixels. */
@@ -1036,6 +1037,23 @@ export function CanvasView() {
 
     const touches = () => [...pointers.values()].filter((p) => p.touch);
 
+    const finishStylusTouch = () => {
+      const remainingTouches = touches();
+
+      if (pinch && remainingTouches.length < 2) {
+        const { cx, cy } = pinch;
+        pinch = null;
+        viewport.settle(cx, cy);
+
+        // Rebase the pan origin from the remaining finger after the pinch ends.
+        panStart = createStylusPanStart(remainingTouches, viewport);
+
+        return;
+      }
+
+      if (!remainingTouches.length) panStart = null;
+    };
+
     const onPenDetected = () => {
       stylus.pointerHover('pen');
       if (!touches().length) return;
@@ -1448,14 +1466,7 @@ export function CanvasView() {
 
       if (e.pointerType === 'touch' && stylus.isEnabled()) {
         pointers.delete(e.pointerId);
-
-        if (pinch && touches().length < 2) {
-          const info = { cx: pinch.cx, cy: pinch.cy };
-          pinch = null;
-          viewport.settle(info.cx, info.cy);
-        }
-
-        if (!touches().length) panStart = null;
+        finishStylusTouch();
 
         return;
       }
@@ -1573,8 +1584,7 @@ export function CanvasView() {
 
       if (e.pointerType === 'touch' && stylus.isEnabled()) {
         pointers.delete(e.pointerId);
-        panStart = null;
-        pinch = null;
+        finishStylusTouch();
 
         return;
       }
