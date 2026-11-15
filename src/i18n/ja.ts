@@ -377,6 +377,7 @@ export const ja: Record<MessageKey, string> = {
   'board.new': '新規ボード',
   'board.duplicate': 'ボードを複製',
   'board.delete': 'ボードを削除',
+  'board.collapse': 'ボードを折りたたむ',
   'board.deleted': '{name}を削除しました。',
   'board.deletedMany': '{count}個のボードを削除しました。',
   'board.none': 'このファイルにはまだボードがありません。',

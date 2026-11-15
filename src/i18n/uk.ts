@@ -377,6 +377,7 @@ export const uk: Record<MessageKey, string> = {
   'board.new': 'Новий артборд',
   'board.duplicate': 'Дублювати артборд',
   'board.delete': 'Видалити артборд',
+  'board.collapse': 'Згорнути артборд',
   'board.deleted': '{name} видалено.',
   'board.deletedMany': 'Артбордів видалено: {count}.',
   'board.none': 'У цьому файлі ще немає артбордів.',

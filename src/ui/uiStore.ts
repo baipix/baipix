@@ -89,6 +89,8 @@ export interface UiState {
   exportAllBoards: boolean;
   /** Ids of the collapsed panel sections. */
   collapsed: string[];
+  /** The open board folded in the layers list: its row only, its layers put away. Not kept. */
+  foldedBoard: string | null;
   /** Tab of the right panel. */
   /** Exports include the document's background (when it has one). */
   exportBackground: boolean;
@@ -133,6 +135,7 @@ export const uiStore = createStore<UiState>({
   exportSheetColumns: null,
   exportAllBoards: false,
   collapsed: [],
+  foldedBoard: null,
   exportBackground: true,
   hiddenPalettes: [],
   home: false,
