@@ -229,6 +229,7 @@ export const it: Record<MessageKey, string> = {
   'theme.dark': 'Tema scuro',
   'menu.grid': 'Griglia dei pixel',
   'menu.tile': 'Mosaico',
+  'menu.stylusMode': 'Modalità stilo',
   'menu.hideUi': 'Nascondi l’interfaccia',
   'menu.shortcuts': 'Scorciatoie da tastiera',
   'menu.version': 'Baipix {version} · Novità',
@@ -741,6 +742,7 @@ export const it: Record<MessageKey, string> = {
   'shortcuts.stepFrame': 'Fotogramma precedente, successivo',
 
   'toast.saved': '{name} salvato.',
+  'toast.stylusModeEnabled': 'Modalità stilo attivata. Disattivala in Visualizza per disegnare con un dito.',
   'toast.alreadySorted': 'I livelli sono già ordinati per profondità: il disegno più in basso sta davanti.',
   'toast.downloadCancelled': 'Download annullato.',
   'toast.downloadBusy': 'Una richiesta di download è già aperta.',

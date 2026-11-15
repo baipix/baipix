@@ -37,7 +37,7 @@ import {
 import { readTheme, type Theme } from '../render/theme';
 import { BRUSH_TOOLS, SHAPE_IDS } from '../tools';
 import { playbackStore } from '../playback';
-import { hoverStore, uiStore } from '../uiStore';
+import { hoverStore, toast, uiStore } from '../uiStore';
 import { referenceColorAt } from '../referenceColors';
 import { COMPONENT_MIME } from '../dragTypes';
 import { viewport } from '../viewport';
@@ -146,6 +146,7 @@ export function CanvasView() {
     let pinch: Pinch | null = null;
     const pointers = new Map<number, { x: number; y: number; touch: boolean }>();
     const stylus = createStylusInput();
+    const isStylusMode = () => uiStore.get().stylusMode === 'on';
     // Alt held: drawing tools pick colors, so the loupe shows (even before the pointer moves).
     let altHeld = false;
     // Dragging a symmetry axis by its grip.
@@ -1072,13 +1073,18 @@ export function CanvasView() {
       if (editor.isStroking) editor.cancelStroke();
     };
 
-    const onPenDetected = () => {
-      if (stylus.pointerHover('pen')) cancelActiveTouchGesture();
+    const onPenDetected = (): boolean => {
+      if (uiStore.get().stylusMode !== 'auto' || !stylus.pointerHover('pen')) return false;
+
+      uiStore.set({ stylusMode: 'on' });
+      toast(translate('toast.stylusModeEnabled'));
+
+      return true;
     };
 
     // Detect a hovering pen before its first contact with the canvas.
     const onPointerOver = (e: PointerEvent) => {
-      if (e.pointerType === 'pen') onPenDetected();
+      if (e.pointerType === 'pen' && onPenDetected()) cancelActiveTouchGesture();
     };
 
     const pinchInfo = () => {
@@ -1099,15 +1105,20 @@ export function CanvasView() {
 
       if (e.pointerType === 'pen') {
         onPenDetected();
-        cancelActiveTouchGesture();
+
+        if (isStylusMode()) cancelActiveTouchGesture();
 
         stylus.pointerDown(e.pointerType, e.pointerId);
       }
 
+      if (e.pointerType === 'touch' && isStylusMode() && stylus.shouldIgnoreTouch(e.pointerType)) return;
+
       if (e.pointerType === 'touch' && stylus.shouldIgnoreTouch(e.pointerType)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
-      if (e.pointerType === 'touch' && stylus.isEnabled()) {
+      if (e.pointerType === 'touch') touchGestures.down(touchPoint(e));
+
+      if (e.pointerType === 'touch' && isStylusMode()) {
         const activeTouches = touches();
 
         if (activeTouches.length === 1) {
@@ -1132,9 +1143,7 @@ export function CanvasView() {
         return;
       }
 
-      if (e.pointerType === 'touch') {
-        touchGestures.down(touchPoint(e));
-
+      if (e.pointerType === 'touch' && !isStylusMode()) {
         if (touches().length === 1)
           touchGestureActive = !['move', 'hand', 'board', 'spray', 'jumble', 'liquify'].includes(
             editor.getState().tool,
@@ -1302,7 +1311,10 @@ export function CanvasView() {
       if (pointers.has(e.pointerId))
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
-      if (e.pointerType === 'touch' && stylus.isEnabled()) {
+      const touchMove =
+        e.pointerType === 'touch' ? touchGestures.move(touchPoint(e)) : { type: 'none' as const };
+
+      if (e.pointerType === 'touch' && isStylusMode()) {
         if (stylus.hasActivePointer()) return;
 
         if (pinch) {
@@ -1318,9 +1330,6 @@ export function CanvasView() {
 
         return;
       }
-
-      const touchMove =
-        e.pointerType === 'touch' ? touchGestures.move(touchPoint(e)) : { type: 'none' as const };
 
       if (e.pointerType === 'touch' && touchMove.type === 'pinch-start' && !pinch) {
         editor.cancelStroke();
@@ -1469,14 +1478,20 @@ export function CanvasView() {
       clearInterval(sprayTimer);
       if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
 
-      if (e.pointerType === 'touch' && stylus.isEnabled()) {
-        pointers.delete(e.pointerId);
-        finishStylusTouch();
+      const touchEnd = e.pointerType === 'touch' ? touchGestures.up(e.pointerId) : { type: 'none' as const };
 
+      if (e.pointerType === 'touch' && isStylusMode()) {
+        pointers.delete(e.pointerId);
+
+        if (touchEnd.type === 'tap') {
+          if (touchEnd.fingers === 2) editor.undo();
+          if (touchEnd.fingers === 3) editor.redo();
+        }
+
+        finishStylusTouch();
         return;
       }
 
-      const touchEnd = e.pointerType === 'touch' ? touchGestures.up(e.pointerId) : { type: 'none' as const };
       pointers.delete(e.pointerId);
       const gestureActive = touchGestureActive;
       if (e.pointerType === 'touch' && !touches().length) touchGestureActive = false;
@@ -1586,15 +1601,15 @@ export function CanvasView() {
     const onCancel = (e: PointerEvent) => {
       clearInterval(sprayTimer);
       if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
+      if (e.pointerType === 'touch') touchGestures.cancel(e.pointerId);
 
-      if (e.pointerType === 'touch' && stylus.isEnabled()) {
+      if (e.pointerType === 'touch' && isStylusMode()) {
         pointers.delete(e.pointerId);
         finishStylusTouch();
 
         return;
       }
 
-      if (e.pointerType === 'touch') touchGestures.cancel(e.pointerId);
       pointers.delete(e.pointerId);
       if (!touches().length) touchGestureActive = false;
       editor.cancelStroke();

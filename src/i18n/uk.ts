@@ -229,6 +229,7 @@ export const uk: Record<MessageKey, string> = {
   'theme.dark': 'Темна тема',
   'menu.grid': 'Піксельна сітка',
   'menu.tile': 'Перегляд мозаїки',
+  'menu.stylusMode': 'Режим стилуса',
   'menu.hideUi': 'Приховати інтерфейс',
   'menu.shortcuts': 'Комбінації клавіш',
   'menu.version': 'Baipix {version} · Що нового',
@@ -742,6 +743,7 @@ export const uk: Record<MessageKey, string> = {
   'shortcuts.stepFrame': 'Попередній, наступний кадр',
 
   'toast.saved': '{name} збережено.',
+  'toast.stylusModeEnabled': 'Режим стилуса ввімкнено. Щоб малювати пальцем, вимкніть його в меню «Вигляд».',
   'toast.alreadySorted': 'Шари вже впорядковані за глибиною: найнижчий малюнок розташовано попереду.',
   'toast.downloadCancelled': 'Завантаження скасовано.',
   'toast.downloadBusy': 'Запит на завантаження вже відкрито.',
