@@ -28,6 +28,10 @@ During a stroke, only `onPixels` fires, so React does not re-render panels on ev
 
 A tool is an object with `onDown`, `onMove` and optional `onUp`, receiving a `Stroke`: the document, a copy of the layer's pixels at the start (`base`), options, colors, palette, symmetry and selection. Tools write into `stroke.layer.pixels`. Shape tools redraw from `base` on every move, which gives a live preview for free.
 
+## Agent API
+
+`src/agent/api.ts` is a thin layer over `Editor` for AI agents: plain values (`#rrggbb` colors, pixel coordinates, layer names) in, the editor's own commands and tools underneath. It has no DOM access and is tested in Node; `src/agent/install.ts` adds what only the browser does (leaving the home screen, rendering a PNG) and puts it on `window.baipix`. See [AGENT_API.md](AGENT_API.md).
+
 ## Rendering
 
 `ui/components/CanvasView.tsx` owns the canvas. On pixel changes it flattens the document into an offscreen canvas, then `ui/render/drawScene.ts` draws the scene (checkerboard, image, gap, grid, brush footprint, symmetry axes, selection). The `viewport` module handles zoom and pan per document and rounds the on-screen pixel size so every art pixel covers whole device pixels.
