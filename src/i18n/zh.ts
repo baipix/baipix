@@ -81,7 +81,8 @@ export const zh: Record<MessageKey, string> = {
 
   'section.layers': '图层',
   'section.effects': '效果',
-  'effects.hint': '效果是按图层的像素算出来的，不会动到原像素：随时可以调整、隐藏或删除。画布上和导出里都能看到效果。',
+  'effects.hint':
+    '效果是按图层的像素算出来的，不会动到原像素：随时可以调整、隐藏或删除。画布上和导出里都能看到效果。',
   'effects.add': '添加效果',
   'effects.outline': '描边',
   'effects.shadow': '投影',
@@ -459,8 +460,7 @@ export const zh: Record<MessageKey, string> = {
   'hint.blurSnap': '把相邻像素混一混，再从调色板里挑最接近的颜色。多涂几遍会更糊。',
   'hint.blurFree': '把相邻像素混在一起，会混出新颜色和半透明效果。多涂几遍会更糊。',
   'hint.spray': '在一个圆圈里随机撒像素，跟喷漆罐一样。按住不动就继续喷。右键喷次要颜色。',
-  'hint.jumble':
-    '把笔刷下的像素随机打乱，不添任何新颜色：适合做树叶、石头或噪点质感。按住不动就一直打乱。',
+  'hint.jumble': '把笔刷下的像素随机打乱，不添任何新颜色：适合做树叶、石头或噪点质感。按住不动就一直打乱。',
   'hint.liquify':
     '让画面变形，但不添新颜色：推挤会顺着方向推动像素，膨胀和收缩让局部变大变小（按住不动会一直生效）。',
   'liquify.push': '推挤',
@@ -607,8 +607,7 @@ export const zh: Record<MessageKey, string> = {
   'code.cut': '仅显示前 {shown} 行（共 {total} 行）。复制与下载可获取全部内容。',
   'code.copy': '复制',
   'code.download': '下载 .{ext}',
-  'code.hint.react':
-    '一个把精灵画成 SVG 的组件。可以传宽度、className 或任意 SVG 属性，当图标用就行。',
+  'code.hint.react': '一个把精灵画成 SVG 的组件。可以传宽度、className 或任意 SVG 属性，当图标用就行。',
   'code.hint.svg': '“复制为 SVG”的 SVG：每个图层一个组，每种颜色一条路径。',
   'code.hint.css': '将画作作为背景图像，其颜色作为自定义属性。将类名添加到任意元素上即可。',
   'code.hint.json': '尺寸、带名称的颜色，以及以颜色编号行表示的像素（0 为空白）。',
