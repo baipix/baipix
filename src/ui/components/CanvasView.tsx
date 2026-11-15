@@ -44,6 +44,7 @@ import { viewport } from '../viewport';
 import { openMenu } from './Menu';
 import { groupMenuItems, layerMenuItems } from '../layerMenus';
 import { createTouchGestures, type TouchPoint } from '../touchGestures';
+import { createStylusInput } from '../stylusInput';
 
 const DRAWING_TOOLS: ToolId[] = [
   'pencil',
@@ -143,8 +144,7 @@ export function CanvasView() {
     let boardResize: { from: Rect; sides: BoardSides; rect: Rect } | null = null;
     let pinch: Pinch | null = null;
     const pointers = new Map<number, { x: number; y: number; touch: boolean }>();
-    let stylusMode = false;
-    const activeStylusPointers = new Set<number>();
+    const stylus = createStylusInput();
     // Alt held: drawing tools pick colors, so the loupe shows (even before the pointer moves).
     let altHeld = false;
     // Dragging a symmetry axis by its grip.
@@ -1052,26 +1052,27 @@ export function CanvasView() {
       if (focused instanceof HTMLElement && focused.closest('.item-list')) focused.blur();
 
       if (e.pointerType === 'pen') {
-        stylusMode = true;
-        activeStylusPointers.add(e.pointerId);
+        stylus.pointerDown(e.pointerType, e.pointerId);
 
         if (touches().length) {
           touchGestures.reset();
           touchGestureActive = false;
+
           pointers.forEach((pointer, id) => {
             if (pointer.touch) pointers.delete(id);
           });
+
           panStart = null;
           pinch = null;
+
           if (editor.isStroking) editor.cancelStroke();
         }
       }
 
-      if (e.pointerType === 'touch' && stylusMode && activeStylusPointers.size) return;
-
+      if (e.pointerType === 'touch' && stylus.shouldIgnoreTouch(e.pointerType)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
-      if (e.pointerType === 'touch' && stylusMode) {
+      if (e.pointerType === 'touch' && stylus.isEnabled()) {
         const activeTouches = touches();
 
         if (activeTouches.length === 1) {
@@ -1264,8 +1265,8 @@ export function CanvasView() {
       if (pointers.has(e.pointerId))
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
-      if (e.pointerType === 'touch' && stylusMode) {
-        if (activeStylusPointers.size) return;
+      if (e.pointerType === 'touch' && stylus.isEnabled()) {
+        if (stylus.hasActivePointer()) return;
 
         if (pinch) {
           const info = pinchInfo();
@@ -1429,9 +1430,9 @@ export function CanvasView() {
 
     const onUp = (e: PointerEvent) => {
       clearInterval(sprayTimer);
-      if (e.pointerType === 'pen') activeStylusPointers.delete(e.pointerId);
+      if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
 
-      if (e.pointerType === 'touch' && stylusMode) {
+      if (e.pointerType === 'touch' && stylus.isEnabled()) {
         pointers.delete(e.pointerId);
 
         if (pinch && touches().length < 2) {
@@ -1554,13 +1555,13 @@ export function CanvasView() {
 
     const onCancel = (e: PointerEvent) => {
       clearInterval(sprayTimer);
-      if (e.pointerType === 'pen') activeStylusPointers.delete(e.pointerId);
+      if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
 
-      if (e.pointerType === 'touch' && stylusMode) {
+      if (e.pointerType === 'touch' && stylus.isEnabled()) {
         pointers.delete(e.pointerId);
         panStart = null;
         pinch = null;
-  
+
         return;
       }
 
@@ -1708,6 +1709,7 @@ export function CanvasView() {
       canvas.removeEventListener('wheel', onWheel);
       clearTimeout(settleTimer);
       touchGestures.reset();
+      stylus.reset();
       canvas.removeEventListener('contextmenu', noMenu);
       canvas.removeEventListener('dblclick', onDoubleClick);
     };
