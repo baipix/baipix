@@ -6,7 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
-- Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at.
+- Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at. ([#711](https://github.com/baipix/baipix/pull/711))
 
 ### Changed
 
@@ -26,6 +26,10 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 - Zooming with two fingers no longer shakes the drawing. ([#859](https://github.com/baipix/baipix/pull/859))
 - On a phone, the file can be renamed: Rename in its menu, or File › Rename file, turns its name into a field. ([#856](https://github.com/baipix/baipix/pull/856))
 - In the tool's options, the pressed button of a group (the brush's square or round shape) keeps to the group's rounded corners. ([#852](https://github.com/baipix/baipix/pull/852))
+
+### Thanks
+
+- [@Ben8t](https://github.com/Ben8t) for scripting the editor through `window.baipix`, and its guide. ([#711](https://github.com/baipix/baipix/pull/711))
 
 ## [0.8.1] - 2026-11-14
 
