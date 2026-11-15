@@ -1054,8 +1054,7 @@ export function CanvasView() {
       if (!remainingTouches.length) panStart = null;
     };
 
-    const onPenDetected = () => {
-      stylus.pointerHover('pen');
+    const cancelActiveTouchGesture = () => {
       if (!touches().length) return;
 
       // A hovering pen can be detected while a palm is already touching the canvas.
@@ -1071,6 +1070,10 @@ export function CanvasView() {
       pinch = null;
 
       if (editor.isStroking) editor.cancelStroke();
+    };
+
+    const onPenDetected = () => {
+      if (stylus.pointerHover('pen')) cancelActiveTouchGesture();
     };
 
     // Detect a hovering pen before its first contact with the canvas.
@@ -1096,6 +1099,8 @@ export function CanvasView() {
 
       if (e.pointerType === 'pen') {
         onPenDetected();
+        cancelActiveTouchGesture();
+
         stylus.pointerDown(e.pointerType, e.pointerId);
       }
 

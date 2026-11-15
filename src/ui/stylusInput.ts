@@ -1,6 +1,6 @@
 export interface StylusInput {
   pointerDown(pointerType: string, pointerId: number): void;
-  pointerHover(pointerType: string): void;
+  pointerHover(pointerType: string): boolean;
   pointerEnd(pointerType: string, pointerId: number): void;
   isEnabled(): boolean;
   hasActivePointer(): boolean;
@@ -13,8 +13,13 @@ export function createStylusInput(): StylusInput {
   const activePointers = new Set<number>();
 
   const stylusInput: StylusInput = {
-    pointerHover(pointerType: string): void {
-      if (pointerType === 'pen') enabled = true;
+    pointerHover(pointerType: string): boolean {
+      if (pointerType !== 'pen' || enabled) {
+        return false;
+      }
+
+      enabled = true;
+      return true;
     },
 
     pointerDown(pointerType: string, pointerId: number): void {

@@ -12,8 +12,7 @@ describe('stylus input', () => {
   it('enables stylus mode when a pen hovers before contact', () => {
     const stylus = createStylusInput();
 
-    stylus.pointerHover('pen');
-
+    expect(stylus.pointerHover('pen')).toBe(true);
     expect(stylus.isEnabled()).toBe(true);
     expect(stylus.hasActivePointer()).toBe(false);
     expect(stylus.shouldIgnoreTouch('touch')).toBe(false);
@@ -25,12 +24,13 @@ describe('stylus input', () => {
     stylus.pointerHover('touch');
     stylus.pointerHover('mouse');
 
+    expect(stylus.pointerHover('touch')).toBe(false);
+    expect(stylus.pointerHover('mouse')).toBe(false);
     expect(stylus.isEnabled()).toBe(false);
   });
 
   it('enables stylus mode when a pen is detected', () => {
     const stylus = createStylusInput();
-
     stylus.pointerDown('pen', 1);
 
     expect(stylus.isEnabled()).toBe(true);
@@ -39,7 +39,6 @@ describe('stylus input', () => {
 
   it('ignores touch input while a pen is active', () => {
     const stylus = createStylusInput();
-
     stylus.pointerDown('pen', 1);
 
     expect(stylus.shouldIgnoreTouch('touch')).toBe(true);
@@ -61,7 +60,6 @@ describe('stylus input', () => {
 
     stylus.pointerDown('pen', 1);
     stylus.pointerDown('pen', 2);
-
     stylus.pointerEnd('pen', 1);
 
     expect(stylus.hasActivePointer()).toBe(true);
@@ -94,5 +92,14 @@ describe('stylus input', () => {
     expect(stylus.isEnabled()).toBe(false);
     expect(stylus.hasActivePointer()).toBe(false);
     expect(stylus.shouldIgnoreTouch('touch')).toBe(false);
+  });
+
+  it('reports only the first pen hover as a new detection', () => {
+    const stylus = createStylusInput();
+
+    expect(stylus.pointerHover('pen')).toBe(true);
+    expect(stylus.pointerHover('pen')).toBe(false);
+    expect(stylus.pointerHover('pen')).toBe(false);
+    expect(stylus.isEnabled()).toBe(true);
   });
 });
