@@ -143,6 +143,8 @@ export function CanvasView() {
     let boardResize: { from: Rect; sides: BoardSides; rect: Rect } | null = null;
     let pinch: Pinch | null = null;
     const pointers = new Map<number, { x: number; y: number; touch: boolean }>();
+    let stylusMode = false;
+    const activeStylusPointers = new Set<number>();
     // Alt held: drawing tools pick colors, so the loupe shows (even before the pointer moves).
     let altHeld = false;
     // Dragging a symmetry axis by its grip.
@@ -1048,7 +1050,51 @@ export function CanvasView() {
       // Back on the canvas, Delete clears pixels again rather than removing the layer clicked in the list.
       const focused = document.activeElement;
       if (focused instanceof HTMLElement && focused.closest('.item-list')) focused.blur();
+
+      if (e.pointerType === 'pen') {
+        stylusMode = true;
+        activeStylusPointers.add(e.pointerId);
+
+        if (touches().length) {
+          touchGestures.reset();
+          touchGestureActive = false;
+          pointers.forEach((pointer, id) => {
+            if (pointer.touch) pointers.delete(id);
+          });
+          panStart = null;
+          pinch = null;
+          if (editor.isStroking) editor.cancelStroke();
+        }
+      }
+
+      if (e.pointerType === 'touch' && stylusMode && activeStylusPointers.size) return;
+
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
+
+      if (e.pointerType === 'touch' && stylusMode) {
+        const activeTouches = touches();
+
+        if (activeTouches.length === 1) {
+          const touch = activeTouches[0];
+          panStart = {
+            x: touch.x,
+            y: touch.y,
+            panX: viewport.panX,
+            panY: viewport.panY,
+          };
+        } else if (activeTouches.length === 2) {
+          panStart = null;
+          pinch = {
+            ...pinchInfo(),
+            zoom: viewport.zoom,
+            panX: viewport.panX,
+            panY: viewport.panY,
+          };
+          updateHover(null);
+        }
+
+        return;
+      }
 
       if (e.pointerType === 'touch') {
         touchGestures.down(touchPoint(e));
@@ -1218,6 +1264,23 @@ export function CanvasView() {
       if (pointers.has(e.pointerId))
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
+      if (e.pointerType === 'touch' && stylusMode) {
+        if (activeStylusPointers.size) return;
+
+        if (pinch) {
+          const info = pinchInfo();
+          viewport.pinch(pinch, (pinch.zoom * info.distance) / Math.max(1, pinch.distance), info.cx, info.cy);
+        } else if (panStart) {
+          viewport.set({
+            zoom: viewport.zoom,
+            panX: panStart.panX + e.clientX - panStart.x,
+            panY: panStart.panY + e.clientY - panStart.y,
+          });
+        }
+
+        return;
+      }
+
       const touchMove =
         e.pointerType === 'touch' ? touchGestures.move(touchPoint(e)) : { type: 'none' as const };
 
@@ -1366,6 +1429,22 @@ export function CanvasView() {
 
     const onUp = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      if (e.pointerType === 'pen') activeStylusPointers.delete(e.pointerId);
+
+      if (e.pointerType === 'touch' && stylusMode) {
+        pointers.delete(e.pointerId);
+
+        if (pinch && touches().length < 2) {
+          const info = { cx: pinch.cx, cy: pinch.cy };
+          pinch = null;
+          viewport.settle(info.cx, info.cy);
+        }
+
+        if (!touches().length) panStart = null;
+
+        return;
+      }
+
       const touchEnd = e.pointerType === 'touch' ? touchGestures.up(e.pointerId) : { type: 'none' as const };
       pointers.delete(e.pointerId);
       const gestureActive = touchGestureActive;
@@ -1475,6 +1554,16 @@ export function CanvasView() {
 
     const onCancel = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      if (e.pointerType === 'pen') activeStylusPointers.delete(e.pointerId);
+
+      if (e.pointerType === 'touch' && stylusMode) {
+        pointers.delete(e.pointerId);
+        panStart = null;
+        pinch = null;
+  
+        return;
+      }
+
       if (e.pointerType === 'touch') touchGestures.cancel(e.pointerId);
       pointers.delete(e.pointerId);
       if (!touches().length) touchGestureActive = false;
