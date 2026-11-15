@@ -208,4 +208,12 @@ describe('agent API', () => {
     expect(() => api.remap({ palette: 'nope' })).toThrow(/No palette "nope"/);
     expect(api.palettes().pico8.colors[0]).toBe('#000000');
   });
+
+  it('a whole preset that replaces the palette keeps its name, as in the panel', () => {
+    const api = setup(2, 1);
+    api.plot([[0, 0, '#202020']]);
+    api.remap({ palette: 'pico8', replacePalette: true });
+    expect(api.editor.getState().palette.key).toBe('pico8');
+    expect(api.state().palette).toEqual(api.palettes().pico8.colors);
+  });
 });

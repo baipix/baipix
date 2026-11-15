@@ -1,6 +1,6 @@
 import { alpha, opaque, pack, red, green, blue, withAlpha, type Color } from '../engine/color';
 import { hasBackground } from '../engine/document';
-import type { Editor, Notice } from '../engine/editor';
+import type { Editor, Notice, PaletteChange } from '../engine/editor';
 import { activeFrame, frameCount } from '../engine/frames';
 import { PALETTE_PRESETS, presetColors, remapTable, type RemapMode } from '../engine/palette';
 import { TOOLS, type Modifiers, type ToolId, type ToolOptions } from '../engine/tools';
@@ -86,7 +86,10 @@ export interface RemapOptions {
   mode?: RemapMode;
   /** Use only this many colors of the palette. Default: all of them. */
   count?: number;
-  /** The file's palette becomes the colors used. Default: false, as in the panel. */
+  /**
+   * The palette picked takes the file's place, under its name for a preset, as the panel does when
+   * its box is ticked. Default: false, so a variation on one board leaves the file's palette alone.
+   */
   replacePalette?: boolean;
   /** The background goes to the palette too (not with a selection). Default: true. */
   background?: boolean;
@@ -537,7 +540,15 @@ export function createAgentApi(editor: Editor, hooks: AgentHooks = {}) {
       });
       const { table, colors } = remapTable(used, target, o.mode ?? 'nearest', o.count);
       const map = (c: Color) => (alpha(c) ? withAlpha(table.get(opaque(c)) ?? opaque(c), alpha(c)) : c);
-      each(() => editor.applyMap(map, o.replacePalette ? () => colors : null, background()));
+      // A whole preset takes the file's place under its name, as in the panel; cut down to fewer
+      // colors, or a list of colors, it's those colors that become the file's own.
+      const whole = typeof o.palette === 'string' && (o.count === undefined || o.count >= target.length);
+      const palette: PaletteChange | null = !o.replacePalette
+        ? null
+        : whole
+          ? { key: o.palette as string, colors: target }
+          : () => colors;
+      each(() => editor.applyMap(map, palette, background()));
       return Object.fromEntries([...table].map(([from, to]) => [colorToHex(from)!, colorToHex(to)!]));
     },
 
