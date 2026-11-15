@@ -21,6 +21,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- In a file of several boards, the arrow of the open board in the Layers panel folds its layers away, and brings them back. It did nothing before. ([#874](https://github.com/baipix/baipix/pull/874))
 - On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
 - On a phone or tablet, a submenu opens where its menu is instead of jumping up the screen, and a long one scrolls. ([#866](https://github.com/baipix/baipix/pull/866))
 - Zooming with two fingers no longer shakes the drawing. ([#859](https://github.com/baipix/baipix/pull/859))
