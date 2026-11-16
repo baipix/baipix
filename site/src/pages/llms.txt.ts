@@ -43,6 +43,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - [Pixel art for Figma](${url('pixel-art-for-figma/')}): drawing pixel art in Baipix and pasting it into Figma as vector.
 - [Isometric pixel art](${url('isometric-pixel-art/')}): the isometric grid and volume tools, how to start a scene, and tips.
 - [Pixel art animation](${url('pixel-art-animation/')}): the timeline, frame durations, onion skin, playback, and GIF, sprite sheet, PNG sequence or Aseprite export.
+- [A Piskel alternative](${url('piskel-alternative/')}): Baipix next to Piskel, line by line, what each does well, and how to bring a sprite over.
 ${posts.length ? `- [Blog](${url('blog/')}): news and tutorials, the newest first.\n` : ''}- [Source code on GitHub](${REPO_URL}): README, how to run it locally, how to contribute.
 - [Release notes](${url('changelog/')}): what each version of the editor brought, newest first.
 - [Roadmap](${url('roadmap/')}): what's being worked on now, what comes next, and the road to 1.0.
