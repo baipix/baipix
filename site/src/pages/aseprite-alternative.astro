@@ -1,0 +1,344 @@
+---
+import Cta from '../components/Cta.astro';
+import Faq from '../components/Faq.astro';
+import Footer from '../components/Footer.astro';
+import GuideHero from '../components/GuideHero.astro';
+import Nav from '../components/Nav.astro';
+import SectionHead from '../components/SectionHead.astro';
+import VersusArt from '../components/VersusArt.astro';
+import Base from '../layouts/Base.astro';
+import '../styles/guide.css';
+
+const base = import.meta.env.BASE_URL;
+
+/** Aseprite's side comes from aseprite.org, its docs, FAQ and repository, read in November 2026. */
+const rows: [string, string, string][] = [
+  ['Price', '$19.99, once, and a trial that cannot save', 'Free'],
+  [
+    'Runs on',
+    'Windows, macOS and Linux, also on Steam',
+    'The browser, offline once opened, installs as an app',
+  ],
+  [
+    'License',
+    'Source available under its own license: you may build it for yourself, not share the build',
+    'Open source (MIT)',
+  ],
+  ['Phones and tablets', 'Desktop only', 'Touch gestures, and a stylus mode on tablets'],
+  ['Color modes', 'RGB, indexed and grayscale', 'RGB, with tools that keep to the palette'],
+  ['Layers', 'Groups, blend modes, reference layers', 'Groups, blend modes, plus outline, shadow and glow'],
+  ['Frame timing', 'A duration for each frame', 'A duration for each frame'],
+  ['Animation tags', 'Several animations in one file, played forward, in reverse or ping-pong', 'Not yet'],
+  ['Linked cels', 'Yes', 'Not yet in the editor, written as linked cels in an .aseprite export'],
+  ['Tiles', 'Tilemap layers', 'Exports a tileset with a Tiled map, no tilemap layers yet'],
+  ['Several drawings in a file', 'One sprite per file', 'Several boards side by side, and components'],
+  [
+    'Automation',
+    'Lua scripts, extensions, and a command line',
+    'A JavaScript API in the page, no command line',
+  ],
+  [
+    'Exports',
+    'PNG, PNG sequence, GIF, sprite sheets with JSON, SVG, and more',
+    'PNG, GIF, PNG sequence, sprite sheet with JSON, SVG, Aseprite, tilesets, code',
+  ],
+  ['Aseprite files', 'Its own format', 'Opens them and exports them'],
+];
+
+const faq = [
+  {
+    q: 'Is Baipix a free Aseprite alternative?',
+    a: 'For a lot of work, yes: layers, frames with their own duration, onion skin, sprite sheets, in the browser and free. Aseprite does more on animation and tiles (tags, linked cels, tilemap layers) and has Lua scripting and a command line. If you rely on those, Aseprite is worth its price.',
+  },
+  {
+    q: 'Can Baipix open my .aseprite files?',
+    a: 'Yes. Drop an .ase or .aseprite file on Baipix: the layers, groups, blend modes, the palette and every frame with its duration come in. Tags, slices and tilemaps are left out for now, and a message lists what was.',
+  },
+  {
+    q: 'Can I go back to Aseprite after?',
+    a: 'Yes. Export as Aseprite and you get an .aseprite file with the layers, groups, blend modes, the palette and every frame with its duration.',
+  },
+  {
+    q: 'Is Aseprite open source?',
+    a: 'Its source code is public, under its own license (EULA): you may build it for your own use, but not share the build. Baipix is open source under the MIT license.',
+  },
+  {
+    q: 'Does Baipix work on a tablet?',
+    a: 'Yes. It takes touch gestures (two fingers to pan and zoom, a long press to pick a color), and with a pen the pen draws while fingers move the canvas. Aseprite runs on Windows, macOS and Linux.',
+  },
+];
+---
+
+<Base
+  title="A free Aseprite alternative in the browser · Baipix"
+  description="Baipix next to Aseprite, line by line: what Aseprite does well, what Baipix adds (free, in the browser, tablets, several boards, clean SVG), and how to go back and forth with .aseprite files."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main class="guide" data-tone="start">
+    <GuideHero
+      eyebrow="Baipix and Aseprite"
+      title="A free Aseprite alternative"
+      more={{ href: '#compare', text: 'Side by side' }}
+    >
+      Aseprite is the editor a lot of pixel artists work in every day, and it earns it. Baipix is free and
+      runs in the browser, on a computer or a tablet. It opens your .aseprite files and exports them back, so
+      you can use both.
+      <VersusArt slot="art" other="Aseprite" />
+    </GuideHero>
+
+    <section id="aseprite" class="cards container">
+      <SectionHead label="Aseprite" />
+      <h2>What Aseprite does well.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Animation</h3>
+          <p class="muted">
+            Tags to keep a walk, a jump and an idle in one file, linked cels to draw a part once, and loops
+            forward, in reverse or ping-pong.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Tilemaps</h3>
+          <p class="muted">Tilemap layers, to paint a level with tiles and edit a tile everywhere at once.</p>
+        </article>
+        <article class="card">
+          <h3>Scripts and command line</h3>
+          <p class="muted">
+            Lua scripts and extensions, and a command line to export a whole folder of sprites in a build.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Pixel tools</h3>
+          <p class="muted">
+            Indexed and grayscale modes, RotSprite rotation, slices, and years of polish on the details.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="compare" class="cards container">
+      <SectionHead label="Side by side" />
+      <h2>Aseprite and Baipix, line by line.</h2>
+      <div class="vs-scroll">
+        <table class="vs">
+          <thead>
+            <tr>
+              <th scope="col">
+                <span class="sr-only">What</span>
+              </th>
+              <th scope="col">Aseprite</th>
+              <th scope="col">Baipix</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([what, aseprite, baipix]) => (
+              <tr>
+                <th scope="row">{what}</th>
+                <td>{aseprite}</td>
+                <td>{baipix}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted guide-more">
+        Aseprite's column comes from <a href="https://www.aseprite.org/">its website</a>, its docs and its
+        repository, read in November 2026. If a line is wrong or out of date,{' '}
+        <a href="https://github.com/baipix/baipix/issues">tell us</a> and we fix it.
+      </p>
+    </section>
+
+    <section id="more" class="cards container">
+      <SectionHead label="Baipix" />
+      <h2>What Baipix adds.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Free, in the browser</h3>
+          <p class="muted">
+            Nothing to buy or install, no account. It works offline once opened, and your drawings stay on
+            your device.
+          </p>
+        </article>
+        <article class="card">
+          <h3>On a tablet</h3>
+          <p class="muted">
+            Two fingers to pan and zoom, a long press to pick a color, and a stylus mode where the pen draws
+            and fingers move the canvas.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Boards and components</h3>
+          <p class="muted">
+            Several boards side by side in one file, and sprites you draw once and place many times.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Clean SVG</h3>
+          <p class="muted">
+            One path per color, pasted straight into Figma or Illustrator. See{' '}
+            <a href={`${base}pixel-art-to-svg/`}>Pixel art to SVG</a>.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Isometric</h3>
+          <p class="muted">
+            A 2:1 grid, and boxes, cylinders, stairs and ramps drawn in one drag, already shaded. See{' '}
+            <a href={`${base}isometric-pixel-art/`}>Isometric pixel art</a>.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Layer effects</h3>
+          <p class="muted">Outline, shadow and glow on a layer, that you can change or remove at any time.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="both" class="steps container">
+      <SectionHead label="Using both" />
+      <h2>Go back and forth with .aseprite files.</h2>
+      <ol class="step-list">
+        <li>
+          <span class="step-n">1</span>
+          <div>
+            <h3>Open it in Baipix</h3>
+            <p class="muted">
+              Drop the .aseprite file on Baipix. The layers, groups, the palette and every frame with its
+              duration come in. Tags, slices and tilemaps are left out for now.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div>
+            <h3>Work on it anywhere</h3>
+            <p class="muted">On a tablet on the couch, or on a computer where Aseprite isn't installed.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div>
+            <h3>Export it back</h3>
+            <p class="muted">
+              Export as Aseprite, and open the file there. A layer that doesn't change between frames comes
+              back as a linked cel.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <Faq items={faq} />
+
+    <Cta />
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .vs-scroll {
+    margin-top: 40px;
+    overflow-x: auto;
+    border: 2px solid var(--line-strong);
+  }
+  .vs {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 15px;
+    text-align: left;
+  }
+  .vs th,
+  .vs td {
+    padding: 14px 16px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  .vs tbody tr:last-child th,
+  .vs tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .vs thead th {
+    font-weight: 600;
+    border-bottom: 2px solid var(--line-strong);
+  }
+  .vs tbody th {
+    width: 22%;
+    font-weight: 600;
+  }
+  .vs td {
+    width: 39%;
+    color: var(--muted);
+  }
+  .vs td:last-child {
+    color: var(--text);
+  }
+  /* On a phone the two columns would not fit side by side with the labels: each label goes on its own
+     line, the two answers under it, and the names stay on top while the table scrolls by. */
+  @media (max-width: 700px) {
+    .vs-scroll {
+      overflow: visible;
+    }
+    .vs,
+    .vs thead,
+    .vs tbody {
+      display: block;
+      min-width: 0;
+    }
+    .vs tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .vs thead {
+      position: sticky;
+      top: calc(var(--header-height) + 1px);
+      z-index: 1;
+      background: var(--bg);
+    }
+    .vs thead th:first-child {
+      display: none;
+    }
+    .vs th,
+    .vs td {
+      width: auto;
+      padding: 12px;
+    }
+    .vs tbody th {
+      grid-column: 1 / -1;
+      width: auto;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .vs tbody td {
+      padding-top: 6px;
+    }
+    .vs tbody tr:not(:last-child) td {
+      border-bottom: 1px solid var(--line);
+    }
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .card a,
+  .guide-more a {
+    color: var(--text);
+    text-decoration: underline;
+  }
+  .guide-more {
+    margin-top: 32px;
+  }
+</style>

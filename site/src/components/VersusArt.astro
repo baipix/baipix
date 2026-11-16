@@ -1,23 +1,24 @@
 ---
 /**
  * The top of a comparison page: a skater rolling by, a logo held up in each hand, the other
- * editor's behind and ours in front. It is a Baipix file (art/piskel-and-baipix.baipix: four frames,
- * four layers), rendered at build time. Its ink follows the theme. With reduced motion, the first
+ * editor's behind and ours in front. It is a Baipix file (art/piskel-and-baipix.baipix, or aseprite-and-baipix:
+ * four frames, four layers), rendered at build time. Its ink follows the theme. With reduced motion, the first
  * frame stays.
  */
 import { flattenFrame } from '../../../src/engine/composite';
 import { DEFAULT_DURATION, frameCount } from '../../../src/engine/frames';
 import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
 import { fileFromJson } from '../../../src/storage/fileFormat';
-import file from '../art/piskel-and-baipix.baipix?raw';
+import aseprite from '../art/aseprite-and-baipix.baipix?raw';
+import piskel from '../art/piskel-and-baipix.baipix?raw';
 
 interface Props {
-  /** The other editor, for the picture's description. */
-  other: string;
+  /** The other editor, whose logo the skater holds. */
+  other: 'Piskel' | 'Aseprite';
 }
 const { other } = Astro.props;
 
-const [doc] = fileFromJson(file);
+const [doc] = fileFromJson(other === 'Aseprite' ? aseprite : piskel);
 const frames = Array.from({ length: frameCount(doc) }, (_, f) => ({
   svg: toSvg(
     flattenFrame(doc, f, { includeBackground: false }),
