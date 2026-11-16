@@ -371,6 +371,7 @@ export const zh: Record<MessageKey, string> = {
   'board.new': '新建画板',
   'board.duplicate': '复制画板',
   'board.delete': '删除画板',
+  'board.collapse': '折叠画板',
   'board.deleted': '{name} 已删除。',
   'board.deletedMany': '已删除 {count} 个画板。',
   'board.none': '此文件中还没有画板。',
