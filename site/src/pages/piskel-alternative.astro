@@ -327,6 +327,49 @@ const faq = [
   .vs td:last-child {
     color: var(--text);
   }
+  /* On a phone the two columns would not fit side by side with the labels: each label goes on its own
+     line, the two answers under it, and the names stay on top while the table scrolls by. */
+  @media (max-width: 700px) {
+    .vs-scroll {
+      overflow: visible;
+    }
+    .vs,
+    .vs thead,
+    .vs tbody {
+      display: block;
+      min-width: 0;
+    }
+    .vs tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .vs thead {
+      position: sticky;
+      top: calc(var(--header-height) + 1px);
+      z-index: 1;
+      background: var(--bg);
+    }
+    .vs thead th:first-child {
+      display: none;
+    }
+    .vs th,
+    .vs td {
+      width: auto;
+      padding: 12px;
+    }
+    .vs tbody th {
+      grid-column: 1 / -1;
+      width: auto;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .vs tbody td {
+      padding-top: 6px;
+    }
+    .vs tbody tr:not(:last-child) td {
+      border-bottom: 1px solid var(--line);
+    }
+  }
   .sr-only {
     position: absolute;
     width: 1px;
