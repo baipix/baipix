@@ -29,7 +29,7 @@ Baipix is made for pixel artists, game developers and designers who want pixel a
 - Import: PNG, JPG, GIF and WebP images, with the real pixels of upscaled pixel art recovered; animated GIFs and sprite sheets as animations; Aseprite files (.ase, .aseprite) with their layers, frames and palette.
 - Export: PNG from 1× to 32×, animated GIF, PNG sequences, sprite sheets of the frames or the layers with TexturePacker JSON, SVG (one path per color, layers kept), copy as SVG for Figma, Aseprite (.aseprite, every frame and its duration), tilesets for Godot and Tiled, every board at once, and code: a React component, CSS, JSON or ASCII.
 - Offline and on touch screens: it can be installed as an app from the browser, and takes touch gestures (long press to pick a color, two-finger tap to undo, three-finger tap to redo).
-- In English, French, Ukrainian, Spanish, Japanese, Italian, Korean and Brazilian Portuguese.
+- In English, French, Ukrainian, Spanish, Japanese, Italian, Korean, Brazilian Portuguese and Simplified Chinese.
 - Privacy: drawings never leave the browser. Page views are counted without cookies.
 
 ## Links
