@@ -294,6 +294,9 @@ export function App({ editor, storage }: { editor: Editor; storage: StorageAdapt
             <RightPanel />
           </div>
           {__PWA_ENABLED__ && pwaReady && <PwaLifecycle flushAutosave={flushAutosave} />}
+          {/* Until the saved files are read, nothing says whether the editor or the home screen opens:
+              a plain cover, so the editor doesn't flash before the home screen. */}
+          {!ready && <div className="boot-cover" aria-hidden="true" />}
           {home && <HomeScreen />}
           <ColorPicker />
           <ColorAdjustPanel />
