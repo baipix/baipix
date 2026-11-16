@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Stylus mode: with a pen (Apple Pencil, S Pen), the pen draws and fingers pan and zoom, so a palm or a finger no longer leaves marks. It turns on by itself the first time a pen comes near, and View › Stylus mode turns it off to draw with a finger. ([#871](https://github.com/baipix/baipix/pull/871))
 - The editor in Simplified Chinese (View › Language › 中文 (简体)). ([#774](https://github.com/baipix/baipix/pull/774))
 - Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at. ([#711](https://github.com/baipix/baipix/pull/711))
 
@@ -22,6 +23,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- The empty editor no longer shows for a moment before the home screen when Baipix opens. ([#878](https://github.com/baipix/baipix/pull/878))
 - In a file of several boards, the arrow of the open board in the Layers panel folds its layers away, and brings them back. It did nothing before. ([#874](https://github.com/baipix/baipix/pull/874))
 - On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
 - On a phone or tablet, a submenu opens where its menu is instead of jumping up the screen, and a long one scrolls. ([#866](https://github.com/baipix/baipix/pull/866))
@@ -33,6 +35,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - [@Ben8t](https://github.com/Ben8t) for scripting the editor through `window.baipix`, and its guide. ([#711](https://github.com/baipix/baipix/pull/711))
 - [@zh-Translator](https://github.com/zh-Translator) for the Simplified Chinese translation, the ninth language. ([#774](https://github.com/baipix/baipix/pull/774))
+- [@mykola-lp](https://github.com/mykola-lp) for stylus mode, where the pen draws and fingers move the canvas. ([#871](https://github.com/baipix/baipix/pull/871))
 
 ## [0.8.1] - 2026-11-14
 
