@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import GuideHero from '../components/GuideHero.astro';
 import Nav from '../components/Nav.astro';
 import SectionHead from '../components/SectionHead.astro';
+import VersusArt from '../components/VersusArt.astro';
 import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 
@@ -100,6 +101,7 @@ const faq = [
       Piskel is where a lot of people draw their first sprite, and it's a good place for it. Baipix is free,
       open source and in the browser too, with more tools for when a project grows: a duration for each frame,
       isometric drawing, several boards in a file, and export as SVG or Aseprite.
+      <VersusArt slot="art" other="Piskel" />
     </GuideHero>
 
     <section id="piskel" class="cards container">
