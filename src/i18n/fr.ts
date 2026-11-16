@@ -744,7 +744,7 @@ export const fr: Record<MessageKey, string> = {
   'shortcuts.stepFrame': 'Frame précédente, suivante',
 
   'toast.saved': '{name} enregistré.',
-  'toast.stylusModeEnabled': 'Mode stylet activé. Désactivez-le dans Affichage pour dessiner au doigt.',
+  'toast.stylusModeEnabled': 'Mode stylet activé. Désactive-le dans Affichage pour dessiner au doigt.',
   'toast.alreadySorted': 'Les calques sont déjà triés par profondeur : le dessin le plus bas devant.',
   'toast.downloadCancelled': 'Téléchargement annulé.',
   'toast.downloadBusy': 'Une demande de téléchargement est déjà ouverte.',
