@@ -3,6 +3,7 @@ import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Checkbox } from '../components/Checkbox';
 import { IconButton } from '../components/IconButton';
+import { SelectField } from '../components/SelectField';
 import { openMenu } from '../components/Menu';
 import { NumberField } from '../components/NumberField';
 import { PaletteColorButton } from '../components/PaletteColorButton';
@@ -118,24 +119,23 @@ export function EffectsSection() {
               number(k, 'size', effect.size, 1, MAX_EFFECT_SIZE, '⇔', t('effects.size'))
             )}
             {effect.type === 'outline' && (
-              <label className="field">
-                <select
-                  value={`${effect.place}${effect.corners ? '-corners' : ''}`}
-                  aria-label={t('effects.place')}
-                  onChange={(e) => {
-                    const [place, corners] = e.target.value.split('-');
-                    set(k, {
-                      place: place as 'outside' | 'inside',
-                      corners: !!corners,
-                    } as Partial<LayerEffect>);
-                  }}
-                >
-                  <option value="outside">{t('effects.outside')}</option>
-                  <option value="outside-corners">{t('effects.outsideCorners')}</option>
-                  <option value="inside">{t('effects.inside')}</option>
-                  <option value="inside-corners">{t('effects.insideCorners')}</option>
-                </select>
-              </label>
+              <SelectField
+                label={t('effects.place')}
+                value={`${effect.place}${effect.corners ? '-corners' : ''}`}
+                options={[
+                  { value: 'outside', label: t('effects.outside') },
+                  { value: 'outside-corners', label: t('effects.outsideCorners') },
+                  { value: 'inside', label: t('effects.inside') },
+                  { value: 'inside-corners', label: t('effects.insideCorners') },
+                ]}
+                onChange={(v) => {
+                  const [place, corners] = v.split('-');
+                  set(k, {
+                    place: place as 'outside' | 'inside',
+                    corners: !!corners,
+                  } as Partial<LayerEffect>);
+                }}
+              />
             )}
           </div>
           {effect.type === 'shadow' && hasLight && (

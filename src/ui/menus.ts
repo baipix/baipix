@@ -76,7 +76,7 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
       onSelect: () => editor.switchFile(f.id),
     })),
     '-',
-    ...fileMenu(editor, actions, current),
+    ...fileMenu(editor, actions, current, renameFile),
     '-',
     { label: t('menu.newFile'), onSelect: () => openDialog({ type: 'newFile' }) },
     { label: t('menu.open'), shortcut: 'Ctrl+O', onSelect: () => void actions.openDocument() },
@@ -158,7 +158,7 @@ export const MENU_BAR: MenuBarMenu[] = [
         {
           label: t('menu.renameFile'),
           shortcut: 'F2',
-          onSelect: () => requestAnimationFrame(renameFile),
+          onSelect: renameFile,
         },
         { label: t('file.download'), onSelect: () => void actions.saveDocument() },
         '-',
@@ -496,9 +496,12 @@ export const MENU_BAR: MenuBarMenu[] = [
 
 export const togglePreview = () => uiStore.set((u) => ({ preview: { ...u.preview, open: !u.preview.open } }));
 
-/** Starts editing the file name in the menu bar. */
+/** Starts editing the file name: in the menu bar, or in the phone's top bar, which stands in for it. */
 export function renameFile() {
-  document.querySelector<HTMLInputElement>('.menubar-file input')?.select();
+  const input = document.querySelector<HTMLInputElement>('.menubar-file input');
+  // Once the menu this may come from has closed and given the focus back.
+  if (input?.offsetParent) requestAnimationFrame(() => input.select());
+  else uiStore.set({ renamingFile: true });
 }
 
 /** The menu bar's menus as submenus: the ☰ button on narrow windows and phones. */

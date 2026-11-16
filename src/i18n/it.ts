@@ -377,6 +377,7 @@ export const it: Record<MessageKey, string> = {
   'board.new': 'Nuova tavola',
   'board.duplicate': 'Duplica la tavola',
   'board.delete': 'Elimina la tavola',
+  'board.collapse': 'Comprimi la tavola',
   'board.deleted': '{name} eliminata.',
   'board.deletedMany': '{count} tavole eliminate.',
   'board.none': 'Questo file non ha ancora una tavola.',

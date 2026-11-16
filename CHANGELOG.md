@@ -4,14 +4,33 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at. ([#711](https://github.com/baipix/baipix/pull/711))
+
 ### Changed
 
+- On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))
+- The choices that were plain lists (the dithering, the gradient's shape, the export format, Remap's palette and a few more) are fields with a caret that open the editor's own menu: they look the same in every browser, and read as a choice on a phone. ([#863](https://github.com/baipix/baipix/pull/863))
+- On a phone or tablet, a submenu takes its menu's place, under a row with its name that goes back, instead of opening over it. A menu taller than the screen scrolls. ([#854](https://github.com/baipix/baipix/pull/854))
+- On a phone, the layers and properties sheets have a button to close them, and every sheet has the same header: its name, and ×. ([#855](https://github.com/baipix/baipix/pull/855))
+- On a touch screen, fields, text buttons, checkboxes and icons are bigger, and so is Export in the phone's top bar. ([#857](https://github.com/baipix/baipix/pull/857), [#858](https://github.com/baipix/baipix/pull/858))
+- Remap switches the file to the palette picked, under its name: "Also replace the file's palette" is ticked to start with, and works from the colors of the drawing too. ([#860](https://github.com/baipix/baipix/pull/860))
 - On a phone, one toolbar instead of three bars: the two colors, the pencil, the eraser, the paint bucket and the selection, the last other tool taken, and … for all the tools, in a sheet with their names. The colors open the palette in a sheet, and Undo and Redo float above the tool's options. ([#852](https://github.com/baipix/baipix/pull/852))
 - On a phone or tablet, the tools, icon buttons, rows of layers and rows of menus are bigger, 44 px, the size a finger needs. With a mouse nothing changes. ([#850](https://github.com/baipix/baipix/pull/850))
 
 ### Fixed
 
+- In a file of several boards, the arrow of the open board in the Layers panel folds its layers away, and brings them back. It did nothing before. ([#874](https://github.com/baipix/baipix/pull/874))
+- On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
+- On a phone or tablet, a submenu opens where its menu is instead of jumping up the screen, and a long one scrolls. ([#866](https://github.com/baipix/baipix/pull/866))
+- Zooming with two fingers no longer shakes the drawing. ([#859](https://github.com/baipix/baipix/pull/859))
+- On a phone, the file can be renamed: Rename in its menu, or File › Rename file, turns its name into a field. ([#856](https://github.com/baipix/baipix/pull/856))
 - In the tool's options, the pressed button of a group (the brush's square or round shape) keeps to the group's rounded corners. ([#852](https://github.com/baipix/baipix/pull/852))
+
+### Thanks
+
+- [@Ben8t](https://github.com/Ben8t) for scripting the editor through `window.baipix`, and its guide. ([#711](https://github.com/baipix/baipix/pull/711))
 
 ## [0.8.1] - 2026-11-14
 

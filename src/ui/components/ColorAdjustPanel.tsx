@@ -12,7 +12,7 @@ import {
 } from '../../engine/color';
 import { hasBackground } from '../../engine/document';
 import { frameCount } from '../../engine/frames';
-import type { ColorMap } from '../../engine/editor';
+import type { ColorMap, PaletteChange } from '../../engine/editor';
 import { outlinePixels, type OutlineOptions } from '../../engine/outline';
 import { remapTable, type RemapMode } from '../../engine/palette';
 import { useT, type MessageKey } from '../../i18n';
@@ -21,6 +21,7 @@ import { useUserPalettes } from '../hooks/useUserPalettes';
 import { uiStore, type AdjustTab } from '../uiStore';
 import { Checkbox } from './Checkbox';
 import { IconButton } from './IconButton';
+import { SelectField } from './SelectField';
 
 const close = () => uiStore.set({ adjust: false });
 
@@ -51,7 +52,7 @@ interface Remap {
   background: boolean;
 }
 
-const NO_REMAP = { target: 'file', mode: 'nearest', replacePalette: false, background: true } as const;
+const NO_REMAP = { target: 'file', mode: 'nearest', replacePalette: true, background: true } as const;
 
 /**
  * The Adjustments panel, floating: changes to the existing pixels of the active layer or all
@@ -72,7 +73,7 @@ function changeFor(
   remap: Remap,
   target: Color[],
   used: Map<Color, number>,
-): { map: ColorMap; palette: ((colors: Color[]) => Color[]) | null; background: boolean } {
+): { map: ColorMap; palette: PaletteChange | null; background: boolean } {
   if (tab === 'colors')
     return {
       map: (c) => adjustColor(c, adj),
@@ -82,7 +83,13 @@ function changeFor(
   const { table, colors } = remapTable(used, target, remap.mode, remap.count);
   return {
     map: (c) => (alpha(c) ? withAlpha(table.get(opaque(c)) ?? opaque(c), alpha(c)) : c),
-    palette: remap.replacePalette ? () => colors : null,
+    // The palette picked takes the file's place, under its name; cut down to fewer colors, or the
+    // file's own, it's those colors that become the file's.
+    palette: !remap.replacePalette
+      ? null
+      : remap.target !== 'file' && remap.count >= target.length
+        ? { key: remap.target, colors: target }
+        : () => colors,
     background: remap.background,
   };
 }
@@ -165,7 +172,8 @@ function Panel() {
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === 'Escape') close();
-        if (e.key === 'Enter' && !(e.target instanceof HTMLSelectElement)) apply();
+        // Enter on a field that opens a menu opens it: it doesn't apply.
+        if (e.key === 'Enter' && !(e.target as HTMLElement).closest('[aria-haspopup]')) apply();
       }}
     >
       <div className="popover-header">
@@ -261,23 +269,18 @@ function Panel() {
           <>
             <label className="adjust-label">
               <span>{t('remap.palette')}</span>
-              <select
-                className="select-plain"
+              <SelectField
+                label={t('remap.palette')}
                 value={remap.target}
-                onChange={(e) => {
-                  const key = e.target.value;
+                options={[
+                  { value: 'file', label: t('remap.filePalette') },
+                  ...Object.entries(palettes).map(([key, p]) => ({ value: key, label: p.name })),
+                ]}
+                onChange={(key) => {
                   const size = key === 'file' ? ownPalette.length : paletteColors(key).length;
                   setRemap((r) => ({ ...r, target: key, count: size }));
                 }}
-                aria-label={t('remap.palette')}
-              >
-                <option value="file">{t('remap.filePalette')}</option>
-                {Object.entries(palettes).map(([key, p]) => (
-                  <option key={key} value={key}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+              />
             </label>
             <div className="remap-preview" aria-hidden="true">
               {target.map((c) => (

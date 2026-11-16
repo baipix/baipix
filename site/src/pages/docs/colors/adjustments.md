@@ -23,7 +23,7 @@ Move a drawing to another palette, or clean up its colors:
 
 - **Nearest**: each color goes to the closest one of the palette. To clean up a drawing with a few stray colors.
 - **By lightness**: colors go to palette colors in the same order, darkest to darkest. It recolors and keeps the shadows and highlights: a sprite in another palette, a scene at night.
-- **Also replace the file's palette** switches the file to that palette at the same time.
+- **Also replace the file's palette**, ticked to start with, switches the file to that palette at the same time: the Colors section shows it under its name, in place of the one you had. With fewer colors than the palette has, the file keeps only those. Untick it to keep your palette.
 - **Also remap the background** takes the board's background color to the palette too, in the same undo step. It shows when the board has a background and nothing is selected, since a selection limits the remap to its pixels.
 
 ## Outline

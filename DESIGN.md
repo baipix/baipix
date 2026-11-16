@@ -19,13 +19,22 @@ The short version, for when you add or change something in the interface:
   soft shadows (`--shadow`, `--shadow-pop`, `--shadow-menu`) on what floats over the canvas. The pixel
   look is kept for the logo and the website.
 - **Sizes.** What gets clicked takes its size from a token: `--tool` (a tool in the toolbar),
-  `--icon-btn`, `--row` (a layer, a board) and `--menu-row`. On a touch screen (`pointer: coarse`,
-  whatever the window's width) they all become `--touch`, 44 px. A new target uses one of them rather
+  `--icon-btn`, `--row` (a layer, a board), `--menu-row`, and `--control` for fields, text buttons and
+  selects. On a touch screen (`pointer: coarse`, whatever the window's width) the first four become
+  `--touch`, 44 px, and `--control` 36 px; icons in buttons grow to 20 px. A new target uses one of them rather
   than a size of its own, and what holds it grows with it (`max(36px, var(--icon-btn))`).
 - **On a phone** (a window up to 820 px wide) the panels become sheets from the bottom, and the
   toolbar is `MobileToolbar`: the colors, four pinned tools, the last other tool taken, and a button
   for all of them. The tools and the colors open in sheets too (`MobileSheets`). A new tool goes in
   `MOBILE_TOOL_GROUPS` (`src/ui/tools.ts`), or nobody can reach it there; a test checks it.
+  Its sizes follow Apple's for a compact screen, a little tighter for a tool: text at 14 px (15 for a
+  section's name, 16 in menus, 17 for a sheet's), rows of 44 px, palette swatches of 40 px or more.
+  Every sheet starts with the same header, its name and a × that closes it.
+  What sits at the bottom (the timeline) goes under the toolbar, which moves up: `--toolbar-bottom`
+  counts `--timeline-space` there too, so nothing ever covers the tools.
+- **Choices.** A choice among a few is a `SelectField`: a field with a caret that opens our menu. A
+  choice among many, or with families, is a `.field-menu` button opening `openMenu` itself. Never a
+  native `<select>`: it looks different in every browser and on a phone.
 - **Buttons.** `.btn` for actions in panels and dialogs, `.btn-primary` for the one main action,
   `.action-btn` for big actions on full screens (the home screen), `IconButton` for compact actions.
 - **Icons.** [Lucide](https://lucide.dev) line icons, through `Icon` (16 px in the panels, 18 px in

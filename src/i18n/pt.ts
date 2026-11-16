@@ -378,6 +378,7 @@ export const pt: Record<MessageKey, string> = {
   'board.new': 'Nova prancheta',
   'board.duplicate': 'Duplicar prancheta',
   'board.delete': 'Excluir prancheta',
+  'board.collapse': 'Recolher a prancheta',
   'board.deleted': '{name} excluída.',
   'board.deletedMany': '{count} pranchetas excluídas.',
   'board.none': 'Nenhuma prancheta neste arquivo ainda.',

@@ -22,6 +22,7 @@ test.describe('on a touch screen', () => {
     expect(await height('.toolbar .tool-btn')).toBe(44);
     expect(await height('.panel-left .icon-btn')).toBe(44);
     expect(await height('.panel-left .item')).toBe(44);
+    expect(await height('.panel-right .field')).toBe(36);
 
     await page
       .getByRole('menubar', { name: 'Main menu' })
@@ -67,5 +68,89 @@ test.describe('on a phone', () => {
     await swatch.tap();
     await expect(colors).toBeHidden();
     await expect(toolbar.locator('.mobile-chip.is-primary')).toHaveCSS('background-color', color);
+  });
+
+  test("a submenu takes its menu's place, with a way back", async ({ page }) => {
+    await createNewFile(page);
+
+    await page.locator('.mobile-bar').getByRole('button', { name: 'Main menu' }).tap();
+    const menu = page.locator('.menu');
+    await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeVisible();
+
+    const top = (await menu.boundingBox())!.y;
+    await menu.getByRole('menuitem', { name: 'File', exact: true }).tap();
+    // One menu, showing File's items under its name.
+    await expect(menu).toHaveCount(1);
+    // It stays where it was, however tall the submenu: it doesn't jump over the top bar.
+    await expect.poll(async () => (await menu.boundingBox())!.y).toBe(top);
+    const box = (await menu.boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(812);
+    await expect(menu.getByRole('menuitem', { name: 'New file…' })).toBeVisible();
+    await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeHidden();
+
+    await menu.getByRole('button', { name: 'File', exact: true }).tap();
+    await expect(menu.getByRole('menuitem', { name: 'Edit', exact: true })).toBeVisible();
+  });
+});
+
+test.describe('on a phone, the properties', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
+
+  test('have swatches and rows a finger can pick', async ({ page }) => {
+    await createNewFile(page);
+    await page.locator('.mobile-bar').getByRole('button', { name: 'Properties' }).tap();
+
+    const sheet = page.locator('.panel-right');
+    const swatch = (await sheet.locator('.palette-grid .swatch').first().boundingBox())!;
+    expect(swatch.width).toBeGreaterThanOrEqual(40);
+    expect(swatch.height).toBeGreaterThanOrEqual(40);
+    const title = (await sheet.locator('.section-title').first().boundingBox())!;
+    expect(title.height).toBeGreaterThanOrEqual(44);
+    // A swipe that starts on a swatch scrolls the sheet.
+    await expect(sheet.locator('.palette-grid .swatch').first()).toHaveCSS('touch-action', 'pan-y');
+  });
+});
+
+test.describe('on a phone, the file', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
+
+  test('is renamed from the top bar', async ({ page }) => {
+    await createNewFile(page);
+
+    const bar = page.locator('.mobile-bar');
+    await bar.locator('.mobile-name').tap();
+    await page.getByRole('menuitem', { name: 'Rename', exact: true }).tap();
+
+    const field = bar.getByRole('textbox', { name: 'File name' });
+    await expect(field).toBeFocused();
+    await field.fill('Robot');
+    await field.press('Enter');
+
+    await expect(bar.locator('.mobile-name')).toContainText('Robot');
+  });
+});
+
+test('the right panel has no sheet header on a computer', async ({ page }) => {
+  await createNewFile(page);
+  await expect(page.locator('.panel-right')).toBeVisible();
+  await expect(page.locator('.panel-right .sheet-header')).toBeHidden();
+  await expect(page.locator('.sheet-close').first()).toBeHidden();
+});
+
+test.describe('on a phone, the timeline', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
+
+  test('sits under the tools, not over them', async ({ page }) => {
+    await createNewFile(page);
+    await page.keyboard.press('Shift+A');
+    const timeline = page.locator('.timeline');
+    await expect(timeline).toBeVisible();
+    await expect
+      .poll(async () => {
+        const top = (await timeline.boundingBox())!.y;
+        const bar = (await page.locator('.mobile-toolbar').boundingBox())!;
+        return bar.y + bar.height <= top;
+      })
+      .toBe(true);
   });
 });

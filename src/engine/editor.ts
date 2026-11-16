@@ -193,6 +193,12 @@ export interface MyPalette {
 /** A file's palette taken from one of the user's palettes: `mine:` and its id. */
 export const MY_PALETTE = 'mine:';
 
+/**
+ * What an adjustment does to the file's palette: its colors through a function, or another palette
+ * in its place (a preset's key, 'custom', or one of the user's own), with its colors.
+ */
+export type PaletteChange = ((colors: Color[]) => Color[]) | { key: string; colors: Color[] };
+
 export interface PaletteState {
   /** Preset key, 'custom' (the file's own colors), or 'drawing' (the colors the drawing uses). */
   key: string;
@@ -3879,16 +3885,12 @@ export class Editor {
    * meanwhile (from the palette before the adjustment), or null to leave it as it is. With
    * `background`, the file's background goes through `map` too.
    */
-  previewMap(map: ColorMap, palette: ((colors: Color[]) => Color[]) | null, background = false): void {
+  previewMap(map: ColorMap, palette: PaletteChange | null, background = false): void {
     this.previewChange(mapChange(map), palette, this.mappedBackground(map, background));
   }
 
   /** Live preview of any change of the adjusted pixels (an outline…), like `previewMap`. */
-  previewChange(
-    change: PixelChange,
-    palette: ((colors: Color[]) => Color[]) | null = null,
-    background?: Color,
-  ): void {
+  previewChange(change: PixelChange, palette: PaletteChange | null = null, background?: Color): void {
     if (!this.adjusting) return;
     const before = this.doc.background;
     this.writeAdjustment(change, background);
@@ -3898,7 +3900,10 @@ export class Editor {
     if (this.doc.background !== before) this.select();
     if (palette) {
       a.basePalette ??= this.palette;
-      this.palette = { ...a.basePalette, colors: palette(a.basePalette.colors) };
+      this.palette =
+        typeof palette === 'function'
+          ? { ...a.basePalette, colors: palette(a.basePalette.colors) }
+          : { ...a.basePalette, ...palette };
       this.commit(false);
     } else if (a.basePalette) {
       this.palette = a.basePalette;
@@ -3913,7 +3918,7 @@ export class Editor {
    * in the same step: undoing it gives back the pixels and the palette together. With `background`,
    * the file's background goes through `map` too, in the same step.
    */
-  applyMap(map: ColorMap, palette: ((colors: Color[]) => Color[]) | null, background = false): void {
+  applyMap(map: ColorMap, palette: PaletteChange | null, background = false): void {
     this.applyChange(mapChange(map), palette, this.mappedBackground(map, background));
   }
 
@@ -3924,22 +3929,21 @@ export class Editor {
   }
 
   /** Commits any change of the adjusted pixels as one undo step, like `applyMap`. */
-  applyChange(
-    change: PixelChange,
-    palette: ((colors: Color[]) => Color[]) | null = null,
-    background?: Color,
-  ): void {
+  applyChange(change: PixelChange, palette: PaletteChange | null = null, background?: Color): void {
     if (!this.adjusting) return;
     const base = this.adjusting.basePalette ?? this.palette;
     this.palette = base;
     this.writeAdjustment(null);
     this.checkpoint();
-    // The colors of the drawing follow the pixels on their own: nothing to swap or set.
-    const ownColors = palette && base.key !== 'drawing';
-    if (ownColors) this.active.history.top()!.palette = this.savedPalette();
+    // Another palette takes the file's place, whatever it was. Changed colors become the file's own,
+    // except the colors of the drawing, which follow the pixels on their own: nothing to set.
+    const named = typeof palette === 'function' ? null : palette;
+    const ownColors = typeof palette === 'function' && base.key !== 'drawing' ? palette : null;
+    if (named || ownColors) this.active.history.top()!.palette = this.savedPalette();
     this.writeAdjustment(change, background, true);
     this.adjusting = null;
-    if (ownColors) this.usePalette(palette(base.colors));
+    if (named) this.palette = { ...base, ...named };
+    else if (ownColors) this.usePalette(ownColors(base.colors));
     this.commit();
   }
 

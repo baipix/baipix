@@ -1,3 +1,4 @@
+import { fileNameOf } from '../../engine/document';
 import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
@@ -12,7 +13,10 @@ export function MobileBar() {
   const editor = useEditor();
   const actions = useActions();
   const name = useEditorState((s) => s.doc.name);
+  const fileName = useEditorState((s) => fileNameOf(s.doc));
+  const fileId = useEditorState((s) => s.activeId);
   const sheet = uiStore.use((s) => s.sheet);
+  const renaming = uiStore.use((s) => s.renamingFile);
   const toggle = (which: 'left' | 'right') =>
     uiStore.set((s) => ({ sheet: s.sheet === which ? null : which }));
   return (
@@ -24,15 +28,38 @@ export function MobileBar() {
         label={t('menu.main')}
         onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
       />
-      {/* The file name opens the files menu, like the ▾ next to it on larger screens. */}
-      <button
-        type="button"
-        className="mobile-name"
-        aria-haspopup="menu"
-        onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
-      >
-        {name} ▾
-      </button>
+      {/* The file name opens the files menu, like the ▾ next to it on larger screens. Rename, in
+          that menu or in File, turns it into a field. */}
+      {renaming ? (
+        <input
+          className="mobile-name is-editing"
+          defaultValue={fileName}
+          aria-label={t('file.name')}
+          spellCheck={false}
+          autoFocus
+          onFocus={(e) => e.currentTarget.select()}
+          onBlur={(e) => {
+            const value = e.currentTarget.value.trim();
+            if (value) editor.renameFile(fileId, value);
+            uiStore.set({ renamingFile: false });
+          }}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            // Escape leaves the name as it was.
+            if (e.key === 'Escape') e.currentTarget.value = '';
+            if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur();
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          className="mobile-name"
+          aria-haspopup="menu"
+          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
+        >
+          {name} ▾
+        </button>
+      )}
       <IconButton
         className="icon-btn large"
         icon="layers"

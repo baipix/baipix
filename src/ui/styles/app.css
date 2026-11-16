@@ -156,7 +156,7 @@ body.is-resizing * {
 .segmented button {
   flex: 1;
   min-width: 0;
-  height: 20px;
+  height: calc(var(--control) - 4px);
   padding: 0;
   border: 0;
   border-radius: calc(var(--radius) - 1px);
@@ -523,6 +523,14 @@ body.is-resizing * {
   background: transparent;
   color: var(--text);
 }
+/* On a touch screen the icons grow with their buttons, so they read as something to tap. */
+@media (pointer: coarse) {
+  .icon-btn:not(.large) > .icon,
+  .tool-btn > .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
 .icon-btn.large {
   width: max(32px, var(--icon-btn));
   height: max(32px, var(--icon-btn));
@@ -537,7 +545,7 @@ body.is-resizing * {
   background: transparent;
 }
 .btn {
-  height: 24px;
+  height: var(--control);
   padding: 0 8px;
   display: inline-flex;
   align-items: center;
@@ -571,7 +579,7 @@ body.is-resizing * {
 }
 
 .field {
-  height: 24px;
+  height: var(--control);
   min-width: 0;
   display: flex;
   align-items: center;
@@ -585,8 +593,7 @@ body.is-resizing * {
 .field:focus-within {
   border-color: var(--accent);
 }
-.field input,
-.field select {
+.field input {
   width: 100%;
   min-width: 0;
   height: 22px;
@@ -606,6 +613,13 @@ body.is-resizing * {
 }
 .field-menu[aria-expanded='true'] {
   border-color: var(--accent);
+}
+/* A choice among a few (SelectField): as wide as what it shows where it stands on its own (the tool
+   options, a row of the Adjustments), cut with an ellipsis past that. */
+.tool-options .select-field,
+.adjust-label .select-field {
+  flex: none;
+  max-width: 168px;
 }
 .field input[type='number'] {
   -moz-appearance: textfield;
@@ -682,14 +696,14 @@ body.is-resizing * {
   min-height: 28px;
 }
 .checkbox input {
-  width: 12px;
-  height: 12px;
+  width: var(--check);
+  height: var(--check);
   margin: 0;
   accent-color: var(--accent);
 }
 .select-plain {
   max-width: 128px;
-  height: 24px;
+  height: var(--control);
   padding: 0 2px;
   border: 0;
   border-radius: var(--radius);
@@ -796,6 +810,13 @@ body.is-resizing * {
 }
 .palette-grid.is-sortable .swatch {
   touch-action: none;
+}
+/* Under a finger, an up or down swipe that starts on a swatch scrolls what holds the palette (the
+   phone's sheet); a sideways one still moves the swatch. */
+@media (pointer: coarse) {
+  .palette-grid.is-sortable .swatch {
+    touch-action: pan-y;
+  }
 }
 .swatch.is-secondary::before {
   content: '';
@@ -1606,8 +1627,10 @@ body.is-dragging-swatch * {
   position: fixed;
   z-index: 60;
   min-width: 220px;
-  /* Long menus (the palettes) scroll instead of leaving the window. */
+  /* Long menus (the palettes) scroll instead of leaving the window: what shows of it on a phone,
+     where the browser's bars take part of the height (dvh). */
   max-height: calc(100vh - 16px);
+  max-height: calc(100dvh - 16px);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -1691,6 +1714,25 @@ body.is-dragging-swatch * {
   height: 1px;
   margin: 8px -8px;
   background: var(--menu-line);
+}
+/* A submenu shown in its menu's place (touch screens, narrow windows): its name, which goes back. */
+.menu-head {
+  /* It stays in view while a long submenu scrolls under it. */
+  position: sticky;
+  top: -8px;
+  z-index: 1;
+  margin: -8px -8px 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--menu-line);
+  background: var(--menu-bg);
+}
+.menu-back {
+  gap: 8px;
+  padding-left: 8px;
+  font-weight: 600;
+}
+.menu-back > .icon {
+  margin-right: 0;
 }
 .tooltip {
   position: fixed;
@@ -2072,6 +2114,13 @@ body.is-dragging-swatch * {
     background: var(--panel);
     box-shadow: var(--shadow);
   }
+  /* Export, the main action: as tall as a finger needs next to the bar's icons, and clear of its edge. */
+  .mobile-bar .btn-primary {
+    height: 36px;
+    margin: 0 4px;
+    padding: 0 14px;
+    font-weight: 600;
+  }
   .mobile-name {
     flex: 1;
     min-width: 0;
@@ -2084,6 +2133,17 @@ body.is-dragging-swatch * {
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  /* Renaming: the name as a field, in its place. */
+  input.mobile-name.is-editing {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--glow-line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    font-weight: 600;
+    outline: none;
+    user-select: text;
   }
   .coordinates,
   .resizer {
@@ -2181,7 +2241,7 @@ body.is-dragging-swatch * {
     z-index: 30;
     display: block;
     max-height: 88vh;
-    padding: 4px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 0 12px calc(16px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     overscroll-behavior: contain;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -2193,13 +2253,11 @@ body.is-dragging-swatch * {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 48px;
-    padding-left: 4px;
+    margin: 0 -12px 12px;
   }
   .mobile-sheet-header h2 {
     margin: 0;
-    font-size: 15px;
-    font-weight: 600;
+    font: inherit;
   }
   .mobile-sheet-header .icon-btn {
     margin-left: auto;
@@ -2300,9 +2358,20 @@ body.is-dragging-swatch * {
   .help-corner {
     display: none;
   }
+  /* The timeline is as wide as the toolbar that sits on it. */
+  .app .timeline {
+    left: 8px;
+    right: 8px;
+  }
+  /* Its bar scrolls sideways: what goes under the button that closes it fades out. */
+  .app .timeline-bar > :last-child {
+    box-shadow:
+      6px 0 0 var(--panel),
+      -8px 0 8px var(--panel);
+  }
   /* The phone's bars are made for a finger, even in a narrow window on a computer. */
   :root {
-    --toolbar-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    --toolbar-bottom: calc(10px + var(--timeline-space, 0px) + env(safe-area-inset-bottom, 0px));
     --tool: var(--touch);
   }
   /* Tighter tool options: the field's own icon stands in for its label. What doesn't fit scrolls
@@ -2351,6 +2420,99 @@ body.is-dragging-swatch * {
   }
   .mobile-sheet {
     animation: none;
+  }
+}
+
+/* What a panel only has as a sheet, on a phone: a button to close it, and for the right one a header. */
+.icon-btn.sheet-close,
+.panel-header.sheet-header {
+  display: none;
+}
+@media (max-width: 820px) {
+  .icon-btn.sheet-close {
+    display: grid;
+  }
+  .panel-header.sheet-header {
+    display: flex;
+  }
+  .panel-left:not(.is-folded) .panel-fold {
+    display: none;
+  }
+  /* Every sheet starts the same way: its name, and the button that closes it, with room around them. */
+  .panel .panel-header,
+  .mobile-sheet-header,
+  .popover.color-picker .popover-header {
+    height: 56px;
+    min-height: 56px;
+    padding: 0 6px 0 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  /* A phone's sizes, after Apple's for a compact screen: text read at arm's length (14 px, 15 for a
+     section's name, 16 in menus, 17 for a sheet's), rows of 44 px, swatches a finger can pick. */
+  body {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .menu-item {
+    font-size: 16px;
+  }
+  .section {
+    padding-bottom: 16px;
+  }
+  .section-title {
+    height: auto;
+    min-height: var(--touch);
+    font-size: 15px;
+  }
+  /* A section with only its name (no light yet, no effect): the name sits in the middle of it. */
+  .section:has(> .section-title:only-child) {
+    padding-bottom: 4px;
+  }
+  /* A part of a section with its own name (the board's background): a line sets it apart. */
+  .subsection-title {
+    height: auto;
+    min-height: var(--touch);
+    margin: 12px -16px 0;
+    padding: 4px 16px 0;
+    border-top: 1px solid var(--line);
+  }
+  .row,
+  .checkbox {
+    min-height: var(--touch);
+  }
+  .row-label {
+    width: auto;
+    min-width: 96px;
+  }
+  /* A number is short: its field keeps to the right, and doesn't take the whole row. */
+  .panel .row-control {
+    flex: 0 1 190px;
+    margin-left: auto;
+  }
+  /* The palette under the two colors, on the whole width: about seven swatches a row. */
+  .colors-row {
+    flex-direction: column;
+  }
+  .colors-palette {
+    align-self: stretch;
+  }
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 6px;
+  }
+  .swatch,
+  .swatch-add {
+    border-radius: 6px;
+  }
+  .swatch.is-primary::after,
+  .swatch.is-secondary::before {
+    border-radius: 9px;
+  }
+  .mobile-tool {
+    font-size: 12px;
   }
 }
 
@@ -2562,6 +2724,19 @@ body.is-dragging-swatch * {
   --muted: var(--glow-muted);
   background: var(--glow);
   color: var(--glow-ink);
+}
+/* A finger doesn't hover: after a tap, the row that comes under it doesn't light up as if it were
+   picked. It does while it's pressed. */
+@media (hover: none) {
+  .menu-item:hover:not(:active):not(:focus-visible) {
+    --muted: inherit;
+    background: transparent;
+    color: var(--menu-text);
+  }
+  .menu-item:hover:not(:active):not(:focus-visible) .menu-shortcut {
+    color: var(--menu-shortcut);
+    opacity: 1;
+  }
 }
 
 /* Checkboxes: the native ones, in the accent color. */
@@ -3822,6 +3997,8 @@ body.is-dragging-swatch * {
   position: sticky;
   right: 0;
   background: var(--panel);
+  /* Covers the bar's own padding at the right, where what scrolls would show through. */
+  box-shadow: 6px 0 0 var(--panel);
 }
 .timeline-title {
   margin-right: 8px;

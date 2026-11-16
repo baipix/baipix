@@ -17,6 +17,7 @@ import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { Checkbox } from '../components/Checkbox';
 import { IconButton } from '../components/IconButton';
+import { SelectField } from '../components/SelectField';
 import { LightStage } from '../components/LightStage';
 import { openMenu, type MenuItem } from '../components/Menu';
 import { Icon } from '../components/Icon';
@@ -805,22 +806,21 @@ export function ExportOptions() {
         </label>
       </Row>
       <Row label={t('export.format')}>
-        <label className="field">
-          <select
-            value={format}
-            onChange={(e) => uiStore.set({ exportFormat: e.target.value as ExportFormat })}
-            aria-label={t('export.format')}
-          >
-            <option value="png">PNG</option>
-            <option value="gif">GIF</option>
-            <option value="sequence">{t('export.sequence')}</option>
-            <option value="svg">SVG</option>
-            <option value="aseprite">Aseprite</option>
-            <option value="tileset">{t('export.tileset')}</option>
-            <option value="layers">{t('export.layers')}</option>
-            <option value="frames">{t('export.frames')}</option>
-          </select>
-        </label>
+        <SelectField
+          label={t('export.format')}
+          value={format}
+          options={[
+            { value: 'png', label: 'PNG' },
+            { value: 'gif', label: 'GIF' },
+            { value: 'sequence', label: t('export.sequence') },
+            { value: 'svg', label: 'SVG' },
+            { value: 'aseprite', label: 'Aseprite' },
+            { value: 'tileset', label: t('export.tileset') },
+            { value: 'layers', label: t('export.layers') },
+            { value: 'frames', label: t('export.frames') },
+          ]}
+          onChange={(v: ExportFormat) => uiStore.set({ exportFormat: v })}
+        />
       </Row>
       {/* A file of several boards: every board at once, one file each in a .zip. */}
       {boardCount > 1 && format !== 'tileset' && format !== 'layers' && (
@@ -898,6 +898,16 @@ export function RightPanel() {
   const board = useEditorState((s) => isBoard(s.doc));
   return (
     <aside className="panel panel-right" aria-label={t('panel.right')}>
+      {/* On a phone the panel is a sheet, with its name and a way to close it. */}
+      <div className="panel-header sheet-header">
+        <span className="panel-file truncate">{t('panel.right')}</span>
+        <IconButton
+          className="icon-btn sheet-close"
+          icon="close"
+          label={t('common.close')}
+          onClick={() => uiStore.set({ sheet: null })}
+        />
+      </div>
       {board && <CanvasSection />}
       {board && <LightSection />}
       <PaletteSection />

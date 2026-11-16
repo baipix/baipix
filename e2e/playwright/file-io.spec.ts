@@ -92,7 +92,9 @@ test('exports PNG and Aseprite files', async ({ page }) => {
   await expect(dialog).toBeVisible();
 
   // PNG export
-  await dialog.getByLabel('Format').selectOption('png');
+  await dialog.getByLabel('Format').click();
+  // The format picked has a tick in front of its name.
+  await page.getByRole('menuitem', { name: /PNG$/ }).click();
 
   const pngDownloadPromise = page.waitForEvent('download');
   await dialog.getByRole('button', { name: 'Export', exact: true }).click();
@@ -106,7 +108,8 @@ test('exports PNG and Aseprite files', async ({ page }) => {
   expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
 
   // Aseprite export
-  await dialog.getByLabel('Format').selectOption('aseprite');
+  await dialog.getByLabel('Format').click();
+  await page.getByRole('menuitem', { name: 'Aseprite', exact: true }).click();
 
   const asepriteDownloadPromise = page.waitForEvent('download');
   await dialog.getByRole('button', { name: 'Export', exact: true }).click();

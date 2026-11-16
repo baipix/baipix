@@ -51,6 +51,8 @@ export interface UiState {
   dialog: DialogState | null;
   /** Open color picker: which color it edits and where to anchor it vertically. */
   picker: { slot: ColorSlot; top: number } | null;
+  /** The phone's top bar shows the file's name as a field, to rename it. */
+  renamingFile: boolean;
   /** Mobile bottom sheet: the two panels, and the toolbar's sheets for the tools and the colors. */
   sheet: 'left' | 'right' | 'tools' | 'colors' | null;
   /** Color adjustment panel open. */
@@ -87,6 +89,8 @@ export interface UiState {
   exportAllBoards: boolean;
   /** Ids of the collapsed panel sections. */
   collapsed: string[];
+  /** The open board folded in the layers list: its row only, its layers put away. Not kept. */
+  foldedBoard: string | null;
   /** Tab of the right panel. */
   /** Exports include the document's background (when it has one). */
   exportBackground: boolean;
@@ -108,6 +112,7 @@ export const PANEL_LIMITS = {
 export const uiStore = createStore<UiState>({
   dialog: null,
   picker: null,
+  renamingFile: false,
   sheet: null,
   adjust: false,
   adjustScope: 'all',
@@ -130,6 +135,7 @@ export const uiStore = createStore<UiState>({
   exportSheetColumns: null,
   exportAllBoards: false,
   collapsed: [],
+  foldedBoard: null,
   exportBackground: true,
   hiddenPalettes: [],
   home: false,

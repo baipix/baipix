@@ -102,6 +102,9 @@
   --icon-btn: 24px;
   --row: 32px;
   --menu-row: 24px;
+  /* A field, a text button, a select; and the box of a checkbox. */
+  --control: 24px;
+  --check: 12px;
   /* What a finger needs to land on: Apple and Google both ask for about this much. */
   --touch: 44px;
   --font: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -115,6 +118,9 @@
     --icon-btn: var(--touch);
     --row: var(--touch);
     --menu-row: var(--touch);
+    /* Fields and text buttons sit in rows of their own, with air around them: 36 px is enough there. */
+    --control: 36px;
+    --check: 18px;
   }
 }
 
