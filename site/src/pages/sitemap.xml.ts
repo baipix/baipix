@@ -12,6 +12,7 @@ export const GET: APIRoute = ({ site }) => {
     `${base}pixel-art-for-figma/`,
     `${base}isometric-pixel-art/`,
     `${base}pixel-art-animation/`,
+    `${base}piskel-alternative/`,
     `${base}docs/`,
     ...DOC_PAGES.map((p) => `${base}docs/${p.slug}/`),
     ...(posts.length ? [`${base}blog/`, ...posts.map((p) => p.url)] : []),

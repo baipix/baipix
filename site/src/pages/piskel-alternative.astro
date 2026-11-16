@@ -1,0 +1,310 @@
+---
+import Cta from '../components/Cta.astro';
+import Faq from '../components/Faq.astro';
+import Footer from '../components/Footer.astro';
+import GuideHero from '../components/GuideHero.astro';
+import Nav from '../components/Nav.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Base from '../layouts/Base.astro';
+import '../styles/guide.css';
+
+const base = import.meta.env.BASE_URL;
+
+/** Piskel's side comes from its own repository (github.com/piskelapp/piskel), read in November 2026. */
+const rows: [string, string, string][] = [
+  ['Price', 'Free', 'Free'],
+  ['Ads', 'On its website', 'None'],
+  [
+    'Runs in',
+    'The browser, and desktop apps for offline',
+    'The browser, offline once opened, installs as an app',
+  ],
+  ['License', 'Open source (Apache 2.0)', 'Open source (MIT)'],
+  ['Phones and tablets', 'Not supported', 'Touch gestures, and a stylus mode on tablets'],
+  [
+    'Saving',
+    'By hand, in the browser or as a file, with a backup every minute',
+    'As you draw, in the browser, with the last 50 undo steps',
+  ],
+  [
+    'Layers',
+    'Add, reorder, rename, merge, opacity',
+    'The same, plus groups, blend modes, outline, shadow and glow',
+  ],
+  ['Shapes', 'Line, rectangle, circle', 'Line, rectangle, rounded rectangle, ellipse, triangle, star, heart'],
+  ['Gradients', 'No', 'Linear, radial, angular and diamond, dithered in palette colors'],
+  ['Animation timing', 'One speed for the whole animation', 'A duration for each frame'],
+  ['Onion skin', 'Yes', 'Yes, red before and blue after'],
+  ['Symmetry', 'A mirror pen, on one axis or both', 'Axes you drag anywhere, for every tool'],
+  ['Selections', 'Rectangle, lasso, and an area of one color', 'Rectangle, lasso and magic wand'],
+  ['Dithering', 'A dithering tool', 'Dithered fills, in several patterns'],
+  ['Seamless tiles', 'A tiled preview', 'A tiled preview, also staggered for isometric'],
+  ['Isometric', 'No', 'A 2:1 grid, and boxes, cylinders and stairs in one drag'],
+  [
+    'Opens',
+    'PNG, JPG, BMP, animated GIF',
+    'PNG, JPG, GIF, WebP, animated GIF, sprite sheets, Aseprite files',
+  ],
+  [
+    'Exports',
+    'GIF, PNG sprite sheet (with JSON for PixiJS), frames in a .zip, a C file',
+    'PNG, GIF, PNG sequence, sprite sheet with JSON, SVG, Aseprite, tilesets, code',
+  ],
+];
+
+const faq = [
+  {
+    q: 'Is Baipix a Piskel alternative?',
+    a: 'Yes, if you want what Piskel gives (free, open source, in the browser, no account) with more room to grow: a duration per frame, layer groups, isometric tools, several boards in one file, and export as SVG or Aseprite. If you want the simplest editor there is, Piskel is still a good choice.',
+  },
+  {
+    q: 'Can Baipix open my .piskel files?',
+    a: 'Not yet. In Piskel, export the sprite as a PNG sprite sheet or an animated GIF, then drop that file on Baipix: it comes in as an animation, one frame per frame. The layers are flattened on the way.',
+  },
+  {
+    q: 'Is Piskel still maintained?',
+    a: 'Its repository is active, and its last numbered release, 0.15.0, is from November 2018. Its maintainers say they have limited time, and that big changes are unlikely to be merged.',
+  },
+  {
+    q: 'Does Baipix work on a tablet?',
+    a: 'Yes. It takes touch gestures (two fingers to pan and zoom, a long press to pick a color), and with a pen the pen draws while fingers move the canvas. Piskel says it does not support mobile.',
+  },
+  {
+    q: 'Is Baipix free?',
+    a: 'Yes. Baipix is free and open source (MIT). It runs in your browser, with no account, and your drawings stay on your device.',
+  },
+];
+---
+
+<Base
+  title="A Piskel alternative: free pixel art editor in the browser · Baipix"
+  description="Baipix next to Piskel, line by line: both free, open source and in the browser. What Piskel does well, what Baipix adds (a duration per frame, isometric tools, SVG and Aseprite export, tablets), and how to bring a sprite over."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main class="guide" data-tone="start">
+    <GuideHero
+      eyebrow="Baipix and Piskel"
+      title="A Piskel alternative"
+      more={{ href: '#compare', text: 'Side by side' }}
+    >
+      Piskel is where a lot of people draw their first sprite, and it's a good place for it. Baipix is free,
+      open source and in the browser too, with more tools for when a project grows: a duration for each frame,
+      isometric drawing, several boards in a file, and export as SVG or Aseprite.
+    </GuideHero>
+
+    <section id="piskel" class="cards container">
+      <SectionHead label="Piskel" />
+      <h2>What Piskel does well.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Simple</h3>
+          <p class="muted">
+            A handful of tools, frames on the left, the animation always playing in a corner. There is little
+            to learn before the first sprite.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Proven</h3>
+          <p class="muted">
+            It has been around for years, in classrooms and game jams, and a lot of tutorials are written for
+            it.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Desktop apps</h3>
+          <p class="muted">Builds for Windows, macOS and Linux, to work without a browser.</p>
+        </article>
+        <article class="card">
+          <h3>Exports for code</h3>
+          <p class="muted">
+            A sprite sheet with JSON for PixiJS, and a C file for small screens and consoles.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="compare" class="cards container">
+      <SectionHead label="Side by side" />
+      <h2>Piskel and Baipix, line by line.</h2>
+      <div class="vs-scroll">
+        <table class="vs">
+          <thead>
+            <tr>
+              <th scope="col">
+                <span class="sr-only">What</span>
+              </th>
+              <th scope="col">Piskel</th>
+              <th scope="col">Baipix</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([what, piskel, baipix]) => (
+              <tr>
+                <th scope="row">{what}</th>
+                <td>{piskel}</td>
+                <td>{baipix}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted guide-more">
+        Piskel's column comes from <a href="https://github.com/piskelapp/piskel">its repository</a>, read in
+        November 2026. If a line is wrong or out of date,{' '}
+        <a href="https://github.com/baipix/baipix/issues">tell us</a> and we fix it.
+      </p>
+    </section>
+
+    <section id="more" class="cards container">
+      <SectionHead label="Baipix" />
+      <h2>What Baipix adds.</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Timing, frame by frame</h3>
+          <p class="muted">
+            Hold a pose for 400 ms and flash the next in 90. The GIF and the sprite sheet keep each duration.
+            See <a href={`${base}pixel-art-animation/`}>Pixel art animation</a>.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Isometric</h3>
+          <p class="muted">
+            A 2:1 grid, and boxes, cylinders, stairs and ramps drawn in one drag, already shaded. See
+            <a href={`${base}isometric-pixel-art/`}>Isometric pixel art</a>.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Clean SVG</h3>
+          <p class="muted">
+            One path per color, pasted straight into Figma or Illustrator. See
+            <a href={`${base}pixel-art-to-svg/`}>Pixel art to SVG</a>.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Boards and components</h3>
+          <p class="muted">
+            Several boards side by side in one file, and sprites you draw once and place many times.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Tools that keep to the palette</h3>
+          <p class="muted">
+            Shade and lighten step along the palette, and gradients dither between its colors, so nothing new
+            slips in.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Aseprite files</h3>
+          <p class="muted">
+            Open an .aseprite file with its layers and frames, and export one to keep working there.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="move" class="steps container">
+      <SectionHead label="Moving over" />
+      <h2>Bring a sprite from Piskel.</h2>
+      <ol class="step-list">
+        <li>
+          <span class="step-n">1</span>
+          <div>
+            <h3>Export it from Piskel</h3>
+            <p class="muted">
+              A PNG sprite sheet or an animated GIF, at 1× so the pixels stay as they are. Baipix doesn't open
+              .piskel files yet.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div>
+            <h3>Drop it on Baipix</h3>
+            <p class="muted">
+              The GIF or the sheet comes in as an animation, one frame per frame. The layers are flattened on
+              the way.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div>
+            <h3>Carry on</h3>
+            <p class="muted">Set a duration for each frame, add layers, and export when it's ready.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <Faq items={faq} />
+
+    <Cta />
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .vs-scroll {
+    margin-top: 40px;
+    overflow-x: auto;
+    border: 2px solid var(--line-strong);
+  }
+  .vs {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 15px;
+    text-align: left;
+  }
+  .vs th,
+  .vs td {
+    padding: 14px 16px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  .vs tbody tr:last-child th,
+  .vs tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .vs thead th {
+    font-weight: 600;
+    border-bottom: 2px solid var(--line-strong);
+  }
+  .vs tbody th {
+    width: 22%;
+    font-weight: 600;
+  }
+  .vs td {
+    width: 39%;
+    color: var(--muted);
+  }
+  .vs td:last-child {
+    color: var(--text);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .card a,
+  .guide-more a {
+    color: var(--text);
+    text-decoration: underline;
+  }
+  .guide-more {
+    margin-top: 32px;
+  }
+</style>
