@@ -230,6 +230,7 @@ export const pt: Record<MessageKey, string> = {
   'theme.dark': 'Tema escuro',
   'menu.grid': 'Grade de pixels',
   'menu.tile': 'Pré-visualização de blocos repetidos',
+  'menu.stylusMode': 'Modo de caneta',
   'menu.hideUi': 'Ocultar a interface',
   'menu.shortcuts': 'Atalhos de teclado',
   'menu.version': 'Baipix {version} · Novidades',
@@ -741,6 +742,7 @@ export const pt: Record<MessageKey, string> = {
   'shortcuts.stepFrame': 'Quadro anterior, seguinte',
 
   'toast.saved': '{name} salvo.',
+  'toast.stylusModeEnabled': 'Modo de caneta ativado. Desative-o em Exibir para desenhar com o dedo.',
   'toast.alreadySorted': 'As camadas já estão em ordem de profundidade: o desenho mais baixo na frente.',
   'toast.downloadCancelled': 'Download cancelado.',
   'toast.downloadBusy': 'Já existe uma solicitação de download aberta.',

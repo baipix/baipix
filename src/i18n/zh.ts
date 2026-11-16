@@ -225,6 +225,7 @@ export const zh: Record<MessageKey, string> = {
   'theme.dark': '深色主题',
   'menu.grid': '像素网格',
   'menu.tile': '平铺预览',
+  'menu.stylusMode': '触控笔模式',
   'menu.hideUi': '隐藏界面',
   'menu.shortcuts': '键盘快捷键',
   'menu.version': 'Baipix {version} · 有哪些新东西',
@@ -715,6 +716,7 @@ export const zh: Record<MessageKey, string> = {
   'shortcuts.stepFrame': '上一帧、下一帧',
 
   'toast.saved': '已保存 {name}。',
+  'toast.stylusModeEnabled': '已启用触控笔模式。要用手指绘画，请在“视图”中关闭它。',
   'toast.alreadySorted': '图层已经按深度排好了：最下面的那个显示在最前。',
   'toast.downloadCancelled': '下载已取消。',
   'toast.downloadBusy': '已有一个下载请求在进行中。',

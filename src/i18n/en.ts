@@ -228,6 +228,7 @@ export const en = {
   'theme.dark': 'Dark theme',
   'menu.grid': 'Pixel grid',
   'menu.tile': 'Tile preview',
+  'menu.stylusMode': 'Stylus mode',
   'menu.hideUi': 'Hide the interface',
   'menu.shortcuts': 'Keyboard shortcuts',
   'menu.version': 'Baipix {version} · What’s new',
@@ -735,6 +736,7 @@ export const en = {
   'shortcuts.stepFrame': 'Previous, next frame',
 
   'toast.saved': '{name} saved.',
+  'toast.stylusModeEnabled': 'Stylus mode enabled. Turn it off in View to draw with a finger.',
   'toast.alreadySorted': 'The layers are already in depth order: the lowest drawing in front.',
   'toast.downloadCancelled': 'Download cancelled.',
   'toast.downloadBusy': 'A download request is already open.',

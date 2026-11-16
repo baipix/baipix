@@ -75,6 +75,8 @@ export interface UiState {
   homeOrder: 'asc' | 'desc';
   homeView: 'grid' | 'list';
   uiHidden: boolean;
+  /** Whether touch input navigates the canvas instead of drawing. */
+  stylusMode: 'auto' | 'on' | 'off';
   exportFormat: 'png' | 'gif' | 'sequence' | 'frames' | 'svg' | 'aseprite' | 'tileset' | 'layers';
   /** The language picked in the Code dialog. */
   exportCode: CodeLanguage;
@@ -126,6 +128,7 @@ export const uiStore = createStore<UiState>({
   homeOrder: 'desc',
   homeView: 'grid',
   uiHidden: false,
+  stylusMode: 'auto',
   exportFormat: 'png',
   exportCode: 'react',
   exportActiveLayer: false,
