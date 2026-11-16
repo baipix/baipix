@@ -22,6 +22,10 @@
   gap: 48px;
   align-items: center;
 }
+/* A little lower than the middle, so the picture's ground sits near the buttons. */
+.guide .hero-art {
+  margin-top: 64px;
+}
 @media (max-width: 900px) {
   .guide .hero-inner.has-art {
     grid-template-columns: minmax(0, 1fr);
@@ -29,6 +33,7 @@
   }
   .guide .hero-art {
     max-width: 360px;
+    margin-top: 0;
   }
 }
 .guide .eyebrow {
