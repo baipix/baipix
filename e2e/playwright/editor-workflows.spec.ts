@@ -65,6 +65,26 @@ test('creates and switches between boards in one file', async ({ page }) => {
   await expect(boards.nth(0)).not.toHaveClass(/is-open/);
 });
 
+test('folds the open board in the layers list, and unfolds it', async ({ page }) => {
+  await createNewFile(page);
+  await clickMenuItem(page, 'File', 'New board');
+
+  const open = page.locator('.panel-left .board-item.is-open');
+  await expect(layerRows(page)).not.toHaveCount(0);
+
+  await open.getByRole('button', { name: 'Fold the board' }).click();
+  await expect(layerRows(page)).toHaveCount(0);
+  await expect(open).toHaveCount(1);
+
+  await open.getByRole('button', { name: 'Show its layers' }).click();
+  await expect(layerRows(page)).not.toHaveCount(0);
+
+  // Folded, then another board opened: that one shows its layers.
+  await open.getByRole('button', { name: 'Fold the board' }).click();
+  await page.locator('.panel-left .board-item:not(.is-open)').click();
+  await expect(layerRows(page)).not.toHaveCount(0);
+});
+
 test('copies and pastes a canvas selection', async ({ page }) => {
   await createNewFile(page);
   await drawAtCanvasCenter(page);

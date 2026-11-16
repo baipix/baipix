@@ -422,6 +422,7 @@ export const ko: Record<MessageKey, string> = {
   'board.new': '새 보드',
   'board.duplicate': '보드 복제',
   'board.delete': '보드 삭제',
+  'board.collapse': '보드 접기',
   'board.deleted': '{name} 삭제됨.',
   'board.deletedMany': '{count}개 보드 삭제됨.',
   'board.none': '아직 이 파일에 보드가 없습니다.',

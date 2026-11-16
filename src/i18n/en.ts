@@ -377,6 +377,7 @@ export const en = {
   'board.new': 'New board',
   'board.duplicate': 'Duplicate board',
   'board.delete': 'Delete board',
+  'board.collapse': 'Fold the board',
   'board.deleted': '{name} deleted.',
   'board.deletedMany': '{count} boards deleted.',
   'board.none': 'No board in this file yet.',

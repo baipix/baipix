@@ -4,6 +4,11 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- The editor in Simplified Chinese (View › Language › 中文 (简体)). ([#774](https://github.com/baipix/baipix/pull/774))
+- Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at. ([#711](https://github.com/baipix/baipix/pull/711))
+
 ### Changed
 
 - On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))
@@ -17,11 +22,17 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- In a file of several boards, the arrow of the open board in the Layers panel folds its layers away, and brings them back. It did nothing before. ([#874](https://github.com/baipix/baipix/pull/874))
 - On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
 - On a phone or tablet, a submenu opens where its menu is instead of jumping up the screen, and a long one scrolls. ([#866](https://github.com/baipix/baipix/pull/866))
 - Zooming with two fingers no longer shakes the drawing. ([#859](https://github.com/baipix/baipix/pull/859))
 - On a phone, the file can be renamed: Rename in its menu, or File › Rename file, turns its name into a field. ([#856](https://github.com/baipix/baipix/pull/856))
 - In the tool's options, the pressed button of a group (the brush's square or round shape) keeps to the group's rounded corners. ([#852](https://github.com/baipix/baipix/pull/852))
+
+### Thanks
+
+- [@Ben8t](https://github.com/Ben8t) for scripting the editor through `window.baipix`, and its guide. ([#711](https://github.com/baipix/baipix/pull/711))
+- [@zh-Translator](https://github.com/zh-Translator) for the Simplified Chinese translation, the ninth language. ([#774](https://github.com/baipix/baipix/pull/774))
 
 ## [0.8.1] - 2026-11-14
 
