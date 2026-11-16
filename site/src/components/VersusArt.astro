@@ -1,115 +1,74 @@
 ---
 /**
- * The top of a comparison page: a little masked referee between two cards, the other editor's logo on
- * the left and ours on the right. The figure was drawn in Baipix; the ink follows the theme.
+ * The top of a comparison page: a hooded skater rolling by, a logo held up in each hand, the other
+ * editor's behind and ours in front. It is a Baipix file (art/piskel-and-baipix.baipix: four frames,
+ * four layers), rendered at build time. Its ink follows the theme. With reduced motion, the first
+ * frame stays.
  */
+import { flattenFrame } from '../../../src/engine/composite';
+import { DEFAULT_DURATION, frameCount } from '../../../src/engine/frames';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+import { fileFromJson } from '../../../src/storage/fileFormat';
+import file from '../art/piskel-and-baipix.baipix?raw';
+
 interface Props {
   /** The other editor, for the picture's description. */
   other: string;
 }
 const { other } = Astro.props;
 
-const INK = `
-.......................................
-.......................................
-.......................................
-.......................................
-...########..................########..
-..#........#................#........#.
-..#........#................#........#.
-..#........#................#........#.
-..#........#......####......#........#.
-..#........#....########....#........#.
-..#........#...#...##...#...#........#.
-..#........#...####..####...#........#.
-..#........#..############..#........#.
-..#........#.#..###..###..#.#........#.
-...########...#....##....#...########..
-...............#........#..............
-........###.....########.....###.......
-..........##......####......##.........
-...........##.....####.....##..........
-............################...........
-.............##############............
-.................######................
-................########...............
-................########...............
-...............####..####..............
-..............####.....###.............
-.............###........###............
-.............##..........##............
-.............##..........##............
-............###..........###...........
-.......................................
-.......................................`
-  .trim()
-  .split('\n');
-// The sketch held two empty frames: the cards below take their place, a little wider, so each logo
-// gets a margin. The figure moves two pixels right to stay in the middle.
-const SHIFT = 2;
-const W = INK[0].length + 4;
-const H = INK.length;
-const figure = INK.map((row, y) =>
-  y >= 4 && y <= 14 ? row.replace(/^.{12}/, '.'.repeat(12)).replace(/.{11}$/, '.'.repeat(11)) : row,
-);
-/** One rectangle per run of ink on a row. */
-const runs = figure
-  .map((row, y) =>
-    [...row.matchAll(/#+/g)]
-      .map((m) => `M${m.index! + SHIFT} ${y}h${m[0].length}v1h-${m[0].length}z`)
-      .join(''),
+const [doc] = fileFromJson(file);
+const frames = Array.from({ length: frameCount(doc) }, (_, f) => ({
+  svg: toSvg(
+    flattenFrame(doc, f, { includeBackground: false }),
+    doc.width,
+    doc.height,
+    renderGeometry(doc.width, doc.height, 1, 0),
   )
-  .join('');
-// A card: 12 × 12 outside with cut corners, 10 × 10 of paper.
-const CARD = 12;
-const cards = [1, W - CARD - 2].map((x) => ({ x, y: 3 }));
-const frame = ({ x, y }: { x: number; y: number }) =>
-  `M${x + 1} ${y}h${CARD - 2}v1h-${CARD - 2}zM${x + 1} ${y + CARD - 1}h${CARD - 2}v1h-${CARD - 2}z` +
-  `M${x} ${y + 1}h1v${CARD - 2}h-1zM${x + CARD - 1} ${y + 1}h1v${CARD - 2}h-1z`;
-const paper = ({ x, y }: { x: number; y: number }) =>
-  `M${x + 1} ${y + 1}h${CARD - 2}v${CARD - 2}h-${CARD - 2}z`;
-// Piskel's mark: nine squares on white, blue, green and red, each row from light to dark.
-const PISKEL = [
-  ['#1c7eff', '#1560c2', '#0f458a'],
-  ['#04e004', '#03ab03', '#028202'],
-  ['#f52900', '#bf2000', '#8c1700'],
-];
+    .replaceAll('fill="#10121c"', 'fill="var(--text)"')
+    .replaceAll('fill="#ffffff"', 'fill="var(--bg)"'),
+  duration: doc.frames?.[f].duration ?? DEFAULT_DURATION,
+}));
 ---
 
-<svg
+<div
   class="versus-art"
-  viewBox={`0 0 ${W} ${H}`}
   role="img"
-  aria-label={`A small masked figure stands between two cards, the ${other} logo on the left and the Baipix logo on the right.`}
-  shape-rendering="crispEdges"
+  aria-label={`A hooded skater rolls by, holding up the ${other} logo in one hand and the Baipix logo in the other.`}
+  data-versus
+  data-durations={JSON.stringify(frames.map((f) => f.duration))}
 >
-  <!-- the paper, the frames and the logos, then the figure -->
-  <path class="paper" d={cards.map(paper).join('')}></path>
-  <path class="ink" d={cards.map(frame).join('')}></path>
-  <g transform={`translate(${cards[0].x + 2} ${cards[0].y + 2})`}>
-    <rect width="8" height="8" fill="#fff"></rect>
-    {PISKEL.map((row, y) =>
-      row.map((fill, x) => <rect x={0.5 + x * 2.5} y={0.5 + y * 2.5} width="2" height="2" fill={fill} />),
-    )}
-  </g>
-  <path
-    class="ink"
-    transform={`translate(${cards[1].x + 2} ${cards[1].y + 2})`}
-    d="M0 2h3v6H0zM3 5h3v3H3zM5 0h3v3H5z"
-  ></path>
-  <path class="ink" d={runs}></path>
-</svg>
+  {frames.map((f, i) => (
+    <div class="versus-frame" data-frame={i} hidden={i > 0} set:html={f.svg} />
+  ))}
+</div>
+
+<script>
+  for (const art of document.querySelectorAll<HTMLElement>('[data-versus]')) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
+    const durations: number[] = JSON.parse(art.dataset.durations ?? '[]');
+    const shown = [...art.querySelectorAll<HTMLElement>('[data-frame]')];
+    let frame = 0;
+    const tick = () => {
+      shown[frame].hidden = true;
+      frame = (frame + 1) % shown.length;
+      shown[frame].hidden = false;
+      window.setTimeout(tick, durations[frame]);
+    };
+    window.setTimeout(tick, durations[0]);
+  }
+</script>
 
 <style>
   .versus-art {
+    display: grid;
+  }
+  .versus-frame {
+    grid-area: 1 / 1;
+  }
+  .versus-frame :global(svg) {
     display: block;
     width: 100%;
     height: auto;
-  }
-  .ink {
-    fill: var(--text);
-  }
-  .paper {
-    fill: var(--bg);
   }
 </style>

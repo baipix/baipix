@@ -3,6 +3,7 @@ import Cta from '../components/Cta.astro';
 import Faq from '../components/Faq.astro';
 import Footer from '../components/Footer.astro';
 import GuideHero from '../components/GuideHero.astro';
+import Logo from '../components/Logo.astro';
 import Nav from '../components/Nav.astro';
 import SectionHead from '../components/SectionHead.astro';
 import VersusArt from '../components/VersusArt.astro';
@@ -10,6 +11,13 @@ import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 
 const base = import.meta.env.BASE_URL;
+
+/** Piskel's logo: nine squares, a row of blues, of greens and of reds, each darker to the right. */
+const piskelLogo = [
+  ['#1c7eff', '#1560c2', '#0f458a'],
+  ['#04e004', '#03ab03', '#028202'],
+  ['#f52900', '#bf2000', '#8c1700'],
+];
 
 /** Piskel's side comes from its own repository (github.com/piskelapp/piskel), read in November 2026. */
 const rows: [string, string, string][] = [
@@ -145,8 +153,28 @@ const faq = [
               <th scope="col">
                 <span class="sr-only">What</span>
               </th>
-              <th scope="col">Piskel</th>
-              <th scope="col">Baipix</th>
+              <th scope="col">
+                <span class="vs-name">
+                  <svg
+                    viewBox="0 0 8 8"
+                    width="20"
+                    height="20"
+                    shape-rendering="crispEdges"
+                    aria-hidden="true"
+                  >
+                    {piskelLogo.map((row, j) =>
+                      row.map((fill, i) => <rect x={i * 3} y={j * 3} width="2" height="2" fill={fill} />),
+                    )}
+                  </svg>
+                  Piskel
+                </span>
+              </th>
+              <th scope="col">
+                <span class="vs-name">
+                  <Logo size={20} />
+                  Baipix
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -282,6 +310,11 @@ const faq = [
   .vs thead th {
     font-weight: 600;
     border-bottom: 2px solid var(--line-strong);
+  }
+  .vs-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
   }
   .vs tbody th {
     width: 22%;
