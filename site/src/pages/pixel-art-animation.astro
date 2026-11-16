@@ -10,14 +10,24 @@ import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 import { blue, green, pack, red, alpha } from '../../../src/engine/color';
 import { flattenFrame } from '../../../src/engine/composite';
+import { DEFAULT_DURATION, frameCount } from '../../../src/engine/frames';
 import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
 import { slime, slimeFrames as frames } from '../slime';
-import slimeUrl from '../art/slime.baipix?url';
+import { fileFromJson } from '../../../src/storage/fileFormat';
+import carFile from '../art/car.baipix?raw';
+import carUrl from '../art/car.baipix?url';
 
 const base = import.meta.env.BASE_URL;
 
 const { width: w, height: h } = slime;
-const total = frames.reduce((sum, f) => sum + f.duration, 0);
+
+/** The car at the top of the page: 16 frames, rendered at build time. */
+const [car] = fileFromJson(carFile);
+const carFrames = Array.from({ length: frameCount(car) }, (_, f) => ({
+  svg: toSvg(flattenFrame(car, f), car.width, car.height, renderGeometry(car.width, car.height, 1, 0)),
+  duration: car.frames?.[f].duration ?? DEFAULT_DURATION,
+}));
+const total = carFrames.reduce((sum, f) => sum + f.duration, 0);
 
 /**
  * The onion skin as the editor shows it, on the slime alone (its sky and ground hidden): the frames
@@ -69,7 +79,7 @@ const faq = [
   },
   {
     q: 'How many frames does a pixel art animation need?',
-    a: 'Fewer than you think. A walk cycle often has 4 to 8 frames, an idle loop 2 to 4. The slime on this page jumps in 14, some held longer than others.',
+    a: 'Fewer than you think. A walk cycle often has 4 to 8 frames, an idle loop 2 to 4. The car at the top of this page drives in 16, and the slime further down jumps in 14, some held longer than others.',
   },
   {
     q: 'Can each frame have its own duration?',
@@ -109,19 +119,19 @@ const faq = [
     <GuideHero
       eyebrow="Pixel art animation"
       title="Pixel art animation"
-      open={slimeUrl}
+      open={carUrl}
       more={{ href: '#timeline', text: 'The tools' }}
     >
       Baipix has a timeline under the canvas: frames you add, reorder and time one by one, onion skin to see
       the frames around, and playback as you draw. Then export it as an animated GIF.
     </GuideHero>
 
-    <section class="showcase container" aria-label="A slime jumping, frame by frame">
+    <section class="showcase container" aria-label="A car driving, frame by frame">
       <figure class="frame showcase-art">
-        <Flipbook frames={frames} label="A green slime squashes, jumps and lands" />
+        <Flipbook frames={carFrames} label="A little car drives along, smoke puffing behind it" />
         <figcaption class="muted">
-          A slime drawn and animated in Baipix: 14 frames, {total} ms in all. The squash before the jump and
-          the hang at the top hold longest. Open the editor to play it and change it.
+          A car drawn and animated in Baipix: {carFrames.length} frames, {total} ms in all, the wheels, the
+          smoke and the road on layers of their own. Open the editor to play it and change it.
         </figcaption>
       </figure>
     </section>
