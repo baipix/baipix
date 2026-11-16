@@ -1,6 +1,6 @@
 ---
 /**
- * The top of a comparison page: a hooded skater rolling by, a logo held up in each hand, the other
+ * The top of a comparison page: a skater rolling by, a logo held up in each hand, the other
  * editor's behind and ours in front. It is a Baipix file (art/piskel-and-baipix.baipix: four frames,
  * four layers), rendered at build time. Its ink follows the theme. With reduced motion, the first
  * frame stays.
@@ -34,7 +34,7 @@ const frames = Array.from({ length: frameCount(doc) }, (_, f) => ({
 <div
   class="versus-art"
   role="img"
-  aria-label={`A hooded skater rolls by, holding up the ${other} logo in one hand and the Baipix logo in the other.`}
+  aria-label={`A skater in a green t-shirt and jeans rolls by, holding up the ${other} logo in one hand and the Baipix logo in the other.`}
   data-versus
   data-durations={JSON.stringify(frames.map((f) => f.duration))}
 >
