@@ -4,6 +4,7 @@ import { posts } from '../blog';
 import { APP_URL, BLUESKY_URL, DESIGN_URL, LICENSE_URL, REPO_URL, YOUTUBE_URL } from '../links';
 import Logo from './Logo.astro';
 import PixelIcon from './PixelIcon.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 const base = import.meta.env.BASE_URL;
 /** As wide as the docs, instead of the pages' column. */
@@ -66,6 +67,9 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
     </a>
     <p class="muted">A free, open source pixel art editor, in your browser.</p>
     <p class="muted">© 2026 Baipix</p>
+    <div class="footer-theme">
+      <ThemeToggle />
+    </div>
   </div>
   {/* The links in columns: the product, the guides, the project. */}
   <nav class="footer-columns" aria-label="Site">

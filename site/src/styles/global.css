@@ -37,10 +37,10 @@
   --mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --container: 1120px;
 }
-/* The header's links get a row of their own under its buttons. */
+/* On a phone the header is lower: its links are in a menu. */
 @media (max-width: 860px) {
   :root {
-    --header-height: 100px;
+    --header-height: 60px;
   }
 }
 /* Selected text: the editor's violet, with white ink. */
