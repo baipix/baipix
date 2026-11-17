@@ -1,5 +1,5 @@
 import { alpha, pack } from '../engine/color';
-import { isBoard } from '../engine/document';
+import { activeLayer, isBoard } from '../engine/document';
 import { isLinkedInstance } from '../engine/components';
 import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
@@ -68,24 +68,38 @@ export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, renam
 export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
   const s = editor.getState();
   const current = s.files.find((f) => f.id === s.activeId)!;
-  const recent = [...s.files].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 8);
+  const recent = [...s.files]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, 8);
+
   return [
-    ...recent.map((f) => ({
-      label: f.name,
-      checked: f.id === s.activeId,
-      onSelect: () => editor.switchFile(f.id),
-    })),
+    ...recent.map((f) => {
+      const doc = editor.getDocument(f.id);
+
+      return {
+        label: f.name,
+        checked: f.id === s.activeId,
+        thumbnail: doc
+          ? {
+              pixels: () => activeLayer(doc).pixels,
+              width: doc.width,
+              height: doc.height,
+              version: s.contentRevision,
+            }
+          : undefined,
+        onSelect: () => editor.switchFile(f.id),
+      };
+    }),
     '-',
     ...fileMenu(editor, actions, current, renameFile),
     '-',
-    { label: t('menu.newFile'), onSelect: () => openDialog({ type: 'newFile' }) },
-    { label: t('menu.open'), shortcut: 'Ctrl+O', onSelect: () => void actions.openDocument() },
-    { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
-    { label: t('menu.importSpriteSheet'), onSelect: () => void actions.importSpriteSheet() },
-    '-',
-    { label: t('file.allFiles'), onSelect: () => uiStore.set({ home: true }) },
+    {
+      label: t('file.allFiles'),
+      onSelect: () => uiStore.set({ home: true }),
+    },
   ];
 }
+
 
 /** Opens the Canvas section of the right panel, then runs `then` once it's rendered. */
 function revealCanvas(then: () => void) {

@@ -9,6 +9,7 @@ import { createPortal } from 'react-dom';
 import type { IconName } from '../icons';
 import { createStore } from '../store';
 import { Icon } from './Icon';
+import { Thumbnail } from './Thumbnail';
 
 export type MenuItem =
   | '-'
@@ -25,6 +26,13 @@ export type MenuItem =
       /** A submenu, opened on hover, click or →. */
       items?: MenuItem[];
       onSelect?: () => void;
+      /** Preview of the file's artwork in the recent files menu. */
+      thumbnail?: {
+        pixels: () => Uint32Array;
+        width: number;
+        height: number;
+        version: number;
+      };
     };
 
 export interface MenuOptions {
@@ -227,8 +235,18 @@ function MenuPanel({
               item.onSelect?.();
             }}
           >
-            {item.icon && <Icon name={item.icon} size={16} />}
-            <span>{item.label}</span>
+            {/* Display a file thumbnail before its name in the recent files menu. */}
+           {item.thumbnail && (
+  <Thumbnail
+    pixels={item.thumbnail.pixels}
+    width={item.thumbnail.width}
+    height={item.thumbnail.height}
+    version={item.thumbnail.version}
+    fit
+  />
+)}
+{item.icon && <Icon name={item.icon} size={16} />}
+<span>{item.label}</span>
             {item.shortcut && <span className="menu-shortcut">{formatShortcut(item.shortcut)}</span>}
             {item.items && <span className="menu-chevron" aria-hidden="true" />}
             {item.swatches && (
