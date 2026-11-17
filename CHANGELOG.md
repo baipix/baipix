@@ -23,6 +23,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- On a phone, Create no longer goes off the edge of the files screen in French and other longer languages: Download all and Import show only their icon there. ([#899](https://github.com/baipix/baipix/pull/899))
 - The empty editor no longer shows for a moment before the home screen when Baipix opens. ([#878](https://github.com/baipix/baipix/pull/878))
 - In a file of several boards, the arrow of the open board in the Layers panel folds its layers away, and brings them back. It did nothing before. ([#874](https://github.com/baipix/baipix/pull/874))
 - On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
