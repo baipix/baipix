@@ -3283,8 +3283,17 @@ body.is-dragging-swatch * {
   font-size: 11px;
 }
 /* On a phone: the sidebar becomes a row of tabs over the drawings, without the help links (the
-   editor's Help menu has them); two templates a row. */
+   editor's Help menu has them); two templates a row. In the top bar, Download all and Import show
+   only their icon. */
 @media (max-width: 820px) {
+  .home-top .btn.is-compact {
+    width: 28px;
+    padding: 0;
+    justify-content: center;
+  }
+  .home-top .btn.is-compact .btn-label {
+    display: none;
+  }
   .home-body {
     flex-direction: column;
   }
