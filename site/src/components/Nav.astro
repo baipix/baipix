@@ -1,13 +1,17 @@
 ---
-/** Site header, shared by every page: links, GitHub stars, theme, and the way into the editor. */
+/**
+ * Site header, shared by every page: links, GitHub stars, and the way into the editor. On a phone the
+ * links go in a menu behind a button. The theme switch is in the footer.
+ */
 import { posts } from '../blog';
 import { APP_URL, REPO_URL } from '../links';
 import Logo from './Logo.astro';
 import PixelIcon from './PixelIcon.astro';
-import ThemeToggle from './ThemeToggle.astro';
 
 const base = import.meta.env.BASE_URL;
 const STAR = ['...#...', '..###..', '#######', '.#####.', '..###..', '.##.##.', '.#...#.'];
+const MENU = ['#######', '.......', '.......', '#######', '.......', '.......', '#######'];
+const CLOSE = ['#.....#', '.#...#.', '..#.#..', '...#...', '..#.#..', '.#...#.', '#.....#'];
 const links = [
   { href: `${base}draw/`, label: 'Draw' },
   { href: `${base}pixel-art-animation/`, label: 'Animate' },
@@ -16,7 +20,15 @@ const links = [
   // Once there's a post to read.
   ...(posts.length ? [{ href: `${base}blog/`, label: 'Blog' }] : []),
 ];
+// In the phone menu, under the links: the pages that are otherwise only in the footer.
+const more = [
+  { href: `${base}changelog/`, label: 'Release notes' },
+  { href: `${base}roadmap/`, label: 'Roadmap' },
+  { href: REPO_URL, label: 'GitHub' },
+];
 const here = Astro.url.pathname;
+const current = (href: string) =>
+  here === href || (!href.includes('#') && here.startsWith(href)) ? 'page' : undefined;
 ---
 
 <header class="site-header">
@@ -28,12 +40,7 @@ const here = Astro.url.pathname;
     </a>
     <nav class="nav-links">
       {links.map((l) => (
-        <a
-          href={l.href}
-          aria-current={
-            here === l.href || (!l.href.includes('#') && here.startsWith(l.href)) ? 'page' : undefined
-          }
-        >
+        <a href={l.href} aria-current={current(l.href)}>
           {l.label}
         </a>
       ))}
@@ -43,11 +50,39 @@ const here = Astro.url.pathname;
       <span class="star-label">Star</span>
       <span class="star-count" data-stars></span>
     </a>
-    <ThemeToggle />
-    <a class="btn btn-dark btn-small" href={APP_URL}>
-      Open the editor
+    <a class="btn btn-dark btn-small editor" href={APP_URL}>
+      <span class="editor-long">Open the editor</span>
+      <span class="editor-short">Editor</span>
     </a>
+    <button
+      class="btn btn-small btn-icon menu-button"
+      type="button"
+      aria-label="Menu"
+      aria-expanded="false"
+      aria-controls="site-menu"
+      data-menu-button
+    >
+      <span class="menu-open">
+        <PixelIcon rows={MENU} size={14} />
+      </span>
+      <span class="menu-close">
+        <PixelIcon rows={CLOSE} size={14} />
+      </span>
+    </button>
   </div>
+  <nav id="site-menu" class="site-menu container-wide" aria-label="Menu" hidden data-menu>
+    {links.map((l) => (
+      <a href={l.href} aria-current={current(l.href)}>
+        {l.label}
+      </a>
+    ))}
+    <hr />
+    {more.map((l) => (
+      <a class="more" href={l.href} aria-current={current(l.href)}>
+        {l.label}
+      </a>
+    ))}
+  </nav>
 </header>
 
 <script>
@@ -56,6 +91,30 @@ const here = Astro.url.pathname;
   const edge = () => header.classList.toggle('is-scrolled', scrollY > 0);
   addEventListener('scroll', edge, { passive: true });
   edge();
+
+  // The phone menu: the button opens and closes it, and so do Escape, a link and a tap outside.
+  const button = document.querySelector<HTMLButtonElement>('[data-menu-button]')!;
+  const menu = document.querySelector<HTMLElement>('[data-menu]')!;
+  const setOpen = (open: boolean) => {
+    menu.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? 'Close the menu' : 'Menu');
+  };
+  button.addEventListener('click', () => setOpen(menu.hidden));
+  menu.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) setOpen(false);
+  });
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.hidden) {
+      setOpen(false);
+      button.focus();
+    }
+  });
+  addEventListener('click', (e) => {
+    if (!menu.hidden && !header.contains(e.target as Node)) setOpen(false);
+  });
+  // Back to a wide screen: the links are in the bar again.
+  matchMedia('(min-width: 861px)').addEventListener('change', (e) => e.matches && setOpen(false));
 
   // Star count from the GitHub API; the button works without it.
   fetch('https://api.github.com/repos/baipix/baipix')
@@ -141,30 +200,59 @@ const here = Astro.url.pathname;
       display: none;
     }
   }
-  /* The links on a row of their own under the brand and the buttons, scrolling sideways if need be. */
+  /* The menu button and the short label only show on a phone. */
+  .menu-button,
+  .editor-short,
+  .site-menu {
+    display: none;
+  }
+  .menu-button span {
+    display: flex;
+  }
+  .menu-button[aria-expanded='true'] .menu-open,
+  .menu-button[aria-expanded='false'] .menu-close {
+    display: none;
+  }
+  /* On a phone: the brand, the stars, the editor and a menu button on one row; the links in the menu. */
   @media (max-width: 860px) {
     .nav {
-      flex-wrap: wrap;
-      column-gap: 12px;
-      row-gap: 0;
-      height: var(--header-height);
+      gap: 8px;
     }
-    .brand {
-      height: 60px;
-    }
-    .nav-links {
-      order: 1;
-      width: 100%;
-      height: 40px;
-      padding-right: 0;
-      border-right: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-  }
-  @media (max-width: 640px) {
-    .star {
+    .nav-links,
+    .editor-long {
       display: none;
+    }
+    .editor-short {
+      display: inline;
+    }
+    .menu-button {
+      display: inline-flex;
+    }
+    .site-menu:not([hidden]) {
+      display: grid;
+      padding-top: 8px;
+      padding-bottom: 20px;
+      border-top: 1px solid var(--line);
+    }
+    .site-menu a {
+      padding: 12px 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .site-menu a.more {
+      padding: 8px 0;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+    .site-menu a[aria-current='page'] {
+      color: var(--accent, var(--text));
+    }
+    .site-menu hr {
+      width: 100%;
+      margin: 8px 0;
+      border: 0;
+      border-top: 1px solid var(--line);
     }
   }
 </style>
