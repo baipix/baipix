@@ -3,6 +3,7 @@ import Cta from '../components/Cta.astro';
 import Faq from '../components/Faq.astro';
 import Footer from '../components/Footer.astro';
 import GuideHero from '../components/GuideHero.astro';
+import Logo from '../components/Logo.astro';
 import Nav from '../components/Nav.astro';
 import SectionHead from '../components/SectionHead.astro';
 import VersusArt from '../components/VersusArt.astro';
@@ -10,6 +11,19 @@ import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 
 const base = import.meta.env.BASE_URL;
+
+/** Aseprite's logo, its 16-pixel icon brought down to 8: a white face with two eyes and a grey chin. */
+const asepriteLogo = [
+  '.oooooo.',
+  'owwwwwwo',
+  'owgwwgwo',
+  'owgwwgwo',
+  'owwwwwwo',
+  'owwwwwwo',
+  'oggggggo',
+  '.oooooo.',
+];
+const asepriteColors: Record<string, string> = { o: '#655561', w: '#fefefe', g: '#7d929e' };
 
 /** Aseprite's side comes from aseprite.org, its docs, FAQ and repository, read in November 2026. */
 const rows: [string, string, string][] = [
@@ -136,8 +150,30 @@ const faq = [
               <th scope="col">
                 <span class="sr-only">What</span>
               </th>
-              <th scope="col">Aseprite</th>
-              <th scope="col">Baipix</th>
+              <th scope="col">
+                <span class="vs-name">
+                  <svg
+                    viewBox="0 0 8 8"
+                    width="20"
+                    height="20"
+                    shape-rendering="crispEdges"
+                    aria-hidden="true"
+                  >
+                    {asepriteLogo.map((row, y) =>
+                      [...row].map((c, x) =>
+                        c === '.' ? null : <rect x={x} y={y} width="1" height="1" fill={asepriteColors[c]} />,
+                      ),
+                    )}
+                  </svg>
+                  Aseprite
+                </span>
+              </th>
+              <th scope="col">
+                <span class="vs-name">
+                  <Logo size={20} />
+                  Baipix
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -271,6 +307,11 @@ const faq = [
   .vs thead th {
     font-weight: 600;
     border-bottom: 2px solid var(--line-strong);
+  }
+  .vs-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
   }
   .vs tbody th {
     width: 22%;
