@@ -22,15 +22,15 @@ export function MobileBar() {
     uiStore.set((s) => ({ sheet: s.sheet === which ? null : which }));
   return (
     <div className="mobile-bar">
- <button
-  type="button"
-  className="mobile-logo"
-  aria-label={t('menu.main')}
-  aria-haspopup="menu"
-  onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
->
-  <Icon name="logo" size={24} />
-</button>
+      <button
+        type="button"
+        className="mobile-logo"
+        aria-label={t('menu.main')}
+        aria-haspopup="menu"
+        onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
+      >
+        <Icon name="logo" size={24} />
+      </button>
       {/* The file name opens the files menu, like the ▾ next to it on larger screens. Rename, in
           that menu or in File, turns it into a field. */}
       {renaming ? (

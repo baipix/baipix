@@ -715,7 +715,7 @@ export class Editor {
   /** Get a document by its file id without switching  the active file. */
   getDocument(fileId: string): PixelDoc | undefined {
     return this.boardFor(fileId)?.doc;
- }
+  }
 
   /** UI state changes (not fired on every pointer move while drawing). */
   subscribe = (listener: Listener): (() => void) => this.on(this.listeners, listener);

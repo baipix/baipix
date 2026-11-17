@@ -68,9 +68,7 @@ export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, renam
 export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
   const s = editor.getState();
   const current = s.files.find((f) => f.id === s.activeId)!;
-  const recent = [...s.files]
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, 8);
+  const recent = [...s.files].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 8);
 
   return [
     ...recent.map((f) => {
@@ -99,7 +97,6 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
     },
   ];
 }
-
 
 /** Opens the Canvas section of the right panel, then runs `then` once it's rendered. */
 function revealCanvas(then: () => void) {

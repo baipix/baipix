@@ -236,17 +236,17 @@ function MenuPanel({
             }}
           >
             {/* Display a file thumbnail before its name in the recent files menu. */}
-           {item.thumbnail && (
-  <Thumbnail
-    pixels={item.thumbnail.pixels}
-    width={item.thumbnail.width}
-    height={item.thumbnail.height}
-    version={item.thumbnail.version}
-    fit
-  />
-)}
-{item.icon && <Icon name={item.icon} size={16} />}
-<span>{item.label}</span>
+            {item.thumbnail && (
+              <Thumbnail
+                pixels={item.thumbnail.pixels}
+                width={item.thumbnail.width}
+                height={item.thumbnail.height}
+                version={item.thumbnail.version}
+                fit
+              />
+            )}
+            {item.icon && <Icon name={item.icon} size={16} />}
+            <span>{item.label}</span>
             {item.shortcut && <span className="menu-shortcut">{formatShortcut(item.shortcut)}</span>}
             {item.items && <span className="menu-chevron" aria-hidden="true" />}
             {item.swatches && (
