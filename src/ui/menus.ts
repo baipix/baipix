@@ -66,9 +66,8 @@ export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, renam
  * The files menu of the left panel's header: the most recent files (the current one checked),
  * the current file's actions, and the home screen with all of them.
  */
-export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
+export function filesMenu(editor: Editor): MenuItem[] {
   const s = editor.getState();
-  const current = s.files.find((f) => f.id === s.activeId)!;
   const recent = [...s.files].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 8);
 
   return [
@@ -89,8 +88,6 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
         onSelect: () => editor.switchFile(f.id),
       };
     }),
-    '-',
-    ...fileMenu(editor, actions, current, renameFile),
     '-',
     {
       label: t('file.allFiles'),
