@@ -4125,23 +4125,3 @@ body.is-dragging-swatch * {
 .timeline-cel.is-active .timeline-dot {
   color: var(--glow-ink);
 }
-
-/* The Baipix logo replaces the hamburger menu on touch screens and opens the main menu. */
-.mobile-logo {
-  width: var(--touch);
-  height: var(--touch);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-}
-
-.mobile-logo:hover {
-  background: var(--selected);
-}

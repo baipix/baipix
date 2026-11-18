@@ -6,7 +6,6 @@ import { filesMenu, mainMenu } from '../menus';
 import { openDialog, uiStore } from '../uiStore';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
-import { Icon } from './Icon';
 
 /** Compact top bar shown on small screens; panels become bottom sheets. */
 export function MobileBar() {
@@ -22,15 +21,14 @@ export function MobileBar() {
     uiStore.set((s) => ({ sheet: s.sheet === which ? null : which }));
   return (
     <div className="mobile-bar">
-      <button
-        type="button"
-        className="mobile-logo"
-        aria-label={t('menu.main')}
-        aria-haspopup="menu"
-        onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
-      >
-        <Icon name="logo" size={24} />
-      </button>
+    <IconButton
+  className="icon-btn large"
+  icon="logo"
+  iconSize={24}
+  label={t('menu.main')}
+  aria-haspopup="menu"
+  onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
+/>
       {/* The file name opens the files menu, like the ▾ next to it on larger screens. Rename, in
           that menu or in File, turns it into a field. */}
       {renaming ? (
@@ -58,7 +56,7 @@ export function MobileBar() {
           type="button"
           className="mobile-name"
           aria-haspopup="menu"
-          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
+          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor))}
         >
           {name} ▾
         </button>
