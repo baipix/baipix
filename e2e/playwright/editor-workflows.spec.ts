@@ -221,3 +221,19 @@ test('a second click on Adjust the layer closes the Adjustments panel', async ({
   await expect(panel).toBeHidden();
   await expect(button).toHaveAttribute('aria-pressed', 'false');
 });
+
+test('switching Remap to all layers keeps the Adjustments panel open', async ({ page }) => {
+  await createNewFile(page);
+  await drawAtCanvasCenter(page);
+
+  await page.locator('aside.panel-right').getByRole('button', { name: 'Adjust the layer…' }).click();
+  const panel = page.getByRole('dialog', { name: 'Adjustments' });
+  await panel.getByRole('tab', { name: 'Remap' }).click();
+
+  await panel.getByRole('radio', { name: 'All layers' }).click();
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole('radio', { name: 'All layers' })).toHaveAttribute('aria-checked', 'true');
+
+  await panel.getByRole('radio', { name: 'Active layer' }).click();
+  await expect(panel).toBeVisible();
+});

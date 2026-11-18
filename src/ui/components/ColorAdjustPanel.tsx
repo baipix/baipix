@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   adjustColor,
   alpha,
@@ -129,9 +129,16 @@ function Panel() {
   );
 
   // Starts (or restarts on scope change) the adjustment; leaving without applying cancels it.
+  // Between the two, while the scope changes, nothing is being adjusted for a moment: the panel
+  // stays open (Remap's palette going back used to close it).
+  const restarting = useRef(false);
   useEffect(() => {
     editor.beginAdjust(allLayers, allFrames);
-    return () => editor.cancelAdjust();
+    return () => {
+      restarting.current = true;
+      editor.cancelAdjust();
+      restarting.current = false;
+    };
   }, [editor, allLayers, allFrames]);
   // The outline is in the primary color: picking another one in the palette updates it live.
   const outlineChange = (
@@ -146,7 +153,7 @@ function Panel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- outlineChange follows outline and primary
   }, [editor, tab, adj, palette, remap, target, allLayers, allFrames, outline, primary, remapBackground]);
   // Switching files cancels the adjustment in the editor: close the panel too.
-  useEffect(() => editor.subscribe(() => !editor.isAdjusting && close()), [editor]);
+  useEffect(() => editor.subscribe(() => !restarting.current && !editor.isAdjusting && close()), [editor]);
 
   const apply = () => {
     if (tab === 'outline') editor.applyChange(outlineChange);
