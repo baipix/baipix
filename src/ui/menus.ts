@@ -1,5 +1,5 @@
 import { alpha, pack } from '../engine/color';
-import { activeLayer, isBoard } from '../engine/document';
+import {  isBoard } from '../engine/document';
 import { isLinkedInstance } from '../engine/components';
 import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
@@ -14,6 +14,7 @@ import { ALIGNS } from './components/ToolOptionsBar';
 import { SELECTS } from './tools';
 
 import { BLUESKY_URL, CHANGELOG_URL, DOCS_URL, GITHUB_URL } from './links';
+import { flatten } from '../engine/composite';
 
 /**
  * A new GitHub issue, filled in like the repository's templates (.github/ISSUE_TEMPLATE). A bug
@@ -79,7 +80,7 @@ export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
         checked: f.id === s.activeId,
         thumbnail: doc
           ? {
-              pixels: () => activeLayer(doc).pixels,
+             pixels: () => flatten(doc, { includeBackground: false }),
               width: doc.width,
               height: doc.height,
               version: s.contentRevision,
