@@ -890,6 +890,7 @@ export const en = {
   'file.restore': 'Restore',
   'toast.fileRestored': '“{name}” is back.',
   'toast.filesDeleted': '{count} drawings deleted.',
+  'toast.trashOperationFailed': 'Unable to update Trash. Please try again.',
   'toast.saveFailed': 'Unable to save in this browser: remember to download your files.',
   'toast.offlineReady': 'Baipix is ready to work offline.',
   'toast.updateReady': 'A new version of Baipix is ready.',

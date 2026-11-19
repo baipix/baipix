@@ -905,6 +905,7 @@ export const it: Record<MessageKey, string> = {
   'file.restore': 'Ripristina',
   'toast.fileRestored': '“{name}” è tornato.',
   'toast.filesDeleted': '{count} disegni eliminati.',
+  'toast.trashOperationFailed': 'Impossibile aggiornare il cestino. Riprova.',
   'toast.saveFailed': 'Impossibile salvare in questo browser: ricordati di scaricare i tuoi file.',
   'toast.offlineReady': 'Baipix è pronto per lavorare offline.',
   'toast.updateReady': 'È disponibile una nuova versione di Baipix.',

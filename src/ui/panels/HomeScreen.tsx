@@ -191,7 +191,13 @@ export function HomeScreen() {
   const clearSelection = () => setSelectedIds([]);
 
   const restoreSelected = async (ids: string[]) => {
-    const restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
+    let restoredBoards: PixelDoc[];
+    try {
+      restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
+    } catch {
+      toast(t('toast.trashOperationFailed'));
+      return;
+    }
 
     if (restoredBoards.length === 0) {
       return;
@@ -209,7 +215,13 @@ export function HomeScreen() {
       return;
     }
 
-    await storage.discardTrashedFiles(ids);
+    try {
+      await storage.discardTrashedFiles(ids);
+    } catch {
+      toast(t('toast.trashOperationFailed'));
+      return;
+    }
+
     refreshTrash(storage);
     setSelectedIds([]);
   };
