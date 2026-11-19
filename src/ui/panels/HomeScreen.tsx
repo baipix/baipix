@@ -11,7 +11,7 @@ import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
-import { isUntouchedStarter, leaveHome } from '../home';
+import { dropStarter, isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
 import { createFromTemplate, TEMPLATES } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
@@ -123,6 +123,8 @@ export function HomeScreen() {
   const deleted = trashStore.use((s) => s.files);
   const [showDeleted, setShowDeleted] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [trashActionBusy, setTrashActionBusy] = useState(false);
+  const trashActionBusyRef = useRef(false);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
     if (!boards.length) return;
@@ -190,37 +192,48 @@ export function HomeScreen() {
   const selectAll = () => setSelectedIds(sectionIds);
   const clearSelection = () => setSelectedIds([]);
 
-  const restoreSelected = async (ids: string[]) => {
-    let restoredBoards: PixelDoc[];
+  const restoreSelected = async (ids: string[], all = false) => {
+    if (trashActionBusyRef.current) return;
+    trashActionBusyRef.current = true;
+    setTrashActionBusy(true);
     try {
-      restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
+      const restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
+      if (restoredBoards.length === 0) return;
+
+      editor.adoptDocuments(restoredBoards);
+      refreshTrash(storage);
+      setSelectedIds([]);
+
+      if (all) {
+        dropStarter(editor);
+        setShowDeleted(false);
+      }
+
+      const restoredFileCount = new Set(restoredBoards.map((board) => fileIdOf(board))).size;
+      toast(t('toast.filesRestored', { count: restoredFileCount }));
     } catch {
       toast(t('toast.trashOperationFailed'));
-      return;
+    } finally {
+      trashActionBusyRef.current = false;
+      setTrashActionBusy(false);
     }
-
-    if (restoredBoards.length === 0) {
-      return;
-    }
-
-    editor.adoptDocuments(restoredBoards);
-    refreshTrash(storage);
-    setSelectedIds([]);
-
-    const restoredFileCount = new Set(restoredBoards.map((board) => fileIdOf(board))).size;
-    toast(t('toast.filesRestored', { count: restoredFileCount }));
   };
 
   const discardSelected = async (ids: string[]) => {
-    if (!storage.discardTrashedFiles) {
+    if (!storage.discardTrashedFiles || trashActionBusyRef.current) {
       return;
     }
 
+    trashActionBusyRef.current = true;
+    setTrashActionBusy(true);
     try {
       await storage.discardTrashedFiles(ids);
     } catch {
       toast(t('toast.trashOperationFailed'));
       return;
+    } finally {
+      trashActionBusyRef.current = false;
+      setTrashActionBusy(false);
     }
 
     refreshTrash(storage);
@@ -488,8 +501,20 @@ export function HomeScreen() {
                         {selectedIds.length > 0 && (
                           <span>{t('home.selected', { count: selectedIds.length })}</span>
                         )}
-                        {selectedIds.length < sectionItems.length && (
-                          <button type="button" className="btn is-compact" onClick={selectAll}>
+                        {sectionItems.length > 0 && (
+                          <button
+                            type="button"
+                            className="btn is-compact"
+                            disabled={selectedIds.length === sectionItems.length}
+                            onPointerDown={(e) => {
+                              e.preventDefault();
+                              selectAll();
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              selectAll();
+                            }}
+                          >
                             {t('home.selectAll')}
                           </button>
                         )}
@@ -515,6 +540,7 @@ export function HomeScreen() {
                             <button
                               type="button"
                               className="btn is-compact"
+                              disabled={trashActionBusy}
                               onClick={() => void restoreSelected(selectedIds)}
                             >
                               {t('home.restoreSelected')}
@@ -522,6 +548,7 @@ export function HomeScreen() {
                             <button
                               type="button"
                               className="btn is-compact is-danger"
+                              disabled={trashActionBusy}
                               onClick={() => confirmDiscard(selectedIds)}
                             >
                               {t('home.deleteSelectedForGood')}
@@ -533,13 +560,15 @@ export function HomeScreen() {
                             <button
                               type="button"
                               className="btn is-compact"
-                              onClick={() => void restoreSelected(sectionIds)}
+                              disabled={trashActionBusy}
+                              onClick={() => void restoreSelected(sectionIds, true)}
                             >
                               {t('home.restoreAll')}
                             </button>
                             <button
                               type="button"
                               className="btn is-compact is-danger"
+                              disabled={trashActionBusy}
                               onClick={() => confirmDiscard(sectionIds, true)}
                             >
                               {t('home.emptyTrash')}
