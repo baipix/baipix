@@ -156,6 +156,7 @@ export function CanvasView() {
     // Dragging a guide out of a ruler (index null) or an existing one (with the Move tool).
     let guideDrag: { axis: 'x' | 'y'; index: number | null; at: number } | null = null;
     let sprayTimer = 0;
+    let activeStrokePointerId: number | null = null;
     // Adjusting the reference image: moving it, or resizing it from a corner (the opposite one stays) or a side.
     let refDrag: {
       mode: 'move' | 'resize';
@@ -1082,6 +1083,19 @@ export function CanvasView() {
       return true;
     };
 
+    const updateStylusPressure = (e: PointerEvent): boolean => {
+      const active = stylus.pointerPressure(e.pointerType, e.pointerId, e.pressure);
+      if (active && !uiStore.get().stylusPressureDetected) {
+        uiStore.set({ stylusPressureDetected: true });
+      }
+
+      if (active && activeStrokePointerId === e.pointerId) {
+        editor.setStrokePressure(e.pressure, true);
+      }
+
+      return active;
+    };
+
     // Detect a hovering pen before its first contact with the canvas.
     const onPointerOver = (e: PointerEvent) => {
       if (e.pointerType === 'pen' && onPenDetected()) cancelActiveTouchGesture();
@@ -1098,6 +1112,7 @@ export function CanvasView() {
     };
 
     const onDown = (e: PointerEvent) => {
+      let pressureActive = false;
       canvas.setPointerCapture(e.pointerId);
       // Back on the canvas, Delete clears pixels again rather than removing the layer clicked in the list.
       const focused = document.activeElement;
@@ -1109,6 +1124,7 @@ export function CanvasView() {
         if (isStylusMode()) cancelActiveTouchGesture();
 
         stylus.pointerDown(e.pointerType, e.pointerId);
+        pressureActive = updateStylusPressure(e);
       }
 
       if (e.pointerType === 'touch' && isStylusMode() && stylus.shouldIgnoreTouch(e.pointerType)) return;
@@ -1294,7 +1310,13 @@ export function CanvasView() {
           snap: e.shiftKey && (e.metaKey || e.ctrlKey),
         },
         override,
+        e.pointerType === 'pen' ? { value: e.pressure, active: pressureActive } : undefined,
       );
+
+      if (started && !override && e.pointerType === 'pen') {
+        activeStrokePointerId = e.pointerId;
+      }
+
       // The spray and the jumble keep going while the pointer holds still, like a real can.
       if (started && !override && (tool === 'spray' || tool === 'jumble' || tool === 'liquify')) {
         clearInterval(sprayTimer);
@@ -1427,6 +1449,7 @@ export function CanvasView() {
       canvas.classList.toggle('on-sun', !editor.isStroking && onSun(here));
       const events = editor.isStroking && e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
       for (const ev of events.length ? events : [e]) {
+        if (ev.pointerType === 'pen') updateStylusPressure(ev);
         const l = local(ev);
         const p = viewport.toPixel(l.x, l.y);
         if (editor.isStroking) editor.moveStroke(p, { shift: ev.shiftKey });
@@ -1477,6 +1500,10 @@ export function CanvasView() {
     const onUp = (e: PointerEvent) => {
       clearInterval(sprayTimer);
       if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
+
+      if (activeStrokePointerId === e.pointerId) {
+        activeStrokePointerId = null;
+      }
 
       const touchEnd = e.pointerType === 'touch' ? touchGestures.up(e.pointerId) : { type: 'none' as const };
 
@@ -1601,6 +1628,11 @@ export function CanvasView() {
     const onCancel = (e: PointerEvent) => {
       clearInterval(sprayTimer);
       if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
+
+      if (activeStrokePointerId === e.pointerId) {
+        activeStrokePointerId = null;
+      }
+
       if (e.pointerType === 'touch') touchGestures.cancel(e.pointerId);
 
       if (e.pointerType === 'touch' && isStylusMode()) {

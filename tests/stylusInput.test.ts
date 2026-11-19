@@ -102,4 +102,37 @@ describe('stylus input', () => {
     expect(stylus.pointerHover('pen')).toBe(false);
     expect(stylus.isEnabled()).toBe(true);
   });
+
+  it('does not detect pressure when a pen reports the browser default', () => {
+    const stylus = createStylusInput();
+    stylus.pointerDown('pen', 1);
+
+    expect(stylus.pointerPressure('pen', 1, 0.5)).toBe(false);
+    expect(stylus.pointerPressure('mouse', 1, 0.8)).toBe(false);
+  });
+
+  it('detects pressure changes only for the active pen pointer', () => {
+    const stylus = createStylusInput();
+    stylus.pointerDown('pen', 1);
+
+    expect(stylus.pointerPressure('pen', 1, 0.5)).toBe(false);
+    expect(stylus.pointerPressure('pen', 1, 0.8)).toBe(true);
+    expect(stylus.pointerPressure('pen', 1, 0.5)).toBe(true);
+    expect(stylus.pointerPressure('pen', 2, 0.8)).toBe(false);
+  });
+
+  it('forgets per-pointer pressure state when the pen ends or the input resets', () => {
+    const stylus = createStylusInput();
+    stylus.pointerDown('pen', 1);
+    stylus.pointerPressure('pen', 1, 0.8);
+    stylus.pointerEnd('pen', 1);
+    stylus.pointerDown('pen', 1);
+
+    expect(stylus.pointerPressure('pen', 1, 0.5)).toBe(false);
+
+    stylus.reset();
+    stylus.pointerDown('pen', 1);
+
+    expect(stylus.pointerPressure('pen', 1, 0.5)).toBe(false);
+  });
 });

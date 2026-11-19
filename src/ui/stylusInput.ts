@@ -1,6 +1,7 @@
 export interface StylusInput {
   pointerDown(pointerType: string, pointerId: number): void;
   pointerHover(pointerType: string): boolean;
+  pointerPressure(pointerType: string, pointerId: number, pressure: number): boolean;
   pointerEnd(pointerType: string, pointerId: number): void;
   isEnabled(): boolean;
   hasActivePointer(): boolean;
@@ -11,6 +12,7 @@ export interface StylusInput {
 export function createStylusInput(): StylusInput {
   let enabled = false;
   const activePointers = new Set<number>();
+  const pressurePointers = new Set<number>();
 
   const stylusInput: StylusInput = {
     pointerHover(pointerType: string): boolean {
@@ -29,8 +31,22 @@ export function createStylusInput(): StylusInput {
       activePointers.add(pointerId);
     },
 
+    pointerPressure(pointerType: string, pointerId: number, pressure: number): boolean {
+      if (pointerType !== 'pen' || !activePointers.has(pointerId)) return false;
+
+      // Browsers report 0.5 while a pressure-insensitive pen is in contact.
+      if (!pressurePointers.has(pointerId) && Number.isFinite(pressure) && Math.abs(pressure - 0.5) > 0.01) {
+        pressurePointers.add(pointerId);
+      }
+
+      return pressurePointers.has(pointerId);
+    },
+
     pointerEnd(pointerType: string, pointerId: number): void {
-      if (pointerType === 'pen') activePointers.delete(pointerId);
+      if (pointerType === 'pen') {
+        activePointers.delete(pointerId);
+        pressurePointers.delete(pointerId);
+      }
     },
 
     isEnabled(): boolean {
@@ -48,6 +64,7 @@ export function createStylusInput(): StylusInput {
     reset(): void {
       enabled = false;
       activePointers.clear();
+      pressurePointers.clear();
     },
   };
 
