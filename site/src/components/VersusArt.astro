@@ -1,0 +1,75 @@
+---
+/**
+ * The top of a comparison page: a skater rolling by, a logo held up in each hand, the other
+ * editor's behind and ours in front. It is a Baipix file (art/piskel-and-baipix.baipix, or aseprite-and-baipix:
+ * four frames, four layers), rendered at build time. Its ink follows the theme. With reduced motion, the first
+ * frame stays.
+ */
+import { flattenFrame } from '../../../src/engine/composite';
+import { DEFAULT_DURATION, frameCount } from '../../../src/engine/frames';
+import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
+import { fileFromJson } from '../../../src/storage/fileFormat';
+import aseprite from '../art/aseprite-and-baipix.baipix?raw';
+import piskel from '../art/piskel-and-baipix.baipix?raw';
+
+interface Props {
+  /** The other editor, whose logo the skater holds. */
+  other: 'Piskel' | 'Aseprite';
+}
+const { other } = Astro.props;
+
+const [doc] = fileFromJson(other === 'Aseprite' ? aseprite : piskel);
+const frames = Array.from({ length: frameCount(doc) }, (_, f) => ({
+  svg: toSvg(
+    flattenFrame(doc, f, { includeBackground: false }),
+    doc.width,
+    doc.height,
+    renderGeometry(doc.width, doc.height, 1, 0),
+  )
+    .replaceAll('fill="#10121c"', 'fill="var(--text)"')
+    .replaceAll('fill="#ffffff"', 'fill="var(--bg)"'),
+  duration: doc.frames?.[f].duration ?? DEFAULT_DURATION,
+}));
+---
+
+<div
+  class="versus-art"
+  role="img"
+  aria-label={`A skater in a green t-shirt and jeans rolls by, holding up the ${other} logo in one hand and the Baipix logo in the other.`}
+  data-versus
+  data-durations={JSON.stringify(frames.map((f) => f.duration))}
+>
+  {frames.map((f, i) => (
+    <div class="versus-frame" data-frame={i} hidden={i > 0} set:html={f.svg} />
+  ))}
+</div>
+
+<script>
+  for (const art of document.querySelectorAll<HTMLElement>('[data-versus]')) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
+    const durations: number[] = JSON.parse(art.dataset.durations ?? '[]');
+    const shown = [...art.querySelectorAll<HTMLElement>('[data-frame]')];
+    let frame = 0;
+    const tick = () => {
+      shown[frame].hidden = true;
+      frame = (frame + 1) % shown.length;
+      shown[frame].hidden = false;
+      window.setTimeout(tick, durations[frame]);
+    };
+    window.setTimeout(tick, durations[0]);
+  }
+</script>
+
+<style>
+  .versus-art {
+    display: grid;
+  }
+  .versus-frame {
+    grid-area: 1 / 1;
+  }
+  .versus-frame :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>

@@ -229,6 +229,7 @@ export const fr: Record<MessageKey, string> = {
   'theme.dark': 'Thème sombre',
   'menu.grid': 'Grille de pixels',
   'menu.tile': 'Mosaïque',
+  'menu.stylusMode': 'Mode stylet',
   'menu.hideUi': "Masquer l'interface",
   'menu.shortcuts': 'Raccourcis clavier',
   'menu.version': 'Baipix {version} · Nouveautés',
@@ -377,6 +378,7 @@ export const fr: Record<MessageKey, string> = {
   'board.new': 'Nouveau plan',
   'board.duplicate': 'Dupliquer le plan',
   'board.delete': 'Supprimer le plan',
+  'board.collapse': 'Replier le plan',
   'board.deleted': '{name} supprimé.',
   'board.deletedMany': '{count} plans supprimés.',
   'board.none': 'Ce fichier n’a pas encore de plan.',
@@ -742,6 +744,7 @@ export const fr: Record<MessageKey, string> = {
   'shortcuts.stepFrame': 'Frame précédente, suivante',
 
   'toast.saved': '{name} enregistré.',
+  'toast.stylusModeEnabled': 'Mode stylet activé. Désactive-le dans Affichage pour dessiner au doigt.',
   'toast.alreadySorted': 'Les calques sont déjà triés par profondeur : le dessin le plus bas devant.',
   'toast.downloadCancelled': 'Téléchargement annulé.',
   'toast.downloadBusy': 'Une demande de téléchargement est déjà ouverte.',

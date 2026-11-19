@@ -37,10 +37,10 @@
   --mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --container: 1120px;
 }
-/* The header's links get a row of their own under its buttons. */
+/* On a phone the header is lower: its links are in a menu. */
 @media (max-width: 860px) {
   :root {
-    --header-height: 100px;
+    --header-height: 60px;
   }
 }
 /* Selected text: the editor's violet, with white ink. */
@@ -53,6 +53,32 @@
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
+}
+
+/* Moving around the site: a short cross-fade from one page to the next, the header staying put, and
+   sections fading in as they scroll into view (Base.astro). None of it with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.18s;
+  }
+  .site-header {
+    view-transition-name: site-header;
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s ease;
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 * {

@@ -36,7 +36,7 @@ Every color becomes a single SVG path, with neighboring pixels merged: light fil
 - **Import:** images (PNG, JPG, GIF, WebP), with the real pixels of upscaled pixel art recovered; animated GIFs and sprite sheets as animations; Aseprite files with their layers, frames and palette.
 - **Local-first:** everything is saved in your browser (IndexedDB), each board's last 50 undo steps included. Nothing is sent anywhere. It works offline once opened, and installs as an app.
 - **Touch:** on a phone or tablet, a long press picks a color, a two-finger tap undoes and a three-finger tap redoes.
-- English, French, Ukrainian, Spanish, Japanese, Italian, Korean and Brazilian Portuguese, opening in your browser's language; light and dark themes. Missing yours? [Add it](CONTRIBUTING.md#adding-a-language).
+- English, French, Ukrainian, Spanish, Japanese, Italian, Korean, Brazilian Portuguese and Simplified Chinese, opening in your browser's language; light and dark themes. Missing yours? [Add it](CONTRIBUTING.md#adding-a-language).
 
 ## Getting started
 

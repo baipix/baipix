@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { fileMasters, findMaster, spritePixels } from '../../engine/components';
 import { fileNameOf, isBoard, type LayerGroup, type PixelDoc } from '../../engine/document';
 import {
@@ -157,6 +157,11 @@ function LayersSection() {
   const reference = doc.reference;
   const selectedGroup = useEditorState((s) => s.selectedGroup);
   const boards = useEditorState((s) => s.boards);
+  // Folded by its caret: only the board that is open can be, and going to another one unfolds.
+  const folded = uiStore.use((s) => s.foldedBoard) === doc.id;
+  useEffect(() => {
+    if (uiStore.get().foldedBoard !== doc.id) uiStore.set({ foldedBoard: null });
+  }, [doc.id]);
   const selectedBoards = useEditorState((s) => s.selectedBoards);
   // The file's layers outside its boards, if it has any.
   const free = editor.freeZone();
@@ -556,15 +561,23 @@ function LayersSection() {
                     editor.selectBoards([b.id]);
                 }}
               >
-                <span className="board-toggle" aria-hidden="true">
-                  <Icon name={b.id === doc.id ? 'caret' : 'chevronRight'} size={16} />
-                </span>
+                <IconButton
+                  icon={b.id === doc.id && !folded ? 'caret' : 'chevronRight'}
+                  className="icon-btn board-toggle"
+                  label={b.id === doc.id && !folded ? t('board.collapse') : t('group.expand')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // The open board folds and unfolds; another one opens, as a click on its row does.
+                    if (b.id === doc.id) uiStore.set({ foldedBoard: folded ? null : b.id });
+                    else editor.selectBoards([b.id]);
+                  }}
+                />
                 <span className="group-icon" aria-hidden="true">
                   <Icon name="board" size={16} />
                 </span>
                 <EditableName value={b.name} onRename={(v) => editor.renameBoard(b.id, v)} />
               </div>
-              {b.id === doc.id && <div className="board-layers">{list}</div>}
+              {b.id === doc.id && !folded && <div className="board-layers">{list}</div>}
             </div>
           ))}
         </>

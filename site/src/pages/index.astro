@@ -135,7 +135,8 @@ const features = [
           <ArrowIcon />
         </a>
         <h1>
-          Pixel art has never been this easy<span class="pixel-dot" aria-hidden="true"></span>
+          <span class="kicker">Free pixel art editor, in your browser</span> Pixel art has never been this
+          easy<span class="pixel-dot" aria-hidden="true"></span>
         </h1>
         <p class="lead">
           Baipix is a free, open source pixel art editor with the interface of a modern design tool. Draw
@@ -283,6 +284,17 @@ const features = [
     flex-direction: column;
     align-items: center;
     text-align: center;
+  }
+  /* What Baipix is, in the words people search for, above the title and part of it. */
+  .kicker {
+    display: block;
+    margin-bottom: 20px;
+    font:
+      400 16px/1.2 'Silkscreen',
+      var(--mono);
+    letter-spacing: 0;
+    color: var(--muted);
+    text-transform: uppercase;
   }
   h1 {
     max-width: 14ch;

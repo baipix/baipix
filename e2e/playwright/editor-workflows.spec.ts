@@ -65,6 +65,26 @@ test('creates and switches between boards in one file', async ({ page }) => {
   await expect(boards.nth(0)).not.toHaveClass(/is-open/);
 });
 
+test('folds the open board in the layers list, and unfolds it', async ({ page }) => {
+  await createNewFile(page);
+  await clickMenuItem(page, 'File', 'New board');
+
+  const open = page.locator('.panel-left .board-item.is-open');
+  await expect(layerRows(page)).not.toHaveCount(0);
+
+  await open.getByRole('button', { name: 'Fold the board' }).click();
+  await expect(layerRows(page)).toHaveCount(0);
+  await expect(open).toHaveCount(1);
+
+  await open.getByRole('button', { name: 'Show its layers' }).click();
+  await expect(layerRows(page)).not.toHaveCount(0);
+
+  // Folded, then another board opened: that one shows its layers.
+  await open.getByRole('button', { name: 'Fold the board' }).click();
+  await page.locator('.panel-left .board-item:not(.is-open)').click();
+  await expect(layerRows(page)).not.toHaveCount(0);
+});
+
 test('copies and pastes a canvas selection', async ({ page }) => {
   await createNewFile(page);
   await drawAtCanvasCenter(page);
@@ -200,4 +220,20 @@ test('a second click on Adjust the layer closes the Adjustments panel', async ({
   await button.click();
   await expect(panel).toBeHidden();
   await expect(button).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('switching Remap to all layers keeps the Adjustments panel open', async ({ page }) => {
+  await createNewFile(page);
+  await drawAtCanvasCenter(page);
+
+  await page.locator('aside.panel-right').getByRole('button', { name: 'Adjust the layer…' }).click();
+  const panel = page.getByRole('dialog', { name: 'Adjustments' });
+  await panel.getByRole('tab', { name: 'Remap' }).click();
+
+  await panel.getByRole('radio', { name: 'All layers' }).click();
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole('radio', { name: 'All layers' })).toHaveAttribute('aria-checked', 'true');
+
+  await panel.getByRole('radio', { name: 'Active layer' }).click();
+  await expect(panel).toBeVisible();
 });

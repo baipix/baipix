@@ -229,6 +229,7 @@ export const es: Record<MessageKey, string> = {
   'theme.dark': 'Tema oscuro',
   'menu.grid': 'Cuadrícula de píxeles',
   'menu.tile': 'Mosaico',
+  'menu.stylusMode': 'Modo de lápiz óptico',
   'menu.hideUi': 'Ocultar la interfaz',
   'menu.shortcuts': 'Atajos de teclado',
   'menu.version': 'Baipix {version} · Novedades',
@@ -378,6 +379,7 @@ export const es: Record<MessageKey, string> = {
   'board.new': 'Nuevo tablero',
   'board.duplicate': 'Duplicar el tablero',
   'board.delete': 'Eliminar el tablero',
+  'board.collapse': 'Plegar el tablero',
   'board.deleted': '{name} eliminado.',
   'board.deletedMany': '{count} tableros eliminados.',
   'board.none': 'Este archivo todavía no tiene ningún tablero.',
@@ -749,6 +751,7 @@ export const es: Record<MessageKey, string> = {
   'shortcuts.stepFrame': 'Fotograma anterior, siguiente',
 
   'toast.saved': '{name} guardado.',
+  'toast.stylusModeEnabled': 'Modo de lápiz óptico activado. Desactívalo en Vista para dibujar con el dedo.',
   'toast.alreadySorted': 'Las capas ya están ordenadas por profundidad: el dibujo más bajo queda delante.',
   'toast.downloadCancelled': 'Descarga cancelada.',
   'toast.downloadBusy': 'Ya hay una solicitud de descarga abierta.',
