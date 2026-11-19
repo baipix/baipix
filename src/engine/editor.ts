@@ -1147,7 +1147,7 @@ export class Editor {
       else this.sessions.push({ doc, history: new History(), selection: null });
       taken = true;
     }
-    if (taken) this.commit(false);
+    if (taken) this.commit(false, false);
   }
 
   getDocuments(): PixelDoc[] {
@@ -1284,6 +1284,55 @@ export class Editor {
     this.deleted = { kind: 'file', sessions: boards, index };
     this.commit();
     return true;
+  }
+
+  /**
+   * Deletes several files and all of their boards in one editor operation.
+   * Unlike `deleteFile`, the shared `deleted` entry contains the whole batch, so one Undo restores
+   * every deleted file and its boards together.
+   */
+  deleteFiles(ids: string[]): number {
+    const wanted = new Set(ids);
+    const going = this.sessions.filter((s) => wanted.has(fileIdOf(s.doc)));
+
+    if (going.length === 0) {
+      return 0;
+    }
+
+    this.cancelStroke();
+
+    const index = this.sessions.indexOf(going[0]);
+    const deletesEverything = going.length === this.sessions.length;
+
+    let placeholder: Session | undefined;
+
+    if (deletesEverything) {
+      const { width, height } = going[0].doc;
+      const doc = createDocument(this.labels.untitled(1), width, height, this.labels.layer(1));
+
+      doc.board = {
+        file: doc.id,
+        fileName: doc.name,
+        x: 0,
+        y: 0,
+        empty: true,
+      };
+
+      placeholder = { doc, history: new History(), selection: null };
+      this.sessions.push(placeholder);
+    }
+
+    this.sessions = this.sessions.filter((s) => !going.includes(s));
+
+    if (going.includes(this.active)) {
+      this.activate(this.sessions[Math.max(0, index - 1)]);
+    }
+
+    this.deleted = { kind: 'file', sessions: going, index, placeholder };
+    // Deleting sessions does not change any pixels; skip the expensive document/frame work.
+    this.commit(true, false);
+
+    return new Set(going.map((s) => fileIdOf(s.doc))).size;
   }
 
   /** Removes a file for good, without offering to bring it back (the home screen's blank file). */

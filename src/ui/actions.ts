@@ -1211,6 +1211,29 @@ export function createActions(editor: Editor) {
       });
     },
 
+    /** Moves the selected Drawings to Trash as one batch and offers one Undo for the whole batch. */
+    deleteFiles(ids: string[]) {
+      const deletesLastFiles = editor.getState().files.length === ids.length;
+      const count = editor.deleteFiles(ids);
+
+      if (count === 0) {
+        return;
+      }
+
+      const message = t('toast.filesDeleted', { count });
+
+      if (!deletesLastFiles) {
+        return toast(message, undoDelete());
+      }
+
+      showEmptyHome(editor);
+
+      toast(message, {
+        label: t('common.undo'),
+        run: () => editor.restoreDeleted() && dropStarter(editor),
+      });
+    },
+
     /** Deletes the active board, with an Undo toast; a file keeps at least one. */
     deleteBoard() {
       const { doc } = editor.getState();

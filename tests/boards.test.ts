@@ -74,6 +74,22 @@ describe('boards', () => {
     expect(e.getState().files.map((f) => f.boards)).toEqual([2, 2, 1]);
   });
 
+  it('deletes several files and brings the whole batch back with one Undo', () => {
+    const e = twoBoards();
+    const icons = e.getState().files[0].id;
+    e.newFile(4, 4, 'Other');
+    const other = e.getState().activeId;
+
+    expect(e.deleteFiles([icons, other])).toBe(2);
+    expect(e.getState().files).toHaveLength(1);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(e.getState().files.map((f) => [f.name, f.boards])).toEqual([
+      ['Icons', 2],
+      ['Other', 1],
+    ]);
+    expect(e.restoreDeleted()).toBe(false);
+  });
+
   it('saves a file of boards in one .baipix file, and keeps them in the workspace', () => {
     const e = twoBoards();
     const boards = fileFromJson(fileToJson(e.fileBoards()));

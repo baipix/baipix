@@ -70,8 +70,14 @@ export interface StorageAdapter {
   changedElsewhere?(): Promise<PixelDoc[]>;
   /** Deleted files, newest first, kept until deleted for good; restoring one gives its boards back to take in. */
   listTrash?(): Promise<TrashedFile[]>;
+  /** Restores one trashed file, including all of its boards, and returns those boards to the workspace. */
   restoreTrashed?(fileId: string): Promise<PixelDoc[]>;
+  /** Permanently deletes one trashed file, including all of its boards. */
   discardTrashed?(fileId: string): Promise<void>;
+  /** Batch equivalent of `restoreTrashed`: restores every requested file and all of their boards in one operation. */
+  restoreTrashedFiles?(fileIds: string[]): Promise<PixelDoc[]>;
+  /** Batch equivalent of `discardTrashed`: permanently deletes every requested file and all of their boards in one operation. */
+  discardTrashedFiles?(fileIds: string[]): Promise<void>;
   /** The boards' undo histories, kept apart from the workspace (they're bigger and change less). */
   loadHistory?(): Promise<BoardHistory[]>;
   saveHistory?(histories: BoardHistory[]): Promise<void>;

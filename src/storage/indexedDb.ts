@@ -157,7 +157,10 @@ export class IndexedDbStorage implements StorageAdapter {
       for (const id of removed) {
         const req = files.get(id) as IDBRequest<StoredFile | undefined>;
         req.onsuccess = () => {
-          if (req.result) trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          // The blank starter is an editor placeholder, not a user file to recover.
+          if (req.result && !req.result.board?.empty) {
+            trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          }
           files.delete(id);
         };
       }
@@ -229,6 +232,71 @@ export class IndexedDbStorage implements StorageAdapter {
     if (!trashed) return;
     await transact(db, [TRASH], 'readwrite', (tx) => {
       for (const doc of trashed.boards) tx.objectStore(TRASH).delete(doc.id);
+    });
+  }
+
+  async restoreTrashedFiles(fileIds: string[]): Promise<PixelDoc[]> {
+    const wanted = new Set(fileIds);
+    const db = await this.connect();
+
+    const entries =
+      (await transact(db, [TRASH], 'readonly', (tx) => all<Trashed>(tx.objectStore(TRASH)))) ?? [];
+
+    const selected = entries
+      .map((entry) => ({
+        entry,
+        doc: readStoredFile(entry.file),
+        fileId: entry.file.board?.file ?? entry.file.id ?? '',
+      }))
+      .filter(({ doc, fileId }) => doc && wanted.has(fileId));
+
+    if (selected.length === 0) {
+      return [];
+    }
+
+    await transact(db, [FILES, TRASH], 'readwrite', (tx) => {
+      const files = tx.objectStore(FILES);
+      const trash = tx.objectStore(TRASH);
+
+      for (const { entry, doc } of selected) {
+        files.put(entry.file, doc!.id);
+        trash.delete(doc!.id);
+      }
+    });
+
+    const boards = selected.map(({ doc }) => doc!);
+
+    for (const doc of boards) {
+      this.known.set(doc.id, doc.updatedAt ?? 0);
+    }
+
+    return boards;
+  }
+
+  async discardTrashedFiles(fileIds: string[]): Promise<void> {
+    const wanted = new Set(fileIds);
+    const db = await this.connect();
+
+    const entries =
+      (await transact(db, [TRASH], 'readonly', (tx) => all<Trashed>(tx.objectStore(TRASH)))) ?? [];
+
+    const selected = entries.filter((entry) => {
+      const fileId = entry.file.board?.file ?? entry.file.id ?? '';
+      const hasId = !!entry.file.id;
+
+      return hasId && wanted.has(fileId);
+    });
+
+    if (selected.length === 0) {
+      return;
+    }
+
+    await transact(db, [TRASH], 'readwrite', (tx) => {
+      const trash = tx.objectStore(TRASH);
+
+      for (const { file } of selected) {
+        trash.delete(file.id!);
+      }
     });
   }
 
