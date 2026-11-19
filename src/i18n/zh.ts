@@ -353,6 +353,8 @@ export const zh: Record<MessageKey, string> = {
   'options.strength': '强度',
   'options.density': '密度',
   'options.sprayOpacity': '随机不透明度',
+  'options.pressure': '笔压',
+  'options.pressureCurve': '压力响应',
   'options.blurSnap': '限制在调色板内',
   'options.shadeMode': '模式',
   'options.hueShift': '色相偏移',

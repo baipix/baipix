@@ -359,6 +359,8 @@ export const pt: Record<MessageKey, string> = {
   'options.strength': 'Intensidade',
   'options.density': 'Densidade',
   'options.sprayOpacity': 'Opacidade aleatória',
+  'options.pressure': 'Pressão da caneta',
+  'options.pressureCurve': 'Resposta à pressão',
   'options.blurSnap': 'Permanecer na paleta',
   'options.shadeMode': 'Modo',
   'options.hueShift': 'Variação de matiz',

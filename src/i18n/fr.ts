@@ -358,6 +358,8 @@ export const fr: Record<MessageKey, string> = {
   'options.strength': 'Force',
   'options.density': 'Densité',
   'options.sprayOpacity': 'Opacité aléatoire',
+  'options.pressure': 'Pression du stylet',
+  'options.pressureCurve': 'Réponse à la pression',
   'options.blurSnap': 'Rester dans la palette',
   'options.shadeMode': 'Mode',
   'options.hueShift': 'Décalage de teinte',
