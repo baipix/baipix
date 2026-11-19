@@ -12,6 +12,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- On a touch screen or a phone, the timeline is one strip: play, the frames as thumbnails that scroll under the finger, a new frame and the onion skin, and the duration at a tablet's width. A long press on a frame opens its menu, its duration first. A film button in the phone's top bar opens and closes it. ([#906](https://github.com/baipix/baipix/pull/906))
 - On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))
 - The choices that were plain lists (the dithering, the gradient's shape, the export format, Remap's palette and a few more) are fields with a caret that open the editor's own menu: they look the same in every browser, and read as a choice on a phone. ([#863](https://github.com/baipix/baipix/pull/863))
 - On a phone or tablet, a submenu takes its menu's place, under a row with its name that goes back, instead of opening over it. A menu taller than the screen scrolls. ([#854](https://github.com/baipix/baipix/pull/854))
