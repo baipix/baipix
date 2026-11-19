@@ -50,6 +50,10 @@ export type ToolId =
 
 export interface ToolOptions {
   size: number;
+  /** Whether a pressure-capable stylus varies supported brush tools. */
+  pressureEnabled: boolean;
+  /** Quadratic pressure response control, from 0 (slower) to 100 (faster); 50 is linear. */
+  pressureCurve: number;
   /** Round brush tip instead of a square one (sizes 3 and up). */
   roundTip: boolean;
   /** Semi-transparent colors mix with what's underneath instead of replacing it. */
@@ -132,6 +136,8 @@ export interface ToolOptions {
 
 export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   size: 1,
+  pressureEnabled: false,
+  pressureCurve: 50,
   roundTip: false,
   blend: false,
   stabilizer: 0,
@@ -205,6 +211,10 @@ export interface Stroke {
   /** Right button / secondary color. */
   secondary: boolean;
   options: ToolOptions;
+  /** Most recent normalized stylus pressure for this gesture, from 0 to 1. */
+  pressure?: number;
+  /** True only after this pen has reported a value other than the no-pressure default (0.5). */
+  pressureActive?: boolean;
   primaryColor: Color;
   secondaryColor: Color;
   palette: PaletteIndex;

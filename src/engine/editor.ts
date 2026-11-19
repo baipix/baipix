@@ -3156,6 +3156,17 @@ export class Editor {
     this.commit();
   }
 
+  /** Updates the transient pressure sample for the current pointer stroke. */
+  setStrokePressure(pressure: number, active: boolean): void {
+    const id = this.strokeTool;
+
+    if (!this.stroke || !id || !['pencil', 'eraser', 'shade', 'lighten', 'blur', 'spray'].includes(id))
+      return;
+
+    this.stroke.pressure = Number.isFinite(pressure) ? Math.max(0, Math.min(1, pressure)) : 0.5;
+    this.stroke.pressureActive = active;
+  }
+
   /**
    * The volumes' faces as they'd be drawn now: picked by hand, or shaded from a color, the last
    * volume's while it can still be changed (so picking one face keeps the others as drawn), else
@@ -4432,6 +4443,8 @@ export class Editor {
       last: p,
       secondary,
       options: this.options,
+      pressure: 0.5,
+      pressureActive: false,
       primaryColor: this.primary,
       secondaryColor: this.secondary,
       palette: this.paletteIndex,
@@ -4472,7 +4485,13 @@ export class Editor {
    * Starts a gesture at pixel `p`. `toolOverride` lets the UI force a tool (Alt → picker).
    * Returns false when nothing happens (e.g. drawing on a hidden layer).
    */
-  beginStroke(p: Point, secondary: boolean, mods: Modifiers, toolOverride?: ToolId): boolean {
+  beginStroke(
+    p: Point,
+    secondary: boolean,
+    mods: Modifiers,
+    toolOverride?: ToolId,
+    pressure?: { value: number; active: boolean },
+  ): boolean {
     this.cancelStroke();
     // Working on the pixels lets go of the boards selected as boards.
     this.boardSelection = [];
@@ -4530,6 +4549,9 @@ export class Editor {
     }
     this.stroke = this.createStroke(p, secondary);
     this.strokeTool = id;
+
+    if (pressure) this.setStrokePressure(pressure.value, pressure.active);
+
     // Shift-click: a straight line from where the last pencil or eraser stroke on this layer ended.
     const last = this.lastPainted;
     if (
