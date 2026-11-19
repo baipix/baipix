@@ -200,4 +200,23 @@ describe('IndexedDbStorage', () => {
     expect(await tab.listTrash()).toEqual([]);
     expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
   });
+
+  it('restores and discards several trashed files together', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    const c = createDocument('C', 4, 4);
+
+    await tab.save(workspace([a, b, c]));
+    await tab.save(workspace([a]));
+
+    expect((await tab.restoreTrashedFiles!([b.id])).map((d) => d.name)).toEqual(['B']);
+    expect((await tab.listTrash()).map((f) => f.name)).toEqual(['C']);
+
+    await tab.discardTrashedFiles!([c.id]);
+
+    expect(await tab.listTrash()).toEqual([]);
+  });
 });

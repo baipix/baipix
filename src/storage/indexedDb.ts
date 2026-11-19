@@ -232,6 +232,54 @@ export class IndexedDbStorage implements StorageAdapter {
     });
   }
 
+  async restoreTrashedFiles(fileIds: string[]): Promise<PixelDoc[]> {
+    const wanted = new Set(fileIds);
+    const trashedFiles = (await this.listTrash()).filter((file) => wanted.has(file.id));
+
+    if (trashedFiles.length === 0) {
+      return [];
+    }
+
+    const boards = trashedFiles.flatMap((file) => file.boards);
+    const db = await this.connect();
+
+    await transact(db, [FILES, TRASH], 'readwrite', (tx) => {
+      const files = tx.objectStore(FILES);
+      const trash = tx.objectStore(TRASH);
+
+      for (const doc of boards) {
+        files.put(storeFile(doc), doc.id);
+        trash.delete(doc.id);
+      }
+    });
+
+    for (const doc of boards) {
+      this.known.set(doc.id, doc.updatedAt ?? 0);
+    }
+
+    return boards;
+  }
+
+  async discardTrashedFiles(fileIds: string[]): Promise<void> {
+    const wanted = new Set(fileIds);
+    const trashedFiles = (await this.listTrash()).filter((file) => wanted.has(file.id));
+
+    if (trashedFiles.length === 0) {
+      return;
+    }
+
+    const boards = trashedFiles.flatMap((file) => file.boards);
+    const db = await this.connect();
+
+    await transact(db, [TRASH], 'readwrite', (tx) => {
+      const trash = tx.objectStore(TRASH);
+
+      for (const doc of boards) {
+        trash.delete(doc.id);
+      }
+    });
+  }
+
   async loadHistory(): Promise<BoardHistory[]> {
     const db = await this.connect();
     const stored =
