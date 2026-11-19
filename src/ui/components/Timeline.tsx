@@ -1,13 +1,23 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { alpha } from '../../engine/color';
+import { flattenFrame } from '../../engine/composite';
 import { activeFrame, celOf, DURATION, frameCount, ONION } from '../../engine/frames';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import { pause, playbackStore, togglePlay } from '../playback';
 import { toggleOnion, toggleTimeline, uiStore, type UiState } from '../uiStore';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 import { NumberField } from './NumberField';
+import { Thumbnail } from './Thumbnail';
 
 /**
  * The active board's frames, under the canvas: a row per layer (the top one first), a column per
@@ -17,6 +27,12 @@ import { NumberField } from './NumberField';
  */
 const setOnion = (change: Partial<UiState['onion']>) =>
   uiStore.set((s) => ({ onion: { ...s.onion, ...change } }));
+
+/** Durations offered in a frame's menu on a touch screen, where there's no field to type in. */
+const DURATIONS = [50, 80, 100, 150, 200, 300, 500, 1000];
+/** How long a finger stays on a frame to open its menu, and how far it may drift meanwhile. */
+const LONG_PRESS_MS = 450;
+const LONG_PRESS_SLOP = 8;
 
 export function Timeline() {
   const t = useT();
@@ -30,6 +46,9 @@ export function Timeline() {
   // The frames picked with Shift or Cmd/Ctrl, by id so they follow a move; fewer than two: the shown one.
   const [picked, setPicked] = useState<string[]>([]);
   const anchor = useRef(0);
+  // On a touch screen or a phone: one strip, the frames as thumbnails; the size of a tablet keeps the duration.
+  const touch = useMediaQuery('(pointer: coarse), (max-width: 820px)');
+  const phone = useMediaQuery('(max-width: 820px)');
   const count = frameCount(doc);
   const shown = activeFrame(doc);
   const duration = doc.frames?.[shown].duration;
@@ -108,14 +127,29 @@ export function Timeline() {
     };
   }, []);
 
-  const frameMenu = (e: ReactMouseEvent<HTMLElement>, f: number) => {
-    e.preventDefault();
+  const frameMenu = (anchor: HTMLElement, f: number) => {
     pause();
     // On a picked frame, the menu is for all of them; elsewhere, for that frame alone.
     const many = isSelected(f);
     if (!many) setPicked([]);
     editor.setFrame(f);
-    openMenu(e.currentTarget, [
+    const ms = doc.frames?.[f].duration ?? 0;
+    openMenu(anchor, [
+      ...(touch
+        ? [
+            {
+              label: `${t('timeline.duration')} (${ms} ms)`,
+              items: [...new Set([...DURATIONS, ms])]
+                .sort((a, b) => a - b)
+                .map((d) => ({
+                  label: `${d} ms`,
+                  checked: d === ms,
+                  onSelect: () => editor.setFrameDuration(d, many ? selected : [f]),
+                })),
+            },
+            '-' as const,
+          ]
+        : []),
       { label: t('timeline.add'), icon: 'plus', shortcut: 'Alt+N', onSelect: () => editor.addFrame() },
       {
         label: t('timeline.addEmpty'),
@@ -150,6 +184,109 @@ export function Timeline() {
       },
     ]);
   };
+
+  // The thumbnails: each frame as it looks, all its layers.
+  const pictures = useMemo(
+    () => (touch ? Array.from({ length: count }, (_, f) => flattenFrame(doc, f)) : []),
+    // The document changes in place: its revision says when.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [touch, doc, count, revision],
+  );
+  const strip = useRef<HTMLDivElement>(null);
+  // The shown frame stays in view as it changes, playing included.
+  useEffect(() => {
+    strip.current?.querySelector('.is-active')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [shown, touch]);
+
+  // A long press on a frame opens its menu; the tap that ends it doesn't also pick the frame.
+  const press = useRef<{ timer: number; x: number; y: number; opened: boolean } | null>(null);
+  const endPress = () => {
+    if (press.current) window.clearTimeout(press.current.timer);
+  };
+  const startPress = (e: ReactPointerEvent<HTMLElement>, f: number) => {
+    endPress();
+    const anchor = e.currentTarget;
+    const at = { x: e.clientX, y: e.clientY, opened: false };
+    press.current = {
+      ...at,
+      timer: window.setTimeout(() => {
+        if (press.current) press.current.opened = true;
+        frameMenu(anchor, f);
+      }, LONG_PRESS_MS),
+    };
+  };
+  const movePress = (e: ReactPointerEvent) => {
+    const p = press.current;
+    if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > LONG_PRESS_SLOP) endPress();
+  };
+
+  if (touch)
+    return (
+      <div className="timeline is-touch" ref={ref}>
+        <IconButton
+          icon={playing ? 'pause' : 'play'}
+          label={playing ? t('timeline.pause') : t('timeline.play')}
+          onClick={() => togglePlay(editor)}
+          disabled={count < 2}
+        />
+        <span className="timeline-divider" />
+        <div className="timeline-thumbs" ref={strip}>
+          {pictures.map((pixels, f) => (
+            <button
+              key={doc.frames?.[f].id ?? f}
+              type="button"
+              className={`timeline-thumb${f === shown ? ' is-active' : ''}`}
+              aria-pressed={f === shown}
+              aria-label={t('timeline.frame', { n: f + 1, ms: doc.frames?.[f].duration ?? 0 })}
+              onPointerDown={(e) => startPress(e, f)}
+              onPointerMove={movePress}
+              onPointerUp={endPress}
+              onPointerCancel={endPress}
+              onClick={(e) => {
+                if (press.current?.opened) return void (press.current = null);
+                pickFrame(e, f);
+              }}
+              onContextMenu={(e) => {
+                // Android sends its own long press as a context menu: the one opened above is enough.
+                e.preventDefault();
+                if (!press.current?.opened) frameMenu(e.currentTarget, f);
+              }}
+            >
+              <Thumbnail
+                pixels={() => pixels}
+                width={doc.width}
+                height={doc.height}
+                version={revision}
+                size={36}
+              />
+              <span className="timeline-thumb-number">{f + 1}</span>
+            </button>
+          ))}
+        </div>
+        <IconButton icon="plus" label={t('timeline.add')} onClick={() => editor.addFrame()} />
+        {!phone && duration !== undefined && (
+          <div className="timeline-duration">
+            <NumberField
+              value={duration}
+              min={DURATION.min}
+              max={DURATION.max}
+              suffix="ms"
+              ariaLabel={t('timeline.duration')}
+              label={t('timeline.duration')}
+              sensitivity={1}
+              onChange={(ms, final) => final && editor.setFrameDuration(ms, selected)}
+            />
+          </div>
+        )}
+        <IconButton
+          icon="onion"
+          label={t('timeline.onion')}
+          pressed={onion.on}
+          onClick={toggleOnion}
+          disabled={count < 2}
+        />
+      </div>
+    );
 
   const rows = doc.layers.map((layer, index) => ({ layer, index })).reverse();
 
@@ -265,7 +402,7 @@ export function Timeline() {
             draggable
             data-tip={t('timeline.frame', { n: f + 1, ms: doc.frames?.[f].duration ?? 0 })}
             onClick={(e) => pickFrame(e, f)}
-            onContextMenu={(e) => frameMenu(e, f)}
+            onContextMenu={(e) => (e.preventDefault(), frameMenu(e.currentTarget, f))}
             onDragStart={(e) => {
               e.dataTransfer.effectAllowed = 'move';
               setDragged(f);

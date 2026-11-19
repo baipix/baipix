@@ -246,6 +246,10 @@ body {
   width: 200px;
   height: 120px;
 }
+.ds-timeline-touch {
+  position: static;
+  width: 360px;
+}
 .ds-timeline {
   width: 100%;
   max-height: none;

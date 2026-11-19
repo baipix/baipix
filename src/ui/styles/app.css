@@ -4125,6 +4125,79 @@ body.is-dragging-swatch * {
   border-radius: 50%;
   background: var(--glow-line);
 }
+/* On a touch screen or a phone: one strip, play, the frames as thumbnails that scroll under the
+   finger, a new frame and the onion skin (the duration too when there's room). A long press on a
+   frame opens its menu. */
+.timeline.is-touch {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  max-height: none;
+  padding: 6px;
+}
+.timeline.is-touch > * {
+  flex: none;
+}
+.timeline-divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 2px;
+  background: var(--line);
+}
+.timeline-thumbs {
+  flex: 1 !important;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  padding: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.timeline-thumbs::-webkit-scrollbar {
+  display: none;
+}
+.timeline-thumb {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+}
+.timeline-thumb .thumb {
+  border-radius: 6px;
+}
+.timeline-thumb.is-active .thumb {
+  box-shadow: 0 0 0 2px var(--glow-line);
+}
+.timeline-thumb-number {
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  line-height: 14px;
+  text-align: center;
+}
+.timeline-thumb.is-active .timeline-thumb-number {
+  background: var(--glow);
+  color: var(--glow-ink);
+}
+.timeline.is-touch .timeline-duration {
+  width: 120px;
+}
+
 /* A dot where the layer has pixels on that frame, a ring where it's empty. */
 .timeline-dot {
   display: block;

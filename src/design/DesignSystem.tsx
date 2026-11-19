@@ -902,6 +902,26 @@ function SurfacesBlock() {
           </div>
         </Specimen>
         <Specimen
+          label="Timeline on touch"
+          wide
+          use="On a touch screen or a phone, the timeline is one strip: play, the frames as thumbnails that scroll under the finger (the shown one ringed in violet, its number on violet), a new frame and the onion skin; on a tablet the duration too. A long press on a frame opens its menu, its duration first. The film button in the phone's top bar opens and closes it."
+        >
+          <div className="timeline is-touch ds-static ds-timeline-touch">
+            <IconButton icon="play" label="Play" />
+            <span className="timeline-divider" />
+            <div className="timeline-thumbs">
+              {[1, 2, 3, 4].map((n) => (
+                <button key={n} type="button" className={`timeline-thumb${n === 2 ? ' is-active' : ''}`}>
+                  <span className="thumb" style={{ display: 'block', width: 36, height: 36 }} />
+                  <span className="timeline-thumb-number">{n}</span>
+                </button>
+              ))}
+            </div>
+            <IconButton icon="plus" label="New frame" />
+            <IconButton icon="onion" label="Onion skin" />
+          </div>
+        </Specimen>
+        <Specimen
           label="Tabs"
           use="Kinds of content in one panel (Design / Export, the Adjustments). The current one is underlined."
         >
