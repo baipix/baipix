@@ -207,7 +207,8 @@ export function HomeScreen() {
     refreshTrash(storage);
     setSelectedIds([]);
 
-    toast(t('toast.filesRestored', { count: ids.length }));
+    const restoredFileCount = new Set(restoredBoards.map((board) => fileIdOf(board))).size;
+    toast(t('toast.filesRestored', { count: restoredFileCount }));
   };
 
   const discardSelected = async (ids: string[]) => {
