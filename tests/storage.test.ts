@@ -57,6 +57,24 @@ describe('.baipix format', () => {
 /** A browser of its own for each test: its storage starts empty. */
 const browser = () => new IDBFactory();
 
+async function abortNextWrite<T>(run: () => Promise<T>): Promise<T> {
+  const nativeTransaction = IDBDatabase.prototype.transaction;
+  let shouldAbort = true;
+  IDBDatabase.prototype.transaction = function (storeNames, mode, options) {
+    const tx = nativeTransaction.call(this, storeNames, mode, options);
+    if (shouldAbort && mode === 'readwrite') {
+      shouldAbort = false;
+      queueMicrotask(() => tx.abort());
+    }
+    return tx;
+  };
+  try {
+    return await run();
+  } finally {
+    IDBDatabase.prototype.transaction = nativeTransaction;
+  }
+}
+
 describe('IndexedDbStorage', () => {
   it('saves and loads a workspace', async () => {
     const storage = new IndexedDbStorage(browser());
@@ -218,5 +236,41 @@ describe('IndexedDbStorage', () => {
     await tab.discardTrashedFiles!([c.id]);
 
     expect(await tab.listTrash()).toEqual([]);
+  });
+
+  it('rolls back a failed batch restore instead of partially applying it', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    const c = createDocument('C', 4, 4);
+
+    await tab.save(workspace([a, b, c]));
+    await tab.save(workspace([a]));
+
+    let failed = false;
+
+    try {
+      await abortNextWrite(() => tab.restoreTrashedFiles!([b.id, c.id]));
+    } catch {
+      failed = true;
+    }
+
+    expect(failed).toBe(true);
+
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
+    expect((await tab.listTrash()).map((file) => file.name)).toEqual(['B', 'C']);
+
+    failed = false;
+
+    try {
+      await abortNextWrite(() => tab.discardTrashedFiles!([b.id, c.id]));
+    } catch {
+      failed = true;
+    }
+
+    expect(failed).toBe(true);
+    expect((await tab.listTrash()).map((file) => file.name)).toEqual(['B', 'C']);
   });
 });
