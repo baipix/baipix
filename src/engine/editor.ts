@@ -1329,7 +1329,8 @@ export class Editor {
     }
 
     this.deleted = { kind: 'file', sessions: going, index, placeholder };
-    this.commit();
+    // Deleting sessions does not change any pixels; skip the expensive document/frame work.
+    this.commit(true, false);
 
     return new Set(going.map((s) => fileIdOf(s.doc))).size;
   }
