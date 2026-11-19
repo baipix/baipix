@@ -111,7 +111,7 @@ export function ToolOptionsBar() {
   );
 
   const pressureControls =
-    stylusPressureDetected && !options.customBrush ? (
+    stylusPressureDetected && !(tool === 'pencil' && options.customBrush) ? (
       <>
         <Checkbox
           checked={options.pressureEnabled}
@@ -389,7 +389,6 @@ export function ToolOptionsBar() {
         <>
           {size}
           {stabilizer}
-          {pressureControls}
           {more(['dither', 'blend'], true)}
         </>
       );
@@ -683,6 +682,7 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
+          {pressureControls}
           <SelectField
             label={t('options.shadeMode')}
             tip
@@ -724,6 +724,7 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
+          {pressureControls}
           <Row label={t('options.strength')}>
             <NumberField
               value={options.blurStrength}
@@ -772,6 +773,7 @@ export function ToolOptionsBar() {
               onChange={(v) => editor.setOption('sprayDensity', v)}
             />
           </Row>
+          {pressureControls}
           <Checkbox
             checked={options.sprayOpacity}
             onChange={set('sprayOpacity')}
