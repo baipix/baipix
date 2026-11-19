@@ -122,11 +122,13 @@ export function HomeScreen() {
   const files = useEditorState((s) => s.files);
   const deleted = trashStore.use((s) => s.files);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
     if (!boards.length) return;
     editor.adoptDocuments(boards);
     refreshTrash(storage);
+    setSelectedIds((ids) => ids.filter((selected) => selected !== id));
     toast(t('toast.fileRestored', { name }));
   };
   const [dropping, setDropping] = useState(false);
@@ -159,6 +161,75 @@ export function HomeScreen() {
       const by = sort === 'name' ? a.name.localeCompare(b.name) : a.updatedAt - b.updatedAt;
       return order === 'asc' ? by : -by;
     });
+
+  const sectionItems = showDeleted ? deleted : shown;
+  const sectionIds = sectionItems.map((f) => f.id);
+  const sectionKey = sectionIds.join('|');
+
+  useEffect(() => {
+    const validIds = new Set(sectionKey ? sectionKey.split('|') : []);
+
+    setSelectedIds((ids) => {
+      const stillValid = ids.filter((id) => validIds.has(id));
+      const nothingRemoved = stillValid.length === ids.length;
+
+      return nothingRemoved ? ids : stillValid;
+    });
+  }, [sectionKey]);
+
+  const selectFile = (id: string, checked: boolean) =>
+    setSelectedIds((ids) => {
+      if (!checked) {
+        return ids.filter((x) => x !== id);
+      }
+      const alreadySelected = ids.includes(id);
+
+      return alreadySelected ? ids : [...ids, id];
+    });
+
+  const selectAll = () => setSelectedIds(sectionIds);
+  const clearSelection = () => setSelectedIds([]);
+
+  const restoreSelected = async (ids: string[]) => {
+    const restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
+
+    if (restoredBoards.length === 0) {
+      return;
+    }
+
+    editor.adoptDocuments(restoredBoards);
+    refreshTrash(storage);
+    setSelectedIds([]);
+
+    toast(t('toast.filesRestored', { count: ids.length }));
+  };
+
+  const discardSelected = async (ids: string[]) => {
+    if (!storage.discardTrashedFiles) {
+      return;
+    }
+
+    await storage.discardTrashedFiles(ids);
+    refreshTrash(storage);
+    setSelectedIds([]);
+  };
+
+  const confirmDiscard = (ids: string[], empty = false) => {
+    const title = empty ? t('home.emptyTrash') : t('home.deleteSelectedForGood');
+
+    const message = empty
+      ? t('home.confirmEmptyTrash')
+      : t('home.confirmDeleteSelectedForGood', { count: ids.length });
+
+    return openDialog({
+      type: 'confirm',
+      title,
+      message,
+      confirmLabel: title,
+      onConfirm: () => void discardSelected(ids),
+    });
+  };
+
   /** The name of a file's palette: a preset's, Custom, or the drawing's colors. */
   const paletteName = (doc: PixelDoc | undefined) => {
     const key = doc?.palette?.key;
@@ -310,7 +381,10 @@ export function HomeScreen() {
               <button
                 type="button"
                 className={`home-nav-item${showDeleted ? '' : ' is-active'}`}
-                onClick={() => setShowDeleted(false)}
+                onClick={() => {
+                  setShowDeleted(false);
+                  clearSelection();
+                }}
               >
                 <Icon name="image" size={16} />
                 {t('home.drawings')}
@@ -318,7 +392,10 @@ export function HomeScreen() {
               <button
                 type="button"
                 className={`home-nav-item${showDeleted ? ' is-active' : ''}${overTrash ? ' drop-into' : ''}`}
-                onClick={() => setShowDeleted(true)}
+                onClick={() => {
+                  setShowDeleted(true);
+                  clearSelection();
+                }}
                 onDragOver={(e) => {
                   if (!e.dataTransfer.types.includes(FILE_MIME)) return;
                   e.preventDefault();
@@ -332,7 +409,10 @@ export function HomeScreen() {
                   e.preventDefault();
                   setOverTrash(false);
                   const file = files.find((f) => f.id === e.dataTransfer.getData(FILE_MIME));
-                  if (file) actions.deleteFile(file.id, file.name);
+                  if (file) {
+                    clearSelection();
+                    actions.deleteFile(file.id, file.name);
+                  }
                 }}
               >
                 <Icon name="trash" size={16} />
@@ -390,6 +470,71 @@ export function HomeScreen() {
                     {showDeleted ? t('home.deleted') : t('home.drawings')}
                   </h2>
                   <div className="home-toolbar-tools">
+                    {sectionItems.length > 0 && (
+                      <div className="home-selection-toolbar" aria-live="polite">
+                        {selectedIds.length > 0 && (
+                          <span>{t('home.selected', { count: selectedIds.length })}</span>
+                        )}
+                        {selectedIds.length < sectionItems.length && (
+                          <button type="button" className="btn is-compact" onClick={selectAll}>
+                            {t('home.selectAll')}
+                          </button>
+                        )}
+                        {selectedIds.length > 0 && (
+                          <button type="button" className="btn is-compact" onClick={clearSelection}>
+                            {t('home.clearSelection')}
+                          </button>
+                        )}
+                        {selectedIds.length > 0 && !showDeleted && (
+                          <button
+                            type="button"
+                            className="btn is-compact is-danger"
+                            onClick={() => {
+                              actions.deleteFiles(selectedIds);
+                              clearSelection();
+                            }}
+                          >
+                            {t('home.deleteSelected')}
+                          </button>
+                        )}
+                        {selectedIds.length > 0 && showDeleted && (
+                          <>
+                            <button
+                              type="button"
+                              className="btn is-compact"
+                              onClick={() => void restoreSelected(selectedIds)}
+                            >
+                              {t('home.restoreSelected')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn is-compact is-danger"
+                              onClick={() => confirmDiscard(selectedIds)}
+                            >
+                              {t('home.deleteSelectedForGood')}
+                            </button>
+                          </>
+                        )}
+                        {showDeleted && (
+                          <>
+                            <button
+                              type="button"
+                              className="btn is-compact"
+                              onClick={() => void restoreSelected(sectionIds)}
+                            >
+                              {t('home.restoreAll')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn is-compact is-danger"
+                              onClick={() => confirmDiscard(sectionIds, true)}
+                            >
+                              {t('home.emptyTrash')}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                     {!showDeleted && (
                       <button
                         type="button"
@@ -465,6 +610,7 @@ export function HomeScreen() {
                     <table className="home-table">
                       <thead>
                         <tr>
+                          <th />
                           <th>{t('home.colName')}</th>
                           <th>{t('home.colFormat')}</th>
                           <th>{t('home.colPalette')}</th>
@@ -475,6 +621,15 @@ export function HomeScreen() {
                       <tbody>
                         {deleted.map((f) => (
                           <tr key={f.id}>
+                            <td className="home-td-select">
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.includes(f.id)}
+                                aria-label={t('home.selectFile', { name: f.name })}
+                                onChange={(e) => selectFile(f.id, e.target.checked)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </td>
                             <td className="home-td-name">
                               <span>
                                 <HomeThumb doc={f.boards[0]} />
@@ -511,6 +666,14 @@ export function HomeScreen() {
                     <div className="home-grid">
                       {deleted.map((f) => (
                         <div key={f.id} className="home-card is-deleted">
+                          <input
+                            type="checkbox"
+                            className="home-card-select"
+                            checked={selectedIds.includes(f.id)}
+                            aria-label={t('home.selectFile', { name: f.name })}
+                            onChange={(e) => selectFile(f.id, e.target.checked)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
                           <HomeThumb doc={f.boards[0]} />
                           <span className="home-card-info">
                             <span className="home-card-name truncate">{f.name}</span>
@@ -552,6 +715,7 @@ export function HomeScreen() {
                   <table className="home-table">
                     <thead>
                       <tr>
+                        <th />
                         <th>{t('home.colName')}</th>
                         <th>{t('home.colFormat')}</th>
                         <th>{t('home.colPalette')}</th>
@@ -577,6 +741,15 @@ export function HomeScreen() {
                               open(f.id);
                             }}
                           >
+                            <td className="home-td-select">
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.includes(f.id)}
+                                aria-label={t('home.selectFile', { name: f.name })}
+                                onChange={(e) => selectFile(f.id, e.target.checked)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </td>
                             <td className="home-td-name">
                               <span>
                                 <HomeThumb doc={doc} />
@@ -639,6 +812,14 @@ export function HomeScreen() {
                             open(f.id);
                           }}
                         >
+                          <input
+                            type="checkbox"
+                            className="home-card-select"
+                            checked={selectedIds.includes(f.id)}
+                            aria-label={t('home.selectFile', { name: f.name })}
+                            onChange={(e) => selectFile(f.id, e.target.checked)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
                           <HomeThumb doc={doc} />
                           {animated(f.id) && (
                             <span className="home-animated" data-tip={t('home.animated')}>
