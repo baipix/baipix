@@ -635,13 +635,14 @@ export function HomeScreen() {
                         {deleted.map((f) => (
                           <tr key={f.id}>
                             <td className="home-td-select">
-                              <input
-                                type="checkbox"
-                                checked={selectedIds.includes(f.id)}
-                                aria-label={t('home.selectFile', { name: f.name })}
-                                onChange={(e) => selectFile(f.id, e.target.checked)}
-                                onClick={(e) => e.stopPropagation()}
-                              />
+                              <label className="home-select-control" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedIds.includes(f.id)}
+                                  aria-label={t('home.selectFile', { name: f.name })}
+                                  onChange={(e) => selectFile(f.id, e.target.checked)}
+                                />
+                              </label>
                             </td>
                             <td className="home-td-name">
                               <span>
@@ -679,14 +680,18 @@ export function HomeScreen() {
                     <div className="home-grid">
                       {deleted.map((f) => (
                         <div key={f.id} className="home-card is-deleted">
-                          <input
-                            type="checkbox"
-                            className="home-card-select"
-                            checked={selectedIds.includes(f.id)}
-                            aria-label={t('home.selectFile', { name: f.name })}
-                            onChange={(e) => selectFile(f.id, e.target.checked)}
+                          <label
+                            className="home-select-control home-card-select-control"
                             onClick={(e) => e.stopPropagation()}
-                          />
+                          >
+                            <input
+                              type="checkbox"
+                              className="home-card-select"
+                              checked={selectedIds.includes(f.id)}
+                              aria-label={t('home.selectFile', { name: f.name })}
+                              onChange={(e) => selectFile(f.id, e.target.checked)}
+                            />
+                          </label>
                           <HomeThumb doc={f.boards[0]} />
                           <span className="home-card-info">
                             <span className="home-card-name truncate">{f.name}</span>
@@ -755,13 +760,14 @@ export function HomeScreen() {
                             }}
                           >
                             <td className="home-td-select">
-                              <input
-                                type="checkbox"
-                                checked={selectedIds.includes(f.id)}
-                                aria-label={t('home.selectFile', { name: f.name })}
-                                onChange={(e) => selectFile(f.id, e.target.checked)}
-                                onClick={(e) => e.stopPropagation()}
-                              />
+                              <label className="home-select-control" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedIds.includes(f.id)}
+                                  aria-label={t('home.selectFile', { name: f.name })}
+                                  onChange={(e) => selectFile(f.id, e.target.checked)}
+                                />
+                              </label>
                             </td>
                             <td className="home-td-name">
                               <span>
@@ -825,14 +831,18 @@ export function HomeScreen() {
                             open(f.id);
                           }}
                         >
-                          <input
-                            type="checkbox"
-                            className="home-card-select"
-                            checked={selectedIds.includes(f.id)}
-                            aria-label={t('home.selectFile', { name: f.name })}
-                            onChange={(e) => selectFile(f.id, e.target.checked)}
+                          <label
+                            className="home-select-control home-card-select-control"
                             onClick={(e) => e.stopPropagation()}
-                          />
+                          >
+                            <input
+                              type="checkbox"
+                              className="home-card-select"
+                              checked={selectedIds.includes(f.id)}
+                              aria-label={t('home.selectFile', { name: f.name })}
+                              onChange={(e) => selectFile(f.id, e.target.checked)}
+                            />
+                          </label>
                           <HomeThumb doc={doc} />
                           {animated(f.id) && (
                             <span className="home-animated" data-tip={t('home.animated')}>
