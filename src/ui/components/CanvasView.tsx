@@ -1074,7 +1074,13 @@ export function CanvasView() {
     };
 
     const onPenDetected = (): boolean => {
-      if (uiStore.get().stylusMode !== 'auto' || !stylus.pointerHover('pen')) return false;
+      if (
+        uiStore.get().stylusMode !== 'auto' ||
+        navigator.maxTouchPoints <= 0 ||
+        !stylus.pointerHover('pen')
+      ) {
+        return false;
+      }
 
       uiStore.set({ stylusMode: 'on' });
       toast(translate('toast.stylusModeEnabled'));
