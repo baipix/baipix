@@ -24,9 +24,10 @@ export function MobileBar() {
     <div className="mobile-bar">
       <IconButton
         className="icon-btn large"
-        icon="menu"
+        icon="logo"
         iconSize={24}
         label={t('menu.main')}
+        aria-haspopup="menu"
         onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
       />
       {/* The file name opens the files menu, like the ▾ next to it on larger screens. Rename, in
@@ -56,7 +57,7 @@ export function MobileBar() {
           type="button"
           className="mobile-name"
           aria-haspopup="menu"
-          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
+          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor))}
         >
           {name} ▾
         </button>

@@ -14,6 +14,7 @@ import { ALIGNS } from './components/ToolOptionsBar';
 import { SELECTS } from './tools';
 
 import { BLUESKY_URL, CHANGELOG_URL, DOCS_URL, GITHUB_URL } from './links';
+import { flatten } from '../engine/composite';
 
 /**
  * A new GitHub issue, filled in like the repository's templates (.github/ISSUE_TEMPLATE). A bug
@@ -65,25 +66,33 @@ export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, renam
  * The files menu of the left panel's header: the most recent files (the current one checked),
  * the current file's actions, and the home screen with all of them.
  */
-export function filesMenu(editor: Editor, actions: Actions): MenuItem[] {
+export function filesMenu(editor: Editor): MenuItem[] {
   const s = editor.getState();
-  const current = s.files.find((f) => f.id === s.activeId)!;
   const recent = [...s.files].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 8);
+
   return [
-    ...recent.map((f) => ({
-      label: f.name,
-      checked: f.id === s.activeId,
-      onSelect: () => editor.switchFile(f.id),
-    })),
+    ...recent.map((f) => {
+      const doc = editor.getDocument(f.id);
+
+      return {
+        label: f.name,
+        checked: f.id === s.activeId,
+        thumbnail: doc
+          ? {
+              pixels: () => flatten(doc, { includeBackground: false }),
+              width: doc.width,
+              height: doc.height,
+              version: s.contentRevision,
+            }
+          : undefined,
+        onSelect: () => editor.switchFile(f.id),
+      };
+    }),
     '-',
-    ...fileMenu(editor, actions, current, renameFile),
-    '-',
-    { label: t('menu.newFile'), onSelect: () => openDialog({ type: 'newFile' }) },
-    { label: t('menu.open'), shortcut: 'Ctrl+O', onSelect: () => void actions.openDocument() },
-    { label: t('menu.importImage'), onSelect: () => void actions.importImage() },
-    { label: t('menu.importSpriteSheet'), onSelect: () => void actions.importSpriteSheet() },
-    '-',
-    { label: t('file.allFiles'), onSelect: () => uiStore.set({ home: true }) },
+    {
+      label: t('file.allFiles'),
+      onSelect: () => uiStore.set({ home: true }),
+    },
   ];
 }
 

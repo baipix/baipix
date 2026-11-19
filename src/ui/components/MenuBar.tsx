@@ -16,7 +16,6 @@ import { menuAnchor, openMenu } from './Menu';
 function FileTitle() {
   const t = useT();
   const editor = useEditor();
-  const actions = useActions();
   const doc = useEditorState((s) => s.doc);
   // The file's name (the name of its only board, or of the file holding several). Renames mutate
   // the document in place, so select the name itself to re-render on change.
@@ -49,7 +48,7 @@ function FileTitle() {
         className="icon-btn files-button"
         label={t('file.recent')}
         aria-haspopup="menu"
-        onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
+        onClick={(e) => openMenu(e.currentTarget, filesMenu(editor))}
       />
       {!noBoard && <span className="muted">{t('file.size', { w: width, h: height })}</span>}
     </div>
