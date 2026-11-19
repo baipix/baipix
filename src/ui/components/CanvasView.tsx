@@ -1074,7 +1074,13 @@ export function CanvasView() {
     };
 
     const onPenDetected = (): boolean => {
-      if (uiStore.get().stylusMode !== 'auto' || !stylus.pointerHover('pen')) return false;
+      if (
+        uiStore.get().stylusMode !== 'auto' ||
+        navigator.maxTouchPoints <= 0 ||
+        !stylus.pointerHover('pen')
+      ) {
+        return false;
+      }
 
       uiStore.set({ stylusMode: 'on' });
       toast(translate('toast.stylusModeEnabled'));
@@ -1110,8 +1116,6 @@ export function CanvasView() {
 
         stylus.pointerDown(e.pointerType, e.pointerId);
       }
-
-      if (e.pointerType === 'touch' && isStylusMode() && stylus.shouldIgnoreTouch(e.pointerType)) return;
 
       if (e.pointerType === 'touch' && stylus.shouldIgnoreTouch(e.pointerType)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
