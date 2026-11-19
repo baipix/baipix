@@ -397,7 +397,9 @@ export function HomeScreen() {
                         aria-haspopup="menu"
                         onClick={(e) => sortMenu(e.currentTarget)}
                       >
-                        {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                        <span className="truncate">
+                          {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                        </span>
                         <Icon name="caret" size={12} />
                       </button>
                     )}
