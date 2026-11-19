@@ -528,8 +528,9 @@ export function HomeScreen() {
                             type="button"
                             className="btn is-compact is-danger"
                             onClick={() => {
-                              actions.deleteFiles(selectedIds);
+                              const ids = selectedIds;
                               clearSelection();
+                              actions.deleteFiles(ids);
                             }}
                           >
                             {t('home.deleteSelected')}
