@@ -30,6 +30,27 @@ describe('Editor', () => {
     expect(painted(e)).toBe(4);
   });
 
+  it('uses stylus pressure to vary the freehand brush size', () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    e.setOption('size', 5);
+    e.setOption('pressureEnabled', true);
+    e.beginStroke({ x: 10, y: 10 }, false, { shift: false }, undefined, { value: 0.5, active: true });
+    e.endStroke();
+
+    expect(painted(e)).toBe(9);
+  });
+
+  it('keeps the selected brush size when pressure is disabled', () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    e.setOption('size', 5);
+    e.beginStroke({ x: 10, y: 10 }, false, { shift: false }, undefined, { value: 0.5, active: true });
+    e.endStroke();
+
+    expect(painted(e)).toBe(25);
+  });
+
   it('removes doubled corners in pixel-perfect mode', () => {
     const e = new Editor();
     drag(e, [

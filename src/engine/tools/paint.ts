@@ -1,4 +1,5 @@
 import { inSelection } from '../selection';
+import { pressureRangeValue } from '../pressure';
 import { alpha, type Color } from '../color';
 import { blendOver } from '../composite';
 import { ditherSecond } from '../dither';
@@ -12,6 +13,20 @@ export const inBounds = (s: Stroke, x: number, y: number): boolean =>
   x >= 0 && y >= 0 && x < s.doc.width && y < s.doc.height;
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
+
+/** The pressure-adjusted size shared by the freehand brush tools. */
+export function effectiveBrushSize(s: Stroke): number {
+  const { size, pressureEnabled, pressureCurve } = s.options;
+
+  if (!pressureEnabled || !s.pressureActive) {
+    return size;
+  }
+
+  const pressure = s.pressure ?? 0.5;
+  const curve = pressureCurve / 100;
+
+  return pressureRangeValue(1, size, pressure, curve);
+}
 
 /**
  * Where a painted pixel lands: its index on the canvas, or -1 when it falls outside (or outside
@@ -59,7 +74,7 @@ export function stamp(
   c1: Color,
   c2 = c1,
   dither = false,
-  size = s.options.size,
+  size = effectiveBrushSize(s),
 ): void {
   brush(
     cx,
@@ -115,7 +130,7 @@ export function forEachBrushPixelOnce(
   brush(
     p.x,
     p.y,
-    s.options.size,
+    effectiveBrushSize(s),
     (bx, by) => {
       for (const m of mirrorsOf(s, bx, by)) {
         const i = pixelIndex(s, m.x, m.y);
