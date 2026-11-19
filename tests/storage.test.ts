@@ -158,6 +158,19 @@ describe('IndexedDbStorage', () => {
     expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
   });
 
+  it('does not put the blank editor starter in the trash', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+    const drawing = createDocument('Drawing', 4, 4);
+    const starter = createDocument('Untitled', 4, 4);
+    starter.board = { file: starter.id, fileName: starter.name, x: 0, y: 0, empty: true };
+
+    await tab.save(workspace([drawing, starter]));
+    await tab.save(workspace([drawing]));
+
+    expect(await tab.listTrash()).toEqual([]);
+  });
+
   it('writes only the boards that changed', async () => {
     const chrome = browser();
     const tab = new IndexedDbStorage(chrome);

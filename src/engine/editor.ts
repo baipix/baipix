@@ -1147,7 +1147,7 @@ export class Editor {
       else this.sessions.push({ doc, history: new History(), selection: null });
       taken = true;
     }
-    if (taken) this.commit(false);
+    if (taken) this.commit(false, false);
   }
 
   getDocuments(): PixelDoc[] {

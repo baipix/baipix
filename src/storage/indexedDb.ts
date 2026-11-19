@@ -157,7 +157,10 @@ export class IndexedDbStorage implements StorageAdapter {
       for (const id of removed) {
         const req = files.get(id) as IDBRequest<StoredFile | undefined>;
         req.onsuccess = () => {
-          if (req.result) trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          // The blank starter is an editor placeholder, not a user file to recover.
+          if (req.result && !req.result.board?.empty) {
+            trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          }
           files.delete(id);
         };
       }
