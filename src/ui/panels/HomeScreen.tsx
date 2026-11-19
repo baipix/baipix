@@ -504,7 +504,9 @@ export function HomeScreen() {
                     {sectionItems.length > 0 && (
                       <div className="home-selection-toolbar" aria-live="polite">
                         {selectedIds.length > 0 && (
-                          <span>{t('home.selected', { count: selectedIds.length })}</span>
+                          <span className="home-selection-appear">
+                            {t('home.selected', { count: selectedIds.length })}
+                          </span>
                         )}
                         {sectionItems.length > 0 && (
                           <button
@@ -517,14 +519,18 @@ export function HomeScreen() {
                           </button>
                         )}
                         {selectedIds.length > 0 && (
-                          <button type="button" className="btn is-compact" onClick={clearSelection}>
+                          <button
+                            type="button"
+                            className="btn is-compact home-selection-appear"
+                            onClick={clearSelection}
+                          >
                             {t('home.clearSelection')}
                           </button>
                         )}
                         {selectedIds.length > 0 && !showDeleted && (
                           <button
                             type="button"
-                            className="btn is-compact is-danger"
+                            className="btn is-compact is-danger home-selection-appear"
                             onClick={() => {
                               const ids = selectedIds;
                               clearSelection();
@@ -538,7 +544,7 @@ export function HomeScreen() {
                           <>
                             <button
                               type="button"
-                              className="btn is-compact"
+                              className="btn is-compact home-selection-appear"
                               disabled={trashActionBusy}
                               onClick={() => void restoreSelected(selectedIds)}
                             >
@@ -546,7 +552,7 @@ export function HomeScreen() {
                             </button>
                             <button
                               type="button"
-                              className="btn is-compact is-danger"
+                              className="btn is-compact is-danger home-selection-appear"
                               disabled={trashActionBusy}
                               onClick={() => confirmDiscard(selectedIds)}
                             >

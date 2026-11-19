@@ -2971,6 +2971,24 @@ body.is-dragging-swatch * {
   font-size: 12px;
   white-space: nowrap;
 }
+.home-selection-appear {
+  animation: home-selection-appear 0.18s ease-out both;
+}
+@keyframes home-selection-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-selection-appear {
+    animation: none;
+  }
+}
 .home-top-actions {
   display: flex;
   gap: 8px;
