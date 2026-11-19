@@ -192,6 +192,11 @@ export function HomeScreen() {
   const selectAll = () => setSelectedIds(sectionIds);
   const clearSelection = () => setSelectedIds([]);
 
+  const deleteSingle = (id: string, name: string) => {
+    clearSelection();
+    actions.deleteFile(id, name);
+  };
+
   const restoreSelected = async (ids: string[], all = false) => {
     if (trashActionBusyRef.current) return;
     trashActionBusyRef.current = true;
@@ -689,9 +694,7 @@ export function HomeScreen() {
                                   icon="trash"
                                   className="icon-btn is-danger"
                                   label={t('file.deleteForGood')}
-                                  onClick={() =>
-                                    void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage))
-                                  }
+                                  onClick={() => void discardSelected([f.id])}
                                 />
                               </span>
                             </td>
@@ -739,8 +742,7 @@ export function HomeScreen() {
                               openMenu(e.currentTarget, [
                                 {
                                   label: t('file.deleteForGood'),
-                                  onSelect: () =>
-                                    void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
+                                  onSelect: () => void discardSelected([f.id]),
                                 },
                               ])
                             }
@@ -822,7 +824,7 @@ export function HomeScreen() {
                                   icon="trash"
                                   className="icon-btn is-danger"
                                   label={t('common.delete')}
-                                  onClick={() => actions.deleteFile(f.id, f.name)}
+                                  onClick={() => deleteSingle(f.id, f.name)}
                                 />
                               </span>
                             </td>
@@ -887,7 +889,7 @@ export function HomeScreen() {
                               e.stopPropagation();
                               openMenu(
                                 e.currentTarget,
-                                fileMenu(editor, actions, f, () => setRenamingId(f.id)),
+                                fileMenu(editor, actions, f, () => setRenamingId(f.id), clearSelection),
                               );
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
