@@ -2971,6 +2971,25 @@ body.is-dragging-swatch * {
   font-size: 12px;
   white-space: nowrap;
 }
+.home-selection-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.home-selection-busy::before {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: home-selection-spin 0.7s linear infinite;
+  content: '';
+}
+@keyframes home-selection-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .home-selection-appear {
   animation: home-selection-appear 0.18s ease-out both;
 }
@@ -2985,7 +3004,8 @@ body.is-dragging-swatch * {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .home-selection-appear {
+  .home-selection-appear,
+  .home-selection-busy::before {
     animation: none;
   }
 }

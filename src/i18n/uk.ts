@@ -873,6 +873,8 @@ export const uk: Record<MessageKey, string> = {
   'home.drawings': 'Малюнки',
   'home.selectFile': 'Вибрати {name}',
   'home.selected': 'Вибрано: {count}',
+  'home.restoringFiles': 'Відновлення файлів: {count}…',
+  'home.deletingFiles': 'Видалення файлів: {count}…',
   'home.selectAll': 'Вибрати все',
   'home.clearSelection': 'Очистити вибір',
   'home.deleteSelected': 'Видалити вибрані',

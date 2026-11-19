@@ -871,6 +871,8 @@ export const ja: Record<MessageKey, string> = {
   'home.drawings': '作品',
   'home.selectFile': '{name}を選択',
   'home.selected': '{count}件を選択中',
+  'home.restoringFiles': '{count}件を復元中…',
+  'home.deletingFiles': '{count}件を削除中…',
   'home.selectAll': 'すべて選択',
   'home.clearSelection': '選択を解除',
   'home.deleteSelected': '選択項目を削除',

@@ -124,6 +124,8 @@ export function HomeScreen() {
   const [showDeleted, setShowDeleted] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [trashActionBusy, setTrashActionBusy] = useState(false);
+  const [trashAction, setTrashAction] = useState<'restore' | 'discard' | null>(null);
+  const [trashActionCount, setTrashActionCount] = useState(0);
   const trashActionBusyRef = useRef(false);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
@@ -201,6 +203,8 @@ export function HomeScreen() {
     if (trashActionBusyRef.current) return;
     trashActionBusyRef.current = true;
     setTrashActionBusy(true);
+    setTrashAction('restore');
+    setTrashActionCount(ids.length);
     try {
       const restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
       if (restoredBoards.length === 0) return;
@@ -221,6 +225,8 @@ export function HomeScreen() {
     } finally {
       trashActionBusyRef.current = false;
       setTrashActionBusy(false);
+      setTrashAction(null);
+      setTrashActionCount(0);
     }
   };
 
@@ -231,6 +237,8 @@ export function HomeScreen() {
 
     trashActionBusyRef.current = true;
     setTrashActionBusy(true);
+    setTrashAction('discard');
+    setTrashActionCount(ids.length);
     try {
       await storage.discardTrashedFiles(ids);
     } catch {
@@ -239,6 +247,8 @@ export function HomeScreen() {
     } finally {
       trashActionBusyRef.current = false;
       setTrashActionBusy(false);
+      setTrashAction(null);
+      setTrashActionCount(0);
     }
 
     refreshTrash(storage);
@@ -503,6 +513,13 @@ export function HomeScreen() {
                   <div className="home-toolbar-tools">
                     {sectionItems.length > 0 && (
                       <div className="home-selection-toolbar" aria-live="polite">
+                        {trashActionBusy && (
+                          <span className="home-selection-busy" role="status">
+                            {t(trashAction === 'restore' ? 'home.restoringFiles' : 'home.deletingFiles', {
+                              count: trashActionCount,
+                            })}
+                          </span>
+                        )}
                         {selectedIds.length > 0 && (
                           <span className="home-selection-appear">
                             {t('home.selected', { count: selectedIds.length })}

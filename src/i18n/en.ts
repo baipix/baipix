@@ -863,6 +863,8 @@ export const en = {
   'home.drawings': 'Drawings',
   'home.selectFile': 'Select {name}',
   'home.selected': '{count} selected',
+  'home.restoringFiles': 'Restoring {count} files…',
+  'home.deletingFiles': 'Deleting {count} files…',
   'home.selectAll': 'Select all',
   'home.clearSelection': 'Clear selection',
   'home.deleteSelected': 'Delete selected',

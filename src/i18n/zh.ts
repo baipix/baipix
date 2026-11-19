@@ -838,6 +838,8 @@ export const zh: Record<MessageKey, string> = {
   'home.drawings': '画作',
   'home.selectFile': '选择 {name}',
   'home.selected': '已选择 {count} 项',
+  'home.restoringFiles': '正在恢复 {count} 个文件…',
+  'home.deletingFiles': '正在删除 {count} 个文件…',
   'home.selectAll': '全选',
   'home.clearSelection': '清除选择',
   'home.deleteSelected': '删除所选项',

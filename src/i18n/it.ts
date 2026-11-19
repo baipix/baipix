@@ -876,6 +876,8 @@ export const it: Record<MessageKey, string> = {
   'home.drawings': 'Disegni',
   'home.selectFile': 'Seleziona {name}',
   'home.selected': '{count} selezionati',
+  'home.restoringFiles': 'Ripristino di {count} file…',
+  'home.deletingFiles': 'Eliminazione di {count} file…',
   'home.selectAll': 'Seleziona tutto',
   'home.clearSelection': 'Cancella selezione',
   'home.deleteSelected': 'Elimina selezionati',
