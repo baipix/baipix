@@ -5,3 +5,8 @@ export function pressureCurveValue(pressure: number, control: number): number {
 
   return 2 * (1 - p) * p * c + p * p;
 }
+
+/** Maps pressure to an integer value between the configured minimum and maximum. */
+export function pressureRangeValue(min: number, max: number, pressure: number, control: number): number {
+  return Math.round(min + (max - min) * pressureCurveValue(pressure, control));
+}

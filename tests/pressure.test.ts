@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pressureCurveValue } from '../src/engine/pressure';
+import { pressureCurveValue, pressureRangeValue } from '../src/engine/pressure';
 
 describe('pressure curve', () => {
   it('maps the pressure range from zero to one', () => {
@@ -26,5 +26,18 @@ describe('pressure curve', () => {
     expect(pressureCurveValue(2, 0.5)).toBe(1);
     expect(pressureCurveValue(0.5, -1)).toBeCloseTo(0.25);
     expect(pressureCurveValue(0.5, 2)).toBeCloseTo(0.75);
+  });
+});
+
+describe('pressure range', () => {
+  it('keeps the configured minimum and maximum at the pressure endpoints', () => {
+    expect(pressureRangeValue(1, 16, 0, 0.5)).toBe(1);
+    expect(pressureRangeValue(1, 16, 1, 0.5)).toBe(16);
+  });
+
+  it('uses the response curve and rounds to an integer', () => {
+    expect(pressureRangeValue(1, 16, 0.5, 0.5)).toBe(9);
+    expect(pressureRangeValue(1, 16, 0.5, 0)).toBe(5);
+    expect(pressureRangeValue(1, 16, 0.5, 1)).toBe(12);
   });
 });
