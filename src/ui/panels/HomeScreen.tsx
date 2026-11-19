@@ -506,14 +506,7 @@ export function HomeScreen() {
                             type="button"
                             className="btn is-compact"
                             disabled={selectedIds.length === sectionItems.length}
-                            onPointerDown={(e) => {
-                              e.preventDefault();
-                              selectAll();
-                            }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              selectAll();
-                            }}
+                            onClick={selectAll}
                           >
                             {t('home.selectAll')}
                           </button>
