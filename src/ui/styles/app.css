@@ -3284,8 +3284,25 @@ body.is-dragging-swatch * {
 }
 /* On a phone: the sidebar becomes a row of tabs over the drawings, without the help links (the
    editor's Help menu has them); two templates a row. In the top bar, Download all and Import show
-   only their icon. */
+   only their icon. The sort and the views go under the title, the sort taking the row's width,
+   on one line. */
 @media (max-width: 820px) {
+  .home-toolbar {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+  .home-toolbar-tools {
+    flex: 1 1 100%;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+  .home-sort {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .home-sort svg {
+    flex: none;
+  }
   .home-top .btn.is-compact {
     width: 28px;
     padding: 0;
