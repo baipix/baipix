@@ -1117,8 +1117,6 @@ export function CanvasView() {
         stylus.pointerDown(e.pointerType, e.pointerId);
       }
 
-      if (e.pointerType === 'touch' && isStylusMode() && stylus.shouldIgnoreTouch(e.pointerType)) return;
-
       if (e.pointerType === 'touch' && stylus.shouldIgnoreTouch(e.pointerType)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' });
 
