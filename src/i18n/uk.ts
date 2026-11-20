@@ -358,6 +358,8 @@ export const uk: Record<MessageKey, string> = {
   'options.strength': 'Інтенсивність',
   'options.density': 'Щільність',
   'options.sprayOpacity': 'Випадкова непрозорість',
+  'options.pressure': 'Натиск пензля',
+  'options.pressureCurve': 'Крива натиску',
   'options.blurSnap': 'Залишатися в межах палітри',
   'options.shadeMode': 'Режим',
   'options.hueShift': 'Зсув відтінку',

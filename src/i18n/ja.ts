@@ -358,6 +358,8 @@ export const ja: Record<MessageKey, string> = {
   'options.strength': '強さ',
   'options.density': '密度',
   'options.sprayOpacity': 'ランダムな不透明度',
+  'options.pressure': 'ペンの筆圧',
+  'options.pressureCurve': '筆圧の反応',
   'options.blurSnap': 'パレット内の色にとどめる',
   'options.shadeMode': 'モード',
   'options.hueShift': '色相のシフト',

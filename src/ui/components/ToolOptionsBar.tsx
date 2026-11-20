@@ -8,6 +8,7 @@ import { TOOLS, type ToolOptions } from '../../engine/tools';
 import { CYLINDER_AXES } from '../../engine/tools/types';
 import { useT, type MessageKey } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
+import { uiStore } from '../uiStore';
 import { toolMeta } from '../tools';
 import { Checkbox } from './Checkbox';
 import { Icon } from './Icon';
@@ -42,6 +43,7 @@ export function ToolOptionsBar() {
   const editor = useEditor();
   const tool = useEditorState((s) => s.tool);
   const options = useEditorState((s) => s.options);
+  const stylusPressureDetected = uiStore.use((s) => s.stylusPressureDetected);
   const view = useEditorState((s) => s.view);
   // The volumes' faces follow the color and the palette when they are shaded from them.
   useEditorState((s) => s.primary);
@@ -107,6 +109,34 @@ export function ToolOptionsBar() {
       />
     </Row>
   );
+
+  const pressureControls =
+    stylusPressureDetected && !(tool === 'pencil' && options.customBrush) ? (
+      <>
+        <Checkbox
+          checked={options.pressureEnabled}
+          onChange={set('pressureEnabled')}
+          label={t('options.pressure')}
+        />
+        {options.pressureEnabled && (
+          <Row label={t('options.pressureCurve')}>
+            <NumberField
+              slider
+              value={options.pressureCurve}
+              min={0}
+              max={100}
+              label="◒"
+              suffix="%"
+              ariaLabel={t('options.pressureCurve')}
+              scrubHint={t('common.dragToAdjust')}
+              sensitivity={4}
+              onChange={(v) => editor.setOption('pressureCurve', v)}
+            />
+          </Row>
+        )}
+      </>
+    ) : null;
+
   /**
    * Less common on/off options go in a "…" menu, to keep the bar short. A dot on the button says
    * one of them is on, so it's never forgotten.
@@ -343,6 +373,7 @@ export function ToolOptionsBar() {
         <>
           {size}
           {stabilizer}
+          {pressureControls}
           <Checkbox
             checked={options.pixelPerfect}
             onChange={set('pixelPerfect')}
@@ -368,6 +399,7 @@ export function ToolOptionsBar() {
         <>
           {size}
           {stabilizer}
+          {pressureControls}
         </>
       );
       break;
@@ -650,6 +682,7 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
+          {pressureControls}
           <SelectField
             label={t('options.shadeMode')}
             tip
@@ -691,6 +724,7 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
+          {pressureControls}
           <Row label={t('options.strength')}>
             <NumberField
               value={options.blurStrength}
@@ -739,6 +773,7 @@ export function ToolOptionsBar() {
               onChange={(v) => editor.setOption('sprayDensity', v)}
             />
           </Row>
+          {pressureControls}
           <Checkbox
             checked={options.sprayOpacity}
             onChange={set('sprayOpacity')}

@@ -77,6 +77,8 @@ export interface UiState {
   uiHidden: boolean;
   /** Whether touch input navigates the canvas instead of drawing. */
   stylusMode: 'auto' | 'on' | 'off';
+  /** A pen has reported variable pressure, so pressure controls can be shown. */
+  stylusPressureDetected: boolean;
   exportFormat: 'png' | 'gif' | 'sequence' | 'frames' | 'svg' | 'aseprite' | 'tileset' | 'layers';
   /** The language picked in the Code dialog. */
   exportCode: CodeLanguage;
@@ -129,6 +131,7 @@ export const uiStore = createStore<UiState>({
   homeView: 'grid',
   uiHidden: false,
   stylusMode: 'auto',
+  stylusPressureDetected: false,
   exportFormat: 'png',
   exportCode: 'react',
   exportActiveLayer: false,

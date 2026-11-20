@@ -358,6 +358,8 @@ export const es: Record<MessageKey, string> = {
   'options.strength': 'Intensidad',
   'options.density': 'Densidad',
   'options.sprayOpacity': 'Opacidad aleatoria',
+  'options.pressure': 'Presión del lápiz',
+  'options.pressureCurve': 'Respuesta a la presión',
   'options.blurSnap': 'Mantenerse dentro de la paleta',
   'options.shadeMode': 'Modo',
   'options.hueShift': 'Desplazamiento del tono',
