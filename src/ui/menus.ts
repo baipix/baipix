@@ -1,5 +1,5 @@
 import { alpha, pack } from '../engine/color';
-import {  isBoard } from '../engine/document';
+import { isBoard } from '../engine/document';
 import { isLinkedInstance } from '../engine/components';
 import type { Editor, FileInfo } from '../engine/editor';
 import { LOCALES, getLocale, setLocale, t } from '../i18n';
@@ -79,7 +79,7 @@ export function filesMenu(editor: Editor): MenuItem[] {
         checked: f.id === s.activeId,
         thumbnail: doc
           ? {
-             pixels: () => flatten(doc, { includeBackground: false }),
+              pixels: () => flatten(doc, { includeBackground: false }),
               width: doc.width,
               height: doc.height,
               version: s.contentRevision,
