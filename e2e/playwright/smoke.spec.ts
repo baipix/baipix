@@ -111,16 +111,22 @@ test.describe('on a phone, the properties', () => {
   });
 });
 
+// Rename the current file through the main File menu on mobile.
 test.describe('on a phone, the file', () => {
   test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 375, height: 812 } });
 
-  test('is renamed from the top bar', async ({ page }) => {
+  test('is renamed from the File menu', async ({ page }) => {
     await createNewFile(page);
 
     const bar = page.locator('.mobile-bar');
-    await bar.locator('.mobile-name').tap();
-    await page.getByRole('menuitem', { name: 'Rename', exact: true }).tap();
 
+    // Open the main menu using the logo.
+    await bar.getByRole('button', { name: 'Main menu' }).tap();
+
+    // Open the File submenu and select Rename.
+    const menu = page.locator('.menu');
+    await menu.getByRole('menuitem', { name: 'File', exact: true }).tap();
+    await menu.getByRole('menuitem', { name: 'Rename file F2', exact: true }).tap();
     const field = bar.getByRole('textbox', { name: 'File name' });
     await expect(field).toBeFocused();
     await field.fill('Robot');
