@@ -1,4 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState, type DragEvent, type MouseEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { fileIdOf } from '../../engine/document';
 import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
@@ -22,6 +30,9 @@ import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 import { FILE_MIME } from '../dragTypes';
 
 const DAY = 86_400_000;
+
+const LONG_PRESS_DELAY_MS = 450;
+const LONG_PRESS_MOVE_TOLERANCE_PX = 10;
 
 /** "Just now", "5 minutes ago", "yesterday"… then a plain date after a week. */
 function formatUpdated(time: number, justNow: string): string {
@@ -124,7 +135,14 @@ export function HomeScreen() {
   const deleted = trashStore.use((s) => s.files);
   const [showDeleted, setShowDeleted] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const [mobileSelectionMode, setMobileSelectionMode] = useState(false);
   const selectionAnchor = useRef<string | null>(null);
+
+  const mobileLongPressTimer = useRef<number | null>(null);
+  const mobileLongPressStart = useRef<{ x: number; y: number } | null>(null);
+  const ignoreMobileLongPressClick = useRef<string | null>(null);
+
   const [trashActionBusy, setTrashActionBusy] = useState(false);
   const trashActionBusyRef = useRef(false);
   const restore = async (id: string, name: string) => {
@@ -229,8 +247,92 @@ export function HomeScreen() {
 
   const selectAll = () => setSelectedIds(sectionIds);
 
+  const cancelMobileLongPress = () => {
+    if (mobileLongPressTimer.current !== null) {
+      window.clearTimeout(mobileLongPressTimer.current);
+      mobileLongPressTimer.current = null;
+    }
+
+    mobileLongPressStart.current = null;
+  };
+
+  const startMobileLongPress = (e: ReactPointerEvent<HTMLElement>, id: string) => {
+    const isTouch = e.pointerType === 'touch';
+    const isMobileViewport = window.matchMedia('(max-width: 820px)').matches;
+
+    if (!isTouch || !isMobileViewport || mobileSelectionMode) {
+      return;
+    }
+
+    if ((e.target as Element).closest('input, button, a, .checkbox')) {
+      return;
+    }
+
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+    mobileLongPressStart.current = { x: e.clientX, y: e.clientY };
+
+    mobileLongPressTimer.current = window.setTimeout(() => {
+      mobileLongPressTimer.current = null;
+      mobileLongPressStart.current = null;
+      ignoreMobileLongPressClick.current = id;
+
+      selectionAnchor.current = id;
+      setMobileSelectionMode(true);
+      setSelectedIds([id]);
+    }, LONG_PRESS_DELAY_MS);
+  };
+
+  const moveMobileLongPress = (e: ReactPointerEvent<HTMLElement>) => {
+    const start = mobileLongPressStart.current;
+
+    if (!start) {
+      return;
+    }
+
+    const movedX = Math.abs(e.clientX - start.x);
+    const movedY = Math.abs(e.clientY - start.y);
+    const movedTooFar = movedX > LONG_PRESS_MOVE_TOLERANCE_PX || movedY > LONG_PRESS_MOVE_TOLERANCE_PX;
+
+    if (movedTooFar) {
+      cancelMobileLongPress();
+    }
+  };
+
+  const endMobileLongPress = () => {
+    cancelMobileLongPress();
+
+    const id = ignoreMobileLongPressClick.current;
+
+    if (id === null) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      if (ignoreMobileLongPressClick.current === id) {
+        ignoreMobileLongPressClick.current = null;
+      }
+    }, 0);
+  };
+
+  const cancelMobilePointer = () => {
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+  };
+
+  const mobileSelectionPointerHandlers = (id: string) => ({
+    onPointerDown: (e: ReactPointerEvent<HTMLElement>) => startMobileLongPress(e, id),
+    onPointerMove: moveMobileLongPress,
+    onPointerUp: endMobileLongPress,
+    onPointerCancel: cancelMobilePointer,
+    onPointerLeave: cancelMobileLongPress,
+  });
+
   const clearSelection = () => {
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
     selectionAnchor.current = null;
+    setMobileSelectionMode(false);
     setSelectedIds([]);
   };
 
@@ -364,8 +466,9 @@ export function HomeScreen() {
         return;
       }
 
-      if (selectedIds.length > 0) {
+      if (selectedIds.length > 0 || mobileSelectionMode) {
         selectionAnchor.current = null;
+        setMobileSelectionMode(false);
         setSelectedIds([]);
 
         return;
@@ -379,7 +482,7 @@ export function HomeScreen() {
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [editor, selectedIds.length]);
+  }, [editor, selectedIds.length, mobileSelectionMode]);
 
   const open = (id: string) => {
     editor.switchFile(id);
@@ -392,6 +495,11 @@ export function HomeScreen() {
   useEffect(() => () => clearTimeout(openTimer.current), []);
 
   const clickCard = (e: MouseEvent, id: string, openWhenUnselected = true) => {
+    if (ignoreMobileLongPressClick.current === id) {
+      ignoreMobileLongPressClick.current = null;
+      return;
+    }
+
     const target = e.target as Element;
 
     if (target.closest('input, button, a, .checkbox')) {
@@ -399,7 +507,7 @@ export function HomeScreen() {
     }
 
     clearTimeout(openTimer.current);
-    const hasSelection = selectedIds.length > 0;
+    const hasSelection = selectedIds.length > 0 || mobileSelectionMode;
 
     if (e.shiftKey && hasSelection) {
       selectRange(id);
@@ -766,6 +874,7 @@ export function HomeScreen() {
                           <tr
                             key={f.id}
                             className={selectedIds.includes(f.id) ? 'is-selected' : undefined}
+                            {...mobileSelectionPointerHandlers(f.id)}
                             onClick={(e) => clickCard(e, f.id, false)}
                           >
                             <td className="home-td-select">
@@ -812,6 +921,7 @@ export function HomeScreen() {
                         <div
                           key={f.id}
                           className={`home-card is-deleted${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
+                          {...mobileSelectionPointerHandlers(f.id)}
                           onClick={(e) => clickCard(e, f.id, false)}
                         >
                           <Checkbox
@@ -877,6 +987,7 @@ export function HomeScreen() {
                             key={f.id}
                             className={`${draggedId === f.id ? 'is-dragging' : ''}${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
                             {...dragFile(f.id)}
+                            {...mobileSelectionPointerHandlers(f.id)}
                             tabIndex={0}
                             onClick={(e) => clickCard(e, f.id)}
                             onKeyDown={(e) => {
@@ -947,6 +1058,7 @@ export function HomeScreen() {
                           key={f.id}
                           className={`home-card${draggedId === f.id ? ' is-dragging' : ''}${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
                           {...dragFile(f.id)}
+                          {...mobileSelectionPointerHandlers(f.id)}
                           role="button"
                           tabIndex={0}
                           onClick={(e) => clickCard(e, f.id)}
