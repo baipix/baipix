@@ -870,6 +870,8 @@ export const ja: Record<MessageKey, string> = {
   'file.deleteForGood': '完全に削除',
   'home.drawings': '作品',
   'home.selectFile': '{name}を選択',
+  'home.select': '選択',
+  'home.selectFiles': 'ファイルを選択',
   'home.selected': '{count}件を選択中',
   'home.restoringFiles': '{count}件を復元中…',
   'home.deletingFiles': '{count}件を削除中…',

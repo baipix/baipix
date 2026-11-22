@@ -872,6 +872,8 @@ export const uk: Record<MessageKey, string> = {
   'file.deleteForGood': 'Видалити назавжди',
   'home.drawings': 'Малюнки',
   'home.selectFile': 'Вибрати {name}',
+  'home.select': 'Вибрати',
+  'home.selectFiles': 'Виберіть файли',
   'home.selected': 'Вибрано: {count}',
   'home.restoringFiles': 'Відновлення файлів: {count}…',
   'home.deletingFiles': 'Видалення файлів: {count}…',

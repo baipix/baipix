@@ -952,6 +952,8 @@ export const ko: Record<MessageKey, string> = {
 
   'home.drawings': '그림',
   'home.selectFile': '{name} 선택',
+  'home.select': '선택',
+  'home.selectFiles': '파일 선택',
   'home.selected': '{count}개 선택됨',
   'home.restoringFiles': '{count}개 복원 중…',
   'home.deletingFiles': '{count}개 삭제 중…',

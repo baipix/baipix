@@ -862,6 +862,8 @@ export const en = {
   'file.deleteForGood': 'Delete for good',
   'home.drawings': 'Drawings',
   'home.selectFile': 'Select {name}',
+  'home.select': 'Select',
+  'home.selectFiles': 'Select files',
   'home.selected': '{count} selected',
   'home.restoringFiles': 'Restoring {count} files…',
   'home.deletingFiles': 'Deleting {count} files…',

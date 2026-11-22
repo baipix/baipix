@@ -336,6 +336,14 @@ export function HomeScreen() {
     setSelectedIds([]);
   };
 
+  const startMobileSelection = () => {
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+    selectionAnchor.current = null;
+    setSelectedIds([]);
+    setMobileSelectionMode(true);
+  };
+
   const deleteSingle = (id: string, name: string) => {
     clearSelection();
     actions.deleteFile(id, name);
@@ -553,7 +561,7 @@ export function HomeScreen() {
 
   return (
     <div
-      className={`home${dropping ? ' is-dropping' : ''}`}
+      className={`home${dropping ? ' is-dropping' : ''}${mobileSelectionMode ? ' is-mobile-selecting' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
         // Only files from outside open here: a drawing's own card is dragged to the Trash.
@@ -705,10 +713,10 @@ export function HomeScreen() {
               {/* A toolbar like a files app's: the section's title, how to sort and how to show. */}
               {(shown.length > 0 || showDeleted) && (
                 <div className="home-toolbar">
-                  <h2 className="home-toolbar-title">
+                  <h2 className="home-toolbar-title home-toolbar-title-desktop">
                     {showDeleted ? t('home.deleted') : t('home.drawings')}
                   </h2>
-                  <div className="home-toolbar-tools">
+                  <div className="home-toolbar-tools home-toolbar-tools-desktop">
                     {selectedIds.length > 0 ? (
                       <div
                         className="home-selection-toolbar"
@@ -812,6 +820,84 @@ export function HomeScreen() {
                       </>
                     )}
                   </div>
+                  <div className="home-mobile-toolbar">
+                    {mobileSelectionMode ? (
+                      <div className="home-mobile-selection-head">
+                        <IconButton icon="close" label={t('home.clearSelection')} onClick={clearSelection} />
+
+                        <span className="home-mobile-selection-count" aria-live="polite">
+                          {selectedIds.length > 0
+                            ? t('home.selected', { count: selectedIds.length })
+                            : t('home.selectFiles')}
+                        </span>
+
+                        <button
+                          type="button"
+                          className="btn"
+                          disabled={selectedIds.length === sectionItems.length}
+                          onClick={selectAll}
+                        >
+                          <span className="home-mobile-action-label">{t('home.selectAll')}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="home-mobile-toolbar-head">
+                          <h2 className="home-toolbar-title">
+                            {showDeleted ? t('home.deleted') : t('home.drawings')}
+                          </h2>
+
+                          {sectionItems.length > 0 && (
+                            <button type="button" className="btn" onClick={startMobileSelection}>
+                              {t('home.select')}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="home-mobile-toolbar-tools">
+                          {!showDeleted ? (
+                            <button
+                              type="button"
+                              className="field field-menu home-sort"
+                              aria-haspopup="menu"
+                              onClick={(e) => sortMenu(e.currentTarget)}
+                            >
+                              {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                              <Icon name="caret" size={12} />
+                            </button>
+                          ) : deleted.length > 0 ? (
+                            <button
+                              type="button"
+                              className="btn is-danger home-mobile-empty"
+                              disabled={trashActionBusy}
+                              onClick={() => confirmDiscard(sectionIds, true)}
+                            >
+                              <Icon name="trash" size={14} />
+                              <span className="home-mobile-action-label">{t('home.emptyTrash')}…</span>
+                            </button>
+                          ) : (
+                            <span className="home-mobile-toolbar-spacer" />
+                          )}
+
+                          <div className="home-view" role="group">
+                            <IconButton
+                              icon="gridView"
+                              label={t('home.viewGrid')}
+                              pressed={view === 'grid'}
+                              onClick={() => uiStore.set({ homeView: 'grid' })}
+                            />
+
+                            <IconButton
+                              icon="list"
+                              label={t('home.viewList')}
+                              pressed={view === 'list'}
+                              onClick={() => uiStore.set({ homeView: 'list' })}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
               {/* The deleted files, kept a while: a click on Delete is never the end of a drawing. */}
@@ -858,7 +944,9 @@ export function HomeScreen() {
                 <section className="home-files">
                   {deleted.length === 0 && <p className="home-empty muted">{t('home.trashEmpty')}</p>}
                   {view === 'list' ? (
-                    <table className={`home-table${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
+                    <table
+                      className={`home-table${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                    >
                       <thead>
                         <tr>
                           <th />
@@ -916,7 +1004,9 @@ export function HomeScreen() {
                       </tbody>
                     </table>
                   ) : (
-                    <div className={`home-grid${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
+                    <div
+                      className={`home-grid${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                    >
                       {deleted.map((f) => (
                         <div
                           key={f.id}
@@ -967,7 +1057,9 @@ export function HomeScreen() {
               )}
               {shown.length > 0 && !showDeleted && view === 'list' && (
                 <section className="home-files">
-                  <table className={`home-table${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
+                  <table
+                    className={`home-table${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                  >
                     <thead>
                       <tr>
                         <th />
@@ -1048,7 +1140,9 @@ export function HomeScreen() {
               )}
               {shown.length > 0 && !showDeleted && view !== 'list' && (
                 <section className="home-files">
-                  <div className={`home-grid${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
+                  <div
+                    className={`home-grid${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                  >
                     {shown.map((f) => {
                       // The file's first board as its thumbnail.
                       const doc = docs.find((d) => fileIdOf(d) === f.id);
@@ -1110,6 +1204,51 @@ export function HomeScreen() {
           </div>
         }
       </div>
+      {mobileSelectionMode && (
+        <div
+          className="home-mobile-actions"
+          role="group"
+          aria-label={t('home.selected', { count: selectedIds.length })}
+        >
+          {showDeleted ? (
+            <>
+              <button
+                type="button"
+                className="btn home-mobile-action"
+                disabled={selectedIds.length === 0 || trashActionBusy}
+                onClick={() => void restoreSelected(selectedIds)}
+              >
+                <Icon name="undo" size={18} />
+                <span className="home-mobile-action-label">{t('file.restore')}</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn is-danger home-mobile-action"
+                disabled={selectedIds.length === 0 || trashActionBusy}
+                onClick={() => confirmDiscard(selectedIds)}
+              >
+                <Icon name="trash" size={18} />
+                <span className="home-mobile-action-label">{t('file.deleteForGood')}…</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="btn is-danger home-mobile-action"
+              disabled={selectedIds.length === 0}
+              onClick={() => {
+                const ids = selectedIds;
+                clearSelection();
+                actions.deleteFiles(ids);
+              }}
+            >
+              <Icon name="trash" size={18} />
+              <span className="home-mobile-action-label">{t('common.delete')}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

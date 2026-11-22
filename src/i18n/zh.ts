@@ -837,6 +837,8 @@ export const zh: Record<MessageKey, string> = {
   'file.deleteForGood': '彻底删除',
   'home.drawings': '画作',
   'home.selectFile': '选择 {name}',
+  'home.select': '选择',
+  'home.selectFiles': '选择文件',
   'home.selected': '已选择 {count} 项',
   'home.restoringFiles': '正在恢复 {count} 个文件…',
   'home.deletingFiles': '正在删除 {count} 个文件…',

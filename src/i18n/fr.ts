@@ -877,6 +877,8 @@ export const fr: Record<MessageKey, string> = {
   'file.deleteForGood': 'Supprimer définitivement',
   'home.drawings': 'Dessins',
   'home.selectFile': 'Sélectionner {name}',
+  'home.select': 'Sélectionner',
+  'home.selectFiles': 'Sélectionner des fichiers',
   'home.selected': '{count} sélectionnés',
   'home.restoringFiles': 'Restauration de {count} fichiers…',
   'home.deletingFiles': 'Suppression de {count} fichiers…',
