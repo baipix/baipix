@@ -3174,11 +3174,13 @@ body.is-dragging-swatch * {
 /* Show selection controls on hover, keyboard focus, or while selecting. */
 .home-card:hover > .checkbox.is-selection,
 .home-card.is-selected > .checkbox.is-selection,
-.home-card:focus-within > .checkbox.is-selection,
+.home-card:focus-visible > .checkbox.is-selection,
+.home-card > .checkbox.is-selection:has(input:focus-visible),
 .home-grid.is-selecting .home-card > .checkbox.is-selection,
 .home-table tbody tr:hover .home-td-select > .checkbox.is-selection,
 .home-table tbody tr.is-selected .home-td-select > .checkbox.is-selection,
-.home-table tbody tr:focus-within .home-td-select > .checkbox.is-selection,
+.home-table tbody tr:focus-visible .home-td-select > .checkbox.is-selection,
+.home-table .home-td-select > .checkbox.is-selection:has(input:focus-visible),
 .home-table.is-selecting tbody tr .home-td-select > .checkbox.is-selection {
   opacity: 1;
   pointer-events: auto;
