@@ -402,6 +402,17 @@ function ButtonsBlock() {
           </button>
         </Specimen>
         <Specimen
+          label="Danger button"
+          use="An action that removes something permanently: red text, with a subtle red fill on hover."
+        >
+          <button type="button" className="btn is-danger" aria-label="Delete permanently">
+            Delete
+          </button>
+          <button type="button" className="btn is-danger" disabled>
+            Disabled
+          </button>
+        </Specimen>
+        <Specimen
           label="Icon button"
           use="Compact actions with a tooltip. Always has a label for screen readers."
         >
@@ -463,6 +474,7 @@ function FieldsBlock() {
   const [n, setN] = useState(64);
   const [opacity, setOpacity] = useState(60);
   const [checked, setChecked] = useState(true);
+  const [selectionChecked, setSelectionChecked] = useState(true);
   const [anchor, setAnchor] = useState<Anchor>({ x: 1, y: 1 });
   const [light, setLight] = useState<BoardLight>(DEFAULT_LIGHT);
   return (
@@ -560,6 +572,17 @@ function FieldsBlock() {
         </Specimen>
         <Specimen label="Checkbox" use="On/off settings. The native checkbox, in the accent color.">
           <Checkbox checked={checked} onChange={setChecked} label="Pixel grid" />
+        </Specimen>
+        <Specimen
+          label="Selection checkbox"
+          use="Selecting files: violet when checked, with a white tick and no visible label."
+        >
+          <Checkbox
+            checked={selectionChecked}
+            onChange={setSelectionChecked}
+            variant="selection"
+            ariaLabel="Select example file"
+          />
         </Specimen>
         <Specimen
           label="Segmented icon buttons"
