@@ -24,6 +24,7 @@ After a pressure-capable pen reports changing pressure:
 
 - **Stylus pressure** appears in the options for Pencil, Eraser, Shade, Lighten and Blur. It is off by default: turn it on to vary the brush size from 1 pixel up to the selected size. The same setting is shared by these tools.
 - **Pressure response** adjusts how quickly the size grows; 50% is linear. Pens that report only the browser's default pressure keep the selected size.
+- For pressure to affect brush size, choose a size greater than 1 pixel.
 
 ## Clean lines
 
