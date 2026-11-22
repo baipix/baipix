@@ -2969,6 +2969,10 @@ body.is-dragging-swatch * {
 .home-card:hover {
   border-color: var(--frame-strong);
 }
+.home-card.is-selected {
+  border-color: var(--glow-line);
+  box-shadow: 0 0 0 1px var(--glow-line);
+}
 .home-card:focus-visible {
   outline: 2px solid var(--glow-line);
   outline-offset: 2px;
@@ -3148,29 +3152,38 @@ body.is-dragging-swatch * {
   padding-right: 0;
   text-align: center;
 }
-.home-select-control {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
+
+.home-table .home-td-select > .checkbox.is-selection {
+  margin: 0 auto;
 }
-.home-select-control input,
-.home-card-select {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
-}
-.home-card-select-control {
+
+.home-card > .checkbox.is-selection {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 6px;
+  left: 6px;
   z-index: 1;
 }
-.home-card-select:focus-visible {
-  outline: 2px solid var(--glow-line);
-  outline-offset: 2px;
+
+.home-card > .checkbox.is-selection,
+.home-table .home-td-select > .checkbox.is-selection {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
 }
+
+/* Show selection controls on hover, keyboard focus, or while selecting. */
+.home-card:hover > .checkbox.is-selection,
+.home-card.is-selected > .checkbox.is-selection,
+.home-card:focus-within > .checkbox.is-selection,
+.home-grid.is-selecting .home-card > .checkbox.is-selection,
+.home-table tbody tr:hover .home-td-select > .checkbox.is-selection,
+.home-table tbody tr.is-selected .home-td-select > .checkbox.is-selection,
+.home-table tbody tr:focus-within .home-td-select > .checkbox.is-selection,
+.home-table.is-selecting tbody tr .home-td-select > .checkbox.is-selection {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .home-table td:last-child {
   border-radius: 0 var(--radius) var(--radius) 0;
 }
@@ -3180,6 +3193,9 @@ body.is-dragging-swatch * {
 .home-table tbody tr:hover td,
 .home-table tbody tr:focus-within td {
   background: var(--hover);
+}
+.home-table tbody tr.is-selected td {
+  background: color-mix(in srgb, var(--glow-line) 14%, var(--panel));
 }
 .home-table tbody tr:focus-visible {
   outline: 2px solid var(--glow-line);

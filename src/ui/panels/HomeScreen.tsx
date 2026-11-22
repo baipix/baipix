@@ -11,6 +11,7 @@ import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
+import { Checkbox } from '../components/Checkbox';
 import { dropStarter, isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
 import { createFromTemplate, TEMPLATES } from '../templates';
@@ -123,6 +124,7 @@ export function HomeScreen() {
   const deleted = trashStore.use((s) => s.files);
   const [showDeleted, setShowDeleted] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectionAnchor = useRef<string | null>(null);
   const [trashActionBusy, setTrashActionBusy] = useState(false);
   const [trashAction, setTrashAction] = useState<'restore' | 'discard' | null>(null);
   const [trashActionCount, setTrashActionCount] = useState(0);
@@ -181,18 +183,58 @@ export function HomeScreen() {
     });
   }, [sectionKey]);
 
-  const selectFile = (id: string, checked: boolean) =>
+  const selectFile = (id: string, checked: boolean) => {
+    selectionAnchor.current = id;
+
     setSelectedIds((ids) => {
       if (!checked) {
-        return ids.filter((x) => x !== id);
+        return ids.filter((selected) => selected !== id);
       }
+
       const alreadySelected = ids.includes(id);
 
       return alreadySelected ? ids : [...ids, id];
     });
+  };
+
+  const toggleFileSelection = (id: string) => {
+    selectionAnchor.current = id;
+
+    setSelectedIds((ids) => {
+      if (ids.includes(id)) {
+        return ids.filter((selected) => selected !== id);
+      }
+
+      return [...ids, id];
+    });
+  };
+
+  const selectRange = (id: string) => {
+    const targetIndex = sectionIds.indexOf(id);
+
+    if (targetIndex === -1) {
+      return;
+    }
+
+    const anchorIndex = sectionIds.indexOf(selectionAnchor.current ?? id);
+    const hasAnchor = anchorIndex !== -1;
+
+    const start = hasAnchor ? Math.min(anchorIndex, targetIndex) : targetIndex;
+    const end = hasAnchor ? Math.max(anchorIndex, targetIndex) : targetIndex;
+    const range = sectionIds.slice(start, end + 1);
+
+    setSelectedIds((ids) => {
+      const merged = new Set([...ids, ...range]);
+      return [...merged];
+    });
+  };
 
   const selectAll = () => setSelectedIds(sectionIds);
-  const clearSelection = () => setSelectedIds([]);
+
+  const clearSelection = () => {
+    selectionAnchor.current = null;
+    setSelectedIds([]);
+  };
 
   const deleteSingle = (id: string, name: string) => {
     clearSelection();
@@ -316,11 +358,29 @@ export function HomeScreen() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !document.querySelector('dialog[open]')) leaveHome(editor);
+      const isEscape = e.key === 'Escape';
+      const hasOpenDialog = document.querySelector('dialog[open]') !== null;
+
+      if (!isEscape || hasOpenDialog) {
+        return;
+      }
+
+      if (selectedIds.length > 0) {
+        selectionAnchor.current = null;
+        setSelectedIds([]);
+
+        return;
+      }
+
+      leaveHome(editor);
     };
+
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [editor]);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [editor, selectedIds.length]);
 
   const open = (id: string) => {
     editor.switchFile(id);
@@ -331,13 +391,44 @@ export function HomeScreen() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const openTimer = useRef(0);
   useEffect(() => () => clearTimeout(openTimer.current), []);
-  const clickCard = (e: MouseEvent, id: string) => {
+
+  const clickCard = (e: MouseEvent, id: string, openWhenUnselected = true) => {
     const target = e.target as Element;
-    if (target.closest('input')) return;
+
+    if (target.closest('input, button, a, .checkbox')) {
+      return;
+    }
+
     clearTimeout(openTimer.current);
-    if (!target.closest('.home-file-name')) return open(id);
-    if (e.detail === 1) openTimer.current = window.setTimeout(() => open(id), 300);
+    const hasSelection = selectedIds.length > 0;
+
+    if (e.shiftKey && hasSelection) {
+      selectRange(id);
+      return;
+    }
+
+    if (e.metaKey || e.ctrlKey || hasSelection) {
+      toggleFileSelection(id);
+      return;
+    }
+
+    if (!openWhenUnselected) {
+      return;
+    }
+
+    const isNameClick = target.closest('.home-file-name') !== null;
+
+    if (!isNameClick) {
+      return open(id);
+    }
+
+    const isSingleClick = e.detail === 1;
+
+    if (isSingleClick) {
+      openTimer.current = window.setTimeout(() => open(id), 300);
+    }
   };
+
   const fileName = (f: { id: string; name: string }, className = '') => (
     <EditableName
       className={`home-file-name truncate ${className}`}
@@ -671,7 +762,7 @@ export function HomeScreen() {
                 <section className="home-files">
                   {deleted.length === 0 && <p className="home-empty muted">{t('home.trashEmpty')}</p>}
                   {view === 'list' ? (
-                    <table className="home-table">
+                    <table className={`home-table${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
                       <thead>
                         <tr>
                           <th />
@@ -684,16 +775,18 @@ export function HomeScreen() {
                       </thead>
                       <tbody>
                         {deleted.map((f) => (
-                          <tr key={f.id}>
+                          <tr
+                            key={f.id}
+                            className={selectedIds.includes(f.id) ? 'is-selected' : undefined}
+                            onClick={(e) => clickCard(e, f.id, false)}
+                          >
                             <td className="home-td-select">
-                              <label className="home-select-control" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedIds.includes(f.id)}
-                                  aria-label={t('home.selectFile', { name: f.name })}
-                                  onChange={(e) => selectFile(f.id, e.target.checked)}
-                                />
-                              </label>
+                              <Checkbox
+                                checked={selectedIds.includes(f.id)}
+                                onChange={(checked) => selectFile(f.id, checked)}
+                                variant="selection"
+                                ariaLabel={t('home.selectFile', { name: f.name })}
+                              />
                             </td>
                             <td className="home-td-name">
                               <span>
@@ -726,21 +819,19 @@ export function HomeScreen() {
                       </tbody>
                     </table>
                   ) : (
-                    <div className="home-grid">
+                    <div className={`home-grid${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
                       {deleted.map((f) => (
-                        <div key={f.id} className="home-card is-deleted">
-                          <label
-                            className="home-select-control home-card-select-control"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <input
-                              type="checkbox"
-                              className="home-card-select"
-                              checked={selectedIds.includes(f.id)}
-                              aria-label={t('home.selectFile', { name: f.name })}
-                              onChange={(e) => selectFile(f.id, e.target.checked)}
-                            />
-                          </label>
+                        <div
+                          key={f.id}
+                          className={`home-card is-deleted${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
+                          onClick={(e) => clickCard(e, f.id, false)}
+                        >
+                          <Checkbox
+                            checked={selectedIds.includes(f.id)}
+                            onChange={(checked) => selectFile(f.id, checked)}
+                            variant="selection"
+                            ariaLabel={t('home.selectFile', { name: f.name })}
+                          />
                           <HomeThumb doc={f.boards[0]} />
                           <span className="home-card-info">
                             <span className="home-card-name truncate">{f.name}</span>
@@ -778,7 +869,7 @@ export function HomeScreen() {
               )}
               {shown.length > 0 && !showDeleted && view === 'list' && (
                 <section className="home-files">
-                  <table className="home-table">
+                  <table className={`home-table${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
                     <thead>
                       <tr>
                         <th />
@@ -796,7 +887,7 @@ export function HomeScreen() {
                         return (
                           <tr
                             key={f.id}
-                            className={draggedId === f.id ? 'is-dragging' : undefined}
+                            className={`${draggedId === f.id ? 'is-dragging' : ''}${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
                             {...dragFile(f.id)}
                             tabIndex={0}
                             onClick={(e) => clickCard(e, f.id)}
@@ -860,7 +951,7 @@ export function HomeScreen() {
               )}
               {shown.length > 0 && !showDeleted && view !== 'list' && (
                 <section className="home-files">
-                  <div className="home-grid">
+                  <div className={`home-grid${selectedIds.length > 0 ? ' is-selecting' : ''}`}>
                     {shown.map((f) => {
                       // The file's first board as its thumbnail.
                       const doc = docs.find((d) => fileIdOf(d) === f.id);
@@ -868,7 +959,7 @@ export function HomeScreen() {
                       return (
                         <div
                           key={f.id}
-                          className={`home-card${draggedId === f.id ? ' is-dragging' : ''}`}
+                          className={`home-card${draggedId === f.id ? ' is-dragging' : ''}${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
                           {...dragFile(f.id)}
                           role="button"
                           tabIndex={0}
@@ -879,18 +970,12 @@ export function HomeScreen() {
                             open(f.id);
                           }}
                         >
-                          <label
-                            className="home-select-control home-card-select-control"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <input
-                              type="checkbox"
-                              className="home-card-select"
-                              checked={selectedIds.includes(f.id)}
-                              aria-label={t('home.selectFile', { name: f.name })}
-                              onChange={(e) => selectFile(f.id, e.target.checked)}
-                            />
-                          </label>
+                          <Checkbox
+                            checked={selectedIds.includes(f.id)}
+                            onChange={(checked) => selectFile(f.id, checked)}
+                            variant="selection"
+                            ariaLabel={t('home.selectFile', { name: f.name })}
+                          />
                           <HomeThumb doc={doc} />
                           {animated(f.id) && (
                             <span className="home-animated" data-tip={t('home.animated')}>
