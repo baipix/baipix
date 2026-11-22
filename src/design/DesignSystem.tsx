@@ -463,8 +463,6 @@ function FieldsBlock() {
   const [n, setN] = useState(64);
   const [opacity, setOpacity] = useState(60);
   const [checked, setChecked] = useState(true);
-  const [pressureOn, setPressureOn] = useState(false);
-  const [pressure, setPressure] = useState(50);
   const [anchor, setAnchor] = useState<Anchor>({ x: 1, y: 1 });
   const [light, setLight] = useState<BoardLight>(DEFAULT_LIGHT);
   return (
@@ -562,24 +560,6 @@ function FieldsBlock() {
         </Specimen>
         <Specimen label="Checkbox" use="On/off settings. The native checkbox, in the accent color.">
           <Checkbox checked={checked} onChange={setChecked} label="Pixel grid" />
-        </Specimen>
-        <Specimen
-          label="Pressure controls"
-          use="The checkbox turns stylus pressure on or off; the slider adjusts its response."
-        >
-          <div className="ds-field">
-            <Checkbox checked={pressureOn} onChange={setPressureOn} label="Stylus pressure" />
-            <NumberField
-              slider
-              value={pressure}
-              min={0}
-              max={100}
-              label="◒"
-              suffix="%"
-              ariaLabel="Pressure response"
-              onChange={setPressure}
-            />
-          </div>
         </Specimen>
         <Specimen
           label="Segmented icon buttons"
