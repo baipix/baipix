@@ -232,23 +232,52 @@ describe('IndexedDbStorage', () => {
     expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
   });
 
-  it('restores and discards several trashed files together', async () => {
+  it('restores and discards multiple trashed files with all their boards', async () => {
     const chrome = browser();
     const tab = new IndexedDbStorage(chrome);
 
     const a = createDocument('A', 4, 4);
+    a.board = { file: a.id, fileName: 'A', x: 0, y: 0 };
+
+    const aSecond = createDocument('A second', 4, 4);
+    aSecond.board = { file: a.id, fileName: 'A', x: 4, y: 0 };
+
     const b = createDocument('B', 4, 4);
+    b.board = { file: b.id, fileName: 'B', x: 0, y: 0 };
+
+    const bSecond = createDocument('B second', 4, 4);
+    bSecond.board = { file: b.id, fileName: 'B', x: 4, y: 0 };
+
     const c = createDocument('C', 4, 4);
 
-    await tab.save(workspace([a, b, c]));
-    await tab.save(workspace([a]));
+    await tab.save(workspace([a, aSecond, b, bSecond, c]));
+    await tab.save(workspace([a, aSecond]));
 
-    expect((await tab.restoreTrashedFiles!([b.id])).map((d) => d.name)).toEqual(['B']);
-    expect((await tab.listTrash()).map((f) => f.name)).toEqual(['C']);
+    // The Trash groups boards belonging to the same file.
+    const trash = await tab.listTrash();
 
-    await tab.discardTrashedFiles!([c.id]);
+    expect(trash.map((file) => file.name).sort()).toEqual(['B', 'C']);
+    expect(
+      trash
+        .find((file) => file.id === b.id)
+        ?.boards.map((board) => board.name)
+        .sort(),
+    ).toEqual(['B', 'B second']);
+
+    // Restore two files together, including every board.
+    const restored = await tab.restoreTrashedFiles([b.id, c.id]);
+
+    expect(restored.map((board) => board.name).sort()).toEqual(['B', 'B second', 'C']);
+    expect(await tab.listTrash()).toEqual([]);
+
+    // Move them back to Trash.
+    await tab.save(workspace([a, aSecond]));
+
+    // Permanently delete both files together.
+    await tab.discardTrashedFiles([b.id, c.id]);
 
     expect(await tab.listTrash()).toEqual([]);
+    expect(await names(tab)).toEqual(['A', 'A second']);
   });
 
   it('rolls back a failed batch restore instead of partially applying it', async () => {
