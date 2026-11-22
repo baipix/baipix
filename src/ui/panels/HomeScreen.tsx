@@ -899,14 +899,12 @@ export function HomeScreen() {
                             }}
                           >
                             <td className="home-td-select">
-                              <label className="home-select-control" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedIds.includes(f.id)}
-                                  aria-label={t('home.selectFile', { name: f.name })}
-                                  onChange={(e) => selectFile(f.id, e.target.checked)}
-                                />
-                              </label>
+                              <Checkbox
+                                checked={selectedIds.includes(f.id)}
+                                onChange={(checked) => selectFile(f.id, checked)}
+                                variant="selection"
+                                ariaLabel={t('home.selectFile', { name: f.name })}
+                              />
                             </td>
                             <td className="home-td-name">
                               <span>
