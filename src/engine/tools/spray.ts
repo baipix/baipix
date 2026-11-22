@@ -1,22 +1,7 @@
 import { alpha, withAlpha, type Color } from '../color';
-import { pressureRangeValue } from '../pressure';
 import type { Point } from '../math';
-import { followPointer, mirrorsOf, setPixel, strokeColors } from './paint';
+import { followPointer, mirrorsOf, pressureAdjustedValue, setPixel, strokeColors } from './paint';
 import type { Stroke, Tool } from './types';
-
-/** The pressure-adjusted spray density (percent), mirroring `effectiveBrushSize`. */
-function effectiveSprayDensity(s: Stroke): number {
-  const { sprayDensity, pressureEnabled, pressureCurve } = s.options;
-
-  if (!pressureEnabled || !s.pressureActive) {
-    return sprayDensity;
-  }
-
-  const pressure = s.pressure ?? 0.5;
-  const curve = pressureCurve / 100;
-
-  return pressureRangeValue(1, sprayDensity, pressure, curve);
-}
 
 /**
  * Drops random pixels inside a circle around the pointer, like a spray can. Each step of the pointer
@@ -26,7 +11,7 @@ function effectiveSprayDensity(s: Stroke): number {
 function spray(s: Stroke, p: Point, random: () => number = Math.random): void {
   const [color] = strokeColors(s);
   const r = s.options.spraySize / 2;
-  const density = effectiveSprayDensity(s);
+  const density = pressureAdjustedValue(s, s.options.sprayDensity);
 
   // How many pixels per dab: a share of the circle's area, at least one.
   const count = Math.max(1, Math.round(Math.PI * r * r * (density / 100) * 0.1));

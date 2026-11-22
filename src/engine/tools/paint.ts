@@ -14,18 +14,17 @@ export const inBounds = (s: Stroke, x: number, y: number): boolean =>
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
 
-/** The pressure-adjusted size shared by the freehand brush tools. */
-export function effectiveBrushSize(s: Stroke): number {
-  const { size, pressureEnabled, pressureCurve } = s.options;
+/** Applies stylus pressure to a value from 1 up to its configured maximum. */
+export function pressureAdjustedValue(s: Stroke, max: number): number {
+  const { pressureEnabled, pressureCurve } = s.options;
 
   if (!pressureEnabled || !s.pressureActive) {
-    return size;
+    return max;
   }
 
   const pressure = s.pressure ?? 0.5;
-  const curve = pressureCurve / 100;
 
-  return pressureRangeValue(1, size, pressure, curve);
+  return pressureRangeValue(1, max, pressure, pressureCurve / 100);
 }
 
 /**
@@ -74,7 +73,7 @@ export function stamp(
   c1: Color,
   c2 = c1,
   dither = false,
-  size = effectiveBrushSize(s),
+  size = pressureAdjustedValue(s, s.options.size),
 ): void {
   brush(
     cx,
@@ -130,7 +129,7 @@ export function forEachBrushPixelOnce(
   brush(
     p.x,
     p.y,
-    effectiveBrushSize(s),
+    pressureAdjustedValue(s, s.options.size),
     (bx, by) => {
       for (const m of mirrorsOf(s, bx, by)) {
         const i = pixelIndex(s, m.x, m.y);
