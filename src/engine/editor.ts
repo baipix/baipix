@@ -1147,7 +1147,7 @@ export class Editor {
       else this.sessions.push({ doc, history: new History(), selection: null });
       taken = true;
     }
-    if (taken) this.commit(false, false);
+    if (taken) this.commit(false);
   }
 
   getDocuments(): PixelDoc[] {
@@ -1262,28 +1262,11 @@ export class Editor {
   }
 
   /**
-   * Deletes a file and all its boards. Returns false when nothing was deleted. The file can be
-   * brought back with `restoreDeleted`. The editor always holds a file: deleting the last one leaves
-   * a blank one in its place.
+   * Deletes one or more files and all their boards in one editor operation.
+   * One Undo restores the deleted files and their boards together.
    */
   deleteFile(id: string): boolean {
-    const boards = this.boardsOf(id);
-    if (!boards.length) return false;
-    this.cancelStroke();
-    if (boards.length === this.sessions.length) {
-      const { width, height } = boards[0].doc;
-      this.sessions.push({
-        doc: createDocument(this.labels.untitled(1), width, height, this.labels.layer(1)),
-        history: new History(),
-        selection: null,
-      });
-    }
-    const index = this.sessions.indexOf(boards[0]);
-    this.sessions = this.sessions.filter((s) => !boards.includes(s));
-    if (boards.includes(this.active)) this.activate(this.sessions[Math.max(0, index - 1)]);
-    this.deleted = { kind: 'file', sessions: boards, index };
-    this.commit();
-    return true;
+    return this.deleteFiles([id]) > 0;
   }
 
   /**
