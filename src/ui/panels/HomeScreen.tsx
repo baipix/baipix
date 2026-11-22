@@ -12,7 +12,7 @@ import { IconButton } from '../components/IconButton';
 import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
 import { Checkbox } from '../components/Checkbox';
-import { dropStarter, isUntouchedStarter, leaveHome } from '../home';
+import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
 import { createFromTemplate, TEMPLATES } from '../templates';
 import { CHANGELOG_URL, DOCS_URL } from '../links';
@@ -126,8 +126,6 @@ export function HomeScreen() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selectionAnchor = useRef<string | null>(null);
   const [trashActionBusy, setTrashActionBusy] = useState(false);
-  const [trashAction, setTrashAction] = useState<'restore' | 'discard' | null>(null);
-  const [trashActionCount, setTrashActionCount] = useState(0);
   const trashActionBusyRef = useRef(false);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
@@ -241,46 +239,47 @@ export function HomeScreen() {
     actions.deleteFile(id, name);
   };
 
-  const restoreSelected = async (ids: string[], all = false) => {
-    if (trashActionBusyRef.current) return;
+  const restoreSelected = async (ids: string[]) => {
+    if (trashActionBusyRef.current) {
+      return;
+    }
+
     trashActionBusyRef.current = true;
     setTrashActionBusy(true);
-    setTrashAction('restore');
-    setTrashActionCount(ids.length);
+
     try {
       const restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
-      if (restoredBoards.length === 0) return;
+
+      if (restoredBoards.length === 0) {
+        return;
+      }
 
       editor.adoptDocuments(restoredBoards);
       refreshTrash(storage);
-      setSelectedIds([]);
+      clearSelection();
 
-      if (all) {
-        dropStarter(editor);
-        setShowDeleted(false);
-      }
+      const fileIds = restoredBoards.map((board) => fileIdOf(board));
+      const restoredFileCount = new Set(fileIds).size;
 
-      const restoredFileCount = new Set(restoredBoards.map((board) => fileIdOf(board))).size;
       toast(t('toast.filesRestored', { count: restoredFileCount }));
     } catch {
       toast(t('toast.trashOperationFailed'));
     } finally {
       trashActionBusyRef.current = false;
       setTrashActionBusy(false);
-      setTrashAction(null);
-      setTrashActionCount(0);
     }
   };
 
   const discardSelected = async (ids: string[]) => {
-    if (!storage.discardTrashedFiles || trashActionBusyRef.current) {
+    const isBusy = trashActionBusyRef.current;
+
+    if (!storage.discardTrashedFiles || isBusy) {
       return;
     }
 
     trashActionBusyRef.current = true;
     setTrashActionBusy(true);
-    setTrashAction('discard');
-    setTrashActionCount(ids.length);
+
     try {
       await storage.discardTrashedFiles(ids);
     } catch {
@@ -289,16 +288,16 @@ export function HomeScreen() {
     } finally {
       trashActionBusyRef.current = false;
       setTrashActionBusy(false);
-      setTrashAction(null);
-      setTrashActionCount(0);
     }
 
     refreshTrash(storage);
-    setSelectedIds([]);
+    clearSelection();
+
+    toast(t('toast.filesDeletedForGood', { count: ids.length }));
   };
 
   const confirmDiscard = (ids: string[], empty = false) => {
-    const title = empty ? t('home.emptyTrash') : t('home.deleteSelectedForGood');
+    const title = empty ? t('home.emptyTrash') : t('file.deleteForGood');
 
     const message = empty
       ? t('home.confirmEmptyTrash')
@@ -602,119 +601,108 @@ export function HomeScreen() {
                     {showDeleted ? t('home.deleted') : t('home.drawings')}
                   </h2>
                   <div className="home-toolbar-tools">
-                    {sectionItems.length > 0 && (
-                      <div className="home-selection-toolbar" aria-live="polite">
-                        {trashActionBusy && (
-                          <span className="home-selection-busy" role="status">
-                            {t(trashAction === 'restore' ? 'home.restoringFiles' : 'home.deletingFiles', {
-                              count: trashActionCount,
-                            })}
-                          </span>
-                        )}
-                        {selectedIds.length > 0 && (
-                          <span className="home-selection-appear">
-                            {t('home.selected', { count: selectedIds.length })}
-                          </span>
-                        )}
-                        {sectionItems.length > 0 && (
+                    {selectedIds.length > 0 ? (
+                      <div
+                        className="home-selection-toolbar"
+                        role="group"
+                        aria-label={t('home.selected', { count: selectedIds.length })}
+                      >
+                        <IconButton icon="close" label={t('home.clearSelection')} onClick={clearSelection} />
+
+                        <span className="home-selection-count" aria-live="polite">
+                          {t('home.selected', { count: selectedIds.length })}
+                        </span>
+
+                        <button
+                          type="button"
+                          className="btn is-compact"
+                          disabled={selectedIds.length === sectionItems.length}
+                          onClick={selectAll}
+                        >
+                          {t('home.selectAll')}
+                        </button>
+
+                        <span className="home-selection-separator" aria-hidden="true" />
+
+                        {showDeleted ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn is-compact"
+                              disabled={trashActionBusy}
+                              onClick={() => void restoreSelected(selectedIds)}
+                            >
+                              <Icon name="undo" size={14} />
+                              {t('file.restore')}
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn is-compact is-danger"
+                              disabled={trashActionBusy}
+                              onClick={() => confirmDiscard(selectedIds)}
+                            >
+                              <Icon name="trash" size={14} />
+                              {t('file.deleteForGood')}…
+                            </button>
+                          </>
+                        ) : (
                           <button
                             type="button"
-                            className="btn is-compact"
-                            disabled={selectedIds.length === sectionItems.length}
-                            onClick={selectAll}
-                          >
-                            {t('home.selectAll')}
-                          </button>
-                        )}
-                        {selectedIds.length > 0 && (
-                          <button
-                            type="button"
-                            className="btn is-compact home-selection-appear"
-                            onClick={clearSelection}
-                          >
-                            {t('home.clearSelection')}
-                          </button>
-                        )}
-                        {selectedIds.length > 0 && !showDeleted && (
-                          <button
-                            type="button"
-                            className="btn is-compact is-danger home-selection-appear"
+                            className="btn is-compact is-danger"
                             onClick={() => {
                               const ids = selectedIds;
                               clearSelection();
                               actions.deleteFiles(ids);
                             }}
                           >
-                            {t('home.deleteSelected')}
+                            <Icon name="trash" size={14} />
+                            {t('common.delete')}
                           </button>
                         )}
-                        {selectedIds.length > 0 && showDeleted && (
-                          <>
-                            <button
-                              type="button"
-                              className="btn is-compact home-selection-appear"
-                              disabled={trashActionBusy}
-                              onClick={() => void restoreSelected(selectedIds)}
-                            >
-                              {t('home.restoreSelected')}
-                            </button>
-                            <button
-                              type="button"
-                              className="btn is-compact is-danger home-selection-appear"
-                              disabled={trashActionBusy}
-                              onClick={() => confirmDiscard(selectedIds)}
-                            >
-                              {t('home.deleteSelectedForGood')}
-                            </button>
-                          </>
-                        )}
-                        {showDeleted && (
-                          <>
-                            <button
-                              type="button"
-                              className="btn is-compact"
-                              disabled={trashActionBusy}
-                              onClick={() => void restoreSelected(sectionIds, true)}
-                            >
-                              {t('home.restoreAll')}
-                            </button>
+                      </div>
+                    ) : (
+                      <>
+                        {!showDeleted ? (
+                          <button
+                            type="button"
+                            className="field field-menu home-sort"
+                            aria-haspopup="menu"
+                            onClick={(e) => sortMenu(e.currentTarget)}
+                          >
+                            {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                            <Icon name="caret" size={12} />
+                          </button>
+                        ) : (
+                          deleted.length > 0 && (
                             <button
                               type="button"
                               className="btn is-compact is-danger"
                               disabled={trashActionBusy}
                               onClick={() => confirmDiscard(sectionIds, true)}
                             >
-                              {t('home.emptyTrash')}
+                              <Icon name="trash" size={14} />
+                              {t('home.emptyTrash')}…
                             </button>
-                          </>
+                          )
                         )}
-                      </div>
+
+                        <div className="home-view" role="group">
+                          <IconButton
+                            icon="gridView"
+                            label={t('home.viewGrid')}
+                            pressed={view === 'grid'}
+                            onClick={() => uiStore.set({ homeView: 'grid' })}
+                          />
+                          <IconButton
+                            icon="list"
+                            label={t('home.viewList')}
+                            pressed={view === 'list'}
+                            onClick={() => uiStore.set({ homeView: 'list' })}
+                          />
+                        </div>
+                      </>
                     )}
-                    {!showDeleted && (
-                      <button
-                        type="button"
-                        className="field field-menu home-sort"
-                        aria-haspopup="menu"
-                        onClick={(e) => sortMenu(e.currentTarget)}
-                      >
-                        {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
-                        <Icon name="caret" size={12} />
-                      </button>
-                    )}
-                    <div className="home-view" role="group">
-                      <IconButton
-                        icon="gridView"
-                        label={t('home.viewGrid')}
-                        pressed={view === 'grid'}
-                        onClick={() => uiStore.set({ homeView: 'grid' })}
-                      />
-                      <IconButton
-                        icon="list"
-                        label={t('home.viewList')}
-                        pressed={view === 'list'}
-                        onClick={() => uiStore.set({ homeView: 'list' })}
-                      />
-                    </div>
                   </div>
                 </div>
               )}

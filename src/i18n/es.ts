@@ -910,6 +910,7 @@ export const es: Record<MessageKey, string> = {
   'file.restore': 'Restaurar',
   'toast.fileRestored': '«{name}» se ha restaurado.',
   'toast.filesDeleted': '{count} dibujos eliminados.',
+  'toast.filesDeletedForGood': '{count} archivos eliminados definitivamente.',
   'toast.trashOperationFailed': 'No se puede actualizar la papelera. Inténtalo de nuevo.',
   'toast.saveFailed': 'No se puede guardar en este navegador. Recuerda descargar tus archivos.',
   'toast.offlineReady': 'Baipix está listo para trabajar sin conexión.',

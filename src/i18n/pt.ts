@@ -902,6 +902,7 @@ export const pt: Record<MessageKey, string> = {
   'file.restore': 'Restaurar',
   'toast.fileRestored': '“{name}” voltou.',
   'toast.filesDeleted': '{count} desenhos excluídos.',
+  'toast.filesDeletedForGood': '{count} arquivos excluídos permanentemente.',
   'toast.trashOperationFailed': 'Não foi possível atualizar a lixeira. Tente novamente.',
   'toast.saveFailed': 'Não foi possível salvar neste navegador: lembre-se de baixar seus arquivos.',
   'toast.offlineReady': 'O Baipix está pronto para funcionar offline.',

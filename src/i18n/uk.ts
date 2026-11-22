@@ -902,6 +902,7 @@ export const uk: Record<MessageKey, string> = {
   'file.restore': 'Відновити',
   'toast.fileRestored': '«{name}» відновлено.',
   'toast.filesDeleted': 'Видалено малюнків: {count}.',
+  'toast.filesDeletedForGood': 'Назавжди видалено файлів: {count}.',
   'toast.trashOperationFailed': 'Не вдалося оновити кошик. Спробуйте ще раз.',
   'toast.saveFailed': 'Не вдалося зберегти файл у цьому браузері. Не забудьте завантажити свої файли.',
   'toast.offlineReady': 'Baipix готовий до роботи без підключення.',

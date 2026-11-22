@@ -900,6 +900,7 @@ export const ja: Record<MessageKey, string> = {
   'file.restore': '復元',
   'toast.fileRestored': '「{name}」を元に戻しました。',
   'toast.filesDeleted': '{count}件の作品を削除しました。',
+  'toast.filesDeletedForGood': '{count}件のファイルを完全に削除しました。',
   'toast.trashOperationFailed': 'ゴミ箱を更新できません。もう一度お試しください。',
   'toast.saveFailed': 'このブラウザには保存できません。忘れずにファイルをダウンロードしてください。',
   'toast.offlineReady': 'Baipix はオフラインで使えるようになりました。',

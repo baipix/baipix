@@ -867,6 +867,7 @@ export const zh: Record<MessageKey, string> = {
   'file.restore': '还原',
   'toast.fileRestored': '“{name}”已恢复。',
   'toast.filesDeleted': '已删除 {count} 个画作。',
+  'toast.filesDeletedForGood': '已永久删除 {count} 个文件。',
   'toast.trashOperationFailed': '无法更新回收站，请重试。',
   'toast.saveFailed': '这个浏览器存不了：记得把文件下载下来。',
   'toast.offlineReady': 'Baipix 已可离线使用。',

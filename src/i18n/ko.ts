@@ -984,6 +984,7 @@ export const ko: Record<MessageKey, string> = {
 
   'toast.fileRestored': '“{name}” 복원됨.',
   'toast.filesDeleted': '{count}개 그림 삭제됨.',
+  'toast.filesDeletedForGood': '{count}개 파일을 영구 삭제했습니다.',
   'toast.trashOperationFailed': '휴지통을 업데이트할 수 없습니다. 다시 시도하세요.',
   'toast.saveFailed': '이 브라우저에 저장할 수 없습니다: 파일을 반드시 다운로드해 두세요.',
   'toast.offlineReady': 'Baipix를 오프라인에서 사용할 수 있습니다.',
