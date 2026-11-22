@@ -136,7 +136,7 @@ import { rotator, type Rotator } from './rotsprite';
 import { applyMove, beginMove } from './tools/move';
 import { volumeColors, type FaceColors } from './isoBox';
 import { RAMP_DIRECTIONS } from './isoRamp';
-import { CYLINDER_AXES } from './tools/types';
+import { CYLINDER_AXES, PRESSURE_TOOLS } from './tools/types';
 import { strokeColors } from './tools/paint';
 
 export interface ViewSettings {
@@ -3160,8 +3160,9 @@ export class Editor {
   setStrokePressure(pressure: number, active: boolean): void {
     const id = this.strokeTool;
 
-    if (!this.stroke || !id || !['pencil', 'eraser', 'shade', 'lighten', 'blur', 'spray'].includes(id))
+    if (!this.stroke || !id || !PRESSURE_TOOLS.has(id)) {
       return;
+    }
 
     this.stroke.pressure = Number.isFinite(pressure) ? Math.max(0, Math.min(1, pressure)) : 0.5;
     this.stroke.pressureActive = active;

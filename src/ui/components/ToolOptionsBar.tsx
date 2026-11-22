@@ -5,7 +5,7 @@ import { isBoard } from '../../engine/document';
 import { useActions } from '../ActionsContext';
 import { ISO_PLANES } from '../../engine/isoPlane';
 import { TOOLS, type ToolOptions } from '../../engine/tools';
-import { CYLINDER_AXES } from '../../engine/tools/types';
+import { CYLINDER_AXES, PRESSURE_TOOLS } from '../../engine/tools/types';
 import { useT, type MessageKey } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { uiStore } from '../uiStore';
@@ -373,7 +373,6 @@ export function ToolOptionsBar() {
         <>
           {size}
           {stabilizer}
-          {pressureControls}
           <Checkbox
             checked={options.pixelPerfect}
             onChange={set('pixelPerfect')}
@@ -399,7 +398,6 @@ export function ToolOptionsBar() {
         <>
           {size}
           {stabilizer}
-          {pressureControls}
         </>
       );
       break;
@@ -682,7 +680,6 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
-          {pressureControls}
           <SelectField
             label={t('options.shadeMode')}
             tip
@@ -724,7 +721,6 @@ export function ToolOptionsBar() {
       body = (
         <>
           {size}
-          {pressureControls}
           <Row label={t('options.strength')}>
             <NumberField
               value={options.blurStrength}
@@ -773,7 +769,6 @@ export function ToolOptionsBar() {
               onChange={(v) => editor.setOption('sprayDensity', v)}
             />
           </Row>
-          {pressureControls}
           <Checkbox
             checked={options.sprayOpacity}
             onChange={set('sprayOpacity')}
@@ -946,6 +941,15 @@ export function ToolOptionsBar() {
         </>
       );
       break;
+  }
+
+  if (PRESSURE_TOOLS.has(tool) && pressureControls) {
+    body = (
+      <>
+        {body}
+        {pressureControls}
+      </>
+    );
   }
 
   if (!body) return null;

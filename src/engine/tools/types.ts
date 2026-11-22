@@ -48,6 +48,16 @@ export type ToolId =
   | 'liquify'
   | 'picker';
 
+/** Tools whose brush size or Spray density can be controlled by stylus pressure. */
+export const PRESSURE_TOOLS: ReadonlySet<ToolId> = new Set<ToolId>([
+  'pencil',
+  'eraser',
+  'shade',
+  'lighten',
+  'blur',
+  'spray',
+]);
+
 export interface ToolOptions {
   size: number;
   /** Whether a pressure-capable stylus varies supported brush tools. */
