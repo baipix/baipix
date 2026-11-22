@@ -357,6 +357,8 @@ export const en = {
   'options.strength': 'Strength',
   'options.density': 'Density',
   'options.sprayOpacity': 'Random opacity',
+  'options.pressure': 'Stylus pressure',
+  'options.pressureCurve': 'Pressure response',
   'options.blurSnap': 'Stay within the palette',
   'options.shadeMode': 'Mode',
   'options.hueShift': 'Hue shift',

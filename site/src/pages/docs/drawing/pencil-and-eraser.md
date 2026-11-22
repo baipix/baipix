@@ -18,6 +18,14 @@ The pencil (<kbd>B</kbd>) and the eraser (<kbd>E</kbd>) share their size, tip an
 - **Tip**: square or round. From 3 pixels, a round tip paints a round shape.
 - Hold <kbd>Alt</kbd> to pick a color under the pointer, then let go to keep drawing.
 
+## Stylus pressure
+
+After a pressure-capable pen reports changing pressure:
+
+- **Stylus pressure** appears in the options for Pencil, Eraser, Shade, Lighten and Blur. It is off by default: turn it on to vary the brush size from 1 pixel up to the selected size. The same setting is shared by these tools.
+- **Pressure response** adjusts how quickly the size grows; 50% is linear. Pens that report only the browser's default pressure keep the selected size.
+- For pressure to affect brush size, choose a size greater than 1 pixel.
+
 ## Clean lines
 
 - **Pixel perfect** (on by default) removes the doubled pixels a curve leaves at its corners, so a 1-pixel line stays 1 pixel thick.

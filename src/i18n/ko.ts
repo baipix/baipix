@@ -400,6 +400,8 @@ export const ko: Record<MessageKey, string> = {
   'options.strength': '강도',
   'options.density': '밀도',
   'options.sprayOpacity': '불투명도 무작위',
+  'options.pressure': '펜 압력',
+  'options.pressureCurve': '압력 반응',
   'options.blurSnap': '팔레트 색상으로 제한',
   'options.shadeMode': '모드',
   'options.hueShift': '색조 이동',
