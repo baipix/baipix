@@ -17,6 +17,8 @@ npm run typecheck && npm run lint && npm test
 
 The CI runs the same checks on every pull request.
 
+To see which parts of the source code are covered by tests and identify gaps, use `npm run coverage`.
+
 ## End-to-end tests
 
 Playwright tests live in `e2e/playwright/`.
