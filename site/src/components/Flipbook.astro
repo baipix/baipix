@@ -1,4 +1,6 @@
 ---
+import { artImage } from '../artFiles';
+
 /**
  * Plays an animation's frames, each for its own duration, with the strip of frames under it as in the
  * editor's timeline, the one shown outlined. With reduced motion, the first frame stays; the button
@@ -9,18 +11,23 @@ interface Props {
   label: string;
 }
 const { frames, label } = Astro.props;
+const images = frames.map((f) => artImage(f.svg));
 ---
 
 <div class="flipbook" data-flipbook data-durations={JSON.stringify(frames.map((f) => f.duration))}>
   <div class="flipbook-stage" role="img" aria-label={label}>
-    {frames.map((f, i) => (
-      <div class="flipbook-pix flipbook-frame" data-frame={i} hidden={i > 0} set:html={f.svg} />
+    {images.map((img, i) => (
+      <div class="flipbook-pix flipbook-frame" data-frame={i} hidden={i > 0}>
+        <img {...img} alt="" />
+      </div>
     ))}
   </div>
   <ol class="strip" aria-label="The frames">
     {frames.map((f, i) => (
       <li class="strip-cell" data-cell={i} aria-current={i === 0 ? 'true' : undefined}>
-        <div class="flipbook-pix" set:html={f.svg} />
+        <div class="flipbook-pix">
+          <img {...images[i]} alt="" />
+        </div>
         <span>{f.duration} ms</span>
       </li>
     ))}
@@ -74,7 +81,7 @@ const { frames, label } = Astro.props;
   .flipbook-frame {
     grid-area: 1 / 1;
   }
-  .flipbook-pix :global(svg) {
+  .flipbook-pix img {
     display: block;
     width: 100%;
     height: auto;

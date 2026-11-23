@@ -92,7 +92,8 @@
   padding: 48px;
   background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
 }
-.guide .pix svg {
+.guide .pix svg,
+.guide .pix img {
   display: block;
   width: 100%;
   height: auto;
