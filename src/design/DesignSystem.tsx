@@ -94,9 +94,22 @@ for (let x = 0; x < menuDemoWidth; x++) {
 // Slime
 const slime = pack(73, 190, 110);
 [
-  [6, 7], [7, 7], [8, 7], [9, 7],
-  [5, 8], [6, 8], [7, 8], [8, 8], [9, 8], [10, 8],
-  [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9],
+  [6, 7],
+  [7, 7],
+  [8, 7],
+  [9, 7],
+  [5, 8],
+  [6, 8],
+  [7, 8],
+  [8, 8],
+  [9, 8],
+  [10, 8],
+  [5, 9],
+  [6, 9],
+  [7, 9],
+  [8, 9],
+  [9, 9],
+  [10, 9],
 ].forEach(([x, y]) => setMenuDemoPixel(x, y, slime));
 
 function PaletteColorDemo() {
@@ -775,13 +788,13 @@ function SurfacesBlock() {
         >
           <div className="menu ds-static" role="menu">
             <button type="button" className="menu-item" role="menuitem">
-            <Thumbnail
-              pixels={() => menuDemoPixels}
-              width={menuDemoWidth}
-              height={menuDemoHeight}
-              version={1}
-              size={28}
-             />
+              <Thumbnail
+                pixels={() => menuDemoPixels}
+                width={menuDemoWidth}
+                height={menuDemoHeight}
+                version={1}
+                size={28}
+              />
               <span>Pixel Artwork</span>
               <span className="menu-updated-at">2 h</span>
             </button>

@@ -1,4 +1,3 @@
-
 import { useLayoutEffect, useRef } from 'react';
 import { pixelBounds } from '../../engine/region';
 
