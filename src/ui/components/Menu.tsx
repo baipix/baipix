@@ -259,9 +259,7 @@ function MenuPanel({
                 width={item.thumbnail.width}
                 height={item.thumbnail.height}
                 version={item.thumbnail.version}
-                fit
-                className="thumb menu-file-thumb"
-                displayWidth={64}
+                size={28}
               />
             )}
             {item.icon && <Icon name={item.icon} size={16} />}

@@ -17,6 +17,7 @@ import { SelectField } from '../ui/components/SelectField';
 import { PresetCard } from '../ui/components/PresetCard';
 import { TEMPLATES } from '../ui/templates';
 import { Tooltips } from '../ui/components/Tooltips';
+import { Thumbnail } from '../ui/components/Thumbnail';
 import { ICONS, type IconName } from '../ui/icons';
 import { ColorRow } from '../ui/panels/ColorRow';
 import { SizeList } from '../ui/components/SizeList';
@@ -67,6 +68,36 @@ gradientEditor.setOption('gradientStops', [
   { at: 0.5, color: pack(239, 125, 87) },
   { at: 1, color: pack(255, 205, 117) },
 ]);
+
+/** Demo artwork for the recent-file thumbnail in the Menu specimen. */
+const menuDemoWidth = 16;
+const menuDemoHeight = 12;
+const menuDemoPixels = new Uint32Array(menuDemoWidth * menuDemoHeight);
+
+menuDemoPixels.fill(pack(26, 28, 44));
+
+const setMenuDemoPixel = (x: number, y: number, color: number) => {
+  menuDemoPixels[y * menuDemoWidth + x] = color;
+};
+
+// Stars
+setMenuDemoPixel(3, 2, pack(255, 205, 117));
+setMenuDemoPixel(12, 1, pack(255, 205, 117));
+setMenuDemoPixel(14, 4, pack(255, 205, 117));
+
+// Ground
+for (let x = 0; x < menuDemoWidth; x++) {
+  setMenuDemoPixel(x, 10, pack(84, 78, 104));
+  setMenuDemoPixel(x, 11, pack(84, 78, 104));
+}
+
+// Slime
+const slime = pack(73, 190, 110);
+[
+  [6, 7], [7, 7], [8, 7], [9, 7],
+  [5, 8], [6, 8], [7, 8], [8, 8], [9, 8], [10, 8],
+  [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9],
+].forEach(([x, y]) => setMenuDemoPixel(x, y, slime));
 
 function PaletteColorDemo() {
   const [color, setColor] = useState(pack(239, 125, 87));
@@ -743,6 +774,18 @@ function SurfacesBlock() {
           use="Menu bar, right-click and … menus. Blue on hover; › opens a submenu. An item can show a palette under its name (the palette picker)."
         >
           <div className="menu ds-static" role="menu">
+            <button type="button" className="menu-item" role="menuitem">
+            <Thumbnail
+              pixels={() => menuDemoPixels}
+              width={menuDemoWidth}
+              height={menuDemoHeight}
+              version={1}
+              size={28}
+             />
+              <span>Pixel Artwork</span>
+              <span className="menu-updated-at">2 h</span>
+            </button>
+            <div className="menu-separator" />
             <button type="button" className="menu-item is-checked has-swatches" role="menuitem">
               <span>SLSO8</span>
               <span className="menu-shortcut">8</span>

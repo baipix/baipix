@@ -72,7 +72,6 @@ export function Thumbnail({ pixels, width, height, version, fit = false, size = 
     canvas.height = h;
     canvas.style.width = `${w / DENSITY}px`;
     canvas.style.height = `${size}px`;
-
     const ctx = canvas.getContext('2d')!;
     const src = (scratch ??= document.createElement('canvas'));
     if (src.width !== width || src.height !== height) {
