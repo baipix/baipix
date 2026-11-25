@@ -152,12 +152,20 @@ export class IndexedDbStorage implements StorageAdapter {
     await transact(db, [FILES, META, TRASH], 'readwrite', (tx) => {
       const files = tx.objectStore(FILES);
       const trash = tx.objectStore(TRASH);
-      for (const doc of changed) files.put(storeFile(doc), doc.id);
+
+      for (const doc of changed) {
+        files.put(storeFile(doc), doc.id);
+        trash.delete(doc.id);
+      }
+
       // A removed board goes to the trash, to come back if it was a mistake.
       for (const id of removed) {
         const req = files.get(id) as IDBRequest<StoredFile | undefined>;
         req.onsuccess = () => {
-          if (req.result) trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          // The blank starter is an editor placeholder, not a user file to recover.
+          if (req.result && !req.result.board?.empty) {
+            trash.put({ file: req.result, deletedAt } satisfies Trashed, id);
+          }
           files.delete(id);
         };
       }
@@ -208,27 +216,74 @@ export class IndexedDbStorage implements StorageAdapter {
     return [...files.values()].sort((a, b) => b.deletedAt - a.deletedAt);
   }
 
-  /** A deleted file back among the files; its boards are returned, known here from then on. */
-  async restoreTrashed(fileId: string): Promise<PixelDoc[]> {
-    const db = await this.connect();
-    const trashed = (await this.listTrash()).find((f) => f.id === fileId);
-    if (!trashed) return [];
-    await transact(db, [FILES, TRASH], 'readwrite', (tx) => {
-      for (const doc of trashed.boards) {
-        tx.objectStore(FILES).put(storeFile(doc), doc.id);
-        tx.objectStore(TRASH).delete(doc.id);
-      }
-    });
-    for (const doc of trashed.boards) this.known.set(doc.id, doc.updatedAt ?? 0);
-    return trashed.boards;
+  /**
+   * Restores one trashed file through the batch operation. */
+  restoreTrashed(fileId: string): Promise<PixelDoc[]> {
+    return this.restoreTrashedFiles([fileId]);
   }
 
-  async discardTrashed(fileId: string): Promise<void> {
+  /**
+   * Permanently deletes one trashed file through the batch operation.
+   */
+  discardTrashed(fileId: string): Promise<void> {
+    return this.discardTrashedFiles([fileId]);
+  }
+
+  /**
+   * Restores several trashed files, including all their boards, in one transaction.
+   */
+  async restoreTrashedFiles(fileIds: string[]): Promise<PixelDoc[]> {
+    const wanted = new Set(fileIds);
+    const trashed = (await this.listTrash()).filter((file) => wanted.has(file.id));
+
+    if (trashed.length === 0) {
+      return [];
+    }
+
     const db = await this.connect();
-    const trashed = (await this.listTrash()).find((f) => f.id === fileId);
-    if (!trashed) return;
+
+    await transact(db, [FILES, TRASH], 'readwrite', (tx) => {
+      const files = tx.objectStore(FILES);
+      const trash = tx.objectStore(TRASH);
+
+      for (const { boards } of trashed) {
+        for (const doc of boards) {
+          files.put(storeFile(doc), doc.id);
+          trash.delete(doc.id);
+        }
+      }
+    });
+
+    const boards = trashed.flatMap((file) => file.boards);
+
+    for (const doc of boards) {
+      this.known.set(doc.id, doc.updatedAt ?? 0);
+    }
+
+    return boards;
+  }
+
+  /**
+   * Permanently deletes several trashed files, including all their boards, in one transaction.
+   */
+  async discardTrashedFiles(fileIds: string[]): Promise<void> {
+    const wanted = new Set(fileIds);
+    const trashed = (await this.listTrash()).filter((file) => wanted.has(file.id));
+
+    if (trashed.length === 0) {
+      return;
+    }
+
+    const db = await this.connect();
+
     await transact(db, [TRASH], 'readwrite', (tx) => {
-      for (const doc of trashed.boards) tx.objectStore(TRASH).delete(doc.id);
+      const trash = tx.objectStore(TRASH);
+
+      for (const { boards } of trashed) {
+        for (const doc of boards) {
+          trash.delete(doc.id);
+        }
+      }
     });
   }
 

@@ -57,6 +57,24 @@ describe('.baipix format', () => {
 /** A browser of its own for each test: its storage starts empty. */
 const browser = () => new IDBFactory();
 
+async function abortNextWrite<T>(run: () => Promise<T>): Promise<T> {
+  const nativeTransaction = IDBDatabase.prototype.transaction;
+  let shouldAbort = true;
+  IDBDatabase.prototype.transaction = function (storeNames, mode, options) {
+    const tx = nativeTransaction.call(this, storeNames, mode, options);
+    if (shouldAbort && mode === 'readwrite') {
+      shouldAbort = false;
+      queueMicrotask(() => tx.abort());
+    }
+    return tx;
+  };
+  try {
+    return await run();
+  } finally {
+    IDBDatabase.prototype.transaction = nativeTransaction;
+  }
+}
+
 describe('IndexedDbStorage', () => {
   it('saves and loads a workspace', async () => {
     const storage = new IndexedDbStorage(browser());
@@ -140,6 +158,19 @@ describe('IndexedDbStorage', () => {
     expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
   });
 
+  it('does not put the blank editor starter in the trash', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+    const drawing = createDocument('Drawing', 4, 4);
+    const starter = createDocument('Untitled', 4, 4);
+    starter.board = { file: starter.id, fileName: starter.name, x: 0, y: 0, empty: true };
+
+    await tab.save(workspace([drawing, starter]));
+    await tab.save(workspace([drawing]));
+
+    expect(await tab.listTrash()).toEqual([]);
+  });
+
   it('writes only the boards that changed', async () => {
     const chrome = browser();
     const tab = new IndexedDbStorage(chrome);
@@ -199,5 +230,124 @@ describe('IndexedDbStorage', () => {
     await tab.discardTrashed(b.id);
     expect(await tab.listTrash()).toEqual([]);
     expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
+  });
+
+  it('restores and discards multiple trashed files with all their boards', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+
+    const a = createDocument('A', 4, 4);
+    a.board = { file: a.id, fileName: 'A', x: 0, y: 0 };
+
+    const aSecond = createDocument('A second', 4, 4);
+    aSecond.board = { file: a.id, fileName: 'A', x: 4, y: 0 };
+
+    const b = createDocument('B', 4, 4);
+    b.board = { file: b.id, fileName: 'B', x: 0, y: 0 };
+
+    const bSecond = createDocument('B second', 4, 4);
+    bSecond.board = { file: b.id, fileName: 'B', x: 4, y: 0 };
+
+    const c = createDocument('C', 4, 4);
+
+    await tab.save(workspace([a, aSecond, b, bSecond, c]));
+    await tab.save(workspace([a, aSecond]));
+
+    // The Trash groups boards belonging to the same file.
+    const trash = await tab.listTrash();
+
+    expect(trash.map((file) => file.name).sort()).toEqual(['B', 'C']);
+    expect(
+      trash
+        .find((file) => file.id === b.id)
+        ?.boards.map((board) => board.name)
+        .sort(),
+    ).toEqual(['B', 'B second']);
+
+    // Restore two files together, including every board.
+    const restored = await tab.restoreTrashedFiles([b.id, c.id]);
+
+    expect(restored.map((board) => board.name).sort()).toEqual(['B', 'B second', 'C']);
+    expect(await tab.listTrash()).toEqual([]);
+
+    // Move them back to Trash.
+    await tab.save(workspace([a, aSecond]));
+
+    // Permanently delete both files together.
+    await tab.discardTrashedFiles([b.id, c.id]);
+
+    expect(await tab.listTrash()).toEqual([]);
+    expect(await names(tab)).toEqual(['A', 'A second']);
+  });
+
+  it('rolls back a failed batch restore instead of partially applying it', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    const c = createDocument('C', 4, 4);
+
+    await tab.save(workspace([a, b, c]));
+    await tab.save(workspace([a]));
+
+    let failed = false;
+
+    try {
+      await abortNextWrite(() => tab.restoreTrashedFiles!([b.id, c.id]));
+    } catch {
+      failed = true;
+    }
+
+    expect(failed).toBe(true);
+
+    expect(await names(new IndexedDbStorage(chrome))).toEqual(['A']);
+    expect((await tab.listTrash()).map((file) => file.name)).toEqual(['B', 'C']);
+
+    failed = false;
+
+    try {
+      await abortNextWrite(() => tab.discardTrashedFiles!([b.id, c.id]));
+    } catch {
+      failed = true;
+    }
+
+    expect(failed).toBe(true);
+    expect((await tab.listTrash()).map((file) => file.name)).toEqual(['B', 'C']);
+  });
+
+  it('removes restored files from Trash when saving the workspace', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    b.board = { file: b.id, fileName: 'B', x: 0, y: 0 };
+
+    const bSecond = createDocument('B second', 4, 4);
+    bSecond.board = { file: b.id, fileName: 'B', x: 4, y: 0 };
+
+    const c = createDocument('C', 4, 4);
+
+    // Save all files.
+    await tab.save(workspace([a, b, bSecond, c]));
+
+    // Delete B and C by saving a workspace without them.
+    await tab.save(workspace([a]));
+    const trash = await tab.listTrash();
+
+    expect(trash.map((file) => file.name).sort()).toEqual(['B', 'C']);
+    expect(
+      trash
+        .find((file) => file.id === b.id)
+        ?.boards.map((board) => board.name)
+        .sort(),
+    ).toEqual(['B', 'B second']);
+
+    // Simulate Undo: restore the documents through a workspace save.
+    await tab.save(workspace([a, b, bSecond, c]));
+
+    expect(await names(tab)).toEqual(['A', 'B', 'B second', 'C']);
+    expect(await tab.listTrash()).toEqual([]);
   });
 });

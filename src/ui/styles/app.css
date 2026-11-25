@@ -564,6 +564,16 @@ body.is-resizing * {
   opacity: 0.4;
   background: transparent;
 }
+
+/* An action that permanently removes something. */
+.btn.is-danger {
+  color: var(--danger);
+}
+
+.btn.is-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+}
+
 .btn-primary {
   border-color: var(--accent);
   background: var(--accent);
@@ -701,6 +711,79 @@ body.is-resizing * {
   margin: 0;
   accent-color: var(--accent);
 }
+
+/* A file selection checkbox: violet when checked, with a white tick. */
+.checkbox.is-selection {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.checkbox.is-selection input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox-mark {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 65%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--panel) 75%, transparent);
+}
+
+.checkbox-mark::after {
+  width: 4px;
+  height: 8px;
+  border: solid var(--glow-ink);
+  border-width: 0 2px 2px 0;
+  content: '';
+  transform: rotate(45deg) scale(0);
+  margin-top: -2px;
+}
+
+.checkbox.is-selection input:checked + .checkbox-mark {
+  border-color: var(--glow);
+  background: var(--glow);
+}
+
+.checkbox.is-selection input:checked + .checkbox-mark::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.checkbox.is-selection input:focus-visible + .checkbox-mark {
+  outline: 2px solid var(--glow-line);
+  outline-offset: 2px;
+}
+
+/* Keep the selection target comfortable on touch screens. */
+@media (pointer: coarse) {
+  .checkbox.is-selection {
+    width: var(--touch);
+    height: var(--touch);
+    min-height: var(--touch);
+  }
+
+  .checkbox-mark {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+  }
+}
+
 .select-plain {
   max-width: 128px;
   height: var(--control);
@@ -2886,6 +2969,10 @@ body.is-dragging-swatch * {
 .home-card:hover {
   border-color: var(--frame-strong);
 }
+.home-card.is-selected {
+  border-color: var(--glow-line);
+  box-shadow: 0 0 0 1px var(--glow-line);
+}
 .home-card:focus-visible {
   outline: 2px solid var(--glow-line);
   outline-offset: 2px;
@@ -2960,6 +3047,54 @@ body.is-dragging-swatch * {
   align-items: center;
   gap: 8px;
 }
+
+.home-mobile-toolbar {
+  display: none;
+}
+
+.home-mobile-actions {
+  display: none;
+}
+
+.home-selection-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  white-space: nowrap;
+}
+
+.home-selection-toolbar > .icon-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+}
+
+.home-selection-toolbar .btn {
+  height: 24px;
+  border: 0;
+  padding: 0 10px;
+}
+
+.home-selection-count {
+  padding-right: 4px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-selection-separator {
+  flex: none;
+  width: 1px;
+  height: 16px;
+  background: var(--line);
+}
+
 .home-top-actions {
   display: flex;
   gap: 8px;
@@ -3010,6 +3145,46 @@ body.is-dragging-swatch * {
 .home-table td:first-child {
   border-radius: var(--radius) 0 0 var(--radius);
 }
+.home-table th.home-td-select,
+.home-table td.home-td-select {
+  width: 32px;
+  padding-right: 0;
+  text-align: center;
+}
+
+.home-table .home-td-select > .checkbox.is-selection {
+  margin: 0 auto;
+}
+
+.home-card > .checkbox.is-selection {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+}
+
+.home-card > .checkbox.is-selection,
+.home-table .home-td-select > .checkbox.is-selection {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+/* Show selection controls on hover, keyboard focus, or while selecting. */
+.home-card:hover > .checkbox.is-selection,
+.home-card.is-selected > .checkbox.is-selection,
+.home-card:focus-visible > .checkbox.is-selection,
+.home-card > .checkbox.is-selection:has(input:focus-visible),
+.home-grid.is-selecting .home-card > .checkbox.is-selection,
+.home-table tbody tr:hover .home-td-select > .checkbox.is-selection,
+.home-table tbody tr.is-selected .home-td-select > .checkbox.is-selection,
+.home-table tbody tr:focus-visible .home-td-select > .checkbox.is-selection,
+.home-table .home-td-select > .checkbox.is-selection:has(input:focus-visible),
+.home-table.is-selecting tbody tr .home-td-select > .checkbox.is-selection {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .home-table td:last-child {
   border-radius: 0 var(--radius) var(--radius) 0;
 }
@@ -3019,6 +3194,9 @@ body.is-dragging-swatch * {
 .home-table tbody tr:hover td,
 .home-table tbody tr:focus-within td {
   background: var(--hover);
+}
+.home-table tbody tr.is-selected td {
+  background: color-mix(in srgb, var(--glow-line) 14%, var(--panel));
 }
 .home-table tbody tr:focus-visible {
   outline: 2px solid var(--glow-line);
@@ -3288,13 +3466,142 @@ body.is-dragging-swatch * {
    on one line. */
 @media (max-width: 820px) {
   .home-toolbar {
-    flex-wrap: wrap;
-    row-gap: 12px;
+    display: block;
+    padding: 12px 0 16px;
   }
+
+  .home-toolbar-title-desktop,
+  .home-toolbar-tools-desktop {
+    display: none;
+  }
+
+  .home-mobile-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .home-mobile-toolbar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 44px;
+  }
+
+  .home-mobile-toolbar-head .btn {
+    height: 36px;
+    padding: 0 14px;
+  }
+
+  .home-mobile-toolbar-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    height: 44px;
+  }
+
+  .home-mobile-toolbar-tools .home-sort {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .home-mobile-empty {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 36px;
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
+  .home-mobile-toolbar-spacer {
+    flex: 1;
+  }
+
+  .home-mobile-selection-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    height: 44px;
+  }
+
+  .home-mobile-selection-head > .icon-btn {
+    width: 44px;
+    height: 44px;
+    margin-left: -10px;
+  }
+
+  .home-mobile-selection-count {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-mobile-selection-head > .btn {
+    height: 36px;
+    min-width: 0;
+    max-width: 42%;
+    padding: 0 10px;
+  }
+
+  .home-mobile-action-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-mobile-actions {
+    position: fixed;
+    z-index: 60;
+    right: 12px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    display: flex;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: var(--panel);
+    box-shadow: var(--shadow-pop);
+  }
+
+  .home-mobile-action {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 44px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--hover);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .home-mobile-action .icon {
+    flex: none;
+  }
+
+  .home.is-mobile-selecting .home-main {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+
   .home-toolbar-tools {
     flex: 1 1 100%;
     min-width: 0;
-    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .home-selection-toolbar {
+    flex: 1 1 100%;
+    min-width: 0;
   }
   .home-sort {
     flex: 1 1 auto;
@@ -3337,6 +3644,18 @@ body.is-dragging-swatch * {
   }
   .home-welcome {
     padding-top: 32px;
+  }
+
+  .home-card:hover > .checkbox.is-selection,
+  .home-table tbody tr:hover .home-td-select > .checkbox.is-selection {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .home-grid.is-selecting .home-card > .checkbox.is-selection,
+  .home-table.is-selecting tbody tr .home-td-select > .checkbox.is-selection {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 

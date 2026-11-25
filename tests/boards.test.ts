@@ -74,6 +74,61 @@ describe('boards', () => {
     expect(e.getState().files.map((f) => f.boards)).toEqual([2, 2, 1]);
   });
 
+  it('deletes several files and brings the whole batch back with one Undo', () => {
+    const e = twoBoards();
+    const icons = e.getState().files[0].id;
+    e.newFile(4, 4, 'Other');
+    const other = e.getState().activeId;
+
+    expect(e.deleteFiles([icons, other])).toBe(2);
+    expect(e.getState().files).toHaveLength(1);
+    expect(e.restoreDeleted()).toBe(true);
+    expect(e.getState().files.map((f) => [f.name, f.boards])).toEqual([
+      ['Icons', 2],
+      ['Other', 1],
+    ]);
+    expect(e.restoreDeleted()).toBe(false);
+  });
+
+  it('redraws pixels when adopting a document changed in another tab', () => {
+    const e = twoBoards();
+    const [original] = e.getDocuments();
+
+    const adopted = {
+      ...original,
+      layers: original.layers.map((layer) => ({
+        ...layer,
+        pixels: layer.pixels.slice(),
+      })),
+    };
+    adopted.layers[0].pixels[1] = RED;
+
+    let redraws = 0;
+    const unsubscribe = e.onPixels(() => redraws++);
+
+    e.adoptDocuments([adopted]);
+    unsubscribe();
+
+    expect(e.getDocuments()[0].layers[0].pixels[1]).toBe(RED);
+    expect(redraws).toBe(1);
+  });
+
+  it('deletes the only file and restores it without keeping the placeholder', () => {
+    const e = twoBoards();
+    const id = e.getState().files[0].id;
+
+    expect(e.deleteFile(id)).toBe(true);
+    expect(e.getState().files).toHaveLength(1);
+    expect(e.getState().files[0]).toMatchObject({ boards: 0 });
+
+    expect(e.restoreDeleted()).toBe(true);
+    expect(e.getState().files).toHaveLength(1);
+    expect(e.getState().files[0]).toMatchObject({
+      name: 'Icons',
+      boards: 2,
+    });
+  });
+
   it('saves a file of boards in one .baipix file, and keeps them in the workspace', () => {
     const e = twoBoards();
     const boards = fileFromJson(fileToJson(e.fileBoards()));

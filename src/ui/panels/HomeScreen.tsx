@@ -1,4 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState, type DragEvent, type MouseEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { fileIdOf } from '../../engine/document';
 import { flatten, flattenFrame } from '../../engine/composite';
 import { frameCount } from '../../engine/frames';
@@ -11,6 +19,7 @@ import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { PresetCard } from '../components/PresetCard';
 import { openMenu } from '../components/Menu';
+import { Checkbox } from '../components/Checkbox';
 import { isUntouchedStarter, leaveHome } from '../home';
 import { fileMenu, newIssueUrl } from '../menus';
 import { createFromTemplate, TEMPLATES } from '../templates';
@@ -21,6 +30,9 @@ import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 import { FILE_MIME } from '../dragTypes';
 
 const DAY = 86_400_000;
+
+const LONG_PRESS_DELAY_MS = 450;
+const LONG_PRESS_MOVE_TOLERANCE_PX = 10;
 
 /** "Just now", "5 minutes ago", "yesterday"… then a plain date after a week. */
 function formatUpdated(time: number, justNow: string): string {
@@ -122,11 +134,23 @@ export function HomeScreen() {
   const files = useEditorState((s) => s.files);
   const deleted = trashStore.use((s) => s.files);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const [mobileSelectionMode, setMobileSelectionMode] = useState(false);
+  const selectionAnchor = useRef<string | null>(null);
+
+  const mobileLongPressTimer = useRef<number | null>(null);
+  const mobileLongPressStart = useRef<{ x: number; y: number } | null>(null);
+  const ignoreMobileLongPressClick = useRef<string | null>(null);
+
+  const [trashActionBusy, setTrashActionBusy] = useState(false);
+  const trashActionBusyRef = useRef(false);
   const restore = async (id: string, name: string) => {
     const boards = (await storage.restoreTrashed?.(id)) ?? [];
     if (!boards.length) return;
     editor.adoptDocuments(boards);
     refreshTrash(storage);
+    setSelectedIds((ids) => ids.filter((selected) => selected !== id));
     toast(t('toast.fileRestored', { name }));
   };
   const [dropping, setDropping] = useState(false);
@@ -159,6 +183,245 @@ export function HomeScreen() {
       const by = sort === 'name' ? a.name.localeCompare(b.name) : a.updatedAt - b.updatedAt;
       return order === 'asc' ? by : -by;
     });
+
+  const sectionItems = showDeleted ? deleted : shown;
+  const sectionIds = sectionItems.map((f) => f.id);
+  const sectionKey = sectionIds.join('|');
+
+  useEffect(() => {
+    const validIds = new Set(sectionKey ? sectionKey.split('|') : []);
+
+    setSelectedIds((ids) => {
+      const stillValid = ids.filter((id) => validIds.has(id));
+      const nothingRemoved = stillValid.length === ids.length;
+
+      return nothingRemoved ? ids : stillValid;
+    });
+  }, [sectionKey]);
+
+  const selectFile = (id: string, checked: boolean) => {
+    selectionAnchor.current = id;
+
+    setSelectedIds((ids) => {
+      if (!checked) {
+        return ids.filter((selected) => selected !== id);
+      }
+
+      const alreadySelected = ids.includes(id);
+
+      return alreadySelected ? ids : [...ids, id];
+    });
+  };
+
+  const toggleFileSelection = (id: string) => {
+    selectionAnchor.current = id;
+
+    setSelectedIds((ids) => {
+      if (ids.includes(id)) {
+        return ids.filter((selected) => selected !== id);
+      }
+
+      return [...ids, id];
+    });
+  };
+
+  const selectRange = (id: string) => {
+    const targetIndex = sectionIds.indexOf(id);
+
+    if (targetIndex === -1) {
+      return;
+    }
+
+    const anchorIndex = sectionIds.indexOf(selectionAnchor.current ?? id);
+    const hasAnchor = anchorIndex !== -1;
+
+    const start = hasAnchor ? Math.min(anchorIndex, targetIndex) : targetIndex;
+    const end = hasAnchor ? Math.max(anchorIndex, targetIndex) : targetIndex;
+    const range = sectionIds.slice(start, end + 1);
+
+    setSelectedIds((ids) => {
+      const merged = new Set([...ids, ...range]);
+      return [...merged];
+    });
+  };
+
+  const selectAll = () => setSelectedIds(sectionIds);
+
+  const cancelMobileLongPress = () => {
+    if (mobileLongPressTimer.current !== null) {
+      window.clearTimeout(mobileLongPressTimer.current);
+      mobileLongPressTimer.current = null;
+    }
+
+    mobileLongPressStart.current = null;
+  };
+
+  const startMobileLongPress = (e: ReactPointerEvent<HTMLElement>, id: string) => {
+    const isTouch = e.pointerType === 'touch';
+    const isMobileViewport = window.matchMedia('(max-width: 820px)').matches;
+
+    if (!isTouch || !isMobileViewport || mobileSelectionMode) {
+      return;
+    }
+
+    if ((e.target as Element).closest('input, button, a, .checkbox')) {
+      return;
+    }
+
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+    mobileLongPressStart.current = { x: e.clientX, y: e.clientY };
+
+    mobileLongPressTimer.current = window.setTimeout(() => {
+      mobileLongPressTimer.current = null;
+      mobileLongPressStart.current = null;
+      ignoreMobileLongPressClick.current = id;
+
+      selectionAnchor.current = id;
+      setMobileSelectionMode(true);
+      setSelectedIds([id]);
+    }, LONG_PRESS_DELAY_MS);
+  };
+
+  const moveMobileLongPress = (e: ReactPointerEvent<HTMLElement>) => {
+    const start = mobileLongPressStart.current;
+
+    if (!start) {
+      return;
+    }
+
+    const movedX = Math.abs(e.clientX - start.x);
+    const movedY = Math.abs(e.clientY - start.y);
+    const movedTooFar = movedX > LONG_PRESS_MOVE_TOLERANCE_PX || movedY > LONG_PRESS_MOVE_TOLERANCE_PX;
+
+    if (movedTooFar) {
+      cancelMobileLongPress();
+    }
+  };
+
+  const endMobileLongPress = () => {
+    cancelMobileLongPress();
+
+    const id = ignoreMobileLongPressClick.current;
+
+    if (id === null) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      if (ignoreMobileLongPressClick.current === id) {
+        ignoreMobileLongPressClick.current = null;
+      }
+    }, 0);
+  };
+
+  const cancelMobilePointer = () => {
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+  };
+
+  const mobileSelectionPointerHandlers = (id: string) => ({
+    onPointerDown: (e: ReactPointerEvent<HTMLElement>) => startMobileLongPress(e, id),
+    onPointerMove: moveMobileLongPress,
+    onPointerUp: endMobileLongPress,
+    onPointerCancel: cancelMobilePointer,
+    onPointerLeave: cancelMobileLongPress,
+  });
+
+  const clearSelection = () => {
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+    selectionAnchor.current = null;
+    setMobileSelectionMode(false);
+    setSelectedIds([]);
+  };
+
+  const startMobileSelection = () => {
+    cancelMobileLongPress();
+    ignoreMobileLongPressClick.current = null;
+    selectionAnchor.current = null;
+    setSelectedIds([]);
+    setMobileSelectionMode(true);
+  };
+
+  const deleteSingle = (id: string, name: string) => {
+    clearSelection();
+    actions.deleteFile(id, name);
+  };
+
+  const restoreSelected = async (ids: string[]) => {
+    if (trashActionBusyRef.current) {
+      return;
+    }
+
+    trashActionBusyRef.current = true;
+    setTrashActionBusy(true);
+
+    try {
+      const restoredBoards = (await storage.restoreTrashedFiles?.(ids)) ?? [];
+
+      if (restoredBoards.length === 0) {
+        return;
+      }
+
+      editor.adoptDocuments(restoredBoards);
+      refreshTrash(storage);
+      clearSelection();
+
+      const fileIds = restoredBoards.map((board) => fileIdOf(board));
+      const restoredFileCount = new Set(fileIds).size;
+
+      toast(t('toast.filesRestored', { count: restoredFileCount }));
+    } catch {
+      toast(t('toast.trashOperationFailed'));
+    } finally {
+      trashActionBusyRef.current = false;
+      setTrashActionBusy(false);
+    }
+  };
+
+  const discardSelected = async (ids: string[]) => {
+    const isBusy = trashActionBusyRef.current;
+
+    if (!storage.discardTrashedFiles || isBusy) {
+      return;
+    }
+
+    trashActionBusyRef.current = true;
+    setTrashActionBusy(true);
+
+    try {
+      await storage.discardTrashedFiles(ids);
+    } catch {
+      toast(t('toast.trashOperationFailed'));
+      return;
+    } finally {
+      trashActionBusyRef.current = false;
+      setTrashActionBusy(false);
+    }
+
+    refreshTrash(storage);
+    clearSelection();
+
+    toast(t('toast.filesDeletedForGood', { count: ids.length }));
+  };
+
+  const confirmDiscard = (ids: string[], empty = false) => {
+    const title = empty ? t('home.emptyTrash') : t('file.deleteForGood');
+
+    const message = empty
+      ? t('home.confirmEmptyTrash')
+      : t('home.confirmDeleteSelectedForGood', { count: ids.length });
+
+    return openDialog({
+      type: 'confirm',
+      title,
+      message,
+      confirmLabel: title,
+      onConfirm: () => void discardSelected(ids),
+    });
+  };
+
   /** The name of a file's palette: a preset's, Custom, or the drawing's colors. */
   const paletteName = (doc: PixelDoc | undefined) => {
     const key = doc?.palette?.key;
@@ -204,11 +467,30 @@ export function HomeScreen() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !document.querySelector('dialog[open]')) leaveHome(editor);
+      const isEscape = e.key === 'Escape';
+      const hasOpenDialog = document.querySelector('dialog[open]') !== null;
+
+      if (!isEscape || hasOpenDialog) {
+        return;
+      }
+
+      if (selectedIds.length > 0 || mobileSelectionMode) {
+        selectionAnchor.current = null;
+        setMobileSelectionMode(false);
+        setSelectedIds([]);
+
+        return;
+      }
+
+      leaveHome(editor);
     };
+
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [editor]);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [editor, selectedIds.length, mobileSelectionMode]);
 
   const open = (id: string) => {
     editor.switchFile(id);
@@ -219,13 +501,49 @@ export function HomeScreen() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const openTimer = useRef(0);
   useEffect(() => () => clearTimeout(openTimer.current), []);
-  const clickCard = (e: MouseEvent, id: string) => {
+
+  const clickCard = (e: MouseEvent, id: string, openWhenUnselected = true) => {
+    if (ignoreMobileLongPressClick.current === id) {
+      ignoreMobileLongPressClick.current = null;
+      return;
+    }
+
     const target = e.target as Element;
-    if (target.closest('input')) return;
+
+    if (target.closest('input, button, a, .checkbox')) {
+      return;
+    }
+
     clearTimeout(openTimer.current);
-    if (!target.closest('.home-file-name')) return open(id);
-    if (e.detail === 1) openTimer.current = window.setTimeout(() => open(id), 300);
+    const hasSelection = selectedIds.length > 0 || mobileSelectionMode;
+
+    if (e.shiftKey && hasSelection) {
+      selectRange(id);
+      return;
+    }
+
+    if (e.metaKey || e.ctrlKey || hasSelection) {
+      toggleFileSelection(id);
+      return;
+    }
+
+    if (!openWhenUnselected) {
+      return;
+    }
+
+    const isNameClick = target.closest('.home-file-name') !== null;
+
+    if (!isNameClick) {
+      return open(id);
+    }
+
+    const isSingleClick = e.detail === 1;
+
+    if (isSingleClick) {
+      openTimer.current = window.setTimeout(() => open(id), 300);
+    }
   };
+
   const fileName = (f: { id: string; name: string }, className = '') => (
     <EditableName
       className={`home-file-name truncate ${className}`}
@@ -243,7 +561,7 @@ export function HomeScreen() {
 
   return (
     <div
-      className={`home${dropping ? ' is-dropping' : ''}`}
+      className={`home${dropping ? ' is-dropping' : ''}${mobileSelectionMode ? ' is-mobile-selecting' : ''}`}
       data-drop-label={t('home.drop')}
       onDragOver={(e) => {
         // Only files from outside open here: a drawing's own card is dragged to the Trash.
@@ -310,7 +628,10 @@ export function HomeScreen() {
               <button
                 type="button"
                 className={`home-nav-item${showDeleted ? '' : ' is-active'}`}
-                onClick={() => setShowDeleted(false)}
+                onClick={() => {
+                  setShowDeleted(false);
+                  clearSelection();
+                }}
               >
                 <Icon name="image" size={16} />
                 {t('home.drawings')}
@@ -318,7 +639,10 @@ export function HomeScreen() {
               <button
                 type="button"
                 className={`home-nav-item${showDeleted ? ' is-active' : ''}${overTrash ? ' drop-into' : ''}`}
-                onClick={() => setShowDeleted(true)}
+                onClick={() => {
+                  setShowDeleted(true);
+                  clearSelection();
+                }}
                 onDragOver={(e) => {
                   if (!e.dataTransfer.types.includes(FILE_MIME)) return;
                   e.preventDefault();
@@ -332,7 +656,10 @@ export function HomeScreen() {
                   e.preventDefault();
                   setOverTrash(false);
                   const file = files.find((f) => f.id === e.dataTransfer.getData(FILE_MIME));
-                  if (file) actions.deleteFile(file.id, file.name);
+                  if (file) {
+                    clearSelection();
+                    actions.deleteFile(file.id, file.name);
+                  }
                 }}
               >
                 <Icon name="trash" size={16} />
@@ -386,37 +713,194 @@ export function HomeScreen() {
               {/* A toolbar like a files app's: the section's title, how to sort and how to show. */}
               {(shown.length > 0 || showDeleted) && (
                 <div className="home-toolbar">
-                  <h2 className="home-toolbar-title">
+                  <h2 className="home-toolbar-title home-toolbar-title-desktop">
                     {showDeleted ? t('home.deleted') : t('home.drawings')}
                   </h2>
-                  <div className="home-toolbar-tools">
-                    {!showDeleted && (
-                      <button
-                        type="button"
-                        className="field field-menu home-sort"
-                        aria-haspopup="menu"
-                        onClick={(e) => sortMenu(e.currentTarget)}
+                  <div className="home-toolbar-tools home-toolbar-tools-desktop">
+                    {selectedIds.length > 0 ? (
+                      <div
+                        className="home-selection-toolbar"
+                        role="group"
+                        aria-label={t('home.selected', { count: selectedIds.length })}
                       >
-                        <span className="truncate">
-                          {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                        <IconButton icon="close" label={t('home.clearSelection')} onClick={clearSelection} />
+
+                        <span className="home-selection-count" aria-live="polite">
+                          {t('home.selected', { count: selectedIds.length })}
                         </span>
-                        <Icon name="caret" size={12} />
-                      </button>
+
+                        <button
+                          type="button"
+                          className="btn is-compact"
+                          disabled={selectedIds.length === sectionItems.length}
+                          onClick={selectAll}
+                        >
+                          {t('home.selectAll')}
+                        </button>
+
+                        <span className="home-selection-separator" aria-hidden="true" />
+
+                        {showDeleted ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn is-compact"
+                              disabled={trashActionBusy}
+                              onClick={() => void restoreSelected(selectedIds)}
+                            >
+                              <Icon name="undo" size={14} />
+                              {t('file.restore')}
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn is-compact is-danger"
+                              disabled={trashActionBusy}
+                              onClick={() => confirmDiscard(selectedIds)}
+                            >
+                              <Icon name="trash" size={14} />
+                              {t('file.deleteForGood')}…
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn is-compact is-danger"
+                            onClick={() => {
+                              const ids = selectedIds;
+                              clearSelection();
+                              actions.deleteFiles(ids);
+                            }}
+                          >
+                            <Icon name="trash" size={14} />
+                            {t('common.delete')}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        {!showDeleted ? (
+                          <button
+                            type="button"
+                            className="field field-menu home-sort"
+                            aria-haspopup="menu"
+                            onClick={(e) => sortMenu(e.currentTarget)}
+                          >
+                            <span className="truncate">
+                              {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                            </span>
+                            <Icon name="caret" size={12} />
+                          </button>
+                        ) : (
+                          deleted.length > 0 && (
+                            <button
+                              type="button"
+                              className="btn is-compact is-danger"
+                              disabled={trashActionBusy}
+                              onClick={() => confirmDiscard(sectionIds, true)}
+                            >
+                              <Icon name="trash" size={14} />
+                              {t('home.emptyTrash')}…
+                            </button>
+                          )
+                        )}
+
+                        <div className="home-view" role="group">
+                          <IconButton
+                            icon="gridView"
+                            label={t('home.viewGrid')}
+                            pressed={view === 'grid'}
+                            onClick={() => uiStore.set({ homeView: 'grid' })}
+                          />
+                          <IconButton
+                            icon="list"
+                            label={t('home.viewList')}
+                            pressed={view === 'list'}
+                            onClick={() => uiStore.set({ homeView: 'list' })}
+                          />
+                        </div>
+                      </>
                     )}
-                    <div className="home-view" role="group">
-                      <IconButton
-                        icon="gridView"
-                        label={t('home.viewGrid')}
-                        pressed={view === 'grid'}
-                        onClick={() => uiStore.set({ homeView: 'grid' })}
-                      />
-                      <IconButton
-                        icon="list"
-                        label={t('home.viewList')}
-                        pressed={view === 'list'}
-                        onClick={() => uiStore.set({ homeView: 'list' })}
-                      />
-                    </div>
+                  </div>
+                  <div className="home-mobile-toolbar">
+                    {mobileSelectionMode ? (
+                      <div className="home-mobile-selection-head">
+                        <IconButton icon="close" label={t('home.clearSelection')} onClick={clearSelection} />
+
+                        <span className="home-mobile-selection-count" aria-live="polite">
+                          {selectedIds.length > 0
+                            ? t('home.selected', { count: selectedIds.length })
+                            : t('home.selectFiles')}
+                        </span>
+
+                        <button
+                          type="button"
+                          className="btn"
+                          disabled={selectedIds.length === sectionItems.length}
+                          onClick={selectAll}
+                        >
+                          <span className="home-mobile-action-label">{t('home.selectAll')}</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="home-mobile-toolbar-head">
+                          <h2 className="home-toolbar-title">
+                            {showDeleted ? t('home.deleted') : t('home.drawings')}
+                          </h2>
+
+                          {sectionItems.length > 0 && (
+                            <button type="button" className="btn" onClick={startMobileSelection}>
+                              {t('home.select')}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="home-mobile-toolbar-tools">
+                          {!showDeleted ? (
+                            <button
+                              type="button"
+                              className="field field-menu home-sort"
+                              aria-haspopup="menu"
+                              onClick={(e) => sortMenu(e.currentTarget)}
+                            >
+                              <span className="truncate">
+                                {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                              </span>
+                              <Icon name="caret" size={12} />
+                            </button>
+                          ) : deleted.length > 0 ? (
+                            <button
+                              type="button"
+                              className="btn is-danger home-mobile-empty"
+                              disabled={trashActionBusy}
+                              onClick={() => confirmDiscard(sectionIds, true)}
+                            >
+                              <Icon name="trash" size={14} />
+                              <span className="home-mobile-action-label">{t('home.emptyTrash')}…</span>
+                            </button>
+                          ) : (
+                            <span className="home-mobile-toolbar-spacer" />
+                          )}
+
+                          <div className="home-view" role="group">
+                            <IconButton
+                              icon="gridView"
+                              label={t('home.viewGrid')}
+                              pressed={view === 'grid'}
+                              onClick={() => uiStore.set({ homeView: 'grid' })}
+                            />
+
+                            <IconButton
+                              icon="list"
+                              label={t('home.viewList')}
+                              pressed={view === 'list'}
+                              onClick={() => uiStore.set({ homeView: 'list' })}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -464,9 +948,12 @@ export function HomeScreen() {
                 <section className="home-files">
                   {deleted.length === 0 && <p className="home-empty muted">{t('home.trashEmpty')}</p>}
                   {view === 'list' ? (
-                    <table className="home-table">
+                    <table
+                      className={`home-table${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                    >
                       <thead>
                         <tr>
+                          <th />
                           <th>{t('home.colName')}</th>
                           <th>{t('home.colFormat')}</th>
                           <th>{t('home.colPalette')}</th>
@@ -476,7 +963,20 @@ export function HomeScreen() {
                       </thead>
                       <tbody>
                         {deleted.map((f) => (
-                          <tr key={f.id}>
+                          <tr
+                            key={f.id}
+                            className={selectedIds.includes(f.id) ? 'is-selected' : undefined}
+                            {...mobileSelectionPointerHandlers(f.id)}
+                            onClick={(e) => clickCard(e, f.id, false)}
+                          >
+                            <td className="home-td-select">
+                              <Checkbox
+                                checked={selectedIds.includes(f.id)}
+                                onChange={(checked) => selectFile(f.id, checked)}
+                                variant="selection"
+                                ariaLabel={t('home.selectFile', { name: f.name })}
+                              />
+                            </td>
                             <td className="home-td-name">
                               <span>
                                 <HomeThumb doc={f.boards[0]} />
@@ -499,9 +999,7 @@ export function HomeScreen() {
                                   icon="trash"
                                   className="icon-btn is-danger"
                                   label={t('file.deleteForGood')}
-                                  onClick={() =>
-                                    void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage))
-                                  }
+                                  onClick={() => void discardSelected([f.id])}
                                 />
                               </span>
                             </td>
@@ -510,9 +1008,22 @@ export function HomeScreen() {
                       </tbody>
                     </table>
                   ) : (
-                    <div className="home-grid">
+                    <div
+                      className={`home-grid${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                    >
                       {deleted.map((f) => (
-                        <div key={f.id} className="home-card is-deleted">
+                        <div
+                          key={f.id}
+                          className={`home-card is-deleted${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
+                          {...mobileSelectionPointerHandlers(f.id)}
+                          onClick={(e) => clickCard(e, f.id, false)}
+                        >
+                          <Checkbox
+                            checked={selectedIds.includes(f.id)}
+                            onChange={(checked) => selectFile(f.id, checked)}
+                            variant="selection"
+                            ariaLabel={t('home.selectFile', { name: f.name })}
+                          />
                           <HomeThumb doc={f.boards[0]} />
                           <span className="home-card-info">
                             <span className="home-card-name truncate">{f.name}</span>
@@ -537,8 +1048,7 @@ export function HomeScreen() {
                               openMenu(e.currentTarget, [
                                 {
                                   label: t('file.deleteForGood'),
-                                  onSelect: () =>
-                                    void storage.discardTrashed?.(f.id).then(() => refreshTrash(storage)),
+                                  onSelect: () => void discardSelected([f.id]),
                                 },
                               ])
                             }
@@ -551,9 +1061,12 @@ export function HomeScreen() {
               )}
               {shown.length > 0 && !showDeleted && view === 'list' && (
                 <section className="home-files">
-                  <table className="home-table">
+                  <table
+                    className={`home-table${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                  >
                     <thead>
                       <tr>
+                        <th />
                         <th>{t('home.colName')}</th>
                         <th>{t('home.colFormat')}</th>
                         <th>{t('home.colPalette')}</th>
@@ -568,8 +1081,9 @@ export function HomeScreen() {
                         return (
                           <tr
                             key={f.id}
-                            className={draggedId === f.id ? 'is-dragging' : undefined}
+                            className={`${draggedId === f.id ? 'is-dragging' : ''}${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
                             {...dragFile(f.id)}
+                            {...mobileSelectionPointerHandlers(f.id)}
                             tabIndex={0}
                             onClick={(e) => clickCard(e, f.id)}
                             onKeyDown={(e) => {
@@ -579,6 +1093,14 @@ export function HomeScreen() {
                               open(f.id);
                             }}
                           >
+                            <td className="home-td-select">
+                              <Checkbox
+                                checked={selectedIds.includes(f.id)}
+                                onChange={(checked) => selectFile(f.id, checked)}
+                                variant="selection"
+                                ariaLabel={t('home.selectFile', { name: f.name })}
+                              />
+                            </td>
                             <td className="home-td-name">
                               <span>
                                 <HomeThumb doc={doc} />
@@ -609,7 +1131,7 @@ export function HomeScreen() {
                                   icon="trash"
                                   className="icon-btn is-danger"
                                   label={t('common.delete')}
-                                  onClick={() => actions.deleteFile(f.id, f.name)}
+                                  onClick={() => deleteSingle(f.id, f.name)}
                                 />
                               </span>
                             </td>
@@ -622,7 +1144,9 @@ export function HomeScreen() {
               )}
               {shown.length > 0 && !showDeleted && view !== 'list' && (
                 <section className="home-files">
-                  <div className="home-grid">
+                  <div
+                    className={`home-grid${selectedIds.length > 0 || mobileSelectionMode ? ' is-selecting' : ''}`}
+                  >
                     {shown.map((f) => {
                       // The file's first board as its thumbnail.
                       const doc = docs.find((d) => fileIdOf(d) === f.id);
@@ -630,8 +1154,9 @@ export function HomeScreen() {
                       return (
                         <div
                           key={f.id}
-                          className={`home-card${draggedId === f.id ? ' is-dragging' : ''}`}
+                          className={`home-card${draggedId === f.id ? ' is-dragging' : ''}${selectedIds.includes(f.id) ? ' is-selected' : ''}`}
                           {...dragFile(f.id)}
+                          {...mobileSelectionPointerHandlers(f.id)}
                           role="button"
                           tabIndex={0}
                           onClick={(e) => clickCard(e, f.id)}
@@ -641,6 +1166,12 @@ export function HomeScreen() {
                             open(f.id);
                           }}
                         >
+                          <Checkbox
+                            checked={selectedIds.includes(f.id)}
+                            onChange={(checked) => selectFile(f.id, checked)}
+                            variant="selection"
+                            ariaLabel={t('home.selectFile', { name: f.name })}
+                          />
                           <HomeThumb doc={doc} />
                           {animated(f.id) && (
                             <span className="home-animated" data-tip={t('home.animated')}>
@@ -662,7 +1193,7 @@ export function HomeScreen() {
                               e.stopPropagation();
                               openMenu(
                                 e.currentTarget,
-                                fileMenu(editor, actions, f, () => setRenamingId(f.id)),
+                                fileMenu(editor, actions, f, () => setRenamingId(f.id), clearSelection),
                               );
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
@@ -677,6 +1208,51 @@ export function HomeScreen() {
           </div>
         }
       </div>
+      {mobileSelectionMode && (
+        <div
+          className="home-mobile-actions"
+          role="group"
+          aria-label={t('home.selected', { count: selectedIds.length })}
+        >
+          {showDeleted ? (
+            <>
+              <button
+                type="button"
+                className="btn home-mobile-action"
+                disabled={selectedIds.length === 0 || trashActionBusy}
+                onClick={() => void restoreSelected(selectedIds)}
+              >
+                <Icon name="undo" size={18} />
+                <span className="home-mobile-action-label">{t('file.restore')}</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn is-danger home-mobile-action"
+                disabled={selectedIds.length === 0 || trashActionBusy}
+                onClick={() => confirmDiscard(selectedIds)}
+              >
+                <Icon name="trash" size={18} />
+                <span className="home-mobile-action-label">{t('file.deleteForGood')}…</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="btn is-danger home-mobile-action"
+              disabled={selectedIds.length === 0}
+              onClick={() => {
+                const ids = selectedIds;
+                clearSelection();
+                actions.deleteFiles(ids);
+              }}
+            >
+              <Icon name="trash" size={18} />
+              <span className="home-mobile-action-label">{t('common.delete')}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

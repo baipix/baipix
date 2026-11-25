@@ -905,15 +905,16 @@ describe('Editor', () => {
     expect(painted(e)).toBe(0);
   });
 
-  it('leaves a blank file when the last one is deleted, and can bring it back', () => {
+  it('restores the last deleted file without keeping the temporary blank file', () => {
     const e = new Editor();
     const id = e.getState().activeId;
+
     expect(e.deleteFile(id)).toBe(true);
     expect(e.getState().files).toHaveLength(1);
     expect(e.getState().activeId).not.toBe(id);
+
     expect(e.restoreDeleted()).toBe(true);
     expect(e.getState().activeId).toBe(id);
-    e.discardFile(e.getState().files.find((f) => f.id !== id)!.id);
     expect(e.getState().files.map((f) => f.id)).toEqual([id]);
   });
 

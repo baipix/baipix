@@ -48,7 +48,13 @@ export function newIssueUrl(kind: 'bug' | 'idea'): string {
 }
 
 /** A file's "…" menu, in the Files list and on the home screen cards (with `rename`, that types the name in place). */
-export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, rename?: () => void): MenuItem[] {
+export function fileMenu(
+  editor: Editor,
+  actions: Actions,
+  file: FileInfo,
+  rename?: () => void,
+  beforeDelete?: () => void,
+): MenuItem[] {
   return [
     ...(rename ? [{ label: t('file.rename'), onSelect: rename }] : []),
     { label: t('file.duplicate'), onSelect: () => editor.duplicateFile(file.id) },
@@ -57,7 +63,13 @@ export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, renam
       onSelect: () => (editor.switchFile(file.id), void actions.saveDocument()),
     },
     '-',
-    { label: t('common.delete'), onSelect: () => actions.deleteFile(file.id, file.name) },
+    {
+      label: t('common.delete'),
+      onSelect: () => {
+        beforeDelete?.();
+        actions.deleteFile(file.id, file.name);
+      },
+    },
   ];
 }
 
