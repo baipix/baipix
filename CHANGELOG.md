@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Several drawings at once, in Drawings and in Trash: tick them (or Cmd/Ctrl-click, Shift-click for a range, Select on a phone), then delete, restore or delete them for good in one go, with one Undo for the whole batch. ([#909](https://github.com/baipix/baipix/pull/909))
 - Stylus pressure: with a pen that senses pressure, pressing harder draws bigger, from 1 pixel up to the size picked, with the pencil, the eraser, Shade, Lighten and Blur, and sprays denser with the spray. It is off to start with, and shows in the tool's options once the pen has sent a pressure; Pressure response sets how fast it grows. ([#873](https://github.com/baipix/baipix/pull/873))
 - Stylus mode: with a pen (Apple Pencil, S Pen), the pen draws and fingers pan and zoom, so a palm or a finger no longer leaves marks. It turns on by itself the first time a pen comes near, and View › Stylus mode turns it off to draw with a finger. ([#871](https://github.com/baipix/baipix/pull/871))
 - The editor in Simplified Chinese (View › Language › 中文 (简体)). ([#774](https://github.com/baipix/baipix/pull/774))
@@ -41,7 +42,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 - [@Ben8t](https://github.com/Ben8t) for scripting the editor through `window.baipix`, and its guide. ([#711](https://github.com/baipix/baipix/pull/711))
 - [@zh-Translator](https://github.com/zh-Translator) for the Simplified Chinese translation, the ninth language. ([#774](https://github.com/baipix/baipix/pull/774))
-- [@mykola-lp](https://github.com/mykola-lp) for stylus mode, where the pen draws and fingers move the canvas, for keeping it off pen tablets on a computer, and for stylus pressure. ([#871](https://github.com/baipix/baipix/pull/871), [#908](https://github.com/baipix/baipix/pull/908), [#873](https://github.com/baipix/baipix/pull/873))
+- [@mykola-lp](https://github.com/mykola-lp) for stylus mode, where the pen draws and fingers move the canvas, for keeping it off pen tablets on a computer, for stylus pressure, and for picking several drawings at once. ([#871](https://github.com/baipix/baipix/pull/871), [#908](https://github.com/baipix/baipix/pull/908), [#873](https://github.com/baipix/baipix/pull/873), [#909](https://github.com/baipix/baipix/pull/909))
 
 ## [0.8.1] - 2026-11-14
 
