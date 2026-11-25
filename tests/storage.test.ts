@@ -315,4 +315,39 @@ describe('IndexedDbStorage', () => {
     expect(failed).toBe(true);
     expect((await tab.listTrash()).map((file) => file.name)).toEqual(['B', 'C']);
   });
+
+  it('removes restored files from Trash when saving the workspace', async () => {
+    const chrome = browser();
+    const tab = new IndexedDbStorage(chrome);
+
+    const a = createDocument('A', 4, 4);
+    const b = createDocument('B', 4, 4);
+    b.board = { file: b.id, fileName: 'B', x: 0, y: 0 };
+
+    const bSecond = createDocument('B second', 4, 4);
+    bSecond.board = { file: b.id, fileName: 'B', x: 4, y: 0 };
+
+    const c = createDocument('C', 4, 4);
+
+    // Save all files.
+    await tab.save(workspace([a, b, bSecond, c]));
+
+    // Delete B and C by saving a workspace without them.
+    await tab.save(workspace([a]));
+    const trash = await tab.listTrash();
+
+    expect(trash.map((file) => file.name).sort()).toEqual(['B', 'C']);
+    expect(
+      trash
+        .find((file) => file.id === b.id)
+        ?.boards.map((board) => board.name)
+        .sort(),
+    ).toEqual(['B', 'B second']);
+
+    // Simulate Undo: restore the documents through a workspace save.
+    await tab.save(workspace([a, b, bSecond, c]));
+
+    expect(await names(tab)).toEqual(['A', 'B', 'B second', 'C']);
+    expect(await tab.listTrash()).toEqual([]);
+  });
 });

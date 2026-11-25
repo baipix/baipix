@@ -152,7 +152,12 @@ export class IndexedDbStorage implements StorageAdapter {
     await transact(db, [FILES, META, TRASH], 'readwrite', (tx) => {
       const files = tx.objectStore(FILES);
       const trash = tx.objectStore(TRASH);
-      for (const doc of changed) files.put(storeFile(doc), doc.id);
+
+      for (const doc of changed) {
+        files.put(storeFile(doc), doc.id);
+        trash.delete(doc.id);
+      }
+
       // A removed board goes to the trash, to come back if it was a mistake.
       for (const id of removed) {
         const req = files.get(id) as IDBRequest<StoredFile | undefined>;
