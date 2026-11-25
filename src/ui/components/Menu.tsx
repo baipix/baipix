@@ -33,7 +33,7 @@ export type MenuItem =
         height: number;
         version: number;
       };
-       /** Last modification time in milliseconds since the epoch. */
+      /** Last modification time in milliseconds since the epoch. */
       updatedAt?: number;
     };
 
@@ -260,16 +260,14 @@ function MenuPanel({
                 height={item.thumbnail.height}
                 version={item.thumbnail.version}
                 fit
-                className='thumb menu-file-thumb'
+                className="thumb menu-file-thumb"
                 displayWidth={64}
               />
             )}
             {item.icon && <Icon name={item.icon} size={16} />}
             <span>{item.label}</span>
             {item.updatedAt !== undefined && (
-            <span className="menu-updated-at">
-              {formatUpdatedAt(item.updatedAt)}
-            </span>
+              <span className="menu-updated-at">{formatUpdatedAt(item.updatedAt)}</span>
             )}
             {item.shortcut && <span className="menu-shortcut">{formatShortcut(item.shortcut)}</span>}
             {item.items && <span className="menu-chevron" aria-hidden="true" />}

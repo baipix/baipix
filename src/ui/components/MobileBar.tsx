@@ -22,16 +22,16 @@ export function MobileBar() {
     uiStore.set((s) => ({ sheet: s.sheet === which ? null : which }));
   return (
     <div className="mobile-bar">
-   <IconButton
-  className="icon-btn large"
-  icon="logo"
-  iconSize={24}
-  label={t('menu.main')}
-  caret
-  aria-haspopup="menu"
-  onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
-/>
-    {/* The file name opens the files menu, like the ▾ next to it on larger screens.
+      <IconButton
+        className="icon-btn large"
+        icon="logo"
+        iconSize={24}
+        label={t('menu.main')}
+        caret
+        aria-haspopup="menu"
+        onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
+      />
+      {/* The file name opens the files menu, like the ▾ next to it on larger screens.
     Rename in the File menu turns it into a field. */}
       {renaming ? (
         <input
@@ -60,7 +60,7 @@ export function MobileBar() {
           aria-haspopup="menu"
           onClick={(e) => openMenu(e.currentTarget, filesMenu(editor))}
         >
-          {name}  <Icon name="caret" size={12} />
+          {name} <Icon name="caret" size={12} />
         </button>
       )}
       <IconButton

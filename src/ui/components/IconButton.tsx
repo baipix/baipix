@@ -1,4 +1,3 @@
-
 import type { ButtonHTMLAttributes } from 'react';
 import type { IconName } from '../icons';
 import { Icon } from './Icon';

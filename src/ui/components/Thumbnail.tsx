@@ -36,23 +36,31 @@ const sameContent = (a: Uint32Array, b: Uint32Array): boolean => {
  * Small preview of a pixel buffer. By default, its width follows the drawing's proportions.
  * An optional display width allows a fixed-width preview while preserving the drawing's proportions.
  */
-export function Thumbnail({ pixels, width, height, version, fit = false, className='thumb', displayWidth,  }: ThumbnailProps) {
+export function Thumbnail({
+  pixels,
+  width,
+  height,
+  version,
+  fit = false,
+  className = 'thumb',
+  displayWidth,
+}: ThumbnailProps) {
   const ref = useRef<HTMLCanvasElement>(null);
-/** Stores the last rendered content and dimensions to avoid unnecessary redraws. */
+  /** Stores the last rendered content and dimensions to avoid unnecessary redraws. */
   const drawn = useRef<{
-  pixels: Uint32Array;
-  width: number;
-  height: number;
-  fit: boolean;
-  displayWidth?: number;
-} | null>(null);
+    pixels: Uint32Array;
+    width: number;
+    height: number;
+    fit: boolean;
+    displayWidth?: number;
+  } | null>(null);
   useLayoutEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const data = pixels();
     const last = drawn.current;
     if (
-      last && 
+      last &&
       last.displayWidth === displayWidth &&
       last.width === width &&
       last.height === height &&
@@ -95,8 +103,8 @@ export function Thumbnail({ pixels, width, height, version, fit = false, classNa
       box.w * k,
       box.h * k,
     );
-   // `pixels` is intentionally read lazily; `version` triggers a content check.
+    // `pixels` is intentionally read lazily; `version` triggers a content check.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height, version, fit, displayWidth]);
-  return <canvas ref={ref} className={className}  aria-hidden="true" />;
+  return <canvas ref={ref} className={className} aria-hidden="true" />;
 }

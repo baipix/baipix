@@ -2159,10 +2159,10 @@ body.is-dragging-swatch * {
     white-space: nowrap;
   }
   .mobile-name-menu {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
   /* Renaming: the name as a field, in its place. */
   input.mobile-name.is-editing {
     height: 32px;
