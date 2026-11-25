@@ -56,5 +56,12 @@ export default defineConfig(({ command, mode }) => ({
     __APP_VERSION__: JSON.stringify(pkg.version),
     __PWA_ENABLED__: command === 'build' && mode !== 'single',
   },
-  test: { environment: 'node', include: ['tests/**/*.test.ts'] },
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+    coverage: {
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.d.ts'],
+    },
+  },
 }));

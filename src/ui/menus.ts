@@ -433,6 +433,14 @@ export const MENU_BAR: MenuBarMenu[] = [
           onSelect: () => editor.toggleIsoGrid(),
         },
         {
+          label: t('menu.stylusMode'),
+          checked: uiStore.get().stylusMode === 'on',
+          onSelect: () =>
+            uiStore.set((u) => ({
+              stylusMode: u.stylusMode === 'on' ? 'off' : 'on',
+            })),
+        },
+        {
           label: t('timeline.title'),
           shortcut: 'Shift+A',
           checked: uiStore.get().timeline,

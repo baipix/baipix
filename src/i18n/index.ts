@@ -6,10 +6,11 @@ import { uk } from './uk';
 import { es } from './es';
 import { ja } from './ja';
 import { it } from './it';
+import { zh } from './zh';
 import { ko } from './ko';
 import { pt } from './pt';
 
-export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it' | 'ko' | 'pt';
+export type Locale = 'en' | 'fr' | 'uk' | 'es' | 'ja' | 'it' | 'zh' | 'ko' | 'pt';
 export type { MessageKey };
 
 const dictionaries: Record<Locale, Record<MessageKey, string>> = {
@@ -19,6 +20,7 @@ const dictionaries: Record<Locale, Record<MessageKey, string>> = {
   es,
   ja,
   it,
+  zh,
   ko,
   pt,
 };
@@ -30,6 +32,7 @@ export const LOCALES: { id: Locale; label: string }[] = [
   { id: 'es', label: 'Español' },
   { id: 'ja', label: '日本語' },
   { id: 'it', label: 'Italiano' },
+  { id: 'zh', label: '中文 (简体)' },
   { id: 'ko', label: '한국어' },
   { id: 'pt', label: 'Português (Brasil)' },
 ];

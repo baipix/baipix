@@ -11,6 +11,12 @@ description: 'Find your way around a pixel art drawing in Baipix: zoom and pan, 
 - **Pan** with two fingers on a trackpad or a touch screen, <kbd>Shift</kbd> with the mouse wheel for sideways, the Hand tool (<kbd>H</kbd>), or hold <kbd>Space</kbd> and drag with any tool.
 - **Hide the interface** (<kbd>Tab</kbd>) to see only the drawing.
 
+## Drawing with a stylus
+
+- When a pen is detected, Stylus mode turns on: the pen draws, while fingers pan and zoom. A message tells you when it switches on.
+- Turn off **View › Stylus mode** to draw with a finger again. The setting stays until you change it or reload the page.
+- While Stylus mode is on, a two-finger tap undoes and a three-finger tap redoes.
+
 ## The display options
 
 <figure class="shot">
@@ -34,7 +40,7 @@ The two buttons at the right end of the options bar turn on **left-right** (<kbd
 
 ## Language
 
-Baipix speaks English, French, Ukrainian, Spanish, Japanese, Italian, Korean and Brazilian Portuguese. The first time, it opens in your browser's language when it's one of them, and in English otherwise. A message then says which language it picked, with a button to switch back to English.
+Baipix speaks English, French, Ukrainian, Spanish, Japanese, Italian, Korean, Brazilian Portuguese and Simplified Chinese. The first time, it opens in your browser's language when it's one of them, and in English otherwise. A message then says which language it picked, with a button to switch back to English.
 
 Change it at any time in **View › Language**. Baipix keeps your choice for next time.
 

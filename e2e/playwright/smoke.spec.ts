@@ -159,4 +159,28 @@ test.describe('on a phone, the timeline', () => {
       })
       .toBe(true);
   });
+
+  test('opens from the top bar as a strip of thumbnails, a long press opening a frame menu', async ({
+    page,
+  }) => {
+    await createNewFile(page);
+    await page.locator('.mobile-bar').getByRole('button', { name: 'Timeline' }).tap();
+    const timeline = page.locator('.timeline.is-touch');
+    await expect(timeline).toBeVisible();
+    await expect(timeline.locator('.timeline-thumb')).toHaveCount(1);
+
+    await timeline.getByRole('button', { name: 'New frame' }).tap();
+    await expect(timeline.locator('.timeline-thumb')).toHaveCount(2);
+    await expect(timeline.locator('.timeline-thumb').nth(1)).toHaveClass(/is-active/);
+
+    const first = timeline.locator('.timeline-thumb').first();
+    const box = (await first.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await expect(page.getByRole('menuitem', { name: /^Duration/ })).toBeVisible();
+    await page.mouse.up();
+    await page.getByRole('menuitem', { name: /^Duration/ }).tap();
+    await page.getByRole('menuitem', { name: '200 ms' }).tap();
+    await expect(first).toHaveAttribute('aria-label', 'Frame 1, 200 ms');
+  });
 });

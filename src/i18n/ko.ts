@@ -258,6 +258,7 @@ export const ko: Record<MessageKey, string> = {
 
   'menu.grid': '픽셀 그리드',
   'menu.tile': '타일 미리보기',
+  'menu.stylusMode': '스타일러스 모드',
   'menu.hideUi': '인터페이스 숨기기',
   'menu.shortcuts': '키보드 단축키',
   'menu.version': 'Baipix {version} · 새로운 기능',
@@ -399,6 +400,8 @@ export const ko: Record<MessageKey, string> = {
   'options.strength': '강도',
   'options.density': '밀도',
   'options.sprayOpacity': '불투명도 무작위',
+  'options.pressure': '펜 압력',
+  'options.pressureCurve': '압력 반응',
   'options.blurSnap': '팔레트 색상으로 제한',
   'options.shadeMode': '모드',
   'options.hueShift': '색조 이동',
@@ -421,6 +424,7 @@ export const ko: Record<MessageKey, string> = {
   'board.new': '새 보드',
   'board.duplicate': '보드 복제',
   'board.delete': '보드 삭제',
+  'board.collapse': '보드 접기',
   'board.deleted': '{name} 삭제됨.',
   'board.deletedMany': '{count}개 보드 삭제됨.',
   'board.none': '아직 이 파일에 보드가 없습니다.',
@@ -819,6 +823,7 @@ export const ko: Record<MessageKey, string> = {
   'shortcuts.stepFrame': '이전, 다음 프레임',
 
   'toast.saved': '{name} 저장됨.',
+  'toast.stylusModeEnabled': '스타일러스 모드가 켜졌습니다. 손가락으로 그리려면 보기 메뉴에서 끄세요.',
   'toast.alreadySorted': '레이어가 이미 깊이순으로 정렬되어 있습니다: 가장 아래 그림이 맨 앞입니다.',
   'toast.downloadCancelled': '다운로드가 취소되었습니다.',
   'toast.downloadBusy': '이미 다운로드 요청이 진행 중입니다.',

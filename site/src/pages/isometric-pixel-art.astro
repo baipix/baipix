@@ -9,21 +9,13 @@ import SectionHead from '../components/SectionHead.astro';
 import Base from '../layouts/Base.astro';
 import '../styles/guide.css';
 import { animations as anim } from '../animations';
-import { flatten } from '../../../src/engine/composite';
-import { renderGeometry, toSvg } from '../../../src/engine/export/svg';
-import { fileFromJson } from '../../../src/storage/fileFormat';
-import hobbitFile from '../art/hobbit-house.baipix?raw';
+import { artImage } from '../artFiles';
+import { hobbitBoards } from '../hobbit';
 import hobbitUrl from '../art/hobbit-house.baipix?url';
 
 const base = import.meta.env.BASE_URL;
 
-// The hobbit house in four seasons: one file, four boards, each rendered here at build time.
-const boards = fileFromJson(hobbitFile).map((doc) => ({
-  name: doc.name,
-  svg: toSvg(flatten(doc), doc.width, doc.height, renderGeometry(doc.width, doc.height, 1, 0)),
-  width: doc.width,
-  height: doc.height,
-}));
+const boards = hobbitBoards;
 
 /**
  * An isometric grid as the editor draws it (see drawIsoGrid): 2:1 lines through pixel corners, one
@@ -106,12 +98,9 @@ const faq = [
             <div class="season">
               <span class="season-name">{i === 0 ? `${b.name} · isometric grid` : b.name}</span>
               <div class="season-art">
-                <div
-                  class="pix"
-                  set:html={b.svg}
-                  role="img"
-                  aria-label={`The hobbit house, ${b.name.toLowerCase()}`}
-                />
+                <div class="pix">
+                  <img {...artImage(b.svg)} alt={`The hobbit house, ${b.name.toLowerCase()}`} />
+                </div>
                 {i === 0 && <div class="iso-grid" set:html={houseGrid} />}
               </div>
             </div>

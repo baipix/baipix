@@ -75,6 +75,10 @@ export interface UiState {
   homeOrder: 'asc' | 'desc';
   homeView: 'grid' | 'list';
   uiHidden: boolean;
+  /** Whether touch input navigates the canvas instead of drawing. */
+  stylusMode: 'auto' | 'on' | 'off';
+  /** A pen has reported variable pressure, so pressure controls can be shown. */
+  stylusPressureDetected: boolean;
   exportFormat: 'png' | 'gif' | 'sequence' | 'frames' | 'svg' | 'aseprite' | 'tileset' | 'layers';
   /** The language picked in the Code dialog. */
   exportCode: CodeLanguage;
@@ -89,6 +93,8 @@ export interface UiState {
   exportAllBoards: boolean;
   /** Ids of the collapsed panel sections. */
   collapsed: string[];
+  /** The open board folded in the layers list: its row only, its layers put away. Not kept. */
+  foldedBoard: string | null;
   /** Tab of the right panel. */
   /** Exports include the document's background (when it has one). */
   exportBackground: boolean;
@@ -124,6 +130,8 @@ export const uiStore = createStore<UiState>({
   homeOrder: 'desc',
   homeView: 'grid',
   uiHidden: false,
+  stylusMode: 'auto',
+  stylusPressureDetected: false,
   exportFormat: 'png',
   exportCode: 'react',
   exportActiveLayer: false,
@@ -133,6 +141,7 @@ export const uiStore = createStore<UiState>({
   exportSheetColumns: null,
   exportAllBoards: false,
   collapsed: [],
+  foldedBoard: null,
   exportBackground: true,
   hiddenPalettes: [],
   home: false,

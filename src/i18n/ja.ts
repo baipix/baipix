@@ -229,6 +229,7 @@ export const ja: Record<MessageKey, string> = {
   'theme.dark': 'ダークテーマ',
   'menu.grid': 'ピクセルグリッド',
   'menu.tile': 'タイルプレビュー',
+  'menu.stylusMode': 'スタイラスモード',
   'menu.hideUi': 'インターフェースを隠す',
   'menu.shortcuts': 'キーボードショートカット',
   'menu.version': 'Baipix {version}・新機能',
@@ -357,6 +358,8 @@ export const ja: Record<MessageKey, string> = {
   'options.strength': '強さ',
   'options.density': '密度',
   'options.sprayOpacity': 'ランダムな不透明度',
+  'options.pressure': 'ペンの筆圧',
+  'options.pressureCurve': '筆圧の反応',
   'options.blurSnap': 'パレット内の色にとどめる',
   'options.shadeMode': 'モード',
   'options.hueShift': '色相のシフト',
@@ -377,6 +380,7 @@ export const ja: Record<MessageKey, string> = {
   'board.new': '新規ボード',
   'board.duplicate': 'ボードを複製',
   'board.delete': 'ボードを削除',
+  'board.collapse': 'ボードを折りたたむ',
   'board.deleted': '{name}を削除しました。',
   'board.deletedMany': '{count}個のボードを削除しました。',
   'board.none': 'このファイルにはまだボードがありません。',
@@ -737,6 +741,8 @@ export const ja: Record<MessageKey, string> = {
   'shortcuts.stepFrame': '前のフレーム、次のフレーム',
 
   'toast.saved': '{name}を保存しました。',
+  'toast.stylusModeEnabled':
+    'スタイラスモードが有効になりました。指で描くには［表示］メニューでオフにしてください。',
   'toast.alreadySorted': 'レイヤーはすでに奥行き順に並んでいます。画面の下にある絵ほど手前です。',
   'toast.downloadCancelled': 'ダウンロードをキャンセルしました。',
   'toast.downloadBusy': '保存の画面がすでに開いています。',

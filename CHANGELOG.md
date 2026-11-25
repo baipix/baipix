@@ -4,8 +4,16 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+### Added
+
+- Stylus pressure: with a pen that senses pressure, pressing harder draws bigger, from 1 pixel up to the size picked, with the pencil, the eraser, Shade, Lighten and Blur, and sprays denser with the spray. It is off to start with, and shows in the tool's options once the pen has sent a pressure; Pressure response sets how fast it grows. ([#873](https://github.com/baipix/baipix/pull/873))
+- Stylus mode: with a pen (Apple Pencil, S Pen), the pen draws and fingers pan and zoom, so a palm or a finger no longer leaves marks. It turns on by itself the first time a pen comes near, and View › Stylus mode turns it off to draw with a finger. ([#871](https://github.com/baipix/baipix/pull/871))
+- The editor in Simplified Chinese (View › Language › 中文 (简体)). ([#774](https://github.com/baipix/baipix/pull/774))
+- Scripting, on `window.baipix`: a script or an assistant makes variations of a board you drew with the editor's own tools, beside it: a colorway, a hurt or frozen state, every board remapped to another palette at once. The editor shows each step live, and every one can be undone. `baipix.help()` lists the calls, the Scripting page of the docs shows them, and [baipix.app/agent.md](https://baipix.app/agent.md) is the guide to point an assistant at. ([#711](https://github.com/baipix/baipix/pull/711))
+
 ### Changed
 
+- On a touch screen or a phone, the timeline is one strip: play, the frames as thumbnails that scroll under the finger, a new frame and the onion skin, and the duration at a tablet's width. A long press on a frame opens its menu, its duration first. A film button in the phone's top bar opens and closes it. ([#906](https://github.com/baipix/baipix/pull/906))
 - On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))
 - The choices that were plain lists (the dithering, the gradient's shape, the export format, Remap's palette and a few more) are fields with a caret that open the editor's own menu: they look the same in every browser, and read as a choice on a phone. ([#863](https://github.com/baipix/baipix/pull/863))
 - On a phone or tablet, a submenu takes its menu's place, under a row with its name that goes back, instead of opening over it. A menu taller than the screen scrolls. ([#854](https://github.com/baipix/baipix/pull/854))
@@ -17,11 +25,23 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- On a phone, the sort of the files screen stays on one line, under the title, instead of wrapping onto two in French and other longer languages. ([#911](https://github.com/baipix/baipix/pull/911))
+- A pen tablet on a computer without a touch screen no longer turns on Stylus mode. ([#908](https://github.com/baipix/baipix/pull/908))
+- In Adjust › Remap, switching to All layers (or back) no longer closes the panel. ([#904](https://github.com/baipix/baipix/pull/904))
+- On a phone, Create no longer goes off the edge of the files screen in French and other longer languages: Download all and Import show only their icon there. ([#899](https://github.com/baipix/baipix/pull/899))
+- The empty editor no longer shows for a moment before the home screen when Baipix opens. ([#878](https://github.com/baipix/baipix/pull/878))
+- In a file of several boards, the arrow of the open board in the Layers panel folds its layers away, and brings them back. It did nothing before. ([#874](https://github.com/baipix/baipix/pull/874))
 - On a phone, the timeline opens under the tools instead of over them. ([#869](https://github.com/baipix/baipix/pull/869))
 - On a phone or tablet, a submenu opens where its menu is instead of jumping up the screen, and a long one scrolls. ([#866](https://github.com/baipix/baipix/pull/866))
 - Zooming with two fingers no longer shakes the drawing. ([#859](https://github.com/baipix/baipix/pull/859))
 - On a phone, the file can be renamed: Rename in its menu, or File › Rename file, turns its name into a field. ([#856](https://github.com/baipix/baipix/pull/856))
 - In the tool's options, the pressed button of a group (the brush's square or round shape) keeps to the group's rounded corners. ([#852](https://github.com/baipix/baipix/pull/852))
+
+### Thanks
+
+- [@Ben8t](https://github.com/Ben8t) for scripting the editor through `window.baipix`, and its guide. ([#711](https://github.com/baipix/baipix/pull/711))
+- [@zh-Translator](https://github.com/zh-Translator) for the Simplified Chinese translation, the ninth language. ([#774](https://github.com/baipix/baipix/pull/774))
+- [@mykola-lp](https://github.com/mykola-lp) for stylus mode, where the pen draws and fingers move the canvas, for keeping it off pen tablets on a computer, and for stylus pressure. ([#871](https://github.com/baipix/baipix/pull/871), [#908](https://github.com/baipix/baipix/pull/908), [#873](https://github.com/baipix/baipix/pull/873))
 
 ## [0.8.1] - 2026-11-14
 

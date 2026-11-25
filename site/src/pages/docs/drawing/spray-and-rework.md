@@ -8,6 +8,8 @@ description: 'Spray pixels, then rework pixel art without new colors in Baipix: 
 
 The spray (<kbd>P</kbd>) drops random pixels in a circle, like a spray can. Hold still to keep spraying, right-click to spray the color behind. **Density** sets how many pixels each puff drops, and **Random opacity** varies their transparency.
 
+With a pressure-capable pen, enable **Stylus pressure** to vary Density from 1% up to the selected value. Spray size stays the same. The pressure toggle and **Pressure response** setting are shared with Pencil, Eraser, Shade, Lighten and Blur.
+
 <figure class="shot">
   <img class="for-light" src="../../shots/spray-light.webp" width="662" height="116" alt="The Spray’s options: its size, density and random opacity." loading="lazy" />
   <img class="for-dark" src="../../shots/spray-dark.webp" width="662" height="116" alt="The Spray’s options: its size, density and random opacity." loading="lazy" />

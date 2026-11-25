@@ -30,6 +30,27 @@ describe('Editor', () => {
     expect(painted(e)).toBe(4);
   });
 
+  it('uses stylus pressure to vary the freehand brush size', () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    e.setOption('size', 5);
+    e.setOption('pressureEnabled', true);
+    e.beginStroke({ x: 10, y: 10 }, false, { shift: false }, undefined, { value: 0.5, active: true });
+    e.endStroke();
+
+    expect(painted(e)).toBe(9);
+  });
+
+  it('keeps the selected brush size when pressure is disabled', () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    e.setOption('size', 5);
+    e.beginStroke({ x: 10, y: 10 }, false, { shift: false }, undefined, { value: 0.5, active: true });
+    e.endStroke();
+
+    expect(painted(e)).toBe(25);
+  });
+
   it('removes doubled corners in pixel-perfect mode', () => {
     const e = new Editor();
     drag(e, [
@@ -231,6 +252,31 @@ describe('Editor', () => {
     expect(n).toBeGreaterThan(5);
     e.undo();
     expect(painted(e)).toBe(0);
+  });
+
+  it('uses stylus pressure to reduce spray density', () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    e.setTool('spray');
+    e.setOption('spraySize', 8);
+    e.setOption('sprayDensity', 100);
+    e.setOption('pressureEnabled', true);
+
+    const originalRandom = Math.random;
+    let randomCalls = 0;
+    Math.random = () => {
+      randomCalls++;
+      return 0.5;
+    };
+
+    try {
+      e.beginStroke({ x: 16, y: 16 }, false, { shift: false }, undefined, { value: 0, active: true });
+      e.endStroke();
+    } finally {
+      Math.random = originalRandom;
+    }
+
+    expect(randomCalls).toBe(2);
   });
 
   it('jumbles the pixels under the brush without adding colors', () => {

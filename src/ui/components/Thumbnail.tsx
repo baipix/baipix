@@ -1,3 +1,4 @@
+
 import { useLayoutEffect, useRef } from 'react';
 import { pixelBounds } from '../../engine/region';
 
@@ -12,12 +13,11 @@ interface ThumbnailProps {
    * character on a big board is seen, not a dot). The thumbnail keeps the canvas's proportions.
    */
   fit?: boolean;
-  className?: string;
-  /** Display width in CSS pixels, without changing the drawing's dimensions. */
-  displayWidth?: number;
+  /** Height in CSS pixels. */
+  size?: number;
 }
 
-/** Default thumbnails are 20px high, with width based on the drawing's aspect ratio. */
+/** Thumbnails are 20px high unless told otherwise; their width follows the drawing, between these ratios. */
 const MIN_RATIO = 0.5;
 const MAX_RATIO = 2;
 /** Canvas pixels per CSS pixel, so thumbnails stay sharp on 2× screens. */
@@ -34,63 +34,63 @@ const sameContent = (a: Uint32Array, b: Uint32Array): boolean => {
 
 /**
  * Small preview of a pixel buffer. By default, its width follows the drawing's proportions.
- * An optional display width allows a fixed-width preview while preserving the drawing's proportions.
  */
-export function Thumbnail({
-  pixels,
-  width,
-  height,
-  version,
-  fit = false,
-  className = 'thumb',
-  displayWidth,
-}: ThumbnailProps) {
+export function Thumbnail({ pixels, width, height, version, fit = false, size = 20 }: ThumbnailProps) {
   const ref = useRef<HTMLCanvasElement>(null);
-  /** Stores the last rendered content and dimensions to avoid unnecessary redraws. */
+  /** What was drawn last, and how: a new version with the same pixels draws nothing. */
   const drawn = useRef<{
     pixels: Uint32Array;
     width: number;
     height: number;
     fit: boolean;
-    displayWidth?: number;
+    size: number;
   } | null>(null);
+
   useLayoutEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const data = pixels();
     const last = drawn.current;
+
     if (
       last &&
-      last.displayWidth === displayWidth &&
       last.width === width &&
       last.height === height &&
       last.fit === fit &&
+      last.size === size &&
       sameContent(last.pixels, data)
     )
       return;
+
     const copy = data.slice();
-    drawn.current = { pixels: copy, width, height, fit, displayWidth };
+    drawn.current = { pixels: copy, width, height, fit, size };
+
     const ratio = Math.min(MAX_RATIO, Math.max(MIN_RATIO, width / height));
-    const h = 20 * DENSITY;
-    const w = displayWidth !== undefined ? displayWidth * DENSITY : Math.round(h * ratio);
+    const h = size * DENSITY;
+    const w = Math.round(h * ratio);
     canvas.width = w;
     canvas.height = h;
-    canvas.style.width = displayWidth !== undefined ? '' : `${w / DENSITY}px`;
+    canvas.style.width = `${w / DENSITY}px`;
+    canvas.style.height = `${size}px`;
+
     const ctx = canvas.getContext('2d')!;
     const src = (scratch ??= document.createElement('canvas'));
     if (src.width !== width || src.height !== height) {
       src.width = width;
       src.height = height;
     }
+
     const sctx = src.getContext('2d')!;
     // The kept copy, seen as bytes: no other buffer to fill.
     const image = new ImageData(new Uint8ClampedArray(copy.buffer as ArrayBuffer), width, height);
     sctx.putImageData(image, 0, 0);
+
     const box = (fit && pixelBounds(data, width, height)) || { x: 0, y: 0, w: width, h: height };
     // Fitted, a pixel's margin around what's drawn, whole pixels when they're big enough.
     const pad = fit && (box.w < width || box.h < height) ? 2 * DENSITY : 0;
     let k = Math.min((w - pad * 2) / box.w, (h - pad * 2) / box.h);
     if (k >= 1) k = Math.floor(k);
+
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(
       src,
@@ -103,8 +103,10 @@ export function Thumbnail({
       box.w * k,
       box.h * k,
     );
+
     // `pixels` is intentionally read lazily; `version` triggers a content check.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height, version, fit, displayWidth]);
-  return <canvas ref={ref} className={className} aria-hidden="true" />;
+  }, [width, height, version, fit, size]);
+
+  return <canvas ref={ref} className="thumb" aria-hidden="true" />;
 }

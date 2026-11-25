@@ -3,7 +3,7 @@ import { useT } from '../../i18n';
 import { useActions } from '../ActionsContext';
 import { useEditor, useEditorState } from '../EditorContext';
 import { filesMenu, mainMenu } from '../menus';
-import { openDialog, uiStore } from '../uiStore';
+import { openDialog, toggleTimeline, uiStore } from '../uiStore';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 import { Icon } from './Icon';
@@ -18,6 +18,7 @@ export function MobileBar() {
   const fileId = useEditorState((s) => s.activeId);
   const sheet = uiStore.use((s) => s.sheet);
   const renaming = uiStore.use((s) => s.renamingFile);
+  const timeline = uiStore.use((s) => !!s.timeline);
   const toggle = (which: 'left' | 'right') =>
     uiStore.set((s) => ({ sheet: s.sheet === which ? null : which }));
   return (
@@ -63,6 +64,14 @@ export function MobileBar() {
           {name} <Icon name="caret" size={12} />
         </button>
       )}
+      <IconButton
+        className="icon-btn large"
+        icon="timeline"
+        iconSize={24}
+        label={t('timeline.title')}
+        pressed={timeline}
+        onClick={toggleTimeline}
+      />
       <IconButton
         className="icon-btn large"
         icon="layers"

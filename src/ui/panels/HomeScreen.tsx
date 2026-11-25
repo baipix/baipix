@@ -269,23 +269,30 @@ export function HomeScreen() {
           <Icon name="logo" size={16} />
           <span className="home-brand">Baipix</span>
         </span>
-        {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. */}
+        {/* With drawings, Import and Create up here on the logo's line; the welcome has its own. On a
+            phone, Download all and Import keep only their icon, so Create fits in every language. */}
         {
           <div className="home-top-actions">
             {shown.length > 0 && (
               <button
                 type="button"
-                className="btn"
+                className="btn is-compact"
+                aria-label={t('home.downloadAll')}
                 data-tip={t('home.downloadAllTip')}
                 onClick={() => void actions.downloadAllFiles(shown.map((f) => f.id))}
               >
                 <Icon name="download" size={16} />
-                {t('home.downloadAll')}
+                <span className="btn-label">{t('home.downloadAll')}</span>
               </button>
             )}
-            <button type="button" className="btn" onClick={() => void importFile()}>
+            <button
+              type="button"
+              className="btn is-compact"
+              aria-label={t('home.import')}
+              onClick={() => void importFile()}
+            >
               <Icon name="upload" size={16} />
-              {t('home.import')}
+              <span className="btn-label">{t('home.import')}</span>
             </button>
             <button type="button" className="btn btn-primary" onClick={() => openDialog({ type: 'newFile' })}>
               <Icon name="plus" size={16} />
@@ -390,7 +397,9 @@ export function HomeScreen() {
                         aria-haspopup="menu"
                         onClick={(e) => sortMenu(e.currentTarget)}
                       >
-                        {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                        <span className="truncate">
+                          {sort === 'name' ? t('home.sortName') : t('home.sortModified')}
+                        </span>
                         <Icon name="caret" size={12} />
                       </button>
                     )}

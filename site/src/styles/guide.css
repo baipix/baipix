@@ -15,6 +15,27 @@
 .guide .hero-inner {
   position: relative;
 }
+/* A picture beside the title, on screens wide enough; under the buttons otherwise. */
+.guide .hero-inner.has-art {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 48px;
+  align-items: center;
+}
+/* A little lower than the middle, so the picture's ground sits near the buttons. */
+.guide .hero-art {
+  margin-top: 64px;
+}
+@media (max-width: 900px) {
+  .guide .hero-inner.has-art {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .guide .hero-art {
+    max-width: 360px;
+    margin-top: 0;
+  }
+}
 .guide .eyebrow {
   font:
     400 16px/1 'Silkscreen',
@@ -71,7 +92,8 @@
   padding: 48px;
   background: linear-gradient(160deg, var(--tint-a), var(--tint-b));
 }
-.guide .pix svg {
+.guide .pix svg,
+.guide .pix img {
   display: block;
   width: 100%;
   height: auto;

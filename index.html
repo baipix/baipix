@@ -12,13 +12,14 @@
       name="description"
       content="The Baipix editor: draw and animate pixel art in your browser, for free, with layers, palettes and isometric tools, then export SVG, PNG, GIF or Aseprite."
     />
-    <title>Baipix editor · Free online pixel art editor</title>
-    <!-- The editor is served at baipix.app/app/; its share card is the site's. -->
+    <title>Baipix editor · Draw and animate pixel art in your browser</title>
+    <!-- The editor is served at baipix.app/app/; its share card is the site's. Its title leaves
+         "free online pixel art editor" to the home page, so the two don't compete in search. -->
     <link rel="canonical" href="https://baipix.app/app/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Baipix" />
     <meta property="og:url" content="https://baipix.app/app/" />
-    <meta property="og:title" content="Baipix editor · Free online pixel art editor" />
+    <meta property="og:title" content="Baipix editor · Draw and animate pixel art in your browser" />
     <meta
       property="og:description"
       content="Draw and animate pixel art in your browser, for free, then export SVG, PNG, GIF or Aseprite."
@@ -32,6 +33,29 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Seen without JavaScript, and by search engines that don't run it. -->
+    <noscript>
+      <main
+        style="
+          max-width: 36rem;
+          margin: 3rem auto;
+          padding: 0 1rem;
+          font:
+            16px/1.5 system-ui,
+            sans-serif;
+        "
+      >
+        <h1>Baipix editor</h1>
+        <p>
+          Baipix is a free pixel art editor that runs in your browser. Draw with the pencil, fills, shapes and
+          selections, work in layers and boards, animate frame by frame, and draw isometric pixel art. Your
+          files stay on your device.
+        </p>
+        <p>Export to SVG, PNG, GIF, sprite sheets or Aseprite, or as code for a website.</p>
+        <p>The editor needs JavaScript. Turn it on to start drawing.</p>
+        <p><a href="https://baipix.app/">Home</a> · <a href="https://baipix.app/docs/">Docs</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
