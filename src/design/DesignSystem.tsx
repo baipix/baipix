@@ -409,6 +409,7 @@ function ButtonsBlock() {
           <IconButton icon="eye" label="Hide" />
           <IconButton icon="trash" label="Delete" />
           <IconButton icon="more" label="More" />
+          <IconButton icon="logo" label="Main menu" caret/>
         </Specimen>
         <Specimen
           label="More options"

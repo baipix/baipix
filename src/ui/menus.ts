@@ -63,8 +63,8 @@ export function fileMenu(editor: Editor, actions: Actions, file: FileInfo, renam
 }
 
 /**
- * The files menu of the left panel's header: the most recent files (the current one checked),
- * the current file's actions, and the home screen with all of them.
+ * The files menu of the left panel's header: the eight most recently updated files
+ * (the current file checked), and a link to the home screen with all files.
  */
 export function filesMenu(editor: Editor): MenuItem[] {
   const s = editor.getState();
@@ -77,6 +77,7 @@ export function filesMenu(editor: Editor): MenuItem[] {
       return {
         label: f.name,
         checked: f.id === s.activeId,
+        updatedAt: f.updatedAt,
         thumbnail: doc
           ? {
               pixels: () => flatten(doc, { includeBackground: false }),

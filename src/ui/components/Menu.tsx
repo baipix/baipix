@@ -33,6 +33,8 @@ export type MenuItem =
         height: number;
         version: number;
       };
+       /** Last modification time in milliseconds since the epoch. */
+      updatedAt?: number;
     };
 
 export interface MenuOptions {
@@ -87,7 +89,22 @@ export function formatShortcut(shortcut: string): string {
     .replace(/Alt\+/g, '⌥')
     .replace(/\bDel\b/g, '⌫');
 }
+/** Formats a file's last modification time for the menu. */
+function formatUpdatedAt(timestamp: number): string {
+  const diff = Date.now() - timestamp;
+  const minutes = Math.floor(diff / 60_000);
+  const hours = Math.floor(diff / 3_600_000);
 
+  if (minutes < 1) return 'now';
+  if (minutes < 60) return `${minutes} m`;
+  if (hours < 24) return `${hours} h`;
+
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+}
 /** The menu's own buttons, without those of an open submenu. */
 const ownButtons = (panel: HTMLElement | null) => [
   ...(panel?.querySelectorAll<HTMLButtonElement>(':scope > button:not(:disabled)') ?? []),
@@ -243,10 +260,17 @@ function MenuPanel({
                 height={item.thumbnail.height}
                 version={item.thumbnail.version}
                 fit
+                className='thumb menu-file-thumb'
+                displayWidth={64}
               />
             )}
             {item.icon && <Icon name={item.icon} size={16} />}
             <span>{item.label}</span>
+            {item.updatedAt !== undefined && (
+            <span className="menu-updated-at">
+              {formatUpdatedAt(item.updatedAt)}
+            </span>
+            )}
             {item.shortcut && <span className="menu-shortcut">{formatShortcut(item.shortcut)}</span>}
             {item.items && <span className="menu-chevron" aria-hidden="true" />}
             {item.swatches && (

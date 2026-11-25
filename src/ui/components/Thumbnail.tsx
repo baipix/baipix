@@ -12,9 +12,12 @@ interface ThumbnailProps {
    * character on a big board is seen, not a dot). The thumbnail keeps the canvas's proportions.
    */
   fit?: boolean;
+  className?: string;
+  /** Display width in CSS pixels, without changing the drawing's dimensions. */
+  displayWidth?: number;
 }
 
-/** Thumbnails are 20px high; their width follows the drawing, between these ratios. */
+/** Default thumbnails are 20px high, with width based on the drawing's aspect ratio. */
 const MIN_RATIO = 0.5;
 const MAX_RATIO = 2;
 /** Canvas pixels per CSS pixel, so thumbnails stay sharp on 2× screens. */
@@ -30,20 +33,27 @@ const sameContent = (a: Uint32Array, b: Uint32Array): boolean => {
 };
 
 /**
- * Small preview of a pixel buffer, with the drawing's proportions: a wide drawing gets a wide
- * thumbnail instead of a thin strip in a square. Very wide or tall ones are capped and fitted.
+ * Small preview of a pixel buffer. By default, its width follows the drawing's proportions.
+ * An optional display width allows a fixed-width preview while preserving the drawing's proportions.
  */
-export function Thumbnail({ pixels, width, height, version, fit = false }: ThumbnailProps) {
+export function Thumbnail({ pixels, width, height, version, fit = false, className='thumb', displayWidth,  }: ThumbnailProps) {
   const ref = useRef<HTMLCanvasElement>(null);
-  /** What was drawn last, and how: a new version with the same pixels draws nothing. */
-  const drawn = useRef<{ pixels: Uint32Array; width: number; height: number; fit: boolean } | null>(null);
+/** Stores the last rendered content and dimensions to avoid unnecessary redraws. */
+  const drawn = useRef<{
+  pixels: Uint32Array;
+  width: number;
+  height: number;
+  fit: boolean;
+  displayWidth?: number;
+} | null>(null);
   useLayoutEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const data = pixels();
     const last = drawn.current;
     if (
-      last &&
+      last && 
+      last.displayWidth === displayWidth &&
       last.width === width &&
       last.height === height &&
       last.fit === fit &&
@@ -51,13 +61,13 @@ export function Thumbnail({ pixels, width, height, version, fit = false }: Thumb
     )
       return;
     const copy = data.slice();
-    drawn.current = { pixels: copy, width, height, fit };
+    drawn.current = { pixels: copy, width, height, fit, displayWidth };
     const ratio = Math.min(MAX_RATIO, Math.max(MIN_RATIO, width / height));
     const h = 20 * DENSITY;
-    const w = Math.round(h * ratio);
+    const w = displayWidth !== undefined ? displayWidth * DENSITY : Math.round(h * ratio);
     canvas.width = w;
     canvas.height = h;
-    canvas.style.width = `${w / DENSITY}px`;
+    canvas.style.width = displayWidth !== undefined ? '' : `${w / DENSITY}px`;
     const ctx = canvas.getContext('2d')!;
     const src = (scratch ??= document.createElement('canvas'));
     if (src.width !== width || src.height !== height) {
@@ -85,8 +95,8 @@ export function Thumbnail({ pixels, width, height, version, fit = false }: Thumb
       box.w * k,
       box.h * k,
     );
-    // `pixels` is intentionally read lazily; `version` drives redraws.
+   // `pixels` is intentionally read lazily; `version` triggers a content check.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height, version, fit]);
-  return <canvas ref={ref} className="thumb" aria-hidden="true" />;
+  }, [width, height, version, fit, displayWidth]);
+  return <canvas ref={ref} className={className}  aria-hidden="true" />;
 }
