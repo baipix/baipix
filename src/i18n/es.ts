@@ -888,7 +888,6 @@ export const es: Record<MessageKey, string> = {
   'home.clearSelection': 'Borrar selección',
   'home.deleteSelected': 'Eliminar seleccionados',
   'home.restoreSelected': 'Restaurar seleccionados',
-  'home.restoreAll': 'Restaurar todo',
   'home.emptyTrash': 'Vaciar papelera',
   'home.deleteSelectedForGood': 'Eliminar seleccionados permanentemente',
   'home.confirmDeleteSelectedForGood': '¿Eliminar permanentemente {count} archivos? No se puede deshacer.',

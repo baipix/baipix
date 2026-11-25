@@ -881,7 +881,6 @@ export const uk: Record<MessageKey, string> = {
   'home.clearSelection': 'Очистити вибір',
   'home.deleteSelected': 'Видалити вибрані',
   'home.restoreSelected': 'Відновити вибрані',
-  'home.restoreAll': 'Відновити все',
   'home.emptyTrash': 'Очистити кошик',
   'home.deleteSelectedForGood': 'Видалити вибрані назавжди',
   'home.confirmDeleteSelectedForGood': 'Назавжди видалити файлів: {count}? Цю дію не можна скасувати.',

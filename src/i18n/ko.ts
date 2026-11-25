@@ -961,7 +961,6 @@ export const ko: Record<MessageKey, string> = {
   'home.clearSelection': '선택 해제',
   'home.deleteSelected': '선택 항목 삭제',
   'home.restoreSelected': '선택 항목 복원',
-  'home.restoreAll': '모두 복원',
   'home.emptyTrash': '휴지통 비우기',
   'home.deleteSelectedForGood': '선택 항목 영구 삭제',
   'home.confirmDeleteSelectedForGood': '{count}개 파일을 영구 삭제할까요? 되돌릴 수 없습니다.',

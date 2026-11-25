@@ -846,7 +846,6 @@ export const zh: Record<MessageKey, string> = {
   'home.clearSelection': '清除选择',
   'home.deleteSelected': '删除所选项',
   'home.restoreSelected': '恢复所选项',
-  'home.restoreAll': '全部恢复',
   'home.emptyTrash': '清空回收站',
   'home.deleteSelectedForGood': '永久删除所选项',
   'home.confirmDeleteSelectedForGood': '永久删除 {count} 个文件？此操作无法撤销。',

@@ -1213,14 +1213,20 @@ export function createActions(editor: Editor) {
 
     /** Moves the selected Drawings to Trash as one batch and offers one Undo for the whole batch. */
     deleteFiles(ids: string[]) {
-      const deletesLastFiles = editor.getState().files.length === ids.length;
+      const files = editor.getState().files;
+      const deletesLastFiles = files.length === ids.length;
+      const singleFile = ids.length === 1 ? files.find((file) => file.id === ids[0]) : undefined;
+
       const count = editor.deleteFiles(ids);
 
       if (count === 0) {
         return;
       }
 
-      const message = t('toast.filesDeleted', { count });
+      const message =
+        count === 1 && singleFile
+          ? t('toast.deleted', { name: singleFile.name })
+          : t('toast.filesDeleted', { count });
 
       if (!deletesLastFiles) {
         return toast(message, undoDelete());

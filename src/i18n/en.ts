@@ -871,7 +871,6 @@ export const en = {
   'home.clearSelection': 'Clear selection',
   'home.deleteSelected': 'Delete selected',
   'home.restoreSelected': 'Restore selected',
-  'home.restoreAll': 'Restore all',
   'home.emptyTrash': 'Empty trash',
   'home.deleteSelectedForGood': 'Delete permanently selected',
   'home.confirmDeleteSelectedForGood': 'Permanently delete {count} files? This cannot be undone.',

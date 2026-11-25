@@ -879,7 +879,6 @@ export const ja: Record<MessageKey, string> = {
   'home.clearSelection': '選択を解除',
   'home.deleteSelected': '選択項目を削除',
   'home.restoreSelected': '選択項目を復元',
-  'home.restoreAll': 'すべて復元',
   'home.emptyTrash': 'ゴミ箱を空にする',
   'home.deleteSelectedForGood': '選択項目を完全に削除',
   'home.confirmDeleteSelectedForGood': '{count}件を完全に削除しますか？元に戻せません。',

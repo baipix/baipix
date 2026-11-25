@@ -886,7 +886,6 @@ export const fr: Record<MessageKey, string> = {
   'home.clearSelection': 'Effacer la sélection',
   'home.deleteSelected': 'Supprimer la sélection',
   'home.restoreSelected': 'Restaurer la sélection',
-  'home.restoreAll': 'Tout restaurer',
   'home.emptyTrash': 'Vider la corbeille',
   'home.deleteSelectedForGood': 'Supprimer définitivement la sélection',
   'home.confirmDeleteSelectedForGood':

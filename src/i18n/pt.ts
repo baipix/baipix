@@ -881,7 +881,6 @@ export const pt: Record<MessageKey, string> = {
   'home.clearSelection': 'Limpar seleção',
   'home.deleteSelected': 'Excluir selecionados',
   'home.restoreSelected': 'Restaurar selecionados',
-  'home.restoreAll': 'Restaurar tudo',
   'home.emptyTrash': 'Esvaziar lixeira',
   'home.deleteSelectedForGood': 'Excluir selecionados permanentemente',
   'home.confirmDeleteSelectedForGood': 'Excluir {count} arquivos permanentemente? Não é possível desfazer.',
