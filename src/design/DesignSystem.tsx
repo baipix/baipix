@@ -16,6 +16,7 @@ import { NumberField } from '../ui/components/NumberField';
 import { SelectField } from '../ui/components/SelectField';
 import { PresetCard } from '../ui/components/PresetCard';
 import { TEMPLATES } from '../ui/templates';
+import { TEMPLATE_ART } from '../ui/templateArt';
 import { Tooltips } from '../ui/components/Tooltips';
 import { Thumbnail } from '../ui/components/Thumbnail';
 import { ICONS, type IconName } from '../ui/icons';
@@ -69,48 +70,25 @@ gradientEditor.setOption('gradientStops', [
   { at: 1, color: pack(255, 205, 117) },
 ]);
 
-/** Demo artwork for the recent-file thumbnail in the Menu specimen. */
-const menuDemoWidth = 16;
-const menuDemoHeight = 12;
+/** Demo artwork for the recent-file thumbnail, using the existing sprite template. */
+const menuDemoArt = TEMPLATE_ART.sprite;
+const menuDemoWidth = menuDemoArt.rows[0].length;
+const menuDemoHeight = menuDemoArt.rows.length;
 const menuDemoPixels = new Uint32Array(menuDemoWidth * menuDemoHeight);
 
-menuDemoPixels.fill(pack(26, 28, 44));
+menuDemoArt.rows.forEach((row, y) => {
+  [...row].forEach((char, x) => {
+    const color = menuDemoArt.colors[char];
 
-const setMenuDemoPixel = (x: number, y: number, color: number) => {
-  menuDemoPixels[y * menuDemoWidth + x] = color;
-};
+    if (!color) return;
 
-// Stars
-setMenuDemoPixel(3, 2, pack(255, 205, 117));
-setMenuDemoPixel(12, 1, pack(255, 205, 117));
-setMenuDemoPixel(14, 4, pack(255, 205, 117));
-
-// Ground
-for (let x = 0; x < menuDemoWidth; x++) {
-  setMenuDemoPixel(x, 10, pack(84, 78, 104));
-  setMenuDemoPixel(x, 11, pack(84, 78, 104));
-}
-
-// Slime
-const slime = pack(73, 190, 110);
-[
-  [6, 7],
-  [7, 7],
-  [8, 7],
-  [9, 7],
-  [5, 8],
-  [6, 8],
-  [7, 8],
-  [8, 8],
-  [9, 8],
-  [10, 8],
-  [5, 9],
-  [6, 9],
-  [7, 9],
-  [8, 9],
-  [9, 9],
-  [10, 9],
-].forEach(([x, y]) => setMenuDemoPixel(x, y, slime));
+    menuDemoPixels[y * menuDemoWidth + x] = pack(
+      parseInt(color.slice(1, 3), 16),
+      parseInt(color.slice(3, 5), 16),
+      parseInt(color.slice(5, 7), 16),
+    );
+  });
+});
 
 function PaletteColorDemo() {
   const [color, setColor] = useState(pack(239, 125, 87));
