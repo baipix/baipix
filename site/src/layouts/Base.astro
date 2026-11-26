@@ -9,10 +9,14 @@ interface Props {
   noindex?: boolean;
   /** Structured data for search engines (schema.org), as JSON-LD. */
   jsonLd?: Record<string, unknown>;
-  /** The picture shown when the link is shared, if not the site's (a path in site/public, 1200×630 or twice that). */
+  /** The picture shown when the link is shared, if not the site's (a path in site/public, best at 1200×630 or twice that). */
   image?: string;
+  /** What that picture shows, for screen readers on the networks it's shared to. */
+  imageAlt?: string;
+  /** A blog post's day (YYYY-MM-DD): the page is shared as an article, not a website. */
+  published?: string;
 }
-const { title, description, noindex = false, jsonLd, image } = Astro.props;
+const { title, description, noindex = false, jsonLd, image, imageAlt, published } = Astro.props;
 const base = import.meta.env.BASE_URL;
 // The page's one address for search engines, and the image shown when the link is shared.
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -38,15 +42,23 @@ const analytics = import.meta.env.PROD;
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={published ? 'article' : 'website'} />
+    {published && <meta property="article:published_time" content={published} />}
     <meta property="og:site_name" content="Baipix" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={shareImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="The Baipix pixel art editor" />
+    {
+      /* Only the site's own picture has a size we know; for another one, the networks read it from the file. */
+      !image && (
+        <>
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+        </>
+      )
+    }
+    <meta property="og:image:alt" content={imageAlt ?? 'The Baipix pixel art editor'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={shareImage} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}

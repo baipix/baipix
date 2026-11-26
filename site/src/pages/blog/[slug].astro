@@ -53,14 +53,20 @@ const SHARE = [
   description={post.description}
   noindex={post.draft}
   image={post.coverImage?.replace(base, '')}
+  imageAlt={post.coverImage ? post.title : undefined}
+  published={post.date}
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.description,
+    url: link,
+    mainEntityOfPage: link,
+    image: new URL(post.coverImage ?? `${base}og.png`, Astro.site).href,
     datePublished: post.date,
-    author: { '@type': 'Person', name: post.author },
-    publisher: { '@type': 'Organization', name: 'Baipix' },
+    dateModified: post.date,
+    author: { '@type': 'Person', name: post.author, url: author?.url },
+    publisher: { '@type': 'Organization', name: 'Baipix', url: new URL(base, Astro.site).href },
   }}
 >
   <Nav />
