@@ -12,11 +12,9 @@ interface ThumbnailProps {
    * character on a big board is seen, not a dot). The thumbnail keeps the canvas's proportions.
    */
   fit?: boolean;
-  /** Height in CSS pixels. */
-  size?: number;
 }
 
-/** Thumbnails are 20px high unless told otherwise; their width follows the drawing, between these ratios. */
+/** Thumbnails are 20px high; their width follows the drawing, between these ratios. */
 const MIN_RATIO = 0.5;
 const MAX_RATIO = 2;
 /** Canvas pixels per CSS pixel, so thumbnails stay sharp on 2× screens. */
@@ -32,63 +30,49 @@ const sameContent = (a: Uint32Array, b: Uint32Array): boolean => {
 };
 
 /**
- * Small preview of a pixel buffer. By default, its width follows the drawing's proportions.
+ * Small preview of a pixel buffer, with the drawing's proportions: a wide drawing gets a wide
+ * thumbnail instead of a thin strip in a square. Very wide or tall ones are capped and fitted.
  */
-export function Thumbnail({ pixels, width, height, version, fit = false, size = 20 }: ThumbnailProps) {
+export function Thumbnail({ pixels, width, height, version, fit = false }: ThumbnailProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   /** What was drawn last, and how: a new version with the same pixels draws nothing. */
-  const drawn = useRef<{
-    pixels: Uint32Array;
-    width: number;
-    height: number;
-    fit: boolean;
-    size: number;
-  } | null>(null);
-
+  const drawn = useRef<{ pixels: Uint32Array; width: number; height: number; fit: boolean } | null>(null);
   useLayoutEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const data = pixels();
     const last = drawn.current;
-
     if (
       last &&
       last.width === width &&
       last.height === height &&
       last.fit === fit &&
-      last.size === size &&
       sameContent(last.pixels, data)
     )
       return;
-
     const copy = data.slice();
-    drawn.current = { pixels: copy, width, height, fit, size };
-
+    drawn.current = { pixels: copy, width, height, fit };
     const ratio = Math.min(MAX_RATIO, Math.max(MIN_RATIO, width / height));
-    const h = size * DENSITY;
+    const h = 20 * DENSITY;
     const w = Math.round(h * ratio);
     canvas.width = w;
     canvas.height = h;
     canvas.style.width = `${w / DENSITY}px`;
-    canvas.style.height = `${size}px`;
     const ctx = canvas.getContext('2d')!;
     const src = (scratch ??= document.createElement('canvas'));
     if (src.width !== width || src.height !== height) {
       src.width = width;
       src.height = height;
     }
-
     const sctx = src.getContext('2d')!;
     // The kept copy, seen as bytes: no other buffer to fill.
     const image = new ImageData(new Uint8ClampedArray(copy.buffer as ArrayBuffer), width, height);
     sctx.putImageData(image, 0, 0);
-
     const box = (fit && pixelBounds(data, width, height)) || { x: 0, y: 0, w: width, h: height };
     // Fitted, a pixel's margin around what's drawn, whole pixels when they're big enough.
     const pad = fit && (box.w < width || box.h < height) ? 2 * DENSITY : 0;
     let k = Math.min((w - pad * 2) / box.w, (h - pad * 2) / box.h);
     if (k >= 1) k = Math.floor(k);
-
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(
       src,
@@ -101,10 +85,8 @@ export function Thumbnail({ pixels, width, height, version, fit = false, size = 
       box.w * k,
       box.h * k,
     );
-
-    // `pixels` is intentionally read lazily; `version` triggers a content check.
+    // `pixels` is intentionally read lazily; `version` drives redraws.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height, version, fit, size]);
-
+  }, [width, height, version, fit]);
   return <canvas ref={ref} className="thumb" aria-hidden="true" />;
 }
