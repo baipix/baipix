@@ -252,12 +252,7 @@ export function Timeline() {
                 if (!press.current?.opened) frameMenu(e.currentTarget, f);
               }}
             >
-              <Thumbnail
-                pixels={() => pixels}
-                width={doc.width}
-                height={doc.height}
-                version={revision}
-              />
+              <Thumbnail pixels={() => pixels} width={doc.width} height={doc.height} version={revision} />
               <span className="timeline-thumb-number">{f + 1}</span>
             </button>
           ))}
