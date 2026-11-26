@@ -10,6 +10,7 @@ import type { IconName } from '../icons';
 import { createStore } from '../store';
 import { Icon } from './Icon';
 import { Thumbnail } from './Thumbnail';
+import { getLocale } from '../../i18n';
 
 export type MenuItem =
   | '-'
@@ -91,16 +92,29 @@ export function formatShortcut(shortcut: string): string {
 }
 /** Formats a file's last modification time for the menu. */
 function formatUpdatedAt(timestamp: number): string {
+  const locale = getLocale();
   const diff = Date.now() - timestamp;
-  const minutes = Math.floor(diff / 60_000);
-  const hours = Math.floor(diff / 3_600_000);
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
-  if (minutes < 1) return 'now';
-  if (minutes < 60) return `${minutes} m`;
-  if (hours < 24) return `${hours} h`;
+  if (diff < 60_000) return rtf.format(0, 'second');
 
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    weekday: 'short',
+  if (diff < 3_600_000) {
+    return rtf.format(-Math.floor(diff / 60_000), 'minute');
+  }
+
+  if (diff < 86_400_000) {
+    return rtf.format(-Math.floor(diff / 3_600_000), 'hour');
+  }
+
+  const date = new Date(timestamp);
+
+  if (diff < 7 * 86_400_000) {
+    return date.toLocaleDateString(locale, {
+      weekday: 'short',
+    });
+  }
+
+  return date.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
   });
@@ -259,7 +273,6 @@ function MenuPanel({
                 width={item.thumbnail.width}
                 height={item.thumbnail.height}
                 version={item.thumbnail.version}
-                size={28}
               />
             )}
             {item.icon && <Icon name={item.icon} size={16} />}

@@ -257,7 +257,6 @@ export function Timeline() {
                 width={doc.width}
                 height={doc.height}
                 version={revision}
-                size={36}
               />
               <span className="timeline-thumb-number">{f + 1}</span>
             </button>
