@@ -333,6 +333,7 @@ export const fr: Record<MessageKey, string> = {
   'options.tipSquare': 'Pointe carrée',
   'options.tipRound': 'Pointe ronde',
   'options.pixelPerfect': 'Pixel perfect',
+  'options.perfectAngles': 'Angles parfaits',
   'options.dither': 'Tramage',
   'dither.none': 'Sans tramage',
   'dither.checker': 'Tramage : damier',
@@ -373,7 +374,7 @@ export const fr: Record<MessageKey, string> = {
     'Dessine une forme à main levée : quand tu relâches, elle se ferme et se remplit de la couleur. Clic droit pour la couleur secondaire.',
   'hint.eraser':
     'Efface vers la transparence. Maj-clic efface en ligne droite depuis le dernier point, Cmd/Ctrl+Maj-clic à 0°, 45°, 90° ou en 2:1.',
-  'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en 2:1 pour les lignes isométriques.',
+  'hint.line': 'Maj pour bloquer à 0°, 45°, 90°, ou en marches de 2:1 (isométrique), 3:1 et 4:1.',
   'hint.shape': 'Maj pour une forme régulière.',
   'hint.board':
     'Dessine un rectangle à côté des plans pour en ajouter un. Fais glisser un plan par son nom pour le déplacer ; clique sur un plan pour travailler dessus. Chaque plan a sa taille et ses calques.',

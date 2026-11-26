@@ -371,6 +371,7 @@ export const ko: Record<MessageKey, string> = {
   'options.tipSquare': '사각형 브러시',
   'options.tipRound': '원형 브러시',
   'options.pixelPerfect': '픽셀 퍼펙트',
+  'options.perfectAngles': '각도 맞춤',
   'options.dither': '디더링',
 
   'dither.none': '디더링 없음',
@@ -416,7 +417,7 @@ export const ko: Record<MessageKey, string> = {
     '자유형 도형을 그립니다. 마우스를 놓으면 닫히며 색상이 채워집니다. 우클릭하면 보조 색상으로 채웁니다.',
   'hint.eraser':
     '투명하게 지웁니다. Shift+클릭은 마지막 점에서 직선으로 지우고, Cmd/Ctrl+Shift+클릭은 0°, 45°, 90° 또는 2:1로 고정합니다.',
-  'hint.line': 'Shift를 누르면 0°, 45°, 90° 또는 등각 투영선용 2:1 각도로 고정됩니다.',
+  'hint.line': 'Shift를 누르면 0°, 45°, 90° 또는 2:1(등각 투영), 3:1, 4:1 계단 각도로 고정됩니다.',
   'hint.shape': 'Shift를 누르면 정도형(정사각형, 원 등)으로 그립니다.',
   'hint.board':
     '보드 옆에 직사각형을 드래그하여 새 보드를 추가합니다. 이름 부분을 드래그하여 이동하고, 클릭하여 작업할 보드를 선택합니다. 각 보드는 독립된 크기와 레이어를 가집니다.',

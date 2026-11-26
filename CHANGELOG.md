@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- Perfect angles, in the Line tool's options: every line snaps to the clean pixel art slopes, as with Shift, which then draws a free line. Handy on a tablet without a keyboard. ([#PR](https://github.com/baipix/baipix/pull/PR))
 - Several drawings at once, in Drawings and in Trash: tick them (or Cmd/Ctrl-click, Shift-click for a range, Select on a phone), then delete, restore or delete them for good in one go, with one Undo for the whole batch. ([#909](https://github.com/baipix/baipix/pull/909))
 - Stylus pressure: with a pen that senses pressure, pressing harder draws bigger, from 1 pixel up to the size picked, with the pencil, the eraser, Shade, Lighten and Blur, and sprays denser with the spray. It is off to start with, and shows in the tool's options once the pen has sent a pressure; Pressure response sets how fast it grows. ([#873](https://github.com/baipix/baipix/pull/873))
 - Stylus mode: with a pen (Apple Pencil, S Pen), the pen draws and fingers pan and zoom, so a palm or a finger no longer leaves marks. It turns on by itself the first time a pen comes near, and View › Stylus mode turns it off to draw with a finger. ([#871](https://github.com/baipix/baipix/pull/871))
@@ -14,6 +15,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- Lines snap to 3:1 and 4:1 too, with Shift or Perfect angles, drawn in even runs of three and four pixels like 2:1. On an isometric grid, a Shift-click line keeps to 2:1. ([#PR](https://github.com/baipix/baipix/pull/PR))
 - On a touch screen or a phone, the timeline is one strip: play, the frames as thumbnails that scroll under the finger, a new frame and the onion skin, and the duration at a tablet's width. A long press on a frame opens its menu, its duration first. A film button in the phone's top bar opens and closes it. ([#906](https://github.com/baipix/baipix/pull/906))
 - On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))
 - The choices that were plain lists (the dithering, the gradient's shape, the export format, Remap's palette and a few more) are fields with a caret that open the editor's own menu: they look the same in every browser, and read as a choice on a phone. ([#863](https://github.com/baipix/baipix/pull/863))

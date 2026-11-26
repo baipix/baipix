@@ -332,6 +332,7 @@ export const en = {
   'options.tipSquare': 'Square tip',
   'options.tipRound': 'Round tip',
   'options.pixelPerfect': 'Pixel perfect',
+  'options.perfectAngles': 'Perfect angles',
   'options.dither': 'Dithering',
   'dither.none': 'No dithering',
   'dither.checker': 'Dithering: checkerboard',
@@ -372,7 +373,7 @@ export const en = {
     'Draw a shape freehand: when you let go it closes and fills with the color. Right-click for the secondary color.',
   'hint.eraser':
     'Erases to transparency. Shift-click erases a straight line from the last point, Cmd/Ctrl+Shift-click at 0°, 45°, 90° or 2:1.',
-  'hint.line': 'Shift to lock to 0°, 45°, 90°, or 2:1 for isometric lines.',
+  'hint.line': 'Shift to lock to 0°, 45°, 90°, or steps of 2:1 (isometric), 3:1 and 4:1.',
   'hint.shape': 'Shift for a regular shape.',
   'hint.board':
     'Draw a rectangle beside the boards to add one. Drag a board by its name to move it; click a board to work on it. Each board has its own size and layers.',

@@ -403,7 +403,16 @@ export function ToolOptionsBar() {
       break;
     case 'line':
       info = t('hint.line');
-      body = <>{size}</>;
+      body = (
+        <>
+          {size}
+          <Checkbox
+            checked={options.perfectAngles}
+            onChange={set('perfectAngles')}
+            label={t('options.perfectAngles')}
+          />
+        </>
+      );
       break;
     case 'rect':
     case 'roundRect':

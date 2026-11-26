@@ -114,7 +114,7 @@ export function straightLine(s: Stroke, p: Point, snap: boolean, paint: (q: Poin
     end = { x, y };
   };
   // On an isometric grid, the line always keeps to its angles.
-  if (snap || s.doc.isoGrid) snappedLine(from, p, plot);
+  if (snap || s.doc.isoGrid) snappedLine(from, p, plot, s.doc.isoGrid ? [2] : undefined);
   else line(from.x, from.y, p.x, p.y, plot);
   s.last = end;
   return true;

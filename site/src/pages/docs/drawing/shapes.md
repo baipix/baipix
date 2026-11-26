@@ -13,7 +13,8 @@ The shapes share a button in the toolbar: the arrow next to it opens the others.
 
 Drag from one corner to the other. Every shape is drawn on whole pixels, symmetric when it should be, with clean steps on its curves.
 
-- **Shift** makes it regular: a square, a circle, an even triangle or star. For a line, it locks the angle to 0°, 45°, 90°, or 2:1 for isometric lines.
+- **Shift** makes it regular: a square, a circle, an even triangle or star. For a line, it locks the angle to 0°, 45°, 90°, or the clean steps of pixel art: 2:1 for isometric lines, 3:1 and 4:1 for gentler slopes, in even runs of pixels.
+- **Perfect angles**, in the line's options, snaps every line that way without Shift, which is handy on a tablet. Shift then draws a free line.
 - **Filled** in the options fills the shape instead of drawing its outline.
 - The **rounded rectangle** has a radius in its options.
 - The **outline** follows the pencil's size.

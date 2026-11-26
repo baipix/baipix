@@ -83,6 +83,8 @@ export interface ToolOptions {
   /** Liquify: how much each dab warps, 1 to 100. */
   liquifyStrength: number;
   pixelPerfect: boolean;
+  /** Line: every line snaps to the clean slopes, as with Shift, and Shift draws a free one. */
+  perfectAngles: boolean;
   dither: boolean;
   /** Which dithering pattern `dither` uses. */
   ditherPattern: DitherPattern;
@@ -158,6 +160,7 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   liquifySize: 12,
   liquifyStrength: 50,
   pixelPerfect: true,
+  perfectAngles: false,
   dither: false,
   ditherPattern: 'checker',
   filled: false,

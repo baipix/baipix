@@ -34,8 +34,8 @@ describe('Shift-click straight lines', () => {
   it('snaps to 2:1 with Cmd/Ctrl, in clean steps of two pixels', () => {
     const { click, painted } = setup();
     click(0, 0);
-    click(5, 2, { shift: true, snap: true });
-    expect(painted().sort()).toEqual(['0,0', '1,0', '2,1', '3,1', '4,2', '5,2'].sort());
+    click(7, 3, { shift: true, snap: true });
+    expect(painted().sort()).toEqual(['0,0', '1,0', '2,1', '3,1', '4,2', '5,2', '6,3', '7,3'].sort());
   });
 
   it('is a plain click without a previous point, or on another layer', () => {

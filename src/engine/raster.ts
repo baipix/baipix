@@ -36,15 +36,31 @@ export function constrainAngle(start: Point, end: Point): Point {
   return { x: start.x + Math.sign(dx) * d, y: start.y + Math.sign(dy) * d };
 }
 
-/** The directions a line snaps to with Shift, in degrees: 0°, the two isometric ones (2:1 and 1:2), 45° and 90°. */
-const SNAPS = [0, Math.atan(1 / 2), Math.PI / 4, Math.atan(2), Math.PI / 2];
+/**
+ * The slopes a line snaps to with Shift (or Perfect angles): 0°, 45°, 90°, and the even steps of
+ * pixel art, n pixels along for one across, n being 2 (the isometric line), 3 or 4. `run` is n,
+ * 0 for the straight ones and 45°; `wide` is a step along x rather than y.
+ */
+const SNAPS: { angle: number; run: number; wide: boolean }[] = [
+  { angle: 0, run: 0, wide: true },
+  ...[4, 3, 2].map((run) => ({ angle: Math.atan(1 / run), run, wide: true })),
+  { angle: Math.PI / 4, run: 0, wide: true },
+  ...[2, 3, 4].map((run) => ({ angle: Math.atan(run), run, wide: false })),
+  { angle: Math.PI / 2, run: 0, wide: false },
+];
 
 /**
- * A line snapped to the nearest of 0°, 2:1, 45°, 1:2 and 90° from `start` towards `end`. The
- * isometric ones are drawn in clean steps of exactly two pixels, each pair one row (or column) on
- * from the last: the 2:1 line of isometric pixel art, with no doubled or lone pixel.
+ * A line snapped to the nearest of those slopes from `start` towards `end`. The stepped ones are
+ * drawn in clean runs of exactly n pixels, each run one row (or column) on from the last: the 2:1
+ * line of isometric pixel art, or a gentler 3:1 or 4:1, with no doubled or lone pixel. `runs` keeps
+ * only some of the steps: just 2 on an isometric grid.
  */
-export function snappedLine(start: Point, end: Point, plot: PlotFn): void {
+export function snappedLine(
+  start: Point,
+  end: Point,
+  plot: PlotFn,
+  runs: readonly number[] = [2, 3, 4],
+): void {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
   const ax = Math.abs(dx);
@@ -52,18 +68,32 @@ export function snappedLine(start: Point, end: Point, plot: PlotFn): void {
   const sx = dx < 0 ? -1 : 1;
   const sy = dy < 0 ? -1 : 1;
   const angle = Math.atan2(ay, ax);
-  const snap = SNAPS.reduce((best, a) => (Math.abs(a - angle) < Math.abs(best - angle) ? a : best));
-  if (snap === SNAPS[1] || snap === SNAPS[3]) {
-    // Steps of two along the long side: n of them, plus the pair at the start.
-    const wide = snap === SNAPS[1];
-    const n = Math.round((wide ? 2 * ax + ay : ax + 2 * ay) / 5);
+  const snaps = SNAPS.filter((a) => !a.run || runs.includes(a.run));
+  const snap = snaps.reduce((best, a) =>
+    Math.abs(a.angle - angle) < Math.abs(best.angle - angle) ? a : best,
+  );
+  if (snap.run) {
+    // The run k spans run * k to run * k + run - 1 along, and k across: end on the one whose middle
+    // is nearest the pointer.
+    const { run, wide } = snap;
+    const mid = (run - 1) / 2;
+    const n = Math.max(
+      0,
+      Math.round((wide ? run * (ax - mid) + ay : ax + run * (ay - mid)) / (run * run + 1)),
+    );
     for (let k = 0; k <= n; k++)
-      for (let j = 0; j < 2; j++)
-        if (wide) plot(start.x + sx * (2 * k + j), start.y + sy * k);
-        else plot(start.x + sx * k, start.y + sy * (2 * k + j));
+      for (let j = 0; j < run; j++)
+        if (wide) plot(start.x + sx * (run * k + j), start.y + sy * k);
+        else plot(start.x + sx * k, start.y + sy * (run * k + j));
     return;
   }
-  const b = constrainAngle(start, end);
+  const d = Math.max(ax, ay);
+  const b =
+    snap.angle === 0
+      ? { x: end.x, y: start.y }
+      : snap.angle === Math.PI / 2
+        ? { x: start.x, y: end.y }
+        : { x: start.x + sx * d, y: start.y + sy * d };
   line(start.x, start.y, b.x, b.y, plot);
 }
 

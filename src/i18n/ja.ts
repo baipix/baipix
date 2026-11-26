@@ -333,6 +333,7 @@ export const ja: Record<MessageKey, string> = {
   'options.tipSquare': '四角い先端',
   'options.tipRound': '丸い先端',
   'options.pixelPerfect': 'ピクセルパーフェクト',
+  'options.perfectAngles': '角度スナップ',
   'options.dither': 'ディザリング',
   'dither.none': 'ディザリングなし',
   'dither.checker': 'ディザリング：市松模様',
@@ -373,7 +374,7 @@ export const ja: Record<MessageKey, string> = {
     'フリーハンドで図形を描きます。離すと閉じて、色で塗りつぶされます。右クリックでサブカラーを使います。',
   'hint.eraser':
     '透明になるまで消します。Shift+クリックで直前の点から直線で消し、Cmd/Ctrl+Shift+クリックで0°・45°・90°・2:1に固定します。',
-  'hint.line': 'Shiftで0°・45°・90°、またはアイソメの線用の2:1に固定します。',
+  'hint.line': 'Shiftで0°・45°・90°、または2:1（アイソメ）・3:1・4:1の段に固定します。',
   'hint.shape': 'Shiftで整った形（正方形や正円など）になります。',
   'hint.board':
     'ボードの横に長方形を描くと、ボードを追加できます。名前をドラッグするとボードを移動でき、ボードをクリックするとそのボードで作業します。ボードごとにサイズとレイヤーを持ちます。',
