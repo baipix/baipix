@@ -8,6 +8,12 @@ export const DITHER_PATTERNS: DitherPattern[] = ['checker', 'dots', 'dense', 'li
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
 
+/** The 4×4 Bayer matrix: the order in which a block's 16 pixels fill in, evenly spread at every step. */
+export const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+/** Whether (x, y) is among the first `level` of the 16 pixels of its 4×4 block to fill in. */
+export const bayerOn = (level: number, x: number, y: number): boolean => BAYER[(y & 3) * 4 + (x & 3)] < level;
+
 export function ditherSecond(pattern: DitherPattern, x: number, y: number): boolean {
   switch (pattern) {
     case 'dots': // 1 in 4

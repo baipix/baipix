@@ -1,3 +1,4 @@
+import { BAYER } from './dither';
 import type { Color } from './color';
 import type { Point } from './math';
 
@@ -19,9 +20,6 @@ export interface GradientStop {
   /** A palette color, or 0 (transparent) to fade out. */
   color: Color;
 }
-
-/** The 4×4 Bayer matrix: the order in which pixels switch over as a fade goes along. */
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 
 /**
  * Where a pixel is along a gradient from `a` to `b`, 0 to 1 (pixel centers, so a gradient drawn

@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- With a pen and Dithering on, the pencil's pressure sets how much of the pattern it lays: a light touch puts down 1 pixel in 4, pressing harder fills it in, up to solid, at the brush's full size. ([#PR](https://github.com/baipix/baipix/pull/PR))
 - Perfect angles, in the Line tool's options: every line snaps to the clean pixel art slopes, as with Shift, which then draws a free line. Handy on a tablet without a keyboard. ([#922](https://github.com/baipix/baipix/pull/922))
 - Several drawings at once, in Drawings and in Trash: tick them (or Cmd/Ctrl-click, Shift-click for a range, Select on a phone), then delete, restore or delete them for good in one go, with one Undo for the whole batch. ([#909](https://github.com/baipix/baipix/pull/909))
 - Stylus pressure: with a pen that senses pressure, pressing harder draws bigger, from 1 pixel up to the size picked, with the pencil, the eraser, Shade, Lighten and Blur, and sprays denser with the spray. It is off to start with, and shows in the tool's options once the pen has sent a pressure; Pressure response sets how fast it grows. ([#873](https://github.com/baipix/baipix/pull/873))
