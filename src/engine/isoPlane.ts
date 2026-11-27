@@ -5,6 +5,8 @@ import {
   heartFilled,
   mirroredHalf,
   polygonFilled,
+  polygonHalf,
+  polygonShape,
   roundRectFilled,
   starPoints,
   trianglePoints,
@@ -19,7 +21,7 @@ export type IsoPlane = 'flat' | 'left' | 'right' | 'ground';
 export const ISO_PLANES: IsoPlane[] = ['flat', 'left', 'right', 'ground'];
 
 /** The shapes that can go on a plane: all but the line, which has its own iso angles. */
-export type PlaneKind = 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart';
+export type PlaneKind = 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart' | 'polygon';
 
 /** A floor tile's four edges, by the corner of the screen they face. */
 export interface TileEdges {
@@ -51,7 +53,20 @@ function evenOut(cells: Set<string>, x0: number, w: number): void {
 }
 
 /** The shape filled flat in a `w` × `h` box from (0, 0), as the other shape tools draw it. */
-function flatShape(kind: PlaneKind, w: number, h: number, radius: number, plot: PlotFn): void {
+/** A shape's own options: the rounded rectangle's radius, the polygon's sides and top. */
+interface ShapeOptions {
+  radius: number;
+  sides: number;
+  flatTop: boolean;
+}
+
+function flatShape(
+  kind: PlaneKind,
+  w: number,
+  h: number,
+  { radius, sides, flatTop }: ShapeOptions,
+  plot: PlotFn,
+): void {
   const [x1, y1] = [w - 1, h - 1];
   switch (kind) {
     case 'rect':
@@ -63,6 +78,8 @@ function flatShape(kind: PlaneKind, w: number, h: number, radius: number, plot: 
       return cleanEllipse(0, 0, x1, y1, true, plot);
     case 'heart':
       return heartFilled(0, 0, x1, y1, plot);
+    case 'polygon':
+      return polygonShape(polygonHalf(0, 0, x1, y1, sides, flatTop), true, mirroredHalf(0, x1, plot));
     case 'triangle':
     case 'star':
       return polygonFilled(
@@ -95,8 +112,11 @@ export function planeShape(
     regular = false,
     radius = 2,
     edges = ALL_EDGES,
-  }: { regular?: boolean; radius?: number; edges?: TileEdges } = {},
+    sides = 6,
+    flatTop = false,
+  }: { regular?: boolean; radius?: number; edges?: TileEdges; sides?: number; flatTop?: boolean } = {},
 ): void {
+  const shape = { radius, sides, flatTop };
   const cells = new Set<string>();
   // A floor tile's outline is drawn only along the edges asked for, so two tiles side by side can
   // share one line: each outline pixel belongs to the edges it touches the outside along.
@@ -124,7 +144,7 @@ export function planeShape(
       // The flat shape at two of its pixels per 2:1 step, the diamond's size along each edge.
       const [n, m] = [2 * width, 2 * depth];
       const flat = new Set<string>();
-      flatShape(kind, n, m, radius, (u, v) => flat.add(`${u},${v}`));
+      flatShape(kind, n, m, shape, (u, v) => flat.add(`${u},${v}`));
       // Over the diamond's box: each pixel shows the spot of the ground under its center.
       for (let Y = top.y; Y <= top.y + width + depth; Y++)
         for (let X = top.x - 2 * depth - 1; X <= top.x + 2 * width; X++) {
@@ -139,7 +159,7 @@ export function planeShape(
     const w = Math.abs(b.x - a.x) + 1;
     const drop = Math.floor((w - 1) / 2);
     const h = regular ? w : Math.max(1, Math.abs(b.y - a.y) + 1 - drop);
-    flatShape(kind, w, h, radius, (lx, ly) =>
+    flatShape(kind, w, h, shape, (lx, ly) =>
       add(x0 + lx, y0 + ly + Math.floor((plane === 'left' ? lx : w - 1 - lx) / 2)),
     );
     if (kind === 'ellipse' || kind === 'roundRect') evenOut(cells, x0, w);

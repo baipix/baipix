@@ -33,6 +33,7 @@ export type ToolId =
   | 'ellipse'
   | 'triangle'
   | 'star'
+  | 'polygon'
   | 'heart'
   | 'box'
   | 'cylinder'
@@ -91,6 +92,10 @@ export interface ToolOptions {
   filled: boolean;
   /** Corner radius of the rounded rectangle, in pixels. */
   radius: number;
+  /** Polygon: how many sides, 3 to 12. */
+  polygonSides: number;
+  /** Polygon: a side on top instead of a corner. */
+  polygonFlatTop: boolean;
   contiguous: boolean;
   blurStrength: number;
   blurSnap: boolean;
@@ -165,6 +170,8 @@ export const DEFAULT_TOOL_OPTIONS: ToolOptions = {
   ditherPattern: 'checker',
   filled: false,
   radius: 2,
+  polygonSides: 6,
+  polygonFlatTop: false,
   contiguous: true,
   blurStrength: 1,
   blurSnap: true,

@@ -355,6 +355,93 @@ export function starPoints(x0: number, y0: number, x1: number, y1: number): Poin
   });
 }
 
+/**
+ * A polygon of `sides` sides (3 to 12) fitted in the box, its top a corner, or a side with
+ * `flatTop`. Like the star, only the left half is worked out, and mirrored by the caller through
+ * `mirroredHalf`, so it stays exactly symmetric. Its sides go from corner to corner as clean pixel
+ * art lines where they're close to one (straight, 45°, or 2:1, 3:1, 4:1 either way, in even runs),
+ * each starting where the last one ended, so it stays in one piece; the others are plain lines.
+ * Returns the left half's outline, from the top on the axis down to the bottom on the axis.
+ */
+export function polygonHalf(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  sides: number,
+  flatTop: boolean,
+): Point[] {
+  const n = Math.max(3, Math.min(12, Math.round(sides)));
+  const unit = polygonUnit(n, flatTop);
+  const [minX, maxX] = [Math.min(...unit.map((p) => p.x)), Math.max(...unit.map((p) => p.x))];
+  const [minY, maxY] = [Math.min(...unit.map((p) => p.y)), Math.max(...unit.map((p) => p.y))];
+  const cx = (x0 + x1) / 2;
+  const axis = Math.floor(cx);
+  // The corners on the left of the axis, top to bottom (a convex shape goes down its left side).
+  const left = unit
+    .map((p) => ({
+      x: x0 + ((p.x - minX) / (maxX - minX)) * (x1 - x0),
+      y: y0 + ((p.y - minY) / (maxY - minY)) * (y1 - y0),
+    }))
+    .filter((p) => p.x < cx - 1e-6)
+    .sort((a, b) => a.y - b.y)
+    .map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) }));
+  const out: Point[] = [];
+  const plot: PlotFn = (x, y) => out.push({ x, y });
+  let at: Point = { x: axis, y: y0 };
+  plot(at.x, at.y);
+  // Too narrow for anything on the left (the first click, before the drag): a line down the axis.
+  if (!left.length) {
+    if (y1 > y0) line(axis, y0 + 1, axis, y1, plot);
+    return out;
+  }
+  for (const corner of left) at = cleanSide(at, corner, plot);
+  // A corner at the bottom: one more side, to the axis. A side at the bottom: closed along it,
+  // level with where the left side ended.
+  if (left.at(-1)!.y < y1) at = cleanSide(at, { x: axis, y: y1 }, plot);
+  if (at.x < axis) line(at.x, at.y, axis, at.y, plot);
+  return out;
+}
+
+/** The corners of a regular polygon on a unit circle, clockwise from the top. */
+export function polygonUnit(sides: number, flatTop: boolean): Point[] {
+  return Array.from({ length: sides }, (_, i) => {
+    const a = -Math.PI / 2 + (flatTop ? Math.PI / sides : 0) + (i * 2 * Math.PI) / sides;
+    return { x: Math.cos(a), y: Math.sin(a) };
+  });
+}
+
+/** How close, in radians, a side has to be to a clean slope to be drawn as one. */
+const SIDE_SNAP = (8 * Math.PI) / 180;
+
+/** A side from `a` towards `b`: a clean line when close to one, a plain line otherwise. Returns its last pixel. */
+function cleanSide(a: Point, b: Point, plot: PlotFn): Point {
+  if (a.x === b.x && a.y === b.y) return a;
+  const angle = Math.atan2(Math.abs(b.y - a.y), Math.abs(b.x - a.x));
+  if (SNAPS.some((snap) => Math.abs(snap.angle - angle) <= SIDE_SNAP)) {
+    let last = a;
+    snappedLine(a, b, (x, y) => {
+      plot(x, y);
+      last = { x, y };
+    });
+    return last;
+  }
+  line(a.x, a.y, b.x, b.y, plot);
+  return b;
+}
+
+/** A polygon's left half (see polygonHalf), drawn: its outline, or filled from its edge to the axis. */
+export function polygonShape(half: Point[], filled: boolean, plot: PlotFn): void {
+  if (!filled) {
+    for (const p of half) plot(p.x, p.y);
+    return;
+  }
+  const axis = half[0].x;
+  const from = new Map<number, number>();
+  for (const p of half) from.set(p.y, Math.min(p.x, from.get(p.y) ?? p.x));
+  for (const [y, x] of from) for (let k = x; k <= axis; k++) plot(k, y);
+}
+
 /** Top-left aligned square brush footprint. Odd sizes are centered on (cx, cy). */
 export function brush(cx: number, cy: number, size: number, plot: PlotFn, round = false): void {
   const o = Math.floor((size - 1) / 2);
