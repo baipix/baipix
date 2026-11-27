@@ -28,6 +28,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Fixed
 
+- On a touch screen, the brush's square no longer stays where a finger was lifted. A hovering pen still shows it, as a mouse does. ([#923](https://github.com/baipix/baipix/pull/923))
 - On a phone, the sort of the files screen stays on one line, under the title, instead of wrapping onto two in French and other longer languages. ([#911](https://github.com/baipix/baipix/pull/911))
 - A pen tablet on a computer without a touch screen no longer turns on Stylus mode. ([#908](https://github.com/baipix/baipix/pull/908))
 - In Adjust › Remap, switching to All layers (or back) no longer closes the panel. ([#904](https://github.com/baipix/baipix/pull/904))

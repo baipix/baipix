@@ -1503,6 +1503,14 @@ export function CanvasView() {
 
     const onUp = (e: PointerEvent) => {
       clearInterval(sprayTimer);
+      // Unlike a mouse or a hovering pen, a lifted finger isn't anywhere: no brush left where it was.
+      if (e.pointerType === 'touch')
+        queueMicrotask(() => {
+          if (!touches().length && !editor.isStroking) {
+            updateHover(null);
+            request();
+          }
+        });
       if (e.pointerType === 'pen') stylus.pointerEnd(e.pointerType, e.pointerId);
 
       if (activeStrokePointerId === e.pointerId) {
