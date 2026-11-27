@@ -329,6 +329,7 @@ export const zh: Record<MessageKey, string> = {
   'options.tipSquare': '方形笔尖',
   'options.tipRound': '圆形笔尖',
   'options.pixelPerfect': '像素完美',
+  'options.perfectAngles': '完美角度',
   'options.dither': '抖动',
   'dither.none': '不抖动',
   'dither.checker': '抖动：棋盘格',
@@ -367,7 +368,7 @@ export const zh: Record<MessageKey, string> = {
   'hint.lassoFill': '徒手绘制形状：松开后自动闭合并填充颜色。右键使用次要颜色。',
   'hint.eraser':
     '擦除为透明。Shift+点击从上一点擦除直线，Cmd/Ctrl+Shift+点击按 0°、45°、90° 或 2:1 角度擦除。',
-  'hint.line': 'Shift 锁定到 0°、45°、90° 或 2:1，用于等距线条。',
+  'hint.line': 'Shift 锁定到 0°、45°、90°，或 2:1（等距）、3:1、4:1 的阶梯。',
   'hint.shape': '按住 Shift 绘制规则形状。',
   'hint.board':
     '在画板旁边拖出一个矩形，就多一块画板。拖画板名字可以挪动它；点画板就能在上面画。每块画板都有自己的大小和图层。',

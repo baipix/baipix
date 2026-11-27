@@ -333,6 +333,7 @@ export const es: Record<MessageKey, string> = {
   'options.tipSquare': 'Punta cuadrada',
   'options.tipRound': 'Punta redonda',
   'options.pixelPerfect': 'Pixel perfect',
+  'options.perfectAngles': 'Ángulos perfectos',
   'options.dither': 'Tramado',
   'dither.none': 'Sin tramado',
   'dither.checker': 'Tramado: damero',
@@ -374,7 +375,7 @@ export const es: Record<MessageKey, string> = {
   'hint.eraser':
     'Borra hasta dejar los píxeles transparentes. Mayús+clic borra en línea recta desde el último punto; Cmd/Ctrl+Mayús+clic permite trazar líneas a 0°, 45°, 90° o en proporción 2:1.',
   'hint.line':
-    'Mantén pulsada Mayús para limitar la línea a 0°, 45°, 90° o una proporción 2:1 en líneas isométricas.',
+    'Mantén pulsada Mayús para limitar la línea a 0°, 45°, 90° o a escalones de 2:1 (isométrico), 3:1 y 4:1.',
   'hint.shape': 'Mantén pulsada Mayús para crear una forma regular.',
   'hint.board':
     'Dibuja un rectángulo junto a los tableros para añadir uno. Arrastra un tablero por su nombre para moverlo y haz clic en él para trabajar en él. Cada tablero tiene su propio tamaño y sus propias capas.',

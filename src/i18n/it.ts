@@ -333,6 +333,7 @@ export const it: Record<MessageKey, string> = {
   'options.tipSquare': 'Punta quadrata',
   'options.tipRound': 'Punta rotonda',
   'options.pixelPerfect': 'Pixel perfect',
+  'options.perfectAngles': 'Angoli perfetti',
   'options.dither': 'Dithering',
   'dither.none': 'Nessun dithering',
   'dither.checker': 'Dithering: scacchiera',
@@ -373,7 +374,7 @@ export const it: Record<MessageKey, string> = {
     'Disegna una forma a mano libera: quando rilasci si chiude e si riempie del colore. Clic destro per il colore secondario.',
   'hint.eraser':
     'Cancella fino alla trasparenza. Maiusc+clic cancella in linea retta dall’ultimo punto, Cmd/Ctrl+Maiusc+clic a 0°, 45°, 90° o 2:1.',
-  'hint.line': 'Maiusc per bloccare a 0°, 45°, 90°, o a 2:1 per le linee isometriche.',
+  'hint.line': 'Maiusc per bloccare a 0°, 45°, 90°, o a gradini di 2:1 (isometrico), 3:1 e 4:1.',
   'hint.shape': 'Maiusc per una forma regolare.',
   'hint.board':
     'Disegna un rettangolo accanto alle tavole per aggiungerne una. Trascina una tavola per il suo nome per spostarla; fai clic su una tavola per lavorarci. Ogni tavola ha la sua dimensione e i suoi livelli.',

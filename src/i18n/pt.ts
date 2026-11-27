@@ -334,6 +334,7 @@ export const pt: Record<MessageKey, string> = {
   'options.tipSquare': 'Ponta quadrada',
   'options.tipRound': 'Ponta redonda',
   'options.pixelPerfect': 'Pixel perfect',
+  'options.perfectAngles': 'Ângulos perfeitos',
   'options.dither': 'Pontilhado',
   'dither.none': 'Sem pontilhado',
   'dither.checker': 'Pontilhado: xadrez',
@@ -374,7 +375,7 @@ export const pt: Record<MessageKey, string> = {
     'Desenhe uma forma à mão livre: ao soltar, ela se fecha e é preenchida com a cor. Clique com o botão direito para usar a cor secundária.',
   'hint.eraser':
     'Apaga até a transparência. Shift+clique apaga uma linha reta a partir do último ponto; Cmd/Ctrl+Shift+clique, a 0°, 45°, 90° ou 2:1.',
-  'hint.line': 'Shift para travar em 0°, 45°, 90° ou 2:1, para linhas isométricas.',
+  'hint.line': 'Shift para travar em 0°, 45°, 90° ou em degraus de 2:1 (isométrico), 3:1 e 4:1.',
   'hint.shape': 'Shift para uma forma regular.',
   'hint.board':
     'Desenhe um retângulo ao lado das pranchetas para adicionar uma. Arraste uma prancheta pelo nome para movê-la; clique em uma prancheta para trabalhar nela. Cada prancheta tem seu próprio tamanho e suas próprias camadas.',

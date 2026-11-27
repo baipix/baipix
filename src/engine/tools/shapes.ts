@@ -30,7 +30,8 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
   const a = s.start;
   if (kind === 'line') {
     const plot: PlotFn = (x, y) => stamp(s, x, y, color);
-    if (mods.shift) snappedLine(a, p, plot);
+    // Perfect angles snaps every line, and Shift then frees it.
+    if (s.options.perfectAngles !== mods.shift) snappedLine(a, p, plot);
     else line(a.x, a.y, p.x, p.y, plot);
     return;
   }
