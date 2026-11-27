@@ -1,3 +1,4 @@
+import { BAYER } from './dither';
 import type { Color } from './color';
 import { blendOver } from './composite';
 import type { Layer } from './document';
@@ -55,7 +56,6 @@ export function newEffect(type: EffectType, color: Color): LayerEffect {
   }
 }
 
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const SIDES = [
   [1, 0],
   [-1, 0],

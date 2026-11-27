@@ -28,6 +28,15 @@ export function pressureAdjustedValue(s: Stroke, max: number): number {
 }
 
 /**
+ * With dithering and pen pressure: how many of each 4×4 block's 16 pixels the pressure fills in,
+ * from 4 (1 in 4) at a light touch to all 16, or null without pressure.
+ */
+export function pressureDitherLevel(s: Stroke): number | null {
+  if (!s.options.pressureEnabled || !s.pressureActive) return null;
+  return pressureRangeValue(4, 16, s.pressure ?? 0.5, s.options.pressureCurve / 100);
+}
+
+/**
  * Where a painted pixel lands: its index on the canvas, or -1 when it falls outside (or outside
  * the selection). In tile preview, strokes wrap around: past an edge they continue on the
  * opposite side, so seamless textures are easy to draw. Isometric tiles wrap across the diamond's

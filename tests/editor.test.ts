@@ -41,6 +41,43 @@ describe('Editor', () => {
     expect(painted(e)).toBe(9);
   });
 
+  it('with dithering, uses pressure to fill the pattern in, at the full brush size', () => {
+    const dab = (value: number) => {
+      const e = new Editor();
+      e.setColor('primary', RED);
+      e.setOption('size', 8);
+      e.setOption('dither', true);
+      e.setOption('pressureEnabled', true);
+      e.beginStroke({ x: 10, y: 10 }, false, { shift: false }, undefined, { value, active: true });
+      e.endStroke();
+      return e;
+    };
+    // 8 × 8 pixels: a light touch lays 1 in 4, half a press 10 in 16, a full press all of them.
+    expect(painted(dab(0))).toBe(16);
+    expect(painted(dab(0.5))).toBe(40);
+    expect(painted(dab(1))).toBe(64);
+    // The light touch is an even grid, and nothing else is painted, not even the second color.
+    const light = dab(0);
+    const w = light.getState().doc.width;
+    const at = [...layer(light)].flatMap((c, i) => (c ? [[i % w, Math.floor(i / w)]] : []));
+    expect(at.every(([x, y]) => x % 2 === 0 && y % 2 === 0)).toBe(true);
+  });
+
+  it('with dithering, adds to what a lighter press laid, never takes it away', () => {
+    const e = new Editor();
+    e.setColor('primary', RED);
+    e.setOption('size', 8);
+    e.setOption('dither', true);
+    e.setOption('pressureEnabled', true);
+    e.beginStroke({ x: 10, y: 10 }, false, { shift: false }, undefined, { value: 1, active: true });
+    const full = [...layer(e)];
+    e.setStrokePressure(0, true);
+    e.moveStroke({ x: 11, y: 10 }, { shift: false });
+    e.endStroke();
+    expect(full.filter(Boolean).length).toBe(64);
+    expect(full.every((c, i) => !c || layer(e)[i] === c)).toBe(true);
+  });
+
   it('keeps the selected brush size when pressure is disabled', () => {
     const e = new Editor();
     e.setColor('primary', RED);

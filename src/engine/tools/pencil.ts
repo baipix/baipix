@@ -1,8 +1,17 @@
-import { ditherSecond } from '../dither';
+import { bayerOn, ditherSecond } from '../dither';
 import type { Color } from '../color';
 import type { Point } from '../math';
-import { isDoubledCorner } from '../raster';
-import { followPointer, mirrorsOf, pixelIndex, setPixel, stamp, straightLine, strokeColors } from './paint';
+import { brush, isDoubledCorner } from '../raster';
+import {
+  followPointer,
+  mirrorsOf,
+  pixelIndex,
+  pressureDitherLevel,
+  setPixel,
+  stamp,
+  straightLine,
+  strokeColors,
+} from './paint';
 import type { Stroke, Tool } from './types';
 
 /** Paints at `p`; with `fill` (or the lassoFill option), also records the path to fill at the end. */
@@ -29,9 +38,29 @@ function paint(s: Stroke, p: Point, fill = s.options.lassoFill): void {
     if (k >= 0) passes[k]++;
     s.trail.push(p);
   }
+  const level = s.options.dither && !s.customBrush ? pressureDitherLevel(s) : null;
   if (s.customBrush) stampBrush(s, p, c1, c2);
+  else if (level !== null) stampDensity(s, p, c1, level);
   else stamp(s, p.x, p.y, c1, c2, s.options.dither);
   if (fill) ((s.scratch.path as Point[] | undefined) ?? (s.scratch.path = [])).push(p);
+}
+
+/**
+ * Dithering with pen pressure, like shading with a pencil on paper: the brush, at its full size,
+ * lays its color on `level` of each 4×4 block's 16 pixels and leaves the others as they are. A
+ * light touch makes a sparse grid, pressing harder fills it in, through the Bayer levels; what's
+ * laid stays, so going over again only adds.
+ */
+function stampDensity(s: Stroke, p: Point, color: Color, level: number): void {
+  brush(
+    p.x,
+    p.y,
+    s.options.size,
+    (x, y) => {
+      if (bayerOn(level, x, y)) for (const m of mirrorsOf(s, x, y)) setPixel(s, m.x, m.y, color);
+    },
+    s.options.roundTip,
+  );
 }
 
 /**
