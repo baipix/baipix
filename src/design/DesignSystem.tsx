@@ -771,6 +771,7 @@ function SurfacesBlock() {
                 width={menuDemoWidth}
                 height={menuDemoHeight}
                 version={1}
+                size={28}
               />
               <span>Pixel Artwork</span>
               <span className="menu-updated-at">2 h</span>

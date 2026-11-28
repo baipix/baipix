@@ -94,7 +94,7 @@ export function formatShortcut(shortcut: string): string {
 function formatUpdatedAt(timestamp: number): string {
   const locale = getLocale();
   const diff = Date.now() - timestamp;
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'narrow' });
 
   if (diff < 60_000) return rtf.format(0, 'second');
 
@@ -273,6 +273,7 @@ function MenuPanel({
                 width={item.thumbnail.width}
                 height={item.thumbnail.height}
                 version={item.thumbnail.version}
+                size={28}
               />
             )}
             {item.icon && <Icon name={item.icon} size={16} />}
