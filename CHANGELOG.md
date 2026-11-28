@@ -6,6 +6,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Added
 
+- A Polygon in the shapes menu: 3 to 12 sides (a hexagon to start with, a diamond with 4), a corner or a side on top, outlined or filled, also on an isometric wall or the ground. Its sides are drawn as clean pixel art lines where they're close to one, and Shift makes it regular. ([#925](https://github.com/baipix/baipix/pull/925))
 - With a pen and Dithering on, the pencil's pressure sets how much of the pattern it lays: a light touch puts down 1 pixel in 4, pressing harder fills it in, up to solid, at the brush's full size. ([#924](https://github.com/baipix/baipix/pull/924))
 - Perfect angles, in the Line tool's options: every line snaps to the clean pixel art slopes, as with Shift, which then draws a free line. Handy on a tablet without a keyboard. ([#922](https://github.com/baipix/baipix/pull/922))
 - Several drawings at once, in Drawings and in Trash: tick them (or Cmd/Ctrl-click, Shift-click for a range, Select on a phone), then delete, restore or delete them for good in one go, with one Undo for the whole batch. ([#909](https://github.com/baipix/baipix/pull/909))

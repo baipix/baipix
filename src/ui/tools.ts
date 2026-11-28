@@ -19,6 +19,7 @@ export const SHAPES: ToolMeta[] = [
   { id: 'triangle', icon: 'triangle', label: 'tool.triangle', shortcut: '' },
   { id: 'star', icon: 'star', label: 'tool.star', shortcut: '' },
   { id: 'heart', icon: 'heart', label: 'tool.heart', shortcut: '' },
+  { id: 'polygon', icon: 'polygon', label: 'tool.polygon', shortcut: '' },
   { id: 'box', icon: 'box', label: 'tool.box', shortcut: '' },
   { id: 'cylinder', icon: 'cylinder', label: 'tool.cylinder', shortcut: '' },
   { id: 'pyramid', icon: 'pyramid', label: 'tool.pyramid', shortcut: '' },

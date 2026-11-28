@@ -420,6 +420,7 @@ export function ToolOptionsBar() {
     case 'triangle':
     case 'star':
     case 'heart':
+    case 'polygon':
       info = !isoGrid ? t('hint.shape') : options.plane !== 'flat' ? t('hint.plane') : t('hint.isoShape');
       body = (
         <>
@@ -447,6 +448,27 @@ export function ToolOptionsBar() {
                 onChange={(v) => editor.setOption('radius', v)}
               />
             </Row>
+          )}
+          {tool === 'polygon' && (
+            <>
+              <Row label={t('options.sides')}>
+                <NumberField
+                  value={options.polygonSides}
+                  min={3}
+                  max={12}
+                  label="⬡"
+                  ariaLabel={t('options.sides')}
+                  scrubHint={t('common.dragToAdjust')}
+                  sensitivity={12}
+                  onChange={(v) => editor.setOption('polygonSides', v)}
+                />
+              </Row>
+              <Checkbox
+                checked={options.polygonFlatTop}
+                onChange={set('polygonFlatTop')}
+                label={t('options.flatTop')}
+              />
+            </>
           )}
           <Checkbox checked={options.filled} onChange={set('filled')} label={t('options.filled')} />
           {/* A floor tile: which of its edges get the outline, so tiles side by side share one line. */}

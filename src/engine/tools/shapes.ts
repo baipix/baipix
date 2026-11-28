@@ -8,7 +8,10 @@ import {
   line,
   mirroredHalf,
   polygonFilled,
+  polygonHalf,
   polygonOutline,
+  polygonShape,
+  polygonUnit,
   rectOutline,
   roundRectFilled,
   roundRectOutline,
@@ -21,7 +24,7 @@ import { planeShape } from '../isoPlane';
 import { stamp, strokeColors } from './paint';
 import type { Modifiers, Stroke, Tool, ToolId } from './types';
 
-type ShapeKind = 'line' | 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart';
+type ShapeKind = 'line' | 'rect' | 'roundRect' | 'ellipse' | 'triangle' | 'star' | 'heart' | 'polygon';
 
 /** Shapes are redrawn from the original pixels on every move, so they can be previewed live. */
 function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void {
@@ -46,11 +49,21 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
       p,
       s.options.filled,
       (x, y, outline) => (outline ? stamp(s, x, y, color) : stamp(s, x, y, color, color, false, 1)),
-      { regular: mods.shift, radius: s.options.radius, edges: s.options.tileEdges },
+      {
+        regular: mods.shift,
+        radius: s.options.radius,
+        edges: s.options.tileEdges,
+        sides: s.options.polygonSides,
+        flatTop: s.options.polygonFlatTop,
+      },
     );
     return;
   }
-  const b = mods.shift ? constrainSquare(a, p) : p;
+  const b = !mods.shift
+    ? p
+    : kind === 'polygon'
+      ? regularBox(a, p, s.options.polygonSides, s.options.polygonFlatTop)
+      : constrainSquare(a, p);
   const x0 = Math.min(a.x, b.x);
   const y0 = Math.min(a.y, b.y);
   const x1 = Math.max(a.x, b.x);
@@ -81,6 +94,11 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
     case 'heart':
       (filled ? heartFilled : heartOutline)(x0, y0, x1, y1, filled ? fill : outline);
       return;
+    case 'polygon': {
+      const half = polygonHalf(x0, y0, x1, y1, s.options.polygonSides, s.options.polygonFlatTop);
+      polygonShape(half, filled, mirroredHalf(x0, x1, filled ? fill : outline));
+      return;
+    }
     case 'triangle':
     case 'star': {
       const points = (kind === 'star' ? starPoints : trianglePoints)(x0, y0, x1, y1);
@@ -88,6 +106,18 @@ function drawShape(kind: ShapeKind, s: Stroke, p: Point, mods: Modifiers): void 
       else polygonOutline(points, mirroredHalf(x0, x1, outline));
     }
   }
+}
+
+/** Shift with the polygon: the box of a regular one, as wide or as tall as the drag. */
+function regularBox(a: Point, p: Point, sides: number, flatTop: boolean): Point {
+  const unit = polygonUnit(Math.max(3, Math.min(12, Math.round(sides))), flatTop);
+  const w = Math.max(...unit.map((q) => q.x)) - Math.min(...unit.map((q) => q.x));
+  const h = Math.max(...unit.map((q) => q.y)) - Math.min(...unit.map((q) => q.y));
+  const scale = Math.max(Math.abs(p.x - a.x) / w, Math.abs(p.y - a.y) / h);
+  return {
+    x: a.x + (p.x < a.x ? -1 : 1) * Math.round(scale * w),
+    y: a.y + (p.y < a.y ? -1 : 1) * Math.round(scale * h),
+  };
 }
 
 const shapeTool = (kind: ShapeKind): Tool => ({
@@ -105,3 +135,4 @@ export const ellipseTool = shapeTool('ellipse');
 export const triangleTool = shapeTool('triangle');
 export const starTool = shapeTool('star');
 export const heartTool = shapeTool('heart');
+export const polygonTool = shapeTool('polygon');
