@@ -29,10 +29,31 @@ test.describe('on a touch screen', () => {
       .getByRole('menuitem', { name: 'Layer', exact: true })
       .click();
     expect(await height('.menu .menu-item')).toBe(44);
-    // The bars over the toolbar move up with it: nothing sits on the tools.
+    // A tablet: the tools stand in a rail down the left edge, the options at the bottom, clear of it.
     const toolbar = (await page.locator('.toolbar').boundingBox())!;
     const options = (await page.locator('.tool-options').boundingBox())!;
-    expect(options.y + options.height).toBeLessThanOrEqual(toolbar.y);
+    expect(toolbar.x).toBeLessThan(20);
+    expect(toolbar.height).toBeGreaterThan(toolbar.width);
+    expect(options.x).toBeGreaterThanOrEqual(toolbar.x + toolbar.width);
+  });
+});
+
+test.describe('on a tablet held upright', () => {
+  test.use({ hasTouch: true, locale: 'en-US', viewport: { width: 768, height: 1024 } });
+
+  test('the panels are closed, and open over the drawing from the top bar', async ({ page }) => {
+    await createNewFile(page);
+
+    await expect(page.locator('.mobile-toolbar')).toBeHidden();
+    await expect(page.locator('.toolbar')).toBeVisible();
+    await expect(page.locator('.panel-left')).toBeHidden();
+    await expect(page.locator('.panel-right')).toBeHidden();
+
+    await page.locator('.menubar-panels').getByRole('button', { name: 'Layers' }).click();
+    await expect(page.locator('.panel-left')).toBeVisible();
+    // A tap beside closes it.
+    await page.locator('.canvas-wrap').click({ position: { x: 400, y: 300 } });
+    await expect(page.locator('.panel-left')).toBeHidden();
   });
 });
 

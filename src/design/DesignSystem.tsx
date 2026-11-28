@@ -321,6 +321,13 @@ function SizesTable() {
         what a finger needs to land on, and fields and text buttons, which sit in rows with air around them, a
         little less. New targets use these tokens rather than a size of their own.
       </p>
+      <p className="ds-intro">
+        The layout follows the screen (<code>src/ui/layout.ts</code>). A phone, under 700 px of touch screen
+        (or 820 px of window with a mouse): one bar of tools under the thumb and the panels as bottom sheets.
+        A tablet, a wider touch screen: the tools in a rail down the left edge with Undo and Redo at its foot,
+        the tool's options at the bottom; held upright, the panels are closed and open over the drawing from
+        their buttons in the top bar. A computer: the toolbar at the bottom and both panels open.
+      </p>
       <table className="ds-table">
         <thead>
           <tr>

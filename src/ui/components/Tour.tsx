@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { t as translate, useT, type MessageKey } from '../../i18n';
 import { uiStore } from '../uiStore';
+import { PHONE_QUERY } from '../layout';
 
 const DONE_KEY = 'baipix.tourDone';
 
@@ -74,7 +75,7 @@ const finish = () => {
 
 /** Starts the tour the first time the editor shows on a large enough screen. */
 export function startTourOnce(): void {
-  if (!isDone() && window.innerWidth > 820 && uiStore.get().tour === null) uiStore.set({ tour: 0 });
+  if (!isDone() && !matchMedia(PHONE_QUERY).matches && uiStore.get().tour === null) uiStore.set({ tour: 0 });
 }
 
 const unionRect = (els: Element[]) => {

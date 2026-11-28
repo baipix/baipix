@@ -108,3 +108,9 @@ On a phone, or in a narrow window, the interface folds up around the drawing:
 - **The two colors** open the palette: tap a color to draw with it, press longer to make it the color behind. **Edit color…** opens the picker.
 - **Undo** and **Redo** float just above, with the tool's options.
 - At the top, **☰** is the menu bar, the file's name switches files, and the two buttons next to Export open the layers and the properties from the bottom. A tap on the drawing closes them.
+
+## On a tablet
+
+On a tablet, the tools stand in a rail down the left edge, under your thumb, with **Undo** and **Redo** at its foot, and the tool's options sit at the bottom. A family of tools (the selections, the shapes, the fills) opens from the small arrow in its button's corner.
+
+Held upright, the drawing gets the whole width: the panels are closed, and the two buttons before the film one in the top bar open the layers and the properties over the drawing. A tap beside closes them. Turned sideways, both panels stay open, as on a computer.
