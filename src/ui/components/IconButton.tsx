@@ -9,6 +9,8 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   shortcut?: string;
   iconSize?: number;
   pressed?: boolean;
+  /** Shows a caret after the icon. */
+  caret?: boolean;
 }
 
 export function IconButton({
@@ -17,13 +19,14 @@ export function IconButton({
   shortcut,
   iconSize = 16,
   pressed,
+  caret = false,
   className = 'icon-btn',
   ...rest
 }: IconButtonProps) {
   return (
     <button
       type="button"
-      className={className}
+      className={`${className}${caret ? ' has-caret' : ''}`}
       aria-label={label}
       aria-pressed={pressed}
       data-tip={label}
@@ -31,6 +34,7 @@ export function IconButton({
       {...rest}
     >
       <Icon name={icon} size={iconSize} />
+      {caret && <Icon name="caret" size={12} />}
     </button>
   );
 }

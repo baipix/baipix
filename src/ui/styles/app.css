@@ -523,6 +523,20 @@ body.is-resizing * {
   background: transparent;
   color: var(--text);
 }
+
+.icon-btn.has-caret {
+  width: auto;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.icon-btn.large.has-caret {
+  width: auto;
+}
+
 /* On a touch screen the icons grow with their buttons, so they read as something to tap. */
 @media (pointer: coarse) {
   .icon-btn:not(.large) > .icon,
@@ -1055,8 +1069,6 @@ body.is-resizing * {
   opacity: 1;
 }
 .thumb {
-  width: 20px;
-  height: 20px;
   flex: none;
   object-fit: contain;
   border-radius: 3px;
@@ -1759,6 +1771,13 @@ body.is-dragging-swatch * {
   margin-left: auto;
   color: var(--menu-shortcut);
 }
+/* Shows the file's last modification time on the right side of the menu row. */
+.menu-updated-at {
+  margin-left: auto;
+  color: var(--menu-shortcut);
+  font-size: 0.85em;
+  white-space: nowrap;
+}
 .menu-item:hover:not(:disabled) .menu-shortcut,
 .menu-item:focus-visible .menu-shortcut {
   color: inherit;
@@ -2216,6 +2235,11 @@ body.is-dragging-swatch * {
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .mobile-name-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
   /* Renaming: the name as a field, in its place. */
   input.mobile-name.is-editing {

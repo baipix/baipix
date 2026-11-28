@@ -9,6 +9,8 @@ import { createPortal } from 'react-dom';
 import type { IconName } from '../icons';
 import { createStore } from '../store';
 import { Icon } from './Icon';
+import { Thumbnail } from './Thumbnail';
+import { getLocale } from '../../i18n';
 
 export type MenuItem =
   | '-'
@@ -25,6 +27,15 @@ export type MenuItem =
       /** A submenu, opened on hover, click or →. */
       items?: MenuItem[];
       onSelect?: () => void;
+      /** Preview of the file's artwork in the recent files menu. */
+      thumbnail?: {
+        pixels: () => Uint32Array;
+        width: number;
+        height: number;
+        version: number;
+      };
+      /** Last modification time in milliseconds since the epoch. */
+      updatedAt?: number;
     };
 
 export interface MenuOptions {
@@ -79,7 +90,35 @@ export function formatShortcut(shortcut: string): string {
     .replace(/Alt\+/g, '⌥')
     .replace(/\bDel\b/g, '⌫');
 }
+/** Formats a file's last modification time for the menu. */
+function formatUpdatedAt(timestamp: number): string {
+  const locale = getLocale();
+  const diff = Date.now() - timestamp;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'narrow' });
 
+  if (diff < 60_000) return rtf.format(0, 'second');
+
+  if (diff < 3_600_000) {
+    return rtf.format(-Math.floor(diff / 60_000), 'minute');
+  }
+
+  if (diff < 86_400_000) {
+    return rtf.format(-Math.floor(diff / 3_600_000), 'hour');
+  }
+
+  const date = new Date(timestamp);
+
+  if (diff < 7 * 86_400_000) {
+    return date.toLocaleDateString(locale, {
+      weekday: 'short',
+    });
+  }
+
+  return date.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  });
+}
 /** The menu's own buttons, without those of an open submenu. */
 const ownButtons = (panel: HTMLElement | null) => [
   ...(panel?.querySelectorAll<HTMLButtonElement>(':scope > button:not(:disabled)') ?? []),
@@ -227,8 +266,21 @@ function MenuPanel({
               item.onSelect?.();
             }}
           >
+            {/* Display a file thumbnail before its name in the recent files menu. */}
+            {item.thumbnail && (
+              <Thumbnail
+                pixels={item.thumbnail.pixels}
+                width={item.thumbnail.width}
+                height={item.thumbnail.height}
+                version={item.thumbnail.version}
+                size={28}
+              />
+            )}
             {item.icon && <Icon name={item.icon} size={16} />}
             <span>{item.label}</span>
+            {item.updatedAt !== undefined && (
+              <span className="menu-updated-at">{formatUpdatedAt(item.updatedAt)}</span>
+            )}
             {item.shortcut && <span className="menu-shortcut">{formatShortcut(item.shortcut)}</span>}
             {item.items && <span className="menu-chevron" aria-hidden="true" />}
             {item.swatches && (

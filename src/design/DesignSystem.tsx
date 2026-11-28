@@ -16,7 +16,9 @@ import { NumberField } from '../ui/components/NumberField';
 import { SelectField } from '../ui/components/SelectField';
 import { PresetCard } from '../ui/components/PresetCard';
 import { TEMPLATES } from '../ui/templates';
+import { TEMPLATE_ART } from '../ui/templateArt';
 import { Tooltips } from '../ui/components/Tooltips';
+import { Thumbnail } from '../ui/components/Thumbnail';
 import { ICONS, type IconName } from '../ui/icons';
 import { ColorRow } from '../ui/panels/ColorRow';
 import { SizeList } from '../ui/components/SizeList';
@@ -67,6 +69,26 @@ gradientEditor.setOption('gradientStops', [
   { at: 0.5, color: pack(239, 125, 87) },
   { at: 1, color: pack(255, 205, 117) },
 ]);
+
+/** Demo artwork for the recent-file thumbnail, using the existing sprite template. */
+const menuDemoArt = TEMPLATE_ART.sprite;
+const menuDemoWidth = menuDemoArt.rows[0].length;
+const menuDemoHeight = menuDemoArt.rows.length;
+const menuDemoPixels = new Uint32Array(menuDemoWidth * menuDemoHeight);
+
+menuDemoArt.rows.forEach((row, y) => {
+  [...row].forEach((char, x) => {
+    const color = menuDemoArt.colors[char];
+
+    if (!color) return;
+
+    menuDemoPixels[y * menuDemoWidth + x] = pack(
+      parseInt(color.slice(1, 3), 16),
+      parseInt(color.slice(3, 5), 16),
+      parseInt(color.slice(5, 7), 16),
+    );
+  });
+});
 
 function PaletteColorDemo() {
   const [color, setColor] = useState(pack(239, 125, 87));
@@ -420,6 +442,7 @@ function ButtonsBlock() {
           <IconButton icon="eye" label="Hide" />
           <IconButton icon="trash" label="Delete" />
           <IconButton icon="more" label="More" />
+          <IconButton icon="logo" label="Main menu" caret />
         </Specimen>
         <Specimen
           label="More options"
@@ -765,6 +788,18 @@ function SurfacesBlock() {
           use="Menu bar, right-click and … menus. Blue on hover; › opens a submenu. An item can show a palette under its name (the palette picker)."
         >
           <div className="menu ds-static" role="menu">
+            <button type="button" className="menu-item" role="menuitem">
+              <Thumbnail
+                pixels={() => menuDemoPixels}
+                width={menuDemoWidth}
+                height={menuDemoHeight}
+                version={1}
+                size={28}
+              />
+              <span>Pixel Artwork</span>
+              <span className="menu-updated-at">2 h</span>
+            </button>
+            <div className="menu-separator" />
             <button type="button" className="menu-item is-checked has-swatches" role="menuitem">
               <span>SLSO8</span>
               <span className="menu-shortcut">8</span>

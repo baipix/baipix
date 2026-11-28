@@ -6,6 +6,7 @@ import { filesMenu, mainMenu } from '../menus';
 import { openDialog, toggleTimeline, uiStore } from '../uiStore';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
+import { Icon } from './Icon';
 
 /** Compact top bar shown on small screens; panels become bottom sheets. */
 export function MobileBar() {
@@ -24,13 +25,15 @@ export function MobileBar() {
     <div className="mobile-bar">
       <IconButton
         className="icon-btn large"
-        icon="menu"
+        icon="logo"
         iconSize={24}
         label={t('menu.main')}
+        caret
+        aria-haspopup="menu"
         onClick={(e) => openMenu(e.currentTarget, mainMenu(editor, actions))}
       />
-      {/* The file name opens the files menu, like the ▾ next to it on larger screens. Rename, in
-          that menu or in File, turns it into a field. */}
+      {/* The file name opens the files menu, like the ▾ next to it on larger screens.
+    Rename in the File menu turns it into a field. */}
       {renaming ? (
         <input
           className="mobile-name is-editing"
@@ -54,11 +57,11 @@ export function MobileBar() {
       ) : (
         <button
           type="button"
-          className="mobile-name"
+          className="mobile-name mobile-name-menu"
           aria-haspopup="menu"
-          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor, actions))}
+          onClick={(e) => openMenu(e.currentTarget, filesMenu(editor))}
         >
-          {name} ▾
+          {name} <Icon name="caret" size={12} />
         </button>
       )}
       <IconButton
