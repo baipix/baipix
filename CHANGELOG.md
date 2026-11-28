@@ -17,6 +17,7 @@ Notable changes to Baipix, newest first. The format follows [Keep a Changelog](h
 
 ### Changed
 
+- On a tablet, the tools stand in a rail down the left edge, with Undo and Redo at its foot, and the tool's options sit at the bottom. An iPad held upright no longer gets the phone's layout: its panels are closed, to leave the drawing room, and open over it from two buttons in the top bar; a tap beside closes them. ([#PR](https://github.com/baipix/baipix/pull/PR))
 - Lines snap to 3:1 and 4:1 too, with Shift or Perfect angles, drawn in even runs of three and four pixels like 2:1. On an isometric grid, a Shift-click line keeps to 2:1. ([#922](https://github.com/baipix/baipix/pull/922))
 - On a touch screen or a phone, the timeline is one strip: play, the frames as thumbnails that scroll under the finger, a new frame and the onion skin, and the duration at a tablet's width. A long press on a frame opens its menu, its duration first. A film button in the phone's top bar opens and closes it. ([#906](https://github.com/baipix/baipix/pull/906))
 - On a phone, text is bigger (14 px, up from the computer's 11), rows are 44 px, and the palette in the properties sits under the two colors with swatches a finger can pick, about seven a row. A swipe that starts on a swatch scrolls the sheet. ([#864](https://github.com/baipix/baipix/pull/864))

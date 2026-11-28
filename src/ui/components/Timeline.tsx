@@ -18,6 +18,7 @@ import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 import { NumberField } from './NumberField';
 import { Thumbnail } from './Thumbnail';
+import { PHONE_QUERY } from '../layout';
 
 /**
  * The active board's frames, under the canvas: a row per layer (the top one first), a column per
@@ -47,8 +48,8 @@ export function Timeline() {
   const [picked, setPicked] = useState<string[]>([]);
   const anchor = useRef(0);
   // On a touch screen or a phone: one strip, the frames as thumbnails; the size of a tablet keeps the duration.
-  const touch = useMediaQuery('(pointer: coarse), (max-width: 820px)');
-  const phone = useMediaQuery('(max-width: 820px)');
+  const touch = useMediaQuery(`(pointer: coarse), ${PHONE_QUERY}`);
+  const phone = useMediaQuery(PHONE_QUERY);
   const count = frameCount(doc);
   const shown = activeFrame(doc);
   const duration = doc.frames?.[shown].duration;

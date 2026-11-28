@@ -3,6 +3,7 @@ import type { ToolId } from '../../engine/tools';
 import { useT } from '../../i18n';
 import { useEditor, useEditorState } from '../EditorContext';
 import { FAMILY_LABELS, TOOL_GROUPS, toolMeta, type ToolMeta } from '../tools';
+import { TABLET_QUERY } from '../layout';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
 
@@ -45,6 +46,8 @@ function SplitToolButton({ tools, label }: { tools: ToolMeta[]; label: string })
               checked: tool === s.id,
               onSelect: () => editor.setTool(s.id),
             })),
+            // In a tablet's rail, the list opens beside it.
+            { beside: matchMedia(TABLET_QUERY).matches },
           )
         }
       />
@@ -52,7 +55,7 @@ function SplitToolButton({ tools, label }: { tools: ToolMeta[]; label: string })
   );
 }
 
-/** Floating bottom toolbar. */
+/** Floating toolbar: at the bottom, or a rail down the left on a tablet. */
 export function Toolbar() {
   const t = useT();
   const editor = useEditor();

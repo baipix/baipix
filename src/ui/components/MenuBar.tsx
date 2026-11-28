@@ -123,6 +123,7 @@ export function MenuBar() {
   const board = useEditorState((s) => isBoard(s.doc));
   const animated = useEditorState((s) => frameCount(s.doc) > 1);
   const timeline = uiStore.use((s) => s.timeline);
+  const sheet = uiStore.use((s) => s.sheet);
   const titles = useRef<(HTMLButtonElement | null)[]>([]);
 
   const open = (i: number) => {
@@ -219,6 +220,23 @@ export function MenuBar() {
             onClick={() => openDialog({ type: 'code' })}
           />
         )}
+        {/* On a tablet held upright, the panels are closed: these open them over the drawing. */}
+        <div className="menubar-panels">
+          <IconButton
+            icon="layers"
+            className="icon-btn"
+            label={t('panel.left')}
+            pressed={sheet === 'left'}
+            onClick={() => uiStore.set((s) => ({ sheet: s.sheet === 'left' ? null : 'left' }))}
+          />
+          <IconButton
+            icon="panel"
+            className="icon-btn"
+            label={t('panel.right')}
+            pressed={sheet === 'right'}
+            onClick={() => uiStore.set((s) => ({ sheet: s.sheet === 'right' ? null : 'right' }))}
+          />
+        </div>
         {/* Animating opens the timeline. A dot says the board has frames to see while it's closed. */}
         {board && (
           <IconButton

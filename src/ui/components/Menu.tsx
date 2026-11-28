@@ -9,6 +9,7 @@ import { createPortal } from 'react-dom';
 import type { IconName } from '../icons';
 import { createStore } from '../store';
 import { Icon } from './Icon';
+import { PHONE_QUERY } from '../layout';
 
 export type MenuItem =
   | '-'
@@ -28,6 +29,8 @@ export type MenuItem =
     };
 
 export interface MenuOptions {
+  /** Beside the anchor rather than under it: for a button in a vertical bar. */
+  beside?: boolean;
   /** ← / → on the top level: the menu bar opens its previous or next menu. */
   onSwitch?: (direction: 1 | -1) => void;
   /** The pointer left the menu: the preview goes back to how things were. */
@@ -89,7 +92,7 @@ const ownButtons = (panel: HTMLElement | null) => [
  * On a touch screen or in a narrow window, a submenu takes its menu's place, with a row to go back:
  * there's no room beside the menu, and nothing to hover.
  */
-const stacksSubmenus = (): boolean => matchMedia('(pointer: coarse), (max-width: 820px)').matches;
+const stacksSubmenus = (): boolean => matchMedia(`(pointer: coarse), ${PHONE_QUERY}`).matches;
 
 /** One level of a menu: under its anchor, or beside the item that opened it. */
 function MenuPanel({
@@ -260,7 +263,7 @@ function MenuPanel({
 
 /** Dark dropdown menu. Rendered once at the app root. */
 export function MenuHost() {
-  const { anchor, items, seq } = menuStore.use((s) => s);
+  const { anchor, items, seq, options } = menuStore.use((s) => s);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -308,7 +311,7 @@ export function MenuHost() {
         key={seq}
         items={items}
         anchor={anchor.getBoundingClientRect()}
-        side={false}
+        side={!!options.beside}
         autoFocus={false}
       />
     </div>

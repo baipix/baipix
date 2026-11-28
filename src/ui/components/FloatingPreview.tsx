@@ -18,6 +18,7 @@ import { uiStore, type PreviewWindow } from '../uiStore';
 import { viewport } from '../viewport';
 import { IconButton } from './IconButton';
 import { openMenu } from './Menu';
+import { TABLET_QUERY } from '../layout';
 
 /** Zoom steps of the preview, in %. */
 const ZOOMS = [200, 300, 400, 500, 600, 800, 1000];
@@ -49,7 +50,14 @@ function Window({ preview }: { preview: PreviewWindow }) {
   const place = () => {
     const parent = ref.current?.parentElement?.getBoundingClientRect();
     if (!parent) return { x: 0, y: 0 };
-    const left = (uiStore.get().uiHidden ? 0 : uiStore.get().panelWidths.left) + 24;
+    // Right of the left panel as it shows, and of a tablet's tool rail.
+    const rightOf = (selector: string) => {
+      const r = document.querySelector(selector)?.getBoundingClientRect();
+      return r?.width ? r.right - parent.left : 0;
+    };
+    const left = uiStore.get().uiHidden
+      ? 24
+      : Math.max(rightOf('.panel-left'), matchMedia(TABLET_QUERY).matches ? rightOf('.toolbar') : 0) + 12;
     const x = preview.x ?? left;
     // Above the toolbar and the tool options, which sit at the bottom center.
     const y = preview.y ?? parent.height - (preview.collapsed ? HEADER : preview.h) - 132;

@@ -28,6 +28,7 @@ import { PALETTE_PRESETS } from '../../engine/palette';
 import { openDialog, toast, uiStore } from '../uiStore';
 import { refreshTrash, trashStore, useStorage } from '../StorageContext';
 import { FILE_MIME } from '../dragTypes';
+import { PHONE_QUERY } from '../layout';
 
 const DAY = 86_400_000;
 
@@ -258,7 +259,7 @@ export function HomeScreen() {
 
   const startMobileLongPress = (e: ReactPointerEvent<HTMLElement>, id: string) => {
     const isTouch = e.pointerType === 'touch';
-    const isMobileViewport = window.matchMedia('(max-width: 820px)').matches;
+    const isMobileViewport = window.matchMedia(PHONE_QUERY).matches;
 
     if (!isTouch || !isMobileViewport || mobileSelectionMode) {
       return;
